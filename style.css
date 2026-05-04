@@ -419,32 +419,41 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .about-glitch-overlay.active{opacity:1}
 
 /* ── HORROR LAYERS ── */
-#horror-overlay{display:none;position:fixed;inset:0;z-index:9998;background:rgba(3,0,0,0.97);align-items:center;justify-content:center;flex-direction:column}
-#horror-overlay.show{display:flex}
-.horror-terminal{font-family:'DM Mono',monospace;font-size:0.83rem;color:var(--accent);line-height:2.5;letter-spacing:1px;text-align:left;max-width:480px;padding:0 20px}
-.h-cursor{animation:blink 1s step-end infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#horror-overlay{display:none;position:fixed;inset:0;z-index:9998;background:#000;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at center,rgba(200,0,40,0.08) 0%,#000 70%)}
+#horror-overlay.show{display:flex;animation:overlayFlashIn 0.8s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes overlayFlashIn{0%{opacity:0;background:radial-gradient(ellipse at center,rgba(220,20,60,0.15) 0%,#000 70%)}50%{background:radial-gradient(ellipse at center,rgba(139,0,20,0.1) 0%,#000 70%)}100%{opacity:1;background:radial-gradient(ellipse at center,rgba(200,0,40,0.08) 0%,#000 70%)}}
+.horror-terminal{font-family:'DM Mono',monospace;font-size:0.9rem;color:#ff1744;line-height:2.8;letter-spacing:2px;text-align:left;max-width:540px;padding:40px 50px;background:linear-gradient(135deg,rgba(139,0,20,0.08),rgba(80,0,10,0.06));border:2px solid;border-image:linear-gradient(135deg,rgba(255,23,68,0.7),rgba(200,0,40,0.4)) 1;box-shadow:0 0 40px rgba(255,23,68,0.35),0 0 80px rgba(220,20,60,0.2),inset 0 0 40px rgba(255,23,68,0.08);text-shadow:0 0 15px rgba(255,23,68,0.95),0 0 8px rgba(139,0,20,0.6);animation:terminalFlicker 0.15s step-end infinite;position:relative;overflow:hidden}
+.horror-terminal::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(255,23,68,0.04) 3px,rgba(255,23,68,0.04) 6px);pointer-events:none;animation:scanlineShiftHorror 8s linear infinite}
+@keyframes scanlineShiftHorror{0%{transform:translateY(0)}100%{transform:translateY(6px)}}
+@keyframes terminalFlicker{0%{text-shadow:0 0 15px rgba(255,23,68,0.95),0 0 8px rgba(139,0,20,0.6);opacity:1}10%{text-shadow:0 0 22px rgba(255,23,68,1),0 0 45px rgba(255,23,68,0.6),0 0 12px rgba(220,20,60,0.5);opacity:0.95}20%{text-shadow:0 0 15px rgba(255,23,68,0.95),0 0 8px rgba(139,0,20,0.6);opacity:1}45%{text-shadow:0 0 25px rgba(255,23,68,1),0 0 50px rgba(220,20,60,0.6);opacity:0.98}50%{text-shadow:0 0 35px rgba(255,23,68,0.8),0 0 20px rgba(139,0,20,0.7);opacity:1}70%{text-shadow:0 0 15px rgba(255,23,68,0.95),0 0 8px rgba(139,0,20,0.6);opacity:1}100%{text-shadow:0 0 15px rgba(255,23,68,0.95),0 0 8px rgba(139,0,20,0.6);opacity:1}}
+.h-cursor{animation:cursorGlitch 0.4s step-end infinite;color:#ff5a7e;text-shadow:0 0 12px rgba(255,23,68,0.9),0 0 8px rgba(220,20,60,0.7)}
+@keyframes cursorGlitch{0%,100%{opacity:1;text-shadow:0 0 12px rgba(255,23,68,0.9),0 0 8px rgba(220,20,60,0.7)}25%{opacity:0}50%{opacity:1;text-shadow:0 0 18px rgba(255,23,68,1),0 0 12px rgba(220,20,60,0.8);transform:skewX(2deg)}75%{opacity:0}}
 
 /* ── DATA CORRUPT OVERLAY ── */
 #data-corrupt-overlay{
   display:none;position:fixed;inset:0;z-index:9999;
   background:#000;align-items:center;justify-content:center;
   flex-direction:column;gap:20px;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,0.8) 0%,#000 100%);
 }
 #data-corrupt-overlay.show{display:flex}
-.corrupt-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(255,255,255,0.015) 2px,rgba(255,255,255,0.015) 4px);pointer-events:none;z-index:1}
-.corrupt-flicker{position:absolute;inset:0;background:rgba(0,0,0,0.4);pointer-events:none;z-index:1;animation:screenFlicker 0.3s step-end infinite}
-@keyframes screenFlicker{0%{opacity:0}70%{opacity:0}71%{opacity:0.6}72%{opacity:0}100%{opacity:0}}
-.corrupt-header{position:relative;z-index:2;font-family:'DM Mono',monospace;font-size:0.65rem;color:rgba(200,71,42,0.6);letter-spacing:3px;text-align:center;animation:textGlitchShift 0.2s step-end infinite}
-@keyframes textGlitchShift{0%{clip-path:none}33%{clip-path:inset(20% 0 60% 0);transform:translateX(4px)}66%{clip-path:inset(60% 0 20% 0);transform:translateX(-3px)}100%{clip-path:none}}
-.corrupt-terminal-box{position:relative;z-index:2;background:rgba(10,6,4,0.9);border:1px solid rgba(200,71,42,0.3);border-radius:10px;width:560px;max-width:90vw;overflow:hidden}
-.corrupt-title-bar{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid rgba(200,71,42,0.15);background:rgba(200,71,42,0.05)}
-.corrupt-dot{width:10px;height:10px;border-radius:50%}
-.corrupt-terminal-text{font-family:'DM Mono',monospace;font-size:0.72rem;line-height:1.9;padding:16px 20px;min-height:200px;max-height:280px;overflow-y:auto;color:rgba(255,255,255,0.15)}
-.ct-red{color:rgba(200,71,42,0.85)}
-.ct-dim{color:rgba(255,255,255,0.18)}
-.ct-white{color:rgba(255,255,255,0.55)}
-.ct-glitch{animation:textGlitchShift 0.15s step-end infinite}
+.corrupt-scanlines{position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 2px,rgba(255,0,100,0.04) 2px,rgba(255,0,100,0.04) 4px);pointer-events:none;z-index:1;animation:scanlineShift 8s linear infinite}
+@keyframes scanlineShift{0%{transform:translateY(0)}100%{transform:translateY(4px)}}
+.corrupt-flicker{position:absolute;inset:0;background:rgba(0,0,0,0.2);pointer-events:none;z-index:1;animation:screenFlickerIntense 0.1s step-end infinite}
+@keyframes screenFlickerIntense{0%{opacity:0}40%{opacity:0}41%{opacity:1}42%{opacity:0}58%{opacity:0}59%{opacity:0.8}60%{opacity:0}85%{opacity:0}86%{opacity:0.7}87%{opacity:0}100%{opacity:0}}
+.corrupt-header{position:relative;z-index:2;font-family:'DM Mono',monospace;font-size:0.75rem;color:#ff0066;letter-spacing:4px;text-align:center;animation:textGlitchIntense 0.15s step-end infinite;text-shadow:0 0 10px rgba(255,0,102,0.8),0 0 20px rgba(200,71,42,0.4);font-weight:bold;margin-bottom:20px}
+@keyframes textGlitchIntense{0%{text-shadow:0 0 10px rgba(255,0,102,0.8),0 0 20px rgba(200,71,42,0.4);transform:skewX(0)}20%{text-shadow:3px 0 0 #ff0066,-3px 0 0 rgba(0,255,200,0.5);transform:skewX(-5deg);clip-path:inset(10% 0 70% 0)}40%{text-shadow:-2px 0 0 #ff0066,2px 0 0 rgba(0,255,200,0.6);transform:skewX(3deg);clip-path:inset(70% 0 10% 0)}60%{text-shadow:0 0 10px rgba(255,0,102,0.8);transform:skewX(0)}80%{text-shadow:2px 2px 0 rgba(0,255,200,0.4);clip-path:inset(20% 0 60% 0)}100%{text-shadow:0 0 10px rgba(255,0,102,0.8),0 0 20px rgba(200,71,42,0.4);transform:skewX(0)}}
+.corrupt-terminal-box{position:relative;z-index:2;background:linear-gradient(to bottom,rgba(10,6,4,0.95),rgba(5,4,3,0.98));border:2px solid rgba(255,0,102,0.4);border-radius:0;width:560px;max-width:90vw;overflow:hidden;box-shadow:0 0 40px rgba(255,0,102,0.3),0 0 80px rgba(200,71,42,0.15),inset 0 0 40px rgba(255,0,102,0.05);animation:boxPulse 3s ease-in-out infinite}
+@keyframes boxPulse{0%,100%{box-shadow:0 0 40px rgba(255,0,102,0.3),0 0 80px rgba(200,71,42,0.15),inset 0 0 40px rgba(255,0,102,0.05)}50%{box-shadow:0 0 60px rgba(255,0,102,0.5),0 0 120px rgba(200,71,42,0.25),inset 0 0 60px rgba(255,0,102,0.1)}}
+.corrupt-title-bar{display:flex;align-items:center;gap:6px;padding:12px 16px;border-bottom:2px solid rgba(255,0,102,0.3);background:linear-gradient(to right,rgba(255,0,102,0.08),transparent);letter-spacing:2px;font-size:0.65rem;color:rgba(255,0,102,0.6);text-shadow:0 0 5px rgba(255,0,102,0.4);font-weight:bold}
+.corrupt-dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 5px currentColor}
+.corrupt-terminal-text{font-family:'DM Mono',monospace;font-size:0.75rem;line-height:2.1;padding:20px 24px;min-height:220px;max-height:320px;overflow-y:auto;color:rgba(255,0,102,0.7);text-shadow:0 0 8px rgba(255,0,102,0.4);letter-spacing:1px;background:linear-gradient(to bottom,rgba(255,0,102,0.02),transparent);animation:textPulse 2s ease-in-out infinite}
+@keyframes textPulse{0%,100%{text-shadow:0 0 8px rgba(255,0,102,0.4)}50%{text-shadow:0 0 15px rgba(255,0,102,0.6),0 0 25px rgba(0,255,200,0.2)}}
+.ct-red{color:rgba(255,0,102,0.95);text-shadow:0 0 10px rgba(255,0,102,0.8),0 0 5px rgba(255,0,102,0.5);font-weight:bold}
+.ct-dim{color:rgba(255,0,102,0.25);text-shadow:0 0 5px rgba(255,0,102,0.1)}
+.ct-white{color:rgba(0,255,200,0.8);text-shadow:0 0 10px rgba(0,255,200,0.6),0 0 5px rgba(255,0,102,0.2)}
+.ct-glitch{animation:textGlitchMask 0.15s step-end infinite;color:rgba(255,0,102,0.95)}
+@keyframes textGlitchMask{0%{clip-path:none;transform:translateX(0);color:rgba(255,0,102,0.95)}33%{clip-path:inset(20% 0 60% 0);transform:translateX(3px);color:rgba(0,255,200,0.7)}66%{clip-path:inset(60% 0 20% 0);transform:translateX(-3px);color:rgba(255,0,102,0.95)}100%{clip-path:none;transform:translateX(0);color:rgba(255,0,102,0.95)}}
 
 /* ── EYE SYSTEM ── */
 #arg-eye-system{display:none;position:fixed;inset:0;z-index:10000;background:#050403;cursor:none;overflow:hidden;align-items:center;justify-content:center}
