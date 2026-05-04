@@ -16,6 +16,22 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 
+/* ── ANTI-SAVE PROTECTION ── */
+img, video {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: auto;
+}
+img {
+  -webkit-user-drag: none;
+}
+video {
+  -webkit-user-select: none;
+  context-menu: none;
+}
+
 /* ── DARK MODE ── */
 body.dark-mode{
   --bg:#0e0d0b; --surface:#161412; --surface2:#1e1c18;
