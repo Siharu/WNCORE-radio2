@@ -223,11 +223,8 @@
   <!-- Ambient video background for globe section (8s Veo loops) -->
   <video class="globe-ambient-video" id="globe-ambient-video"
     autoplay muted loop playsinline
-    style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.18;pointer-events:none;z-index:0;"
+    style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;pointer-events:none;z-index:0;transition:opacity 1s;"
     aria-hidden="true">
-    <!-- Add your Veo globe ambient video:
-      <source src="videos/globe-ambient.mp4" type="video/mp4">
-    -->
   </video>
   <div class="globe-overlay-left">
     <div class="globe-kicker">WNCORE GLOBAL ARRAY</div>
@@ -535,6 +532,7 @@
   <div class="lm-wrap">
     <div class="lm-hero">
       <div class="lm-hero-bg" id="lm-hero-bg"></div>
+      <video id="lm-hero-video" class="lm-hero-video" autoplay muted loop playsinline aria-hidden="true"></video>
       <div class="lm-hero-content">
         <div class="lm-hero-kicker">WNCORE · LIVE MUSIC CHANNEL</div>
         <h1 class="lm-hero-title">Free Music,<br><em>Always Live.</em></h1>
@@ -1064,10 +1062,15 @@
               </div>
             </div>
             <div class="admin-card" style="margin:0">
-              <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER BACKGROUND</div>
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER — IMAGE URL</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-                <input type="url" id="admin-anime-banner-url" class="admin-field-input" placeholder="https://..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+                <input type="url" id="admin-anime-banner-url" class="admin-field-input" placeholder="https://... (jpg/png)" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_img','admin-anime-banner-url')">SAVE</button>
+              </div>
+              <div class="admin-card-title" style="margin-top:14px"><div class="admin-card-title-dot"></div>ANIME BANNER — VIDEO URL <span style="font-size:0.58rem;color:rgba(200,71,42,0.6);margin-left:6px">overrides image</span></div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                <input type="url" id="admin-anime-banner-video-url" class="admin-field-input" placeholder="https://... (mp4)" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_video','admin-anime-banner-video-url')">SAVE</button>
               </div>
             </div>
           </div>
@@ -1268,16 +1271,35 @@ async function loadSiteConfig() {
       const vid = document.getElementById('globe-ambient-video');
       if (vid) {
         vid.innerHTML = `<source src="${cfg.globe_bg_video}" type="video/mp4">`;
-        vid.load(); vid.play().catch(()=>{});
+        vid.load();
+        vid.addEventListener('canplay', () => { vid.style.opacity = '0.18'; }, { once: true });
+        vid.play().catch(()=>{});
       }
     }
 
-    // Anime banner image/video
-    if (cfg.anime_banner_img) {
+    // Anime banner — video takes priority over image
+    if (cfg.anime_banner_video) {
       const vid = document.getElementById('anime-banner-video');
       if (vid) {
-        vid.innerHTML = `<source src="${cfg.anime_banner_img}" type="video/mp4">`;
-        vid.load(); vid.play().catch(()=>{});
+        vid.innerHTML = `<source src="${cfg.anime_banner_video}" type="video/mp4">`;
+        vid.style.display = '';
+        vid.load();
+        vid.addEventListener('canplay', () => vid.classList.add('ready'), { once: true });
+        vid.play().catch(()=>{});
+      }
+    } else if (cfg.anime_banner_img) {
+      const img = document.getElementById('anime-banner-img');
+      if (img) { img.src = cfg.anime_banner_img; img.style.display = ''; }
+    }
+
+    // Live music hero background video
+    if (cfg.livemusic_hero_bg) {
+      const vid = document.getElementById('lm-hero-video');
+      if (vid) {
+        vid.innerHTML = `<source src="${cfg.livemusic_hero_bg}" type="video/mp4">`;
+        vid.load();
+        vid.addEventListener('canplay', () => vid.classList.add('ready'), { once: true });
+        vid.play().catch(()=>{});
       }
     }
 
@@ -1285,6 +1307,26 @@ async function loadSiteConfig() {
     if (cfg.eye_spooky_text) {
       const el = document.getElementById('spooky-text');
       if (el) el.textContent = cfg.eye_spooky_text;
+    }
+
+    // Signal status text
+    if (cfg.signal_status_text) {
+      const el = document.getElementById('signal-conn-status');
+      if (el) el.textContent = cfg.signal_status_text;
+    }
+
+    // Ticker inject
+    if (cfg.ticker_inject) {
+      const inner = document.getElementById('ticker-inner');
+      if (inner) {
+        const inj = document.createElement('span');
+        inj.className = 't-warn';
+        inj.textContent = cfg.ticker_inject.toUpperCase();
+        const sep = () => { const s = document.createElement('span'); s.className = 't-sep'; s.textContent = '·'; return s; };
+        inner.appendChild(sep());
+        inner.appendChild(inj);
+        inner.appendChild(sep());
+      }
     }
 
   } catch(e) { console.warn('Config load failed:', e); }
