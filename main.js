@@ -11,6 +11,31 @@ let isPlaying=false, isDarkMode=false, isMinimal=false;
 let currentStation=null, exposure=0, horrorTriggered=false;
 let searchFilter='all', searchDebounce, mobileMenuOpen=false;
 
+// ─── ANTI-SAVE PROTECTION ────────────────────────────────────────────────
+document.addEventListener('contextmenu', e => {
+  if(e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO' || e.target.closest('video')) {
+    e.preventDefault();
+    return false;
+  }
+});
+document.addEventListener('dragstart', e => {
+  if(e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO' || e.target.closest('video')) {
+    e.preventDefault();
+    return false;
+  }
+});
+document.addEventListener('keydown', e => {
+  if((e.ctrlKey || e.metaKey) && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+    return false;
+  }
+});
+document.querySelectorAll('img, video').forEach(el => {
+  el.style.userSelect = 'none';
+  el.style.webkitUserSelect = 'none';
+  el.ondragstart = () => false;
+});
+
 // ─── STATION DATA ─────────────────────────────────────────────────────────
 const FEATURED = [
   {url:'https://stream.radioparadise.com/aac-320',name:'Radio Paradise',meta:'Rock / Eclectic · California, US',emoji:'🇺🇸'},
