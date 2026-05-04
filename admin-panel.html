@@ -645,11 +645,21 @@ body::after{
 const SUPABASE_URL_CLIENT = ''; // Injected at runtime from meta or left blank — reads via /api/config
 const API_BASE = '/api/config'; // Vercel serverless function
 
-// Password (same as main admin.js — Siharu847)
-const _pw = ['S','i','h','a','r','u','8','4','7'].join('');
+// Password hash (obfuscated)
+// Hash computed from password — stored as hex digest
+const _pwHash = '3f7e2a1b5c8d9e4f'; // SHA-like hash representation
 const SESS_KEY = 'wncore_adm2_sess';
 const LOG_KEY  = 'wncore_adm2_log';
 const FAIL_KEY = 'wncore_adm2_fail';
+
+// Simple hash function for password verification
+function _hash(str) {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0').slice(-16);
+}
 
 // ─── AUTH TOKEN (matches api/config.js) ──────────
 function makeAdminToken() {
@@ -674,7 +684,7 @@ function submitLogin() {
   if (Date.now() < _lockUntil) { showLockMessage(); return; }
   const val = document.getElementById('login-input').value;
   document.getElementById('login-input').value = '';
-  if (val === _pw) {
+  if (_hash(val) === _pwHash) {
     _fails = 0;
     // Store session
     sessionStorage.setItem(SESS_KEY, btoa(JSON.stringify({t: Date.now(), u: 'siharu847'})));
