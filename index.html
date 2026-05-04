@@ -1018,29 +1018,74 @@
 
         <div id="admin-sec-videos" class="admin-section">
           <div class="admin-section-title">Video Media</div>
-          <div class="admin-section-sub">MANAGE VIDEO URLS FOR LIVE SITE</div>
+          <div class="admin-section-sub">MANAGE VIDEOS BY SECTION</div>
 
-          <div class="admin-card">
-            <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE VIDEO URL</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="url" id="admin-eye-url" class="admin-field-input" placeholder="https://" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
-              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_video_url','admin-eye-url')">SAVE</button>
+          <!-- HOME PAGE SECTION -->
+          <div style="margin-bottom:20px;padding:14px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.15);border-radius:8px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <div style="width:6px;height:6px;background:#c8472a;border-radius:50%"></div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase">HOME PAGE</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;margin-bottom:12px">
+              <div style="background:linear-gradient(to bottom, rgba(200,71,42,0.1), rgba(0,0,0,0.4));height:120px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:0.7rem;font-family:'DM Mono',monospace">
+                <div style="text-align:center">
+                  <div style="font-size:0.65rem;margin-bottom:4px">📺 GLOBE SECTION BACKGROUND</div>
+                  <div style="font-size:0.6rem;opacity:0.6">Full-width behind interactive globe</div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>GLOBE SECTION BACKGROUND</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                <input type="url" id="admin-globe-bg-url" class="admin-field-input" placeholder="https://..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('globe_bg_video','admin-globe-bg-url')">SAVE</button>
+              </div>
             </div>
           </div>
 
-          <div class="admin-card">
-            <div class="admin-card-title"><div class="admin-card-title-dot"></div>GLOBE VIDEO URL</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="url" id="admin-globe-url" class="admin-field-input" placeholder="https://" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
-              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('globe_video_url','admin-globe-url')">SAVE</button>
+          <!-- ANIME PAGE SECTION -->
+          <div style="margin-bottom:20px;padding:14px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.15);border-radius:8px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <div style="width:6px;height:6px;background:#c8472a;border-radius:50%"></div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase">ANIME & J-MUSIC PAGE</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;margin-bottom:12px">
+              <div style="background:linear-gradient(to bottom, rgba(200,71,42,0.1), rgba(0,0,0,0.4));height:140px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:0.7rem;font-family:'DM Mono',monospace">
+                <div style="text-align:center">
+                  <div style="font-size:0.65rem;margin-bottom:4px">🎬 ANIME BANNER</div>
+                  <div style="font-size:0.6rem;opacity:0.6">Large hero banner at page top</div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER BACKGROUND</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                <input type="url" id="admin-anime-banner-url" class="admin-field-input" placeholder="https://..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_img','admin-anime-banner-url')">SAVE</button>
+              </div>
             </div>
           </div>
 
-          <div class="admin-card">
-            <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER URL</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="url" id="admin-anime-url" class="admin-field-input" placeholder="https://" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
-              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_url','admin-anime-url')">SAVE</button>
+          <!-- LIVE MUSIC PAGE SECTION -->
+          <div style="margin-bottom:20px;padding:14px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.15);border-radius:8px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+              <div style="width:6px;height:6px;background:#c8472a;border-radius:50%"></div>
+              <div style="font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase">LIVE MUSIC PAGE</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;margin-bottom:12px">
+              <div style="background:linear-gradient(to bottom, rgba(200,71,42,0.1), rgba(0,0,0,0.4));height:130px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:0.7rem;font-family:'DM Mono',monospace">
+                <div style="text-align:center">
+                  <div style="font-size:0.65rem;margin-bottom:4px">🎵 HERO BACKGROUND</div>
+                  <div style="font-size:0.6rem;opacity:0.6">Hero section top of page</div>
+                </div>
+              </div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>LIVE MUSIC HERO BACKGROUND</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+                <input type="url" id="admin-livemusic-bg-url" class="admin-field-input" placeholder="https://..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('livemusic_hero_bg','admin-livemusic-bg-url')">SAVE</button>
+              </div>
             </div>
           </div>
         </div>
