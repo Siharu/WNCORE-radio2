@@ -1,0 +1,157 @@
+Create a horror ARG-style interactive eye system for a website. I have two image assets:
+
+
+
+
+
+"eye-base.png" → the full eye WITHOUT the pupil (there is a hole in the center)
+
+
+
+"pupil.png" → the pupil with multiple small eyes, transparent background Your task is to build a complete HTML + CSS + JavaScript implementation with the following behavior: [1] STRUCTURE
+
+
+
+
+
+Place the eye in the center of the screen
+
+
+
+The pupil must be layered on top of the eye base using absolute positioning
+
+
+
+The pupil should sit perfectly inside the empty hole [2] PUPIL BEHAVIOR The pupil must:
+
+
+
+Follow the user's mouse position
+
+
+
+NOT track perfectly (add delay/lag)
+
+
+
+Have slight random jitter at all times
+
+
+
+Movement should feel organic, not robotic Implementation details:
+
+
+
+Use requestAnimationFrame for smooth motion
+
+
+
+Use interpolation (lerp) for delayed movement
+
+
+
+Add small random offsets every frame [3] IDLE BEHAVIOR If the user stops moving the mouse for ~2 seconds:
+
+
+
+The pupil slowly returns to the center
+
+
+
+Then it "stares" directly forward
+
+
+
+This should feel intentional and unsettling [4] custom fake "exit" BUTTON + RADIO DISTORTION Add a custom button labeled: exit When the user clicks exit: A. AUDIO EFFECTS (radio style corruption)
+
+
+
+Use Web Audio API
+
+
+
+Apply distortion (waveshaper)
+
+
+
+Add lowpass filter (muffled sound)
+
+
+
+Gradually reduce clarity (not instant)
+
+
+
+Add pitch wobble (playbackRate variation)
+
+
+
+Add random volume cuts (interference bursts) B. TIMING
+
+
+
+Effects should ramp in over 2–3 seconds
+
+
+
+Not immediate [5] VISUAL SYNC WHEN YES IS CLICKED When YES is clicked:
+
+
+
+The pupil stops following the mouse
+
+
+
+It slowly centers
+
+
+
+Slight jitter continues
+
+
+
+Optional: add a quick white screen flash [6] TEXT EVENT After distortion begins (short delay), show text: "I see you."
+
+
+
+Centered on screen
+
+
+
+Fades in or appears suddenly
+
+
+
+Slight glitch or flicker effect preferred [7] STYLE
+
+
+
+Dark background
+
+
+
+Eye is the main focus
+
+
+
+Cursor can optionally be hidden for immersion
+
+
+
+Subtle grain or glitch effect is a plus [8] OUTPUT FORMAT Return:
+
+
+
+One complete HTML file
+
+
+
+Include CSS and JS inside (no external files)
+
+
+
+Clearly labeled sections for easy editing GOAL: This should feel like a living entity, not a UI element. The experience should be unsettling, reactive, and immersive.
+
+this website is a fake actaully working radio station website frontside for the actual arg which is siharu.vercel.app
+
+add those things and also make sure the website is deployment ready add more radiosation functiona and customade ui for this website without losing its current indentity check out siharu.vercel.app if you need more context

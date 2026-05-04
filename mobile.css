@@ -1,0 +1,430 @@
+/* ═══════════════════════════════════════════════════════
+   WNCORE RADIO — MOBILE.css
+   Mobile-first overrides, signal connection box,
+   legal page integration, ARG elements
+═══════════════════════════════════════════════════════ */
+
+/* ── SIGNAL CONNECTION BOX (bottom of page, replaces header element) ── */
+.signal-conn-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(200,71,42,0.2);
+  border-radius: 10px;
+  margin: 12px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text3);
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+.signal-conn-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(200,71,42,0.03), transparent);
+  animation: conn-scan 3s linear infinite;
+}
+@keyframes conn-scan {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+.signal-conn-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(200,71,42,0.5);
+  flex-shrink: 0;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+.signal-conn-label {
+  color: rgba(200,71,42,0.7);
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+.signal-conn-status {
+  margin-left: auto;
+  font-size: 0.58rem;
+  color: rgba(200,71,42,0.4);
+}
+.signal-conn-freq {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* ── MOBILE FIRST CORE ── */
+:root {
+  --header-h: 56px;
+  --player-h: 68px;
+}
+
+@media (min-width: 769px) {
+  :root {
+    --header-h: 64px;
+    --player-h: 76px;
+  }
+}
+
+/* ── HEADER MOBILE ── */
+@media (max-width: 768px) {
+  .header-inner { padding: 0 14px; gap: 12px; }
+  nav#main-nav { display: none !important; }
+  .theme-toggle-labels { display: none; }
+  .live-dot { display: none; }
+  .minimal-btn { display: none; }
+  .sign-in-btn { display: none; }
+  .mobile-menu-btn { display: flex !important; }
+  header { height: var(--header-h); }
+  .logo-mark { font-size: 1.15rem; }
+}
+
+/* ── TICKER MOBILE ── */
+@media (max-width: 480px) {
+  .ticker-label { display: none; }
+  .ticker-wrap { height: 24px; }
+  .ticker-inner { font-size: 0.54rem; }
+}
+
+/* ── GLOBE SECTION MOBILE ── */
+@media (max-width: 768px) {
+  .globe-section { height: 260px; }
+  .globe-overlay-left {
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(3,7,18,0.9) 60%, transparent);
+    padding: 20px 16px;
+    justify-content: flex-end;
+  }
+  .globe-title { font-size: 1.5rem; }
+  .globe-sub { font-size: 0.72rem; }
+  .globe-stats { gap: 14px; }
+  .globe-stat-num { font-size: 1.1rem; }
+}
+
+/* ── PAGE WRAP MOBILE ── */
+@media (max-width: 768px) {
+  .page-wrap {
+    grid-template-columns: 1fr;
+    padding: 16px 12px;
+    gap: 20px;
+  }
+  .sidebar { order: -1; }
+}
+
+/* ── FEATURED CARDS MOBILE ── */
+@media (max-width: 768px) {
+  .featured-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+}
+@media (min-width: 480px) and (max-width: 768px) {
+  .featured-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── REC GRID MOBILE ── */
+@media (max-width: 480px) {
+  .rec-grid { grid-template-columns: 1fr; }
+}
+
+/* ── STATION TABLE MOBILE ── */
+@media (max-width: 768px) {
+  .st-country, .st-bitrate, .st-num { display: none; }
+  .station-table td { padding: 10px 4px; }
+  .st-name { font-size: 0.82rem; }
+}
+
+/* ── PLAYER BAR MOBILE ── */
+@media (max-width: 768px) {
+  .player-bar { height: var(--player-h); padding: 0 12px; }
+  .pb-right { display: none; }
+  .pb-center { flex: 1; }
+  .pb-station { max-width: 120px; }
+  .pb-name { font-size: 0.72rem; }
+  .pb-meta { font-size: 0.58rem; }
+  .pb-controls { gap: 8px; }
+  .pb-btn { width: 28px; height: 28px; }
+  .pb-play { width: 36px; height: 36px; }
+}
+
+/* ── SEARCH MODAL MOBILE ── */
+@media (max-width: 600px) {
+  .search-modal-backdrop { padding: 60px 10px 10px; align-items: flex-start; }
+  .search-box { border-radius: 12px; }
+  .search-results { max-height: 280px; }
+}
+
+/* ── SIGN IN MODAL MOBILE ── */
+@media (max-width: 480px) {
+  .modal-box { padding: 24px 18px; border-radius: 16px 16px 0 0; }
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal-oauth { flex-direction: column; gap: 8px; }
+  .oauth-btn { width: 100%; }
+}
+
+/* ── GENRE STRIP MOBILE ── */
+@media (max-width: 768px) {
+  .genre-strip { padding: 0 12px; }
+  .genre-btn { padding: 6px 12px; font-size: 0.7rem; }
+}
+
+/* ── ABOUT PAGE MOBILE ── */
+@media (max-width: 768px) {
+  .about-wrap { padding: 32px 16px 100px; }
+  .about-title { font-size: 1.7rem; }
+}
+
+/* ── ANIME PAGE MOBILE ── */
+@media (max-width: 768px) {
+  .anime-stations-grid { grid-template-columns: repeat(2,1fr); }
+  .anime-banner { height: 160px; }
+  .anime-banner-title { font-size: 1.4rem; }
+}
+@media (max-width: 480px) {
+  .anime-stations-grid { grid-template-columns: 1fr; }
+}
+
+/* ── LIVE MUSIC PAGE MOBILE ── */
+@media (max-width: 768px) {
+  .lm-grid { grid-template-columns: 1fr !important; }
+  .lm-hero { padding: 32px 16px; }
+  .lm-hero-title { font-size: 2rem; }
+  .lm-hero-stats { gap: 12px; }
+  .lm-now-playing-card { flex-direction: column; align-items: flex-start; }
+  .lm-np-vinyl { width: 70px; height: 70px; }
+}
+
+/* ── CHARTS PAGE MOBILE ── */
+@media (max-width: 768px) {
+  #page-charts > div, #page-genres > div, #page-podcasts > div { padding: 24px 12px 100px; }
+}
+
+/* ── FOOTER MOBILE ── */
+@media (max-width: 768px) {
+  .wncore-footer { padding-bottom: calc(var(--player-h) + 56px + 8px); }
+  .wncore-footer-inner { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
+  .wncore-footer-brand { grid-column: 1 / -1; }
+  .footer-tagline { font-size: 0.72rem; }
+}
+@media (max-width: 400px) {
+  .wncore-footer-inner { grid-template-columns: 1fr !important; }
+}
+
+/* ── SIDEBAR MOBILE ── */
+@media (max-width: 768px) {
+  .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .sidebar-card { flex: 1 1 280px; }
+  .arg-card { flex: 1 1 100%; }
+}
+
+/* ── NP PROGRESS BAR ── */
+.np-progress { height: 3px; background: var(--surface2); border-radius: 2px; margin: 8px 0; overflow: hidden; }
+.np-progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 2px;
+  animation: np-flow 4s linear infinite;
+}
+@keyframes np-flow {
+  from { width: 0%; margin-left: 0 }
+  to   { width: 100%; }
+}
+
+/* ── MOBILE BOTTOM NAV ADJUSTMENTS ── */
+@media (max-width: 768px) {
+  body { padding-bottom: calc(var(--player-h) + 56px); }
+  .mobile-bottom-nav {
+    bottom: var(--player-h);
+    border-top: 1px solid var(--border);
+    z-index: 481;
+  }
+}
+
+/* ── LEGAL PAGE MOBILE ── */
+@media (max-width: 600px) {
+  .legal-wrap { padding: 48px 14px 100px; }
+  .legal-title { font-size: 1.5rem; }
+  .legal-nav { gap: 6px; }
+  .legal-nav-btn { padding: 5px 10px; font-size: 0.7rem; }
+  .legal-table { font-size: 0.72rem; }
+}
+
+/* ── ARG CARD RESPONSIVE ── */
+.arg-card {
+  background: var(--surface);
+  border: 1px solid rgba(200,71,42,0.2);
+  border-radius: 14px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.arg-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(200,71,42,0.04), transparent);
+}
+.arg-card-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 2px;
+  color: rgba(200,71,42,0.5);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+.arg-freq {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.arg-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text3);
+  line-height: 1.9;
+  margin-bottom: 12px;
+}
+.arg-broken-bar {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 4px;
+  color: rgba(200,71,42,0.4);
+  text-align: center;
+  padding: 6px;
+  border: 1px solid rgba(200,71,42,0.1);
+  border-radius: 5px;
+  animation: flicker-text 3s step-end infinite;
+}
+@keyframes flicker-text {
+  0%, 90%, 100% { opacity: 1; }
+  91%, 92%, 93%, 94% { opacity: 0.3; }
+}
+.redacted {
+  background: var(--text);
+  color: transparent;
+  border-radius: 2px;
+  transition: all 0.3s;
+  cursor: default;
+}
+.redacted:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+/* ── FAVORITES PAGE ── */
+#page-favorites {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 24px 100px;
+}
+#page-favorites h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+/* ── BROADCAST STATUS BAR MOBILE ── */
+@media (max-width: 768px) {
+  .broadcast-status-bar {
+    display: none !important;
+  }
+}
+
+/* ── SCROLL TOP BUTTON MOBILE ── */
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: calc(var(--player-h) + 56px + 12px);
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ── GENRE CARDS GRID MOBILE ── */
+@media (max-width: 480px) {
+  #genre-cards-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
+}
+
+/* ── FEATURED CARD ARG VARIANT ── */
+.featured-card--arg {
+  border-color: rgba(200,71,42,0.2) !important;
+  background: linear-gradient(135deg, var(--surface), rgba(200,71,42,0.03)) !important;
+}
+.featured-card--arg:hover {
+  border-color: rgba(200,71,42,0.4) !important;
+  box-shadow: 0 12px 32px rgba(200,71,42,0.08) !important;
+}
+.fc-listeners--warn { color: var(--accent) !important; opacity: 0.7; }
+.fc-name--warn { color: var(--accent) !important; letter-spacing: 0.5px; }
+.fc-meta--warn { color: rgba(200,71,42,0.5) !important; }
+.fc-now--warn {
+  background: rgba(200,71,42,0.05) !important;
+  color: rgba(200,71,42,0.6) !important;
+  border: 1px solid rgba(200,71,42,0.1);
+}
+.signal-ring { animation: signal-pulse 2s ease-in-out infinite; }
+.signal-ring.r2 { animation-delay: 0.5s; }
+@keyframes signal-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* ── LIVEMUSIC GRID MOBILE ── */
+@media (max-width: 900px) {
+  .lm-grid { grid-template-columns: repeat(2,1fr) !important; }
+}
+@media (max-width: 480px) {
+  .lm-grid { grid-template-columns: 1fr !important; }
+  .lm-channel-bar { padding: 10px 12px; gap: 6px; }
+  .lm-ch-btn { padding: 5px 10px; font-size: 0.7rem; }
+}
+
+/* ── PODCAST GRID MOBILE ── */
+@media (max-width: 600px) {
+  #podcast-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── HORROR OVERLAYS MOBILE ── */
+@media (max-width: 480px) {
+  .horror-terminal { font-size: 0.72rem; }
+  .eye-wrapper { width: 280px; height: 200px; }
+}
+
+/* ── SECTION HEADER MOBILE ── */
+@media (max-width: 480px) {
+  .section-hd { margin-bottom: 12px; }
+  .section-title { font-size: 1.1rem; }
+}
+
+/* ── GLOBAL TOUCH TARGETS ── */
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 36px;
+  }
+  .genre-btn, .search-filter-btn, .lm-ch-btn {
+    min-height: 32px;
+  }
+}
+
+/* ── STATION TABLE SWIPE SCROLL ── */
+@media (max-width: 768px) {
+  .station-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ── ANIME IMAGE STRIP MOBILE ── */
+@media (max-width: 600px) {
+  .anime-img-real { width: 110px; height: 70px; }
+}
+
+/* ── NP WAVE MOBILE ── */
+@media (max-width: 768px) {
+  .np-wave { gap: 2px; }
+  .np-wave span { width: 2px; }
+}

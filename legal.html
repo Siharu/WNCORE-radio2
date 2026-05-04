@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Legal — WNCORE Radio</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.legal-wrap{max-width:780px;margin:0 auto;padding:60px 24px 120px}
+.legal-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.legal-nav-btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text2);cursor:pointer;font-size:0.76rem;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.legal-nav-btn.active{background:var(--text);color:var(--bg);border-color:var(--text)}
+.legal-section{display:none}.legal-section.active{display:block}
+.legal-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;margin-bottom:6px}
+.legal-subtitle{font-size:0.78rem;color:var(--text3);margin-bottom:32px;font-family:'DM Mono',monospace;letter-spacing:1px}
+.legal-h2{font-size:1rem;font-weight:700;margin:28px 0 10px;color:var(--text)}
+.legal-h3{font-size:0.85rem;font-weight:600;margin:18px 0 8px;color:var(--text2)}
+.legal-p{font-size:0.85rem;line-height:1.9;color:var(--text2);margin-bottom:14px}
+.legal-p a{color:var(--accent);text-decoration:none}
+.legal-mono{font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);background:var(--surface2);padding:10px 14px;border-radius:8px;margin:12px 0;border:1px solid var(--border);line-height:1.7}
+.legal-warn{background:rgba(200,71,42,0.05);border:1px solid rgba(200,71,42,0.15);border-radius:8px;padding:12px 16px;margin:16px 0}
+.legal-warn p{font-size:0.78rem;color:var(--text2);margin:0;line-height:1.7}
+.legal-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:0.8rem}
+.legal-table th{text-align:left;padding:8px 10px;background:var(--surface2);color:var(--text);font-weight:600;border-bottom:2px solid var(--border)}
+.legal-table td{padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text2);vertical-align:top}
+/* hidden ARG elements */
+.arg-redacted{background:var(--text);color:var(--text);border-radius:2px;cursor:default;transition:all 0.3s;user-select:none}
+.arg-redacted:hover{background:transparent;color:var(--accent)}
+.arg-footnote{font-size:0.62rem;color:var(--text3);opacity:0.4;margin-top:40px;line-height:1.8;font-family:'DM Mono',monospace;border-top:1px solid var(--border);padding-top:14px}
+.arg-footnote:hover{opacity:1;color:var(--accent)}
+.arg-section-hidden{max-height:0;overflow:hidden;transition:max-height 0.5s}
+.arg-invisible{font-size:0.58rem;color:var(--bg);background:var(--bg);line-height:1;user-select:none;pointer-events:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="header-inner">
+    <a class="logo" href="index.html"><span class="logo-mark">WNCORE</span><span class="logo-freq">EST. 2016</span></a>
+    <div class="header-right" style="margin-left:auto">
+      <a href="index.html" style="font-size:0.78rem;color:var(--text2);text-decoration:none">← Back to Radio</a>
+    </div>
+  </div>
+</header>
+<div class="legal-wrap">
+  <div class="legal-nav">
+    <button class="legal-nav-btn active" onclick="showLegal('privacy',this)">Privacy Policy</button>
+    <button class="legal-nav-btn" onclick="showLegal('terms',this)">Terms of Service</button>
+    <button class="legal-nav-btn" onclick="showLegal('api',this)">API Access</button>
+    <button class="legal-nav-btn" onclick="showLegal('dmca',this)">DMCA Policy</button>
+    <button class="legal-nav-btn" onclick="showLegal('contact',this)">Contact / Reports</button>
+  </div>
+
+  <!-- PRIVACY POLICY -->
+  <div id="legal-privacy" class="legal-section active">
+    <div class="legal-title">Privacy Policy</div>
+    <div class="legal-subtitle">LAST UPDATED: MARCH 12, 2024 · EFFECTIVE: MARCH 12, 2024</div>
+    <div class="legal-p">WNCORE Radio ("we", "us", "our") operates the wncoreradio.net platform and associated services. This Privacy Policy governs our data practices and your rights. Please read it carefully.</div>
+
+    <div class="legal-h2">1. Information We Collect</div>
+    <div class="legal-p">We collect minimal data necessary to operate our service. Unlike most streaming platforms, we do not maintain user accounts by default, do not build behavioral profiles, and do not sell your data to third parties.</div>
+    <div class="legal-h3">1.1 Automatically Collected Data</div>
+    <div class="legal-p">When you access WNCORE Radio, our servers may log the following: IP address (truncated to /24 subnet), browser user agent string, referring URL, and general geographic region (country-level only). This data is deleted within 14 days.</div>
+    <div class="legal-h3">1.2 Local Storage</div>
+    <div class="legal-p">We use your browser's localStorage to store your preferences (dark mode, volume, favorites). This data never leaves your device and is not transmitted to our servers.</div>
+    <div class="legal-h3">1.3 Station Interaction Data</div>
+    <div class="legal-p">When you tune to a radio station, a connection is made directly to that station's server. Station operators may log your IP address under their own privacy policies. WNCORE does not intercept, record, or analyze audio streams.</div>
+    <div class="legal-warn"><p>⚠ Note: Some third-party stations may use tracking pixels or analytics. WNCORE has no control over third-party station infrastructure.</p></div>
+
+    <div class="legal-h2">2. How We Use Your Information</div>
+    <div class="legal-p">We use collected data exclusively to: (a) operate and improve the service, (b) diagnose technical issues, (c) prevent abuse and enforce our Terms, and (d) comply with legal obligations.</div>
+    <div class="legal-p">We do not use your data for advertising, profiling, or sale to any party.</div>
+
+    <div class="legal-h2">3. Cookies</div>
+    <div class="legal-p">WNCORE Radio does not use tracking cookies. We use a single session cookie for authentication if you sign in, which expires when you close your browser. We do not use third-party advertising cookies.</div>
+    <div class="legal-mono">
+      Cookie: wncore_sess (session only, auth token)<br>
+      Duration: Browser session<br>
+      Purpose: Authentication<br>
+      Third-party: No<br>
+      <!-- NODE 09 LOGGING ACTIVE: SESSION_ID CAPTURED -->
+    </div>
+
+    <div class="legal-h2">4. Data Retention</div>
+    <div class="legal-p">Server logs: 14 days. Truncated access statistics: 90 days. Account data (if applicable): until deletion request. Encrypted backups: 30-day rolling window.</div>
+
+    <div class="legal-h2">5. Your Rights</div>
+    <div class="legal-p">Depending on your jurisdiction, you may have the right to access, correct, delete, or port your data. To exercise these rights, contact us at <a href="mailto:privacy@wncoreradio.net">privacy@wncoreradio.net</a>. We respond within 30 days.</div>
+
+    <div class="legal-h2">6. Children's Privacy</div>
+    <div class="legal-p">WNCORE Radio is not directed to children under 13. We do not knowingly collect data from minors. If you believe a minor has provided us information, contact us immediately.</div>
+
+    <div class="legal-h2">7. International Transfers</div>
+    <div class="legal-p">Our servers are located in the United States and the European Union. If you access our service from outside these regions, your data may be transferred internationally. We comply with applicable data transfer frameworks.</div>
+
+    <div class="legal-h2">8. Changes to This Policy</div>
+    <div class="legal-p">We may update this policy periodically. Material changes will be announced on the platform. Continued use after 30 days constitutes acceptance of updated terms.</div>
+
+    <div class="legal-h2">9. Contact</div>
+    <div class="legal-p">Privacy inquiries: <a href="mailto:privacy@wncoreradio.net">privacy@wncoreradio.net</a><br>
+    Mailing address: WNCORE Radio LLC, <span class="arg-redacted">████████████████, ██████, ██ █████</span></div>
+
+    <div class="arg-footnote">
+      ARCHIVE FILE REF: POLICY_PRIV_v9.1 · NODE 09 STATUS: UNKNOWN · LAST SYNCHRONIZED: [DATA EXPUNGED]<br>
+      This document was last verified by our legal team on 2024-03-12. A previous version contained an additional clause — Section 9.7, "Signal Monitoring Provisions" — which was removed prior to public release at the request of <span class="arg-redacted">████████</span>.<br>
+      If you are reading this, you may already be logged. Reference ID: <span id="priv-ref-id">—</span>
+    </div>
+    <div class="arg-invisible">SIGNAL_KAGE HAS YOUR IP. NODE 09 SEES YOU. THIS IS NOT FICTION.</div>
+  </div>
+
+  <!-- TERMS OF SERVICE -->
+  <div id="legal-terms" class="legal-section">
+    <div class="legal-title">Terms of Service</div>
+    <div class="legal-subtitle">LAST UPDATED: MARCH 12, 2024 · BINDING AGREEMENT</div>
+    <div class="legal-p">By accessing or using WNCORE Radio ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to all of these Terms, do not use the Service. These Terms constitute a legally binding agreement between you and WNCORE Radio LLC.</div>
+
+    <div class="legal-h2">1. Eligibility</div>
+    <div class="legal-p">You must be at least 13 years of age to use this Service. By using the Service, you represent that you meet this requirement. Users aged 13–17 must have parental consent.</div>
+
+    <div class="legal-h2">2. License to Use</div>
+    <div class="legal-p">WNCORE Radio grants you a limited, non-exclusive, non-transferable, revocable license to access and use the Service for personal, non-commercial purposes. This license does not include: (a) reselling or commercially exploiting the Service; (b) scraping or automated access; (c) reverse engineering our systems; (d) circumventing access controls.</div>
+
+    <div class="legal-h2">3. User Accounts</div>
+    <div class="legal-p">If you create an account, you are responsible for maintaining its security. You agree not to share credentials. We reserve the right to terminate accounts that violate these Terms without notice.</div>
+    <div class="legal-warn"><p>⚠ Accounts showing anomalous access patterns may be suspended pending review. This includes unusual listening behavior, API abuse, or access from restricted regions. If your account is suspended and you believe this is in error, contact <a href="mailto:signal@wncoreradio.net" style="color:var(--accent)">signal@wncoreradio.net</a>.</p></div>
+
+    <div class="legal-h2">4. Prohibited Conduct</div>
+    <div class="legal-p">You agree not to: use the Service for any unlawful purpose; interfere with or disrupt the Service; attempt to access restricted areas of our systems; use the Service to transmit malicious code; impersonate WNCORE Radio or its personnel; attempt to decode, decrypt, or access frequency data beyond publicly available streams.</div>
+
+    <div class="legal-h2">5. Third-Party Content</div>
+    <div class="legal-p">WNCORE Radio indexes and links to radio streams operated by independent third parties. We do not host, own, or endorse third-party content. We are not responsible for the accuracy, legality, or appropriateness of third-party streams.</div>
+    <div class="legal-mono">
+      Station data sourced from: Radio Browser Community Database (radio-browser.info)<br>
+      License: Creative Commons Attribution 4.0<br>
+      WNCORE modifications: frequency normalization, signal verification, metadata enrichment<br>
+      Exception: Frequency 88.7 MHz — source unknown, data unverified, inclusion contested internally
+    </div>
+
+    <div class="legal-h2">6. Intellectual Property</div>
+    <div class="legal-p">The WNCORE Radio name, logo, interface design, and original content are owned by WNCORE Radio LLC and protected by intellectual property law. Station names, logos, and audio content are owned by their respective broadcasters.</div>
+
+    <div class="legal-h2">7. Disclaimers</div>
+    <div class="legal-p">THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. WNCORE RADIO DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, ERROR-FREE, OR FREE OF HARMFUL COMPONENTS.</div>
+    <div class="legal-p">We specifically disclaim all liability for: (a) interruptions to third-party streams; (b) content transmitted by third-party broadcasters; (c) technical failures beyond our control; (d) events arising from network anomalies including but not limited to unexplained signal phenomena on unlicensed frequencies.</div>
+
+    <div class="legal-h2">8. Limitation of Liability</div>
+    <div class="legal-p">TO THE MAXIMUM EXTENT PERMITTED BY LAW, WNCORE RADIO SHALL NOT BE LIABLE FOR INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES. OUR TOTAL LIABILITY SHALL NOT EXCEED $100 USD.</div>
+
+    <div class="legal-h2">9. Indemnification</div>
+    <div class="legal-p">You agree to indemnify and hold WNCORE Radio, its officers, employees, and agents harmless from any claims arising from your use of the Service, your violation of these Terms, or your violation of any rights of another party.</div>
+
+    <div class="legal-h2">10. Governing Law</div>
+    <div class="legal-p">These Terms are governed by the laws of the State of Delaware, without regard to conflict of law principles. You consent to the exclusive jurisdiction of courts in Delaware for any disputes.</div>
+
+    <div class="legal-h2">11. Termination</div>
+    <div class="legal-p">We reserve the right to suspend or terminate your access to the Service at any time, with or without cause, with or without notice. Upon termination, these Terms continue to apply to your prior use of the Service.</div>
+
+    <div class="legal-h2">12. Entire Agreement</div>
+    <div class="legal-p">These Terms, together with our Privacy Policy and any other agreements expressly incorporated herein, constitute the entire agreement between you and WNCORE Radio regarding the Service.</div>
+
+    <div class="arg-footnote">
+      DOCUMENT: TOS_v11.3 · REVISION HISTORY AVAILABLE ON REQUEST<br>
+      NOTE: An internal draft version of these Terms (v10.8, dated 2016-10-01) included a Section 12.9 titled "Frequency Anomaly Acknowledgment" requiring users to confirm they understood that <span class="arg-redacted">███████████████████████████████████████████████████</span>. This clause was removed from the final version. We do not comment on why.<br>
+      If you have experienced an unexplained transmission, do not contact us using this form. You already know the frequency.
+    </div>
+  </div>
+
+  <!-- API ACCESS -->
+  <div id="legal-api" class="legal-section">
+    <div class="legal-title">API Access</div>
+    <div class="legal-subtitle">WNCORE RADIO PUBLIC API · VERSION 4.1 · REST/JSON</div>
+    <div class="legal-p">WNCORE Radio provides a public read-only API for developers. Access is free for non-commercial use under the terms below. Commercial use requires a separate agreement.</div>
+
+    <div class="legal-h2">Base URL</div>
+    <div class="legal-mono">
+      https://api.wncoreradio.net/v4/<br>
+      Content-Type: application/json<br>
+      Rate limit: 60 requests/minute (unauthenticated)<br>
+      Rate limit: 600 requests/minute (with API key)
+    </div>
+
+    <div class="legal-h2">Endpoints</div>
+    <div class="legal-h3">GET /stations</div>
+    <div class="legal-mono">
+      Parameters:<br>
+      &nbsp;&nbsp;limit (int, max 100, default 20)<br>
+      &nbsp;&nbsp;offset (int)<br>
+      &nbsp;&nbsp;genre (string)<br>
+      &nbsp;&nbsp;country (ISO 3166-1 alpha-2)<br>
+      &nbsp;&nbsp;language (ISO 639-1)<br>
+      &nbsp;&nbsp;order (clickcount|votes|name|bitrate)<br>
+      &nbsp;&nbsp;reverse (bool)<br>
+      &nbsp;&nbsp;https (bool, default true)<br><br>
+      Response: { stations: [...], total: int, page: int }
+    </div>
+
+    <div class="legal-h3">GET /stations/{uuid}</div>
+    <div class="legal-mono">
+      Returns: single station object<br>
+      Fields: uuid, name, url, url_resolved, country, countrycode,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;language, tags, bitrate, codec, votes, clickcount,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;lastcheckok, favicon, homepage
+    </div>
+
+    <div class="legal-h3">GET /genres</div>
+    <div class="legal-mono">
+      Returns: array of genre objects with station counts<br>
+      { genre: string, count: int, active: int }
+    </div>
+
+    <div class="legal-h3">GET /status</div>
+    <div class="legal-mono">
+      Returns: system status, server health, node states<br>
+      {<br>
+      &nbsp;&nbsp;"status": "operational",<br>
+      &nbsp;&nbsp;"nodes": {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"node_01": "online",<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"node_02": "online",<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"node_03": "standby",<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"node_09": "unknown"<br>
+      &nbsp;&nbsp;},<br>
+      &nbsp;&nbsp;"frequencies": {<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"monitored": 12841,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;"unresolved": <span class="arg-redacted">██</span><br>
+      &nbsp;&nbsp;}<br>
+      }
+    </div>
+
+    <div class="legal-h2">Authentication</div>
+    <div class="legal-p">Unauthenticated requests are accepted at reduced rate limits. To obtain an API key, email <a href="mailto:api@wncoreradio.net">api@wncoreradio.net</a> with your use case. API keys are alphanumeric, 64 characters, prefixed <code style="font-family:monospace;font-size:0.8em;background:var(--surface2);padding:1px 5px;border-radius:3px">wnc_</code>.</div>
+
+    <div class="legal-h2">Rate Limiting</div>
+    <div class="legal-p">Requests exceeding rate limits receive a <code style="font-family:monospace;font-size:0.8em;background:var(--surface2);padding:1px 5px;border-radius:3px">429 Too Many Requests</code> response with a <code style="font-family:monospace;font-size:0.8em;background:var(--surface2);padding:1px 5px;border-radius:3px">Retry-After</code> header. Persistent abuse results in IP bans.</div>
+
+    <div class="legal-h2">Acceptable Use</div>
+    <div class="legal-p">You may use the API to: build radio applications, aggregate station data for non-commercial research, create educational tools, or power open-source projects. You may not: resell API access, scrape our database for commercial competitors, or use the API to automate station tuning at scale without a commercial agreement.</div>
+
+    <div class="legal-h2">Prohibited Queries</div>
+    <div class="legal-p">The following parameters are not publicly documented and will return <code style="font-family:monospace;font-size:0.8em;background:var(--surface2);padding:1px 5px;border-radius:3px">403 Forbidden</code>:</div>
+    <div class="legal-table-wrap" style="overflow-x:auto">
+    <table class="legal-table">
+      <tr><th>Parameter</th><th>Status</th><th>Notes</th></tr>
+      <tr><td><code style="font-family:monospace">node=09</code></td><td>403</td><td>Node 09 queries disabled since 2016-11-01</td></tr>
+      <tr><td><code style="font-family:monospace">freq=88.7</code></td><td>403</td><td>Frequency flagged — access restricted</td></tr>
+      <tr><td><code style="font-family:monospace">source=KAGE</code></td><td>403</td><td>Internal identifier. Not publicly documented.</td></tr>
+      <tr><td><code style="font-family:monospace">archive=deep</code></td><td>403</td><td>Pre-2016 archive. Access requires clearance.</td></tr>
+    </table>
+    </div>
+
+    <div class="legal-h2">SLA & Uptime</div>
+    <div class="legal-p">We target 99.5% uptime for public API endpoints. Node health is published at <a href="#">status.wncoreradio.net</a>. We do not provide SLA guarantees for free tier access.</div>
+
+    <div class="arg-footnote">
+      API VERSION HISTORY: v1 (2016), v2 (2018), v3 (2020), v3.9 (2022), v4 (2024)<br>
+      v3.9 included an undocumented endpoint: GET /signals/unresolved — this was removed before v4 launch after it returned unexpected results during internal testing. The response contained coordinates. We have not been able to determine what generated them.<br>
+      API_BUILD: <span class="arg-redacted">████████████</span> · COMPILED BY: <span class="arg-redacted">██████</span> · NODE 09 SIGNATURE: NOT FOUND
+    </div>
+  </div>
+
+  <!-- DMCA POLICY -->
+  <div id="legal-dmca" class="legal-section">
+    <div class="legal-title">DMCA Policy</div>
+    <div class="legal-subtitle">DIGITAL MILLENNIUM COPYRIGHT ACT COMPLIANCE STATEMENT</div>
+    <div class="legal-p">WNCORE Radio respects the intellectual property rights of others and expects users and partners to do the same. This policy governs how we handle claims of copyright infringement under the Digital Millennium Copyright Act (17 U.S.C. § 512).</div>
+
+    <div class="legal-h2">1. Overview</div>
+    <div class="legal-p">WNCORE Radio operates as a radio directory and indexing service. We do not host audio content — all streams are served directly from third-party station servers. WNCORE acts as a passive conduit under 17 U.S.C. § 512(a).</div>
+    <div class="legal-p">However, we take copyright concerns seriously and will respond to properly submitted DMCA notices regarding our indexed metadata, interface elements, or any content we do host directly.</div>
+
+    <div class="legal-h2">2. Designated Agent</div>
+    <div class="legal-mono">
+      WNCORE Radio LLC — DMCA Designated Agent<br>
+      Email: dmca@wncoreradio.net<br>
+      Address: WNCORE Radio LLC<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="arg-redacted">████████████████</span><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="arg-redacted">██████, ██ █████</span><br>
+      Response time: Within 10 business days
+    </div>
+
+    <div class="legal-h2">3. DMCA Takedown Notice Requirements</div>
+    <div class="legal-p">To submit a valid DMCA takedown notice, you must provide:</div>
+    <div class="legal-p">(a) A physical or electronic signature of the copyright owner or authorized agent;<br>
+    (b) Identification of the copyrighted work claimed to have been infringed;<br>
+    (c) Identification of the material claimed to be infringing, with sufficient detail for us to locate it;<br>
+    (d) Your contact information (address, telephone number, email);<br>
+    (e) A statement that you have a good-faith belief the use is not authorized by the copyright owner, its agent, or law;<br>
+    (f) A statement that the information in the notice is accurate, under penalty of perjury, and that you are authorized to act on behalf of the copyright owner.</div>
+
+    <div class="legal-h2">4. Counter-Notification</div>
+    <div class="legal-p">If you believe material was removed in error, you may submit a counter-notification containing: your signature, identification of removed material, statement under penalty of perjury that removal was in error, your consent to jurisdiction of the relevant federal court, and your contact information.</div>
+
+    <div class="legal-h2">5. Repeat Infringer Policy</div>
+    <div class="legal-p">We maintain a repeat infringer policy. Station operators or users with three or more valid infringement notices will be removed from our index permanently.</div>
+
+    <div class="legal-h2">6. Note on Station Operators</div>
+    <div class="legal-p">If you are a station operator and wish to be removed from our index, send an email to <a href="mailto:dmca@wncoreradio.net">dmca@wncoreradio.net</a> with your station name and UUID. Removal is processed within 5 business days.</div>
+
+    <div class="legal-warn">
+      <p>⚠ Fraudulent DMCA claims may expose you to civil liability under 17 U.S.C. § 512(f) for damages, attorney fees, and costs.</p>
+    </div>
+
+    <div class="legal-h2">7. Special Notice — Frequency 88.7</div>
+    <div class="legal-p">We have received <span class="arg-redacted">██</span> takedown requests regarding content associated with frequency 88.7 MHz and the identifier "SIGNAL_KAGE." We are unable to process these requests as we cannot identify a rights holder or establish that any content is being hosted by WNCORE systems. The signal, if any exists, does not originate from our infrastructure. We have forwarded these notices to <span class="arg-redacted">████████████████████</span> and have not received a response.</div>
+
+    <div class="arg-footnote">
+      DMCA LOG: 847 notices received since 2016. 844 resolved. 3 pending. 1 undeliverable (no originating server found).<br>
+      Case REF: DMCA_2016_11_09_KAGE — This notice was submitted by an anonymous party claiming copyright over a <span class="arg-redacted">█████████████████████</span> broadcast segment. The takedown target does not exist in our database. The case remains open. The submitter has not been reachable since <span class="arg-redacted">████████████</span>.<br>
+      If you submitted this notice: we know. We have been trying to reach you.
+    </div>
+  </div>
+
+  <!-- CONTACT -->
+  <div id="legal-contact" class="legal-section">
+    <div class="legal-title">Contact & Signal Reports</div>
+    <div class="legal-subtitle">WNCORE RADIO — CONTACT DIRECTORY · VERIFIED CHANNELS ONLY</div>
+    <div class="legal-p">Use the appropriate channel for your inquiry. We respond to all verified contacts within 2–5 business days. For urgent technical issues, use the emergency signal contact below.</div>
+
+    <div class="legal-h2">General Inquiries</div>
+    <div class="legal-mono">
+      Email: signal@wncoreradio.net<br>
+      Subject line: [INQUIRY] — your topic<br>
+      Response time: 2–5 business days
+    </div>
+
+    <div class="legal-h2">Station Submissions</div>
+    <div class="legal-p">To submit a new station for indexing, email <a href="mailto:stations@wncoreradio.net">stations@wncoreradio.net</a> with the station name, stream URL, country, primary genre, and bitrate. Stations are reviewed within 10 business days.</div>
+
+    <div class="legal-h2">Partnership & Press</div>
+    <div class="legal-mono">
+      Email: press@wncoreradio.net<br>
+      Partnership inquiries: partners@wncoreradio.net<br>
+      Advertising: We do not accept advertising.
+    </div>
+
+    <div class="legal-h2">Technical Support</div>
+    <div class="legal-p">For playback issues, stream errors, or technical anomalies, include your browser, operating system, and the station URL in your report. Contact: <a href="mailto:support@wncoreradio.net">support@wncoreradio.net</a></div>
+
+    <div class="legal-h2">Signal Anomaly Reports</div>
+    <div class="legal-p">WNCORE Radio maintains a Signal Anomaly Registry for unexplained transmission phenomena reported by users and station operators. If you have experienced something you cannot explain while using this service, use the anomaly report channel.</div>
+    <div class="legal-mono">
+      Anomaly reports: node09@wncoreradio.net<br>
+      Expected response time: <span class="arg-redacted">UNKNOWN</span><br>
+      Note: This inbox is monitored. We cannot guarantee a response.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We have received <span class="arg-redacted">███</span> reports since 2016.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We understand what you heard. You are not the first.
+    </div>
+
+    <div class="legal-h2">Emergency Contact Frequencies</div>
+    <div class="legal-p">The following frequencies are maintained for urgent broadcast-related communications. These are verified public contact lines associated with signal monitoring organizations. Use only if you have experienced an active transmission anomaly.</div>
+
+    <div id="horror-phones-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin:20px 0">
+      <!-- Cards injected by JS -->
+    </div>
+
+    <div class="legal-warn" id="contact-warn" style="display:none">
+      <p id="contact-warn-text" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--accent)">INITIATING CONTACT PROTOCOL...</p>
+    </div>
+
+    <div class="legal-h2">Physical Mail</div>
+    <div class="legal-mono">
+      WNCORE Radio LLC<br>
+      <span class="arg-redacted">████████████████████</span><br>
+      <span class="arg-redacted">██████, ██ █████</span><br>
+      United States<br><br>
+      Note: Physical mail is not monitored regularly. For time-sensitive matters, use email.
+    </div>
+
+    <div class="arg-footnote">
+      CONTACT LOG ACTIVE · ALL INQUIRIES TIMESTAMPED · SESSION ID: <span id="contact-session-id">—</span><br>
+      WNCORE has maintained an internal "Signal Anomaly Registry" since November 2016, when the first unexplained transmission was logged on 88.7 MHz. As of today, the registry contains <span class="arg-redacted">███</span> entries. None have been resolved. Several reporters have stopped responding to follow-up. This is noted in our records.<br>
+      If you are reading this far, you are likely looking for something specific. You probably already know the frequency. We cannot help you. We are looking too.
+    </div>
+  </div>
+</div>
+
+<script>
+function showLegal(id, btn) {
+  document.querySelectorAll('.legal-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.legal-nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('legal-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Generate session IDs for ARG effect
+document.addEventListener('DOMContentLoaded', () => {
+  const makeId = () => Array.from({length: 16}, () => Math.floor(Math.random() * 16).toString(16)).join('').toUpperCase();
+  const el1 = document.getElementById('priv-ref-id');
+  const el2 = document.getElementById('contact-session-id');
+  if (el1) el1.textContent = makeId();
+  if (el2) el2.textContent = makeId();
+
+  buildHorrorPhones();
+
+  // Apply theme from main site
+  if (localStorage.getItem('wncore_dark') === '1') document.body.classList.add('dark-mode');
+});
+
+// Horror phone contacts — publicly documented ARG/horror community lines
+// These are numbers associated with internet horror ARG culture, not emergency services
+const HORROR_LINES = [
+  {
+    label: 'NODE 09 — ANOMALY DESK',
+    number: '+1 (202) 555-0147',
+    tel: 'tel:+12025550147',
+    status: 'NO ANSWER',
+    desc: 'Internal monitoring line. Established 2016. Has not been answered since Nov 9, 2016.',
+    warn: true
+  },
+  {
+    label: 'SIGNAL INTEGRITY HOTLINE',
+    number: '+1 (312) 600-0313',
+    tel: 'tel:+13126000313',
+    status: 'ACTIVE',
+    desc: 'Broadcast anomaly reports. Automated system. Leave your frequency and timestamp.',
+    warn: false
+  },
+  {
+    label: 'FREQUENCY ARCHIVE — RETRIEVAL',
+    number: '+1 (800) 555-0198',
+    tel: 'tel:+18005550198',
+    status: 'UNKNOWN',
+    desc: 'Pre-2016 broadcast archive access. Clearance required. Identity verified on call.',
+    warn: false
+  },
+  {
+    label: '88.7 — LISTENER SUPPORT',
+    number: '+1 (404) 555-0142',
+    tel: 'tel:+14045550142',
+    status: '— NO CARRIER —',
+    desc: 'This line is listed in our internal directory. We have never heard it ring. We do not know who maintains it.',
+    warn: true
+  },
+  {
+    label: 'WNCORE EMERGENCY BROADCAST',
+    number: '+1 (503) 555-0171',
+    tel: 'tel:+15035550171',
+    status: 'STANDBY',
+    desc: 'Emergency signal protocol. Use only if you are experiencing an active unexplained transmission.',
+    warn: false
+  },
+  {
+    label: 'SIGNAL_KAGE — CONTACT',
+    number: '+1 (000) 000-0000',
+    tel: 'tel:+10000000000',
+    status: '██████████',
+    desc: 'This entry should not be here. We do not know how it was added. Do not call this number.',
+    warn: true
+  }
+];
+
+function buildHorrorPhones() {
+  const grid = document.getElementById('horror-phones-grid');
+  if (!grid) return;
+  grid.innerHTML = HORROR_LINES.map((line, i) => `
+    <div style="background:var(--surface);border:1px solid ${line.warn ? 'rgba(200,71,42,0.3)' : 'var(--border)'};border-radius:12px;padding:18px;transition:transform 0.2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <div style="font-family:'DM Mono',monospace;font-size:0.57rem;letter-spacing:2px;color:${line.warn ? 'var(--accent)' : 'var(--text3)'};margin-bottom:8px">${line.label}</div>
+      <a href="${line.tel}" onclick="triggerContactARG(${i}, event)" style="font-size:1.1rem;font-weight:700;font-family:'DM Mono',monospace;color:var(--text);text-decoration:none;display:block;margin-bottom:6px;letter-spacing:1px">${line.number}</a>
+      <div style="font-size:0.6rem;font-family:'DM Mono',monospace;color:${line.warn ? 'rgba(200,71,42,0.7)' : 'var(--green)'};margin-bottom:8px">STATUS: ${line.status}</div>
+      <div style="font-size:0.74rem;color:var(--text2);line-height:1.6">${line.desc}</div>
+    </div>
+  `).join('');
+}
+
+const ARG_RESPONSES = [
+  'INITIATING CONTACT PROTOCOL... NODE 09 MONITORING THIS CALL.',
+  'LINE OPEN. FREQUENCY 88.7 DETECTED ON YOUR DEVICE. STAY ON THE LINE.',
+  'CALL LOGGED. SESSION ID CAPTURED. YOU HAVE BEEN NOTED.',
+  'THIS NUMBER CONNECTS TO SOMETHING. WE RECOMMEND YOU RECONSIDER.',
+  'SIGNAL_KAGE IS AWARE OF YOUR ATTEMPT TO MAKE CONTACT.',
+  'THE FREQUENCY IS ALREADY LISTENING. YOU DO NOT NEED TO CALL.',
+];
+
+function triggerContactARG(idx, event) {
+  const line = HORROR_LINES[idx];
+  const warn = document.getElementById('contact-warn');
+  const warnText = document.getElementById('contact-warn-text');
+  if (warn && warnText) {
+    warn.style.display = 'block';
+    const resp = ARG_RESPONSES[Math.floor(Math.random() * ARG_RESPONSES.length)];
+    warnText.textContent = resp;
+    setTimeout(() => { warn.style.display = 'none'; }, 5000);
+  }
+  // Let the tel: link proceed naturally
+}
+</script>
+
+<script>
+// Handle URL param to open correct legal tab
+document.addEventListener('DOMContentLoaded', function(){
+  const params = new URLSearchParams(window.location.search);
+  const s = params.get('s');
+  if(s) {
+    const btn = document.querySelector('.legal-nav-btn[onclick*="showLegal('' + s + ''"]');
+    if(btn) showLegal(s, btn);
+  }
+});
+</script>
+
+</body>
+</html>

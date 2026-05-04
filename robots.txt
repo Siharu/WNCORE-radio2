@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /images/6
+
+Sitemap: https://wncoreradio.net/sitemap.xml

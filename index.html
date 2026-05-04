@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: https://ogp.me/ns#">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- PRIMARY SEO -->
+<title>WNCORE Radio — Free Live Radio Streaming | 12,000+ Global Stations</title>
+<meta name="description" content="Stream live radio free from 12,000+ stations worldwide. Jazz, classical, hip-hop, anime, news, rock and more. WNCORE Radio — broadcasting since 2016. No signup required.">
+<meta name="keywords" content="radio, free radio, live radio, internet radio, online radio, stream radio, radio stations, jazz radio, classical radio, hip hop radio, anime radio, news radio, global radio, worldwide radio, WNCORE, listen live, radio streaming, free music streaming, internet radio stations">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="theme-color" content="#f5f3ef">
+<link rel="canonical" href="https://wncoreradio.net/">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+<!-- OPEN GRAPH -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wncoreradio.net/">
+<meta property="og:title" content="WNCORE Radio — Free Live Radio from 310 Countries">
+<meta property="og:description" content="Stream 12,000+ verified radio stations worldwide. Jazz, classical, hip-hop, anime, news and more. Free. No signup. Est. 2016.">
+<meta property="og:site_name" content="WNCORE Radio">
+<meta property="og:locale" content="en_US">
+
+<!-- TWITTER CARD -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@wncoreradio">
+<meta name="twitter:title" content="WNCORE Radio — Stream Live Radio Worldwide">
+<meta name="twitter:description" content="12,000+ global radio stations. Free live streaming. Jazz, rock, anime, news and more.">
+
+<!-- STRUCTURED DATA (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "WNCORE Radio",
+  "url": "https://wncoreradio.net/",
+  "description": "Free live radio streaming. 12,000+ stations worldwide. Jazz, classical, hip-hop, anime, news and more.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://wncoreradio.net/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RadioStation",
+  "name": "WNCORE Radio",
+  "url": "https://wncoreradio.net/",
+  "description": "Global broadcast radio network. 12,000+ stations. Est. 2016.",
+  "foundingDate": "2016",
+  "numberOfEmployees": {"@type": "QuantitativeValue", "value": 1},
+  "genre": ["Jazz", "Classical", "Hip-Hop", "Rock", "Anime", "News", "Electronic", "Ambient"]
+}
+</script>
+
+<script src="https://unpkg.com/globe.gl"></script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+
+<div class="grain-overlay"></div>
+<audio id="audio" preload="none" crossorigin="anonymous"></audio>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#" onclick="showPage('home',null);return false">
+      <span class="logo-mark">WNCORE</span>
+      <span class="logo-freq">EST. 2016</span>
+    </a>
+    <nav id="main-nav">
+      <a href="#" class="active" onclick="showPage('home',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        Global Array
+      </a>
+      <a href="#" onclick="showPage('charts',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Top Charts
+      </a>
+      <a href="#" onclick="showPage('genres',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Genres
+      </a>
+      <a href="#" onclick="showPage('anime',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Anime / J-Music
+      </a>
+      <a href="#" onclick="showPage('podcasts',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Podcasts
+      </a>
+      <a href="#" onclick="showPage('livemusic',this);return false" class="nav-livemusic-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+        Live Music
+        <span class="nav-live-pip"></span>
+      </a>
+      <a href="#" onclick="showPage('about',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        About
+      </a>
+    </nav>
+    <div class="header-right">
+      <div class="live-dot" id="live-count">12,841 live</div>
+      <button class="minimal-btn" id="minimal-toggle" onclick="toggleMinimal()" title="Minimal mode">MIN</button>
+      <button class="search-btn" onclick="openSearch()" title="Search (Ctrl+K)" aria-label="Search stations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="theme-toggle" onclick="toggleDark()" title="Toggle theme" role="button" aria-label="Toggle dark mode">
+        <div class="theme-toggle-track">
+          <div class="theme-toggle-thumb" id="theme-toggle-thumb">
+            <svg class="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/>
+              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+            </svg>
+          </div>
+        </div>
+        <div class="theme-toggle-labels">
+          <span class="tl-light">LIGHT</span>
+          <span class="tl-dark">DARK</span>
+        </div>
+      </div>
+      <button class="sign-in-btn" onclick="openSignIn()">Sign In</button>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+  <a href="#" onclick="showPage('home',this);toggleMobileMenu();return false" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/></svg>
+    Global Array
+  </a>
+  <a href="#" onclick="showPage('charts',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Top Charts
+  </a>
+  <a href="#" onclick="showPage('genres',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    Genres
+  </a>
+  <a href="#" onclick="showPage('anime',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Anime / J-Music
+  </a>
+  <a href="#" onclick="showPage('podcasts',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+    Podcasts
+  </a>
+  <a href="#" onclick="showPage('livemusic',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
+    Live Music
+  </a>
+  <a href="#" onclick="showPage('favorites',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    Favourites
+  </a>
+  <a href="#" onclick="showPage('about',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+    About
+  </a>
+  <div class="mobile-nav-divider"></div>
+  <div class="mobile-nav-actions">
+    <div style="display:flex;gap:10px">
+      <button onclick="toggleDark();return false" class="mobile-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+        Dark Mode
+      </button>
+      <button onclick="toggleMinimal();return false" class="mobile-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Minimal
+      </button>
+    </div>
+    <button onclick="openSignIn();toggleMobileMenu();return false" class="modal-btn" style="margin:0">Sign In</button>
+  </div>
+</nav>
+
+<!-- ══════════════ HOME PAGE ══════════════ -->
+<div id="page-home" class="page active">
+
+<div class="ticker-wrap" aria-label="Live broadcast ticker">
+  <div class="ticker-label">LIVE</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="ticker-inner">
+      <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
+      <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
+      <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
+      <span class="t-sep">·</span><span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
+      <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
+      <span class="t-sep">·</span><span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
+      <span class="t-sep">·</span><span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
+      <span class="t-sep">·</span><span>ACTIVE LISTENERS: 291,447</span>
+      <span class="t-sep">·</span><span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
+      <span class="t-sep">·</span>
+      <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
+      <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
+      <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
+      <span class="t-sep">·</span><span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
+      <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
+      <span class="t-sep">·</span><span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
+      <span class="t-sep">·</span><span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
+      <span class="t-sep">·</span><span>ACTIVE LISTENERS: 291,447</span>
+      <span class="t-sep">·</span><span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
+      <span class="t-sep">·</span>
+    </div>
+  </div>
+</div>
+
+<div class="globe-section" aria-label="Interactive world radio globe">
+  <!-- Ambient video background for globe section (8s Veo loops) -->
+  <video class="globe-ambient-video" id="globe-ambient-video"
+    autoplay muted loop playsinline
+    style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.18;pointer-events:none;z-index:0;"
+    aria-hidden="true">
+    <!-- Add your Veo globe ambient video:
+      <source src="videos/globe-ambient.mp4" type="video/mp4">
+    -->
+  </video>
+  <div class="globe-overlay-left">
+    <div class="globe-kicker">WNCORE GLOBAL ARRAY</div>
+    <div class="globe-title">Your world,<br><em>on air.</em></div>
+    <div class="globe-sub">Stream live radio from every corner of the planet. Hand-verified stations, curated genres, and twelve years of signal history.</div>
+    <div class="globe-stats">
+      <div class="globe-stat"><span class="globe-stat-num">12K+</span><span class="globe-stat-lbl">Stations</span></div>
+      <div class="globe-stat"><span class="globe-stat-num">310</span><span class="globe-stat-lbl">Countries</span></div>
+      <div class="globe-stat"><span class="globe-stat-num" id="listener-count">291K</span><span class="globe-stat-lbl">Listening now</span></div>
+    </div>
+  </div>
+  <div id="globe-container"></div>
+  <div class="globe-hint minimal-hidden">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
+</div>
+
+<div class="genre-strip-wrap">
+  <div class="genre-strip" id="genre-strip" role="listbox" aria-label="Filter by genre"></div>
+</div>
+
+<div class="page-wrap">
+  <div class="main-col">
+
+    <div class="section-hd">
+      <div class="section-title">Featured Stations</div>
+      <a class="section-more" href="#" onclick="showPage('charts',null);return false">See all →</a>
+    </div>
+    <div class="featured-row" id="featured-row">
+      <article class="featured-card" onclick="playFeatured(0)" role="button" aria-label="Play Radio Paradise">
+        <div class="fc-listeners">4,211 listening</div>
+        <div class="fc-flag">
+          <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" width="28" height="18"><rect width="36" height="24" fill="#B22234"/><rect y="2.18" width="36" height="2.18" fill="#fff"/><rect y="6.55" width="36" height="2.18" fill="#fff"/><rect y="10.91" width="36" height="2.18" fill="#fff"/><rect y="15.27" width="36" height="2.18" fill="#fff"/><rect y="19.64" width="36" height="2.18" fill="#fff"/><rect width="14.4" height="13.09" fill="#3C3B6E"/></svg>
+        </div>
+        <div class="fc-name">Radio Paradise</div>
+        <div class="fc-meta">Rock / Eclectic · California, US · 320kbps</div>
+        <div class="fc-now">"Running on Empty" — Jackson Browne</div>
+        <div class="fc-playing-badge" id="fp-badge-0">
+          <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+          Live
+        </div>
+      </article>
+      <article class="featured-card" onclick="playFeatured(1)" role="button" aria-label="Play BBC World Service">
+        <div class="fc-listeners">8,832 listening</div>
+        <div class="fc-flag">
+          <svg viewBox="0 0 60 36" xmlns="http://www.w3.org/2000/svg" width="28" height="18"><rect width="60" height="36" fill="#012169"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V36 M0,18 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V36 M0,18 H60" stroke="#C8102E" stroke-width="6"/></svg>
+        </div>
+        <div class="fc-name">BBC World Service</div>
+        <div class="fc-meta">News / Talk · London, UK · 128kbps</div>
+        <div class="fc-now">Global News Hour — Live broadcast</div>
+        <div class="fc-playing-badge" id="fp-badge-1">
+          <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+          Live
+        </div>
+      </article>
+      <article class="featured-card featured-card--arg" onclick="playFeatured(2)" role="button" aria-label="88.7 FM — unknown signal">
+        <div class="fc-listeners fc-listeners--warn">NO SIGNAL</div>
+        <div class="fc-flag">
+          <!-- Animated SVG radio signal icon instead of emoji -->
+          <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="3" fill="#c8472a"/>
+            <path d="M10 22c-3.3-3.3-3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
+            <path d="M22 22c3.3-3.3 3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
+            <path d="M6 26c-5.5-5.5-5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
+            <path d="M26 26c5.5-5.5 5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
+          </svg>
+        </div>
+        <div class="fc-name fc-name--warn">88.7 FM — ██████████</div>
+        <div class="fc-meta fc-meta--warn">UNKNOWN · Location redacted · ——kbps</div>
+        <div class="fc-now fc-now--warn">Last transmission: [DATA EXPUNGED]</div>
+        <div class="fc-playing-badge" id="fp-badge-2">
+          <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+          Live
+        </div>
+      </article>
+    </div>
+
+    <div class="section-hd">
+      <div class="section-title">Top Charts</div>
+      <a class="section-more" href="#" onclick="showPage('charts',null);return false">View full chart →</a>
+    </div>
+    <table class="station-table" id="station-table" aria-label="Top radio stations">
+      <tbody id="station-tbody"><tr class="skeleton-row"><td colspan="6" class="loading-row">Scanning frequencies…</td></tr>
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Establishing connection...</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-hd">
+      <div class="section-title">Recommended</div>
+    </div>
+    <div class="rec-grid" id="rec-grid">
+      <div class="rec-card" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient · Chill')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#1a2a1a,#2a4a2a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/><path d="M10.49 22.67c-3.72 4.35-8.94 5.66-16.88 5.85"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">SomaFM Groove Salad</div><div class="rec-desc">Ambient · Chill</div></div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://ice1.somafm.com/lush-128-mp3','SomaFM Lush','Pop · Indie · Female vocals')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#2a1a2a,#4a1a3a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">SomaFM Lush</div><div class="rec-desc">Pop · Indie · Female vocals</div></div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://listen.181fm.com/181-jazz_128k.mp3','181.fm Jazz','Jazz · Smooth')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#1a1a2a,#2a2a4a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">181.fm Jazz</div><div class="rec-desc">Jazz · Smooth</div></div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://stream.soma.fm/defcon128.mp3','SomaFM DEF CON Radio','Electronic · Hacker')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#1a0a0a,#3a1a1a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(200,71,42,0.8)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">SomaFM DEF CON</div><div class="rec-desc">Electronic · Hacker radio</div></div>
+      </div>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <aside class="sidebar">
+    <!-- NOW PLAYING -->
+    <div class="sidebar-card">
+      <div class="sb-label">Now Playing</div>
+      <div class="np-art">
+        <div class="np-art-icon" id="np-art-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" width="40" height="40"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
+        </div>
+        <div class="np-wave">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="np-name" id="np-name">Network Standby</div>
+      <div class="np-meta" id="np-meta">Select a station to begin</div>
+      <div class="np-track" id="np-track">— no signal —</div>
+      <div class="np-progress"><div class="np-progress-fill" id="np-fill"></div></div>
+      <div class="np-controls">
+        <button class="np-ctrl-btn" onclick="toggleFavorite(this)" title="Save station" aria-label="Save station">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </button>
+        <button class="np-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path id="np-play-icon" d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="np-ctrl-btn" onclick="toggleSleepTimer(this)" title="Sleep timer" aria-label="Sleep timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- TRENDING -->
+    <div class="sidebar-card">
+      <div class="sb-label">Trending Now</div>
+      <div id="trending-list">
+        <div class="trending-item" onclick="playRec('https://stream.radioparadise.com/aac-320','Radio Paradise','Rock / Eclectic')">
+          <div class="tr-rank">1</div>
+          <div class="tr-flag">
+            <svg viewBox="0 0 20 12" width="20" height="12"><rect width="20" height="12" fill="#B22234"/><rect y="1.09" width="20" height="1.09" fill="#fff"/><rect y="3.27" width="20" height="1.09" fill="#fff"/><rect y="5.45" width="20" height="1.09" fill="#fff"/><rect y="7.64" width="20" height="1.09" fill="#fff"/><rect y="9.82" width="20" height="1.09" fill="#fff"/><rect width="8" height="6.55" fill="#3C3B6E"/></svg>
+          </div>
+          <div class="tr-info"><div class="tr-name">Radio Paradise</div><div class="tr-meta">Rock · Eclectic</div></div>
+          <div class="tr-listeners">4.2K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://stream.bbc.co.uk/bbc_world_service','BBC World Service','News')">
+          <div class="tr-rank">2</div>
+          <div class="tr-flag">
+            <svg viewBox="0 0 20 12" width="20" height="12"><rect width="20" height="12" fill="#012169"/><path d="M0,0 L20,12 M20,0 L0,12" stroke="#fff" stroke-width="2.5"/><path d="M0,0 L20,12 M20,0 L0,12" stroke="#C8102E" stroke-width="1.5"/><path d="M10,0 V12 M0,6 H20" stroke="#fff" stroke-width="3.5"/><path d="M10,0 V12 M0,6 H20" stroke="#C8102E" stroke-width="2"/></svg>
+          </div>
+          <div class="tr-info"><div class="tr-name">BBC World Service</div><div class="tr-meta">News · Talk</div></div>
+          <div class="tr-listeners">8.8K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient')">
+          <div class="tr-rank">3</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">SomaFM Groove Salad</div><div class="tr-meta">Ambient · Chill</div></div>
+          <div class="tr-listeners">3.1K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://ice1.somafm.com/lush-128-mp3','SomaFM Lush','Pop / Indie')">
+          <div class="tr-rank">4</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">SomaFM Lush</div><div class="tr-meta">Pop · Indie · Female vocals</div></div>
+          <div class="tr-listeners">2.7K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://listen.181fm.com/181-jazz_128k.mp3','181.fm Jazz','Jazz')">
+          <div class="tr-rank">5</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">181.fm Jazz</div><div class="tr-meta">Jazz · Smooth</div></div>
+          <div class="tr-listeners">1.9K</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARG CARD -->
+    <div class="arg-card minimal-hidden" id="arg-card">
+      <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
+      <div class="arg-freq">88.7</div>
+      <div class="arg-status" id="arg-status">
+        freq &nbsp;&nbsp;: 88.700 mhz<br>
+        src &nbsp;&nbsp;&nbsp;: <span class="redacted">SIGNAL_KAGE</span><br>
+        loc &nbsp;&nbsp;&nbsp;: <span class="redacted">██████████</span><br>
+        status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
+        last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
+      </div>
+      <div class="arg-broken-bar">NO SIGNAL</div>
+    </div>
+  </aside>
+</div>
+
+<!-- SIGNAL CONNECTION BOX — bottom of home page -->
+<div id="signal-conn-container" style="max-width:1440px;margin:0 auto;padding:0 24px 12px">
+  <div class="signal-conn-box" id="signal-conn-box">
+    <div class="signal-conn-dot"></div>
+    <span class="signal-conn-label">88.7</span>
+    <span style="color:var(--text3);font-size:0.6rem">FM</span>
+    <span style="color:var(--text3);font-size:0.58rem;margin:0 6px">·</span>
+    <span style="font-size:0.65rem;color:var(--text2)">SIGNAL_KAGE</span>
+    <span class="signal-conn-status" id="signal-conn-status">NO CARRIER — WAITING FOR CONNECTION</span>
+    <span style="font-size:0.55rem;color:rgba(200,71,42,0.3);margin-left:6px;font-family:'DM Mono',monospace" id="signal-conn-ts">——</span>
+  </div>
+</div>
+</div><!-- /page-home -->
+
+<!-- ══════════════ CHARTS PAGE ══════════════ -->
+<div id="page-charts" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Top Charts</div>
+      <div style="font-size:0.8rem;color:var(--text3);">The most-listened stations on WNCORE right now, updated every hour.</div>
+    </div>
+    <table class="station-table" style="margin-bottom:0;" aria-label="Top 50 radio stations">
+      <tbody id="charts-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ GENRES PAGE ══════════════ -->
+<div id="page-genres" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Browse by Genre</div>
+      <div style="font-size:0.8rem;color:var(--text3);">Every kind of sound, live from around the world.</div>
+    </div>
+    <div id="genre-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ANIME PAGE ══════════════ -->
+<div id="page-anime" class="page">
+  <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
+    <div class="anime-banner" id="anime-banner">
+      <!-- Ambient video background (Veo 8s loops — muted autoplay) -->
+      <video class="anime-banner-video" id="anime-banner-video"
+        autoplay muted loop playsinline
+        poster=""
+        style="display:none"
+        aria-hidden="true">
+        <!-- Add your Veo-generated video sources here:
+          <source src="videos/anime-loop-1.mp4" type="video/mp4">
+        -->
+      </video>
+      <img class="anime-banner-img" id="anime-banner-img" src="" alt="Anime / J-Music banner" onerror="this.style.display='none'" loading="lazy">
+      <div class="anime-banner-overlay"></div>
+      <div class="anime-now-playing" id="anime-now-playing-badge" style="display:none">Live</div>
+      <div class="anime-banner-content">
+        <div class="anime-banner-kicker">WNCORE · J-MUSIC CHANNEL</div>
+        <div class="anime-banner-title">アニメ &amp; J-Music</div>
+        <div class="anime-banner-sub">Live anime music, J-Pop, city pop, lo-fi beats and direct Japanese broadcasts</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:28px;">
+      <div class="section-hd">
+        <div class="section-title" style="font-family:'Playfair Display',serif;">Station Artwork</div>
+        <a class="section-more" href="#" onclick="refreshAnimeImages();return false">Refresh ↺</a>
+      </div>
+      <div class="anime-img-strip" id="anime-img-strip"></div>
+    </div>
+
+    <div class="section-hd">
+      <div class="section-title" style="font-family:'Playfair Display',serif;">Featured J-Music Stations</div>
+    </div>
+    <div class="anime-stations-grid" id="anime-stations-grid"></div>
+
+    <div class="section-hd" style="margin-top:36px;">
+      <div class="section-title" style="font-family:'Playfair Display',serif;">Live J-Pop &amp; Anime Radio</div>
+      <a class="section-more" href="#" onclick="loadAnimeStationsLive();return false">Refresh live →</a>
+    </div>
+    <table class="station-table" style="margin-bottom:0;" aria-label="Live anime radio stations">
+      <tbody id="anime-live-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ PODCASTS PAGE ══════════════ -->
+<div id="page-podcasts" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Podcasts &amp; Talk Radio</div>
+      <div style="font-size:0.8rem;color:var(--text3);">Curated talk radio and podcast streams from WNCORE's verified global network.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;" id="podcast-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ABOUT PAGE ══════════════ -->
+
+<!-- ══════════════ LIVE MUSIC PAGE ══════════════ -->
+<div id="page-livemusic" class="page">
+  <div class="lm-wrap">
+    <div class="lm-hero">
+      <div class="lm-hero-bg" id="lm-hero-bg"></div>
+      <div class="lm-hero-content">
+        <div class="lm-hero-kicker">WNCORE · LIVE MUSIC CHANNEL</div>
+        <h1 class="lm-hero-title">Free Music,<br><em>Always Live.</em></h1>
+        <p class="lm-hero-sub">Curated copyright-free streams from open music archives — jazz, classical, ambient, folk, electronic, and more. No trackers. No paywalls. Just signal.</p>
+        <div class="lm-hero-stats">
+          <div class="lm-stat"><span class="lm-stat-n">2,400+</span><span class="lm-stat-l">Tracks available</span></div>
+          <div class="lm-stat"><span class="lm-stat-n">100%</span><span class="lm-stat-l">Royalty-free</span></div>
+          <div class="lm-stat"><span class="lm-stat-n">12</span><span class="lm-stat-l">Live sources</span></div>
+        </div>
+      </div>
+      <div class="lm-waveform-art" aria-hidden="true"><div class="lm-waveform" id="lm-waveform"></div></div>
+    </div>
+    <div class="lm-channel-bar" role="tablist" aria-label="Music channels">
+      <button class="lm-ch-btn active" data-ch="all" onclick="lmSelectChannel(this,'all')">All Channels</button>
+      <button class="lm-ch-btn" data-ch="jazz" onclick="lmSelectChannel(this,'jazz')">Jazz</button>
+      <button class="lm-ch-btn" data-ch="classical" onclick="lmSelectChannel(this,'classical')">Classical</button>
+      <button class="lm-ch-btn" data-ch="ambient" onclick="lmSelectChannel(this,'ambient')">Ambient</button>
+      <button class="lm-ch-btn" data-ch="electronic" onclick="lmSelectChannel(this,'electronic')">Electronic</button>
+      <button class="lm-ch-btn" data-ch="folk" onclick="lmSelectChannel(this,'folk')">Folk &amp; World</button>
+      <button class="lm-ch-btn" data-ch="lofi" onclick="lmSelectChannel(this,'lofi')">Lo-Fi</button>
+      <button class="lm-ch-btn" data-ch="chillout" onclick="lmSelectChannel(this,'chillout')">Chillout</button>
+    </div>
+    <div class="lm-now-playing-card" id="lm-np-card">
+      <div class="lm-np-vinyl" id="lm-np-vinyl"><div class="lm-np-vinyl-inner"></div></div>
+      <div class="lm-np-info">
+        <div class="lm-np-channel-tag" id="lm-np-tag">SELECT A CHANNEL</div>
+        <div class="lm-np-title" id="lm-np-title">Nothing playing</div>
+        <div class="lm-np-source" id="lm-np-source">—</div>
+        <div class="lm-np-license">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="lm-np-license-text">Copyright-free · Royalty-free</span>
+        </div>
+        <div class="lm-np-controls">
+          <button class="lm-ctrl-btn" onclick="lmShuffle()" title="Shuffle channel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+          </button>
+          <button class="lm-ctrl-btn lm-play-btn" id="lm-play-btn" onclick="lmTogglePlay()" aria-label="Play/Pause">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path id="lm-play-icon" d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="lm-ctrl-btn" onclick="lmNext()" title="Next channel">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="lm-section-hd">
+      <div class="lm-section-title">Available Channels</div>
+      <div class="lm-source-badge">Sources: SomaFM &middot; Radio Swiss &middot; Nightwave &middot; WFMU &middot; Radio Paradise &middot; CCMixter</div>
+    </div>
+    <div class="lm-grid" id="lm-grid"></div>
+    <div class="lm-attribution-block">
+      <div class="lm-attr-title">About Our Music Sources</div>
+      <p class="lm-attr-text">All music on the WNCORE Live Music channel is sourced from stations and archives that broadcast under open licenses including Creative Commons, public domain dedications, and royalty-free institutional streams. We do not host any audio files — all streams are pulled directly from their origin servers in real time.</p>
+      <div class="lm-attr-sources">
+        <span class="lm-attr-pill">SomaFM (CC by-nc-nd)</span>
+        <span class="lm-attr-pill">Radio Swiss Jazz (royalty-free)</span>
+        <span class="lm-attr-pill">Radio Swiss Classic (public service)</span>
+        <span class="lm-attr-pill">Nightwave Plaza (royalty-free)</span>
+        <span class="lm-attr-pill">WFMU (open license)</span>
+        <span class="lm-attr-pill">Radio Paradise (non-commercial)</span>
+        <span class="lm-attr-pill">181.fm (ad-supported free)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-about" class="page">
+  <div class="about-glitch-overlay" id="about-glitch-overlay"></div>
+  <div class="about-wrap">
+    <div class="about-title">Maintaining<br>the Signal.</div>
+    <div class="about-rule"></div>
+    <p class="about-text">Founded in 2016 by a small team of systems engineers and radio enthusiasts, WNCORE began as a personal project to aggregate and archive shortwave frequencies across the international broadcast band. Ten years later, we index over 12,000 verified stations across 310 countries.</p>
+    <p class="about-text">We do not run proprietary tracking software. The frequencies provided are pulled directly from the public domain. Our core philosophy is simple: <em style="color:var(--text);font-style:italic;">the signal belongs to everyone.</em></p>
+    <p class="about-text">All station data is sourced from the Radio Browser community database. WNCORE contributes verified station metadata back to the commons on a weekly basis. We have no affiliations with any government, broadcaster, or regulatory body.</p>
+    <p class="about-text" style="color:var(--text3);font-size:0.78rem;font-style:italic;">Note: Some signals in our archive cannot be verified. Node 09 has not responded since 2016. We do not know what is on 88.7.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:4px;">12K+</div><div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.5px;">Stations indexed</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:4px;">310</div><div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.5px;">Countries covered</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:4px;">2016</div><div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.5px;">Year founded</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;">
+      <div style="font-size:0.68rem;font-family:'DM Mono',monospace;letter-spacing:2px;color:var(--text3);margin-bottom:10px;">CONTACT</div>
+      <div style="font-size:0.83rem;color:var(--text2);line-height:1.8;">
+        For station submissions, signal anomaly reports, or partnership inquiries:<br>
+        <a href="mailto:signal@wncoreradio.net" style="color:var(--accent);text-decoration:none;">signal@wncoreradio.net</a>
+      </div>
+      <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
+        <a href="legal.html?s=privacy" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">Privacy Policy</a>
+        <a href="legal.html?s=terms" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">Terms of Use</a>
+        <a href="legal.html?s=dmca" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">DMCA</a>
+        <a href="legal.html?s=api" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">API Access</a>
+        <a href="legal.html?s=contact" style="font-size:0.72rem;color:var(--accent);text-decoration:none;padding:5px 10px;border:1px solid rgba(200,71,42,0.25);border-radius:6px">Signal Reports →</a>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:14px 18px;background:rgba(200,71,42,0.04);border:1px solid rgba(200,71,42,0.15);border-radius:10px;font-family:'DM Mono',monospace;font-size:0.62rem;color:rgba(200,71,42,0.5);line-height:1.9">
+      Node 09 has not responded since 2016. We do not know what is on 88.7 FM.<br>
+      If you have experienced an unexplained transmission, use the signal anomaly channel.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FAVORITES PAGE ══════════════ -->
+<div id="page-favorites" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px 100px">
+    <div style="margin-bottom:28px">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px">Favourites</div>
+      <div style="font-size:0.8rem;color:var(--text3)">Your saved stations. Stored locally on this device.</div>
+    </div>
+    <div id="fav-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text3);font-size:0.85rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="36" height="36" style="opacity:0.3;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        No saved stations yet.<br>
+        <span style="font-size:0.75rem;opacity:0.7">Click the ♡ on any station to save it here.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SEARCH MODAL ══════════════ -->
+<div class="search-modal-backdrop" id="search-modal" onclick="closeSearchOnBackdrop(event)" role="dialog" aria-label="Search stations">
+  <div class="search-box">
+    <div class="search-input-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search-input" type="text" placeholder="Search stations, countries, genres..." autocomplete="off" aria-label="Search">
+      <button class="search-close" onclick="closeSearch()" aria-label="Close search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="search-filters">
+      <button class="search-filter-btn active" onclick="setSearchFilter(this,'all')">All</button>
+      <button class="search-filter-btn" onclick="setSearchFilter(this,'name')">Name</button>
+      <button class="search-filter-btn" onclick="setSearchFilter(this,'country')">Country</button>
+      <button class="search-filter-btn" onclick="setSearchFilter(this,'tag')">Genre</button>
+    </div>
+    <div class="search-results" id="search-results">
+      <div class="search-empty">Start typing to search 12,000+ stations worldwide</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SIGN IN MODAL ══════════════ -->
+<div class="modal-backdrop" id="signin-modal" onclick="closeSignIn(event)" role="dialog" aria-label="Sign in">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSignInBtn()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-title">Sign in to WNCORE</div>
+    <div class="modal-sub">Access saved stations, history, and WNCORE Plus.</div>
+    <input class="modal-input" type="email" placeholder="Email address" id="signin-email" autocomplete="email">
+    <input class="modal-input" type="password" placeholder="Password" id="signin-pass" autocomplete="current-password">
+    <button class="modal-btn" onclick="handleSignIn()">Continue</button>
+    <div class="modal-divider">or continue with</div>
+    <div class="modal-oauth">
+      <button class="oauth-btn google" onclick="oauthGoogle()">
+        <svg viewBox="0 0 24 24" width="17" height="17"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Google
+      </button>
+      <button class="oauth-btn apple" onclick="oauthApple()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Apple
+      </button>
+      <button class="oauth-btn discord" onclick="oauthDiscord()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+        Discord
+      </button>
+    </div>
+    <div class="modal-footer">Don't have an account? <a onclick="handleCreateAccount()">Create one free →</a></div>
+  </div>
+</div>
+
+<!-- ══════════════ PLAYER BAR ══════════════ -->
+<div class="player-bar" role="region" aria-label="Audio player">
+  <div class="pb-station">
+    <div class="pb-art" id="pb-art">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="20" height="20"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
+    </div>
+    <div style="min-width:0">
+      <div class="pb-name" id="pb-name">Network Standby</div>
+      <div class="pb-meta" id="pb-meta">Select a station</div>
+    </div>
+  </div>
+  <div class="pb-center">
+    <div class="pb-controls">
+      <button class="pb-btn" title="Save station" onclick="toggleFavorite(this)" aria-label="Save station">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+      <button class="pb-btn" onclick="skipStation(-1)" aria-label="Previous station">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="pb-play" id="pb-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path id="pb-play-icon" d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="pb-btn" onclick="skipStation(1)" aria-label="Next station">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+      </button>
+      <button class="pb-btn" title="Sleep timer" onclick="toggleSleepTimer(this)" aria-label="Sleep timer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      </button>
+    </div>
+    <div class="pb-progress">
+      <span class="pb-time">LIVE</span>
+      <div class="pb-bar"><div class="pb-bar-fill" id="pb-fill"></div></div>
+      <div class="pb-eq" id="pb-eq"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+  <div class="pb-right">
+    <div class="pb-vol">
+      <span class="pb-vol-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+      </span>
+      <input type="range" class="pb-vol-slider" min="0" max="1" step="0.01" value="0.8" id="vol-slider" aria-label="Volume">
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ HORROR OVERLAYS ══════════════ -->
+<div id="horror-overlay" role="dialog" aria-modal="true">
+  <div class="horror-terminal" id="horror-terminal"></div>
+</div>
+
+<div id="data-corrupt-overlay" role="dialog" aria-modal="true">
+  <div class="corrupt-scanlines"></div>
+  <div class="corrupt-flicker"></div>
+  <div class="corrupt-header">WNCORE SIGNAL INTEGRITY MONITOR</div>
+  <div class="corrupt-terminal-box">
+    <div class="corrupt-title-bar">
+      <div class="corrupt-dot" style="background:#ff5f57"></div>
+      <div class="corrupt-dot" style="background:#febc2e"></div>
+      <div class="corrupt-dot" style="background:#28c840"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:rgba(255,255,255,0.3);margin-left:8px">data_recovery.exe</span>
+    </div>
+    <div class="corrupt-terminal-text" id="corrupt-terminal-text"></div>
+  </div>
+</div>
+
+<div id="email-horror-overlay" role="dialog" aria-modal="true">
+  <div class="email-horror-scanlines"></div>
+  <div class="email-terminal">
+    <div class="email-terminal-bar">
+      <div class="email-terminal-bar-dot" style="background:#ff5f57"></div>
+      <div class="email-terminal-bar-dot" style="background:#febc2e"></div>
+      <div class="email-terminal-bar-dot" style="background:#28c840"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:#1a5c1a;margin-left:8px">wncore_auth -- encrypted channel</span>
+    </div>
+    <div class="email-terminal-text" id="email-terminal-text"></div>
+  </div>
+</div>
+
+<div id="arg-eye-system" role="dialog" aria-modal="true" aria-label="Signal detected">
+  <div class="white-flash" id="white-flash"></div>
+  <div class="eye-wrapper">
+    <div class="eye-ambient"></div>
+    <img src="images/eye-base.png" id="eye-base-img" alt="" loading="lazy">
+    <img src="images/pupil.png" id="eye-pupil-img" alt="" loading="lazy">
+    <div class="spooky-text" id="spooky-text">I see you.</div>
+  </div>
+  <button id="exit-btn-custom">exit</button>
+</div>
+
+<script src="main.js" defer></script>
+<script src="improvements.js" defer></script>
+<script src="wrongness.js" defer></script>
+<script src="admin.js" defer></script>
+
+<script>
+// Signal connection box clock + ARG flicker
+(function(){
+  function updateSignalTs(){
+    const el = document.getElementById('signal-conn-ts');
+    if(!el) return;
+    const n = new Date();
+    const h = String(n.getUTCHours()).padStart(2,'0');
+    const m = String(n.getUTCMinutes()).padStart(2,'0');
+    const s = String(n.getUTCSeconds()).padStart(2,'0');
+    el.textContent = h+':'+m+':'+s+' UTC';
+  }
+  updateSignalTs();
+  setInterval(updateSignalTs, 1000);
+
+  // Occasional ARG flicker on signal status text
+  const FLICKERS = [
+    'CARRIER DETECTED — STAND BY',
+    'SIGNAL STRENGTH: UNKNOWN',
+    'SOURCE: SIGNAL_KAGE',
+    'NO CARRIER — WAITING FOR CONNECTION',
+    'FREQUENCY LOCKED — 88.700 MHz',
+    '— NO SIGNAL —',
+  ];
+  setInterval(function(){
+    const el = document.getElementById('signal-conn-status');
+    if(!el || Math.random() > 0.25) return;
+    const orig = el.textContent;
+    el.textContent = FLICKERS[Math.floor(Math.random()*FLICKERS.length)];
+    el.style.color = 'rgba(200,71,42,0.8)';
+    setTimeout(function(){ el.textContent = 'NO CARRIER — WAITING FOR CONNECTION'; el.style.color = ''; }, 420);
+  }, 8000);
+})();
+</script>
+
+</body>
+</html>
