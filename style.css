@@ -434,6 +434,16 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 }
 .about-glitch-overlay.active{opacity:1}
 
+/* ── ABOUT PAGE EYES ── */
+#about-eyes-container{
+  animation:aboutEyesAppear 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  filter:drop-shadow(0 0 20px rgba(200,71,42,0.3));
+}
+@keyframes aboutEyesAppear{
+  0%{opacity:0;transform:scale(0.3)}
+  100%{opacity:1;transform:scale(1)}
+}
+
 /* ── HORROR LAYERS ── */
 #horror-overlay{display:none;position:fixed;inset:0;z-index:9998;background:#000;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at center,rgba(200,0,40,0.08) 0%,#000 70%)}
 #horror-overlay.show{display:flex;animation:overlayFlashIn 0.8s cubic-bezier(0.34,1.56,0.64,1)}
