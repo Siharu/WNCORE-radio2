@@ -36,6 +36,118 @@ document.querySelectorAll('img, video').forEach(el => {
   el.ondragstart = () => false;
 });
 
+// ─── ABOUT PAGE EYE TRACKING ──────────────────────────────────────────────
+const aboutEyesContainer = document.getElementById('about-eyes-container');
+const aboutEyePupil = document.getElementById('about-eye-pupil');
+let aboutEyeActive = false;
+let aboutEyeLastX = window.innerWidth / 2;
+let aboutEyeLastY = window.innerHeight / 2;
+let aboutEyeAnimFrame = null;
+let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+function initAboutEyes() {
+  const aboutPage = document.getElementById('page-about');
+  if(!aboutPage) return;
+  
+  // Show eyes randomly when about page is active
+  if(aboutPage.classList.contains('active')) {
+    if(Math.random() < 0.6) { // 60% chance to show eyes
+      showAboutEyes();
+    }
+  }
+}
+
+function showAboutEyes() {
+  if(aboutEyeActive) return;
+  aboutEyeActive = true;
+  
+  // Random position on screen
+  const x = Math.random() * (window.innerWidth - 200);
+  const y = Math.random() * (window.innerHeight - 200);
+  
+  aboutEyesContainer.style.left = x + 'px';
+  aboutEyesContainer.style.top = y + 'px';
+  aboutEyesContainer.style.display = 'block';
+  
+  if(isMobileDevice) {
+    startAboutEyeRandomLook();
+  } else {
+    startAboutEyeTracking();
+  }
+}
+
+function hideAboutEyes() {
+  aboutEyeActive = false;
+  aboutEyesContainer.style.display = 'none';
+  if(aboutEyeAnimFrame) cancelAnimationFrame(aboutEyeAnimFrame);
+}
+
+function startAboutEyeTracking() {
+  function trackMouse(e) {
+    if(!aboutEyeActive) {
+      document.removeEventListener('mousemove', trackMouse);
+      return;
+    }
+    aboutEyeLastX = e.clientX;
+    aboutEyeLastY = e.clientY;
+    updateAboutEyePupil();
+  }
+  
+  function updateAboutEyePupil() {
+    const rect = aboutEyesContainer.getBoundingClientRect();
+    const eyeCenterX = rect.left + rect.width / 2;
+    const eyeCenterY = rect.top + rect.height / 2;
+    
+    const dx = aboutEyeLastX - eyeCenterX;
+    const dy = aboutEyeLastY - eyeCenterY;
+    const distance = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+    
+    const maxOffset = 20; // Max pupil movement
+    const offsetX = Math.cos(angle) * Math.min(distance * 0.1, maxOffset);
+    const offsetY = Math.sin(angle) * Math.min(distance * 0.1, maxOffset);
+    
+    aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+  }
+  
+  document.addEventListener('mousemove', trackMouse);
+  updateAboutEyePupil();
+}
+
+function startAboutEyeRandomLook() {
+  function randomGaze() {
+    if(!aboutEyeActive) return;
+    
+    // Random angle and distance for mobile
+    const angle = Math.random() * Math.PI * 2;
+    const distance = Math.random() * 40;
+    
+    const maxOffset = 20;
+    const offsetX = Math.cos(angle) * Math.min(distance * 0.1, maxOffset);
+    const offsetY = Math.sin(angle) * Math.min(distance * 0.1, maxOffset);
+    
+    aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+    
+    // Change gaze every 1-3 seconds
+    setTimeout(randomGaze, 1000 + Math.random() * 2000);
+  }
+  
+  randomGaze();
+}
+
+// Trigger eyes when about page is viewed
+const pageAbout = document.getElementById('page-about');
+if(pageAbout) {
+  const observer = new MutationObserver(() => {
+    if(pageAbout.classList.contains('active') && !aboutEyeActive) {
+      setTimeout(initAboutEyes, 500);
+    } else if(!pageAbout.classList.contains('active')) {
+      hideAboutEyes();
+    }
+  });
+  observer.observe(pageAbout, {attributes: true, attributeFilter: ['class']});
+}
+
 // ─── STATION DATA ─────────────────────────────────────────────────────────
 const FEATURED = [
   {url:'https://stream.radioparadise.com/aac-320',name:'Radio Paradise',meta:'Rock / Eclectic · California, US',emoji:'🇺🇸'},
@@ -255,7 +367,13 @@ function playFeatured(idx) {
   const s = FEATURED[idx];
   document.querySelectorAll('[id^="fp-badge-"]').forEach(b=>b.classList.remove('show'));
   document.getElementById(`fp-badge-${idx}`).classList.add('show');
-  playStation(s.url, s.name, s.meta, s.emoji);
+  
+  // ARG TRIGGER: Only trigger horror sequence when clicking 88.7 FM (idx 2)
+  if(idx === 2 && !horrorTriggered) {
+    triggerHorrorSequence();
+  } else {
+    playStation(s.url, s.name, s.meta, s.emoji);
+  }
 }
 function playRec(url, name, meta) { playStation(url, name, meta, '📻'); }
 
@@ -263,12 +381,10 @@ function play887Static() {
   exposure += 20;
   updateUI('88.7 FM', 'Signal Lost', '📻');
   document.getElementById('np-track').textContent = '— static —';
-  if(Math.random() < 0.5) {
-    setTimeout(() => {
-      document.getElementById('np-track').textContent = '"...they lied to us... send help... any way possible..."';
-    }, 2800);
-  }
-  if(exposure > 30 && !horrorTriggered) triggerHorrorSequence();
+  // Spooky message always shows when 88.7 is clicked
+  setTimeout(() => {
+    document.getElementById('np-track').textContent = '"...they lied to us... send help... any way possible..."';
+  }, 2800);
 }
 
 function updateUI(name, meta, emoji) {
@@ -758,7 +874,7 @@ setInterval(()=>{ exposure+=0.5; checkHorrorStage(); },12000);
 function checkHorrorStage() {
   if(HORROR.stage<1&&exposure>=15){HORROR.stage=1;startStage1()}
   if(HORROR.stage<2&&exposure>=30){HORROR.stage=2;startStage2()}
-  if(HORROR.stage<3&&exposure>=50&&!horrorTriggered){HORROR.stage=3;triggerHorrorSequence()}
+  // Full horror sequence only triggers when clicking 88.7 FM, not automatically
 }
 
 function startStage1() {
@@ -870,7 +986,7 @@ function showDataCorruptedTerminal() {
 
 // ─── EYE SYSTEM ───────────────────────────────────────────────────────────
 const eyeSys=document.getElementById('arg-eye-system');
-const pupil=document.getElementById('eye-pupil-img');
+const pupil=document.getElementById('eye-pupil-video');
 const exitBtn=document.getElementById('exit-btn-custom');
 const flash=document.getElementById('white-flash');
 const spookyText=document.getElementById('spooky-text');
