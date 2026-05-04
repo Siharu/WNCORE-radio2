@@ -1220,10 +1220,12 @@ async function adminSaveField(key, inputId) {
   const value = input.value.trim();
   
   try {
-    const token = btoa('WNCORE_ADMIN:' + new Date().toISOString().slice(0,10));
     const r = await fetch('/api/config', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-wncore-admin': token },
+      headers: { 
+        'Content-Type': 'application/json', 
+        'x-admin-token': 'WNCORE_ADMIN'
+      },
       body: JSON.stringify({ key, value })
     });
 
