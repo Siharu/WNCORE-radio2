@@ -58,8 +58,29 @@
 }
 </script>
 
-<script src="https://unpkg.com/globe.gl"></script>
+<script>
+// Lazy-load globe.gl only when globe section enters viewport
+(function(){
+  var loaded = false;
+  function loadGlobe(){
+    if(loaded) return; loaded = true;
+    var s = document.createElement('script');
+    s.src = 'https://unpkg.com/globe.gl';
+    s.onload = function(){ document.dispatchEvent(new Event('globe-ready')); };
+    document.head.appendChild(s);
+  }
+  var obs = new IntersectionObserver(function(entries){
+    if(entries[0].isIntersecting){ loadGlobe(); obs.disconnect(); }
+  }, { threshold: 0.01 });
+  document.addEventListener('DOMContentLoaded', function(){
+    var el = document.getElementById('globe-container');
+    if(el) obs.observe(el); else loadGlobe();
+  });
+})();
+</script>
 <link rel="stylesheet" href="style.css">
+<script>try{if(localStorage.getItem('wncore-dark')==='1')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
+<style>.dark-pre body,.dark-pre{background:#0e0c0a!important;color:#e8e4df!important}</style>
 <link rel="stylesheet" href="mobile.css">
 </head>
 <body>
@@ -1185,6 +1206,7 @@ function adminSubmitLogin() {
     screen.style.display = 'none';
     app.classList.add('show');
     adminStartClock();
+    adminPrefillFields();
     console.log('Admin authenticated');
   } else {
     const err = document.getElementById('admin-login-err');
@@ -1225,6 +1247,54 @@ function adminShowSection(id, el) {
   if (el) el.classList.add('active');
 }
 
+// Prefill admin fields with currently saved config values
+async function adminPrefillFields() {
+  try {
+    const r = await fetch('/api/config');
+    if (!r.ok) return;
+    const cfg = await r.json();
+    const MAP = {
+      'admin-globe-bg-url': cfg.globe_bg_video,
+      'admin-anime-banner-url': cfg.anime_banner_img,
+      'admin-anime-banner-video-url': cfg.anime_banner_video,
+      'admin-livemusic-bg-url': cfg.livemusic_hero_bg,
+      'admin-eye-video-url': cfg.eye_spooky_video,
+      'admin-spooky-text': cfg.eye_spooky_text,
+      'admin-signal-text': cfg.signal_status_text,
+      'admin-ticker-text': cfg.ticker_inject,
+    };
+    Object.entries(MAP).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (el && val) {
+        el.value = val;
+        el.style.borderColor = 'rgba(34,197,94,0.2)';
+        // Show inline video preview for video fields
+        if (id.includes('video') || id.includes('bg-url') || id.includes('bg-url')) {
+          adminShowVideoPreview(id, val);
+        }
+      }
+    });
+  } catch(e) {}
+}
+
+// Show a small inline video preview below an input field
+function adminShowVideoPreview(inputId, url) {
+  if (!url || !url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) return;
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const existingPrev = input.parentElement.querySelector('.admin-inline-preview');
+  if (existingPrev) existingPrev.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'admin-inline-preview';
+  wrap.style.cssText = 'margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);background:#000;max-height:120px;';
+  const vid = document.createElement('video');
+  vid.src = url; vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
+  vid.style.cssText = 'width:100%;max-height:120px;object-fit:cover;display:block;';
+  vid.onerror = () => wrap.remove();
+  wrap.appendChild(vid);
+  input.parentElement.appendChild(wrap);
+}
+
 async function adminSaveField(key, inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
@@ -1243,6 +1313,8 @@ async function adminSaveField(key, inputId) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     input.style.borderColor = 'rgba(34,197,94,0.25)';
     setTimeout(() => input.style.borderColor = '', 2000);
+    // Show video preview inline after save
+    adminShowVideoPreview(inputId, value);
   } catch(e) {
     console.error('Save failed:', e);
     input.style.borderColor = 'rgba(200,71,42,0.25)';

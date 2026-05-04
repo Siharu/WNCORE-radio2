@@ -234,7 +234,8 @@ const IS_MOBILE_DEVICE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Ope
 
 let globe;
 const globeContainer = document.getElementById('globe-container');
-if (globeContainer) {
+function initGlobeWhenReady() {
+  if (globeContainer) {
   if (IS_MOBILE_DEVICE) {
     // On mobile: show a static placeholder, skip Three.js/WebGL globe entirely
     // to prevent freezing and high GPU/memory usage
@@ -269,6 +270,7 @@ if (globeContainer) {
     } catch(e) {}
   }
 }
+document.addEventListener('globe-ready', initGlobeWhenReady);
 
 // ─── GENRE STRIP ──────────────────────────────────────────────────────────
 function buildGenreStrip() {
@@ -1075,7 +1077,32 @@ setInterval(()=>{
 
 // ─── LIVE FLUCTUATION ─────────────────────────────────────────────────────
 setInterval(()=>{const el=document.getElementById('live-count');if(el)el.textContent=`${(12841+Math.floor(Math.random()*40)-20).toLocaleString()} live`;},7000);
-setInterval(()=>{const el=document.getElementById('listener-count');if(el)el.textContent=['291K','292K','290K','288K','293K'][Math.floor(Math.random()*5)];},9000);
+// Real listener count from Radio Browser stats API
+(async function fetchRealListenerCount(){
+  try {
+    const r = await fetch('https://all.api.radio-browser.info/json/stats');
+    const d = await r.json();
+    if (d && d.clicks_last_hour) {
+      const count = parseInt(d.clicks_last_hour, 10);
+      const fmt = count >= 1000 ? Math.round(count/1000)+'K' : count.toString();
+      const el = document.getElementById('listener-count');
+      if (el) el.textContent = fmt;
+    }
+  } catch(e) {}
+  // Gentle drift every 90s
+  setInterval(async function(){
+    try {
+      const r = await fetch('https://all.api.radio-browser.info/json/stats');
+      const d = await r.json();
+      if (d && d.clicks_last_hour) {
+        const count = parseInt(d.clicks_last_hour, 10);
+        const fmt = count >= 1000 ? Math.round(count/1000)+'K' : count.toString();
+        const el = document.getElementById('listener-count');
+        if (el) el.textContent = fmt;
+      }
+    } catch(e) {}
+  }, 90000);
+})();
 
 // ─── VEO VIDEO AMBIENT HELPERS ────────────────────────────────────────────
 // Call setAmbientVideo(elementId, srcUrl) to activate an ambient video loop.

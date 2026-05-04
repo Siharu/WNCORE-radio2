@@ -2611,6 +2611,8 @@ function patchPlayStationV2() {
     updateMiniWidget(name, meta, emoji);
     scrobblePush({ name, url });
     startWaveformDraw(document.getElementById('audio'));
+    // Dispatch event for mini-player
+    document.dispatchEvent(new CustomEvent('wncore-station-changed', { detail: { name, url } }));
   };
   window.playStation._v2patched = true;
   window.playStation._patched   = true; // keep v1 patch flag
@@ -2667,6 +2669,14 @@ function patchRenderTableV2() {
   window.renderTable = function(stations, tbodyId) {
     orig(stations, tbodyId);
     injectVoteButtons(stations, tbodyId);
+    // Attach station data to rows for hover popover
+    try {
+      const tbody = document.getElementById(tbodyId);
+      if (tbody && stations) {
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, i) => { if (stations[i]) row._stationData = stations[i]; });
+      }
+    } catch(e) {}
     // restart listener count animation
     clearInterval(window._listenerAnimInterval);
     window._listenerAnimInterval = setInterval(animateListenerCounts, 3000);
@@ -2713,3 +2723,156 @@ if (document.readyState === 'loading') {
 } else {
   bootV2();
 }
+
+// ─── MINI-PLAYER (docked on scroll) ──────────────────────────────────────
+(function initMiniPlayer() {
+  const SCROLL_THRESHOLD = 320;
+  let _currentStation = null;
+  let _isPlaying = false;
+
+  // Create mini-player DOM
+  const mini = document.createElement('div');
+  mini.id = 'mini-player';
+  mini.className = 'mini-player';
+  mini.innerHTML = `
+    <div class="mini-player-wave" id="mini-wave">
+      ${Array.from({length:5}, (_,i) => `<span class="mini-bar" style="animation-delay:${i*0.1}s"></span>`).join('')}
+    </div>
+    <div class="mini-player-name" id="mini-name">— no signal —</div>
+    <button class="mini-player-btn" id="mini-play-btn" aria-label="Play/Pause" onclick="window.__miniTogglePlay()">
+      <svg id="mini-play-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="mini-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display:none"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+    </button>
+    <button class="mini-player-close" onclick="document.getElementById('mini-player').classList.remove('visible')" aria-label="Close mini-player">✕</button>
+  `;
+  document.body.appendChild(mini);
+
+  // Scroll watcher
+  window.addEventListener('scroll', () => {
+    if (_currentStation && window.scrollY > SCROLL_THRESHOLD) {
+      mini.classList.add('visible');
+    } else {
+      mini.classList.remove('visible');
+    }
+  }, { passive: true });
+
+  // Sync with main player
+  const origPatch = window.patchPlayStationV2;
+  document.addEventListener('wncore-station-changed', (e) => {
+    _currentStation = e.detail?.name || '— receiving —';
+    document.getElementById('mini-name').textContent = _currentStation;
+    _isPlaying = true;
+    updateMiniIcons();
+  });
+
+  window.__miniTogglePlay = function() {
+    const audio = document.getElementById('radio-audio') || document.querySelector('audio');
+    if (!audio) return;
+    if (audio.paused) { audio.play(); _isPlaying = true; }
+    else { audio.pause(); _isPlaying = false; }
+    updateMiniIcons();
+  };
+
+  function updateMiniIcons() {
+    document.getElementById('mini-play-icon').style.display = _isPlaying ? 'none' : '';
+    document.getElementById('mini-pause-icon').style.display = _isPlaying ? '' : 'none';
+    document.getElementById('mini-wave').style.opacity = _isPlaying ? '1' : '0.3';
+  }
+})();
+
+// ─── STATION ROW HOVER PREVIEW POPOVER ───────────────────────────────────
+(function initHoverPreviews() {
+  const pop = document.createElement('div');
+  pop.id = 'station-hover-pop';
+  pop.className = 'station-hover-pop';
+  pop.innerHTML = `
+    <div class="shp-flag" id="shp-flag"></div>
+    <div class="shp-body">
+      <div class="shp-name" id="shp-name"></div>
+      <div class="shp-meta" id="shp-meta"></div>
+      <div class="shp-tags" id="shp-tags"></div>
+    </div>
+  `;
+  document.body.appendChild(pop);
+
+  let hideTimer;
+
+  function showPop(row, station) {
+    clearTimeout(hideTimer);
+    const rect = row.getBoundingClientRect();
+    const flag = station.countrycode ? getCountryEmojiImp(station.countrycode) : '🌐';
+    document.getElementById('shp-flag').textContent = flag;
+    document.getElementById('shp-name').textContent = station.name || '—';
+    const parts = [station.country, station.bitrate ? station.bitrate + ' kbps' : null].filter(Boolean);
+    document.getElementById('shp-meta').textContent = parts.join(' · ');
+    const tags = (station.tags || '').split(',').slice(0, 4).filter(Boolean);
+    document.getElementById('shp-tags').innerHTML = tags.map(t => `<span class="shp-tag">${t.trim()}</span>`).join('');
+    // Position
+    const top = rect.bottom + window.scrollY + 6;
+    const left = Math.min(rect.left + window.scrollX, window.innerWidth - 260);
+    pop.style.top = top + 'px';
+    pop.style.left = left + 'px';
+    pop.classList.add('visible');
+  }
+
+  function hidePop() {
+    hideTimer = setTimeout(() => pop.classList.remove('visible'), 120);
+  }
+
+  // Delegate hover events on station tables
+  document.addEventListener('mouseover', (e) => {
+    const row = e.target.closest('#station-tbody tr, #charts-tbody tr, #anime-tbody tr');
+    if (!row) return;
+    const stationData = row._stationData;
+    if (stationData) showPop(row, stationData);
+  });
+  document.addEventListener('mouseout', (e) => {
+    const row = e.target.closest('#station-tbody tr, #charts-tbody tr, #anime-tbody tr');
+    if (row) hidePop();
+  });
+  pop.addEventListener('mouseover', () => clearTimeout(hideTimer));
+  pop.addEventListener('mouseout', hidePop);
+
+  // Helper (local copy to avoid dependency on main.js scope)
+  function getCountryEmojiImp(code) {
+    if (!code || code.length !== 2) return '🌐';
+    return String.fromCodePoint(...[...code.toUpperCase()].map(c => 0x1F1E6 + c.charCodeAt(0) - 65));
+  }
+  window._attachHoverData = function(row, station) { row._stationData = station; };
+})();
+
+// ─── VISITOR FINGERPRINT NODE ID ──────────────────────────────────────────
+(function injectNodeId() {
+  function simpleHash(str) {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = (h * 0x01000193) >>> 0;
+    }
+    return h.toString(16).toUpperCase().padStart(8, '0');
+  }
+  try {
+    const fp = [
+      navigator.userAgent,
+      navigator.language,
+      screen.width + 'x' + screen.height,
+      screen.colorDepth,
+      Intl.DateTimeFormat().resolvedOptions().timeZone,
+      navigator.hardwareConcurrency || 0,
+    ].join('|');
+    const nodeId = 'NODE_' + simpleHash(fp).slice(0, 6);
+    // Store so ARG can reference it
+    window.__WNCORE_NODE_ID = nodeId;
+    // Inject subtly into signal box
+    const box = document.getElementById('signal-conn-box');
+    if (box) {
+      const el = document.createElement('span');
+      el.style.cssText = 'font-size:0.52rem;color:rgba(200,71,42,0.25);font-family:"DM Mono",monospace;margin-left:10px;letter-spacing:1.5px;user-select:none;';
+      el.textContent = nodeId;
+      el.title = 'Your transmission node identifier';
+      box.appendChild(el);
+    }
+    // Also available in ticker (wrongness.js can reference window.__WNCORE_NODE_ID)
+    localStorage.setItem('wncore_node_id', nodeId);
+  } catch(e) {}
+})();
