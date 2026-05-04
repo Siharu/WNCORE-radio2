@@ -1,18 +1,811 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>WNCORE — System Administration</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-<style>
-/* ── RESET ── */
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;background:#050403;color:#e8e4df;font-family:'DM Mono',monospace;overflow-x:hidden}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-/* ── CSS VARS ── */
-:root{
+<!-- PRIMARY SEO -->
+<title>WNCORE Radio — Free Live Radio Streaming | 12,000+ Global Stations</title>
+<meta name="description" content="Stream live radio free from 12,000+ stations worldwide. Jazz, classical, hip-hop, anime, news, rock and more. WNCORE Radio — broadcasting since 2016. No signup required.">
+<meta name="keywords" content="radio, free radio, live radio, internet radio, online radio, stream radio, radio stations, jazz radio, classical radio, hip hop radio, anime radio, news radio, global radio, worldwide radio, WNCORE, listen live, radio streaming, free music streaming, internet radio stations">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="theme-color" content="#f5f3ef">
+<link rel="canonical" href="https://wncoreradio.net/">
+<link rel="sitemap" type="application/xml" href="/sitemap.xml">
+
+<!-- OPEN GRAPH -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://wncoreradio.net/">
+<meta property="og:title" content="WNCORE Radio — Free Live Radio from 310 Countries">
+<meta property="og:description" content="Stream 12,000+ verified radio stations worldwide. Jazz, classical, hip-hop, anime, news and more. Free. No signup. Est. 2016.">
+<meta property="og:site_name" content="WNCORE Radio">
+<meta property="og:locale" content="en_US">
+
+<!-- TWITTER CARD -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@wncoreradio">
+<meta name="twitter:title" content="WNCORE Radio — Stream Live Radio Worldwide">
+<meta name="twitter:description" content="12,000+ global radio stations. Free live streaming. Jazz, rock, anime, news and more.">
+
+<!-- STRUCTURED DATA (JSON-LD) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "WNCORE Radio",
+  "url": "https://wncoreradio.net/",
+  "description": "Free live radio streaming. 12,000+ stations worldwide. Jazz, classical, hip-hop, anime, news and more.",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://wncoreradio.net/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "RadioStation",
+  "name": "WNCORE Radio",
+  "url": "https://wncoreradio.net/",
+  "description": "Global broadcast radio network. 12,000+ stations. Est. 2016.",
+  "foundingDate": "2016",
+  "numberOfEmployees": {"@type": "QuantitativeValue", "value": 1},
+  "genre": ["Jazz", "Classical", "Hip-Hop", "Rock", "Anime", "News", "Electronic", "Ambient"]
+}
+</script>
+
+<script src="https://unpkg.com/globe.gl"></script>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+
+<div class="grain-overlay"></div>
+<audio id="audio" preload="none" crossorigin="anonymous"></audio>
+
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="#" onclick="showPage('home',null);return false">
+      <span class="logo-mark">WNCORE</span>
+      <span class="logo-freq">EST. 2016</span>
+    </a>
+    <nav id="main-nav">
+      <a href="#" class="active" onclick="showPage('home',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        Global Array
+      </a>
+      <a href="#" onclick="showPage('charts',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Top Charts
+      </a>
+      <a href="#" onclick="showPage('genres',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        Genres
+      </a>
+      <a href="#" onclick="showPage('anime',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Anime / J-Music
+      </a>
+      <a href="#" onclick="showPage('podcasts',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        Podcasts
+      </a>
+      <a href="#" onclick="showPage('livemusic',this);return false" class="nav-livemusic-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
+        Live Music
+        <span class="nav-live-pip"></span>
+      </a>
+      <a href="#" onclick="showPage('about',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        About
+      </a>
+    </nav>
+    <div class="header-right">
+      <div class="live-dot" id="live-count">12,841 live</div>
+      <button class="minimal-btn" id="minimal-toggle" onclick="toggleMinimal()" title="Minimal mode">MIN</button>
+      <button class="search-btn" onclick="openSearch()" title="Search (Ctrl+K)" aria-label="Search stations">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="theme-toggle" onclick="toggleDark()" title="Toggle theme" role="button" aria-label="Toggle dark mode">
+        <div class="theme-toggle-track">
+          <div class="theme-toggle-thumb" id="theme-toggle-thumb">
+            <svg class="theme-toggle-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <circle cx="12" cy="12" r="4"/>
+              <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
+              <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
+              <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
+              <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+            </svg>
+          </div>
+        </div>
+        <div class="theme-toggle-labels">
+          <span class="tl-light">LIGHT</span>
+          <span class="tl-dark">DARK</span>
+        </div>
+      </div>
+      <button class="sign-in-btn" onclick="openSignIn()">Sign In</button>
+      <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+  <a href="#" onclick="showPage('home',this);toggleMobileMenu();return false" class="active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/></svg>
+    Global Array
+  </a>
+  <a href="#" onclick="showPage('charts',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Top Charts
+  </a>
+  <a href="#" onclick="showPage('genres',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    Genres
+  </a>
+  <a href="#" onclick="showPage('anime',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    Anime / J-Music
+  </a>
+  <a href="#" onclick="showPage('podcasts',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+    Podcasts
+  </a>
+  <a href="#" onclick="showPage('livemusic',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
+    Live Music
+  </a>
+  <a href="#" onclick="showPage('favorites',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+    Favourites
+  </a>
+  <a href="#" onclick="showPage('about',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
+    About
+  </a>
+  <div class="mobile-nav-divider"></div>
+  <div class="mobile-nav-actions">
+    <div style="display:flex;gap:10px">
+      <button onclick="toggleDark();return false" class="mobile-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+        Dark Mode
+      </button>
+      <button onclick="toggleMinimal();return false" class="mobile-action-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Minimal
+      </button>
+    </div>
+    <button onclick="openSignIn();toggleMobileMenu();return false" class="modal-btn" style="margin:0">Sign In</button>
+  </div>
+</nav>
+
+<!-- ══════════════ HOME PAGE ══════════════ -->
+<div id="page-home" class="page active">
+
+<div class="ticker-wrap" aria-label="Live broadcast ticker">
+  <div class="ticker-label">LIVE</div>
+  <div class="ticker-track">
+    <div class="ticker-inner" id="ticker-inner">
+      <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
+      <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
+      <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
+      <span class="t-sep">·</span><span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
+      <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
+      <span class="t-sep">·</span><span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
+      <span class="t-sep">·</span><span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
+      <span class="t-sep">·</span><span>ACTIVE LISTENERS: 291,447</span>
+      <span class="t-sep">·</span><span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
+      <span class="t-sep">·</span>
+      <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
+      <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
+      <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
+      <span class="t-sep">·</span><span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
+      <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
+      <span class="t-sep">·</span><span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
+      <span class="t-sep">·</span><span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
+      <span class="t-sep">·</span><span>ACTIVE LISTENERS: 291,447</span>
+      <span class="t-sep">·</span><span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
+      <span class="t-sep">·</span>
+    </div>
+  </div>
+</div>
+
+<div class="globe-section" aria-label="Interactive world radio globe">
+  <!-- Ambient video background for globe section (8s Veo loops) -->
+  <video class="globe-ambient-video" id="globe-ambient-video"
+    autoplay muted loop playsinline
+    style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.18;pointer-events:none;z-index:0;"
+    aria-hidden="true">
+    <!-- Add your Veo globe ambient video:
+      <source src="videos/globe-ambient.mp4" type="video/mp4">
+    -->
+  </video>
+  <div class="globe-overlay-left">
+    <div class="globe-kicker">WNCORE GLOBAL ARRAY</div>
+    <div class="globe-title">Your world,<br><em>on air.</em></div>
+    <div class="globe-sub">Stream live radio from every corner of the planet. Hand-verified stations, curated genres, and twelve years of signal history.</div>
+    <div class="globe-stats">
+      <div class="globe-stat"><span class="globe-stat-num">12K+</span><span class="globe-stat-lbl">Stations</span></div>
+      <div class="globe-stat"><span class="globe-stat-num">310</span><span class="globe-stat-lbl">Countries</span></div>
+      <div class="globe-stat"><span class="globe-stat-num" id="listener-count">291K</span><span class="globe-stat-lbl">Listening now</span></div>
+    </div>
+  </div>
+  <div id="globe-container"></div>
+  <div class="globe-hint minimal-hidden">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
+</div>
+
+<div class="genre-strip-wrap">
+  <div class="genre-strip" id="genre-strip" role="listbox" aria-label="Filter by genre"></div>
+</div>
+
+<div class="page-wrap">
+  <div class="main-col">
+
+    <div class="section-hd">
+      <div class="section-title">Featured Stations</div>
+      <a class="section-more" href="#" onclick="showPage('charts',null);return false">See all →</a>
+    </div>
+    <div class="featured-row" id="featured-row">
+      <article class="featured-card" onclick="playFeatured(0)" role="button" aria-label="Play Radio Paradise">
+        <div class="fc-listeners">4,211 listening</div>
+        <div class="fc-flag">
+          <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" width="28" height="18"><rect width="36" height="24" fill="#B22234"/><rect y="2.18" width="36" height="2.18" fill="#fff"/><rect y="6.55" width="36" height="2.18" fill="#fff"/><rect y="10.91" width="36" height="2.18" fill="#fff"/><rect y="15.27" width="36" height="2.18" fill="#fff"/><rect y="19.64" width="36" height="2.18" fill="#fff"/><rect width="14.4" height="13.09" fill="#3C3B6E"/></svg>
+        </div>
+        <div class="fc-name">Radio Paradise</div>
+        <div class="fc-meta">Rock / Eclectic · California, US · 320kbps</div>
+        <div class="fc-now">"Running on Empty" — Jackson Browne</div>
+        <div class="fc-playing-badge" id="fp-badge-0">
+          <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+          Live
+        </div>
+      </article>
+      <article class="featured-card" onclick="playFeatured(1)" role="button" aria-label="Play BBC World Service">
+        <div class="fc-listeners">8,832 listening</div>
+        <div class="fc-flag">
+          <svg viewBox="0 0 60 36" xmlns="http://www.w3.org/2000/svg" width="28" height="18"><rect width="60" height="36" fill="#012169"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V36 M0,18 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V36 M0,18 H60" stroke="#C8102E" stroke-width="6"/></svg>
+        </div>
+        <div class="fc-name">BBC World Service</div>
+        <div class="fc-meta">News / Talk · London, UK · 128kbps</div>
+        <div class="fc-now">Global News Hour — Live broadcast</div>
+        <div class="fc-playing-badge" id="fp-badge-1">
+          <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+          Live
+        </div>
+      </article>
+      <article class="featured-card featured-card--arg" onclick="playFeatured(2)" role="button" aria-label="88.7 FM — unknown signal">
+        <div class="fc-listeners fc-listeners--warn">NO SIGNAL</div>
+        <div class="fc-flag">
+          <!-- Animated SVG radio signal icon instead of emoji -->
+          <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="16" cy="16" r="3" fill="#c8472a"/>
+            <path d="M10 22c-3.3-3.3-3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
+            <path d="M22 22c3.3-3.3 3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
+            <path d="M6 26c-5.5-5.5-5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
+            <path d="M26 26c5.5-5.5 5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
+          </svg>
+        </div>
+        <div class="fc-name fc-name--warn">88.7 FM — ██████████</div>
+        <div class="fc-meta fc-meta--warn">UNKNOWN · Location redacted · ——kbps</div>
+        <div class="fc-now fc-now--warn">Last transmission: [DATA EXPUNGED]</div>
+        <div class="fc-playing-badge" id="fp-badge-2">
+          <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
+          Live
+        </div>
+      </article>
+    </div>
+
+    <div class="section-hd">
+      <div class="section-title">Top Charts</div>
+      <a class="section-more" href="#" onclick="showPage('charts',null);return false">View full chart →</a>
+    </div>
+    <table class="station-table" id="station-table" aria-label="Top radio stations">
+      <tbody id="station-tbody"><tr class="skeleton-row"><td colspan="6" class="loading-row">Scanning frequencies…</td></tr>
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Establishing connection...</td></tr>
+      </tbody>
+    </table>
+
+    <div class="section-hd">
+      <div class="section-title">Recommended</div>
+    </div>
+    <div class="rec-grid" id="rec-grid">
+      <div class="rec-card" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient · Chill')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#1a2a1a,#2a4a2a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/><path d="M10.49 22.67c-3.72 4.35-8.94 5.66-16.88 5.85"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">SomaFM Groove Salad</div><div class="rec-desc">Ambient · Chill</div></div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://ice1.somafm.com/lush-128-mp3','SomaFM Lush','Pop · Indie · Female vocals')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#2a1a2a,#4a1a3a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">SomaFM Lush</div><div class="rec-desc">Pop · Indie · Female vocals</div></div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://listen.181fm.com/181-jazz_128k.mp3','181.fm Jazz','Jazz · Smooth')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#1a1a2a,#2a2a4a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">181.fm Jazz</div><div class="rec-desc">Jazz · Smooth</div></div>
+      </div>
+      <div class="rec-card" onclick="playRec('https://stream.soma.fm/defcon128.mp3','SomaFM DEF CON Radio','Electronic · Hacker')">
+        <div class="rec-art" style="background:linear-gradient(135deg,#1a0a0a,#3a1a1a)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(200,71,42,0.8)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        </div>
+        <div class="rec-info"><div class="rec-name">SomaFM DEF CON</div><div class="rec-desc">Electronic · Hacker radio</div></div>
+      </div>
+    </div>
+
+  </div><!-- /main-col -->
+
+  <aside class="sidebar">
+    <!-- NOW PLAYING -->
+    <div class="sidebar-card">
+      <div class="sb-label">Now Playing</div>
+      <div class="np-art">
+        <div class="np-art-icon" id="np-art-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" width="40" height="40"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
+        </div>
+        <div class="np-wave">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="np-name" id="np-name">Network Standby</div>
+      <div class="np-meta" id="np-meta">Select a station to begin</div>
+      <div class="np-track" id="np-track">— no signal —</div>
+      <div class="np-progress"><div class="np-progress-fill" id="np-fill"></div></div>
+      <div class="np-controls">
+        <button class="np-ctrl-btn" onclick="toggleFavorite(this)" title="Save station" aria-label="Save station">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        </button>
+        <button class="np-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path id="np-play-icon" d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="np-ctrl-btn" onclick="toggleSleepTimer(this)" title="Sleep timer" aria-label="Sleep timer">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- TRENDING -->
+    <div class="sidebar-card">
+      <div class="sb-label">Trending Now</div>
+      <div id="trending-list">
+        <div class="trending-item" onclick="playRec('https://stream.radioparadise.com/aac-320','Radio Paradise','Rock / Eclectic')">
+          <div class="tr-rank">1</div>
+          <div class="tr-flag">
+            <svg viewBox="0 0 20 12" width="20" height="12"><rect width="20" height="12" fill="#B22234"/><rect y="1.09" width="20" height="1.09" fill="#fff"/><rect y="3.27" width="20" height="1.09" fill="#fff"/><rect y="5.45" width="20" height="1.09" fill="#fff"/><rect y="7.64" width="20" height="1.09" fill="#fff"/><rect y="9.82" width="20" height="1.09" fill="#fff"/><rect width="8" height="6.55" fill="#3C3B6E"/></svg>
+          </div>
+          <div class="tr-info"><div class="tr-name">Radio Paradise</div><div class="tr-meta">Rock · Eclectic</div></div>
+          <div class="tr-listeners">4.2K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://stream.bbc.co.uk/bbc_world_service','BBC World Service','News')">
+          <div class="tr-rank">2</div>
+          <div class="tr-flag">
+            <svg viewBox="0 0 20 12" width="20" height="12"><rect width="20" height="12" fill="#012169"/><path d="M0,0 L20,12 M20,0 L0,12" stroke="#fff" stroke-width="2.5"/><path d="M0,0 L20,12 M20,0 L0,12" stroke="#C8102E" stroke-width="1.5"/><path d="M10,0 V12 M0,6 H20" stroke="#fff" stroke-width="3.5"/><path d="M10,0 V12 M0,6 H20" stroke="#C8102E" stroke-width="2"/></svg>
+          </div>
+          <div class="tr-info"><div class="tr-name">BBC World Service</div><div class="tr-meta">News · Talk</div></div>
+          <div class="tr-listeners">8.8K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient')">
+          <div class="tr-rank">3</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">SomaFM Groove Salad</div><div class="tr-meta">Ambient · Chill</div></div>
+          <div class="tr-listeners">3.1K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://ice1.somafm.com/lush-128-mp3','SomaFM Lush','Pop / Indie')">
+          <div class="tr-rank">4</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">SomaFM Lush</div><div class="tr-meta">Pop · Indie · Female vocals</div></div>
+          <div class="tr-listeners">2.7K</div>
+        </div>
+        <div class="trending-item" onclick="playRec('https://listen.181fm.com/181-jazz_128k.mp3','181.fm Jazz','Jazz')">
+          <div class="tr-rank">5</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-info"><div class="tr-name">181.fm Jazz</div><div class="tr-meta">Jazz · Smooth</div></div>
+          <div class="tr-listeners">1.9K</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ARG CARD -->
+    <div class="arg-card minimal-hidden" id="arg-card">
+      <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
+      <div class="arg-freq">88.7</div>
+      <div class="arg-status" id="arg-status">
+        freq &nbsp;&nbsp;: 88.700 mhz<br>
+        src &nbsp;&nbsp;&nbsp;: <span class="redacted">SIGNAL_KAGE</span><br>
+        loc &nbsp;&nbsp;&nbsp;: <span class="redacted">██████████</span><br>
+        status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
+        last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
+      </div>
+      <div class="arg-broken-bar">NO SIGNAL</div>
+    </div>
+  </aside>
+</div>
+
+<!-- SIGNAL CONNECTION BOX — bottom of home page -->
+<div id="signal-conn-container" style="max-width:1440px;margin:0 auto;padding:0 24px 12px">
+  <div class="signal-conn-box" id="signal-conn-box">
+    <div class="signal-conn-dot"></div>
+    <span class="signal-conn-label">88.7</span>
+    <span style="color:var(--text3);font-size:0.6rem">FM</span>
+    <span style="color:var(--text3);font-size:0.58rem;margin:0 6px">·</span>
+    <span style="font-size:0.65rem;color:var(--text2)">SIGNAL_KAGE</span>
+    <span class="signal-conn-status" id="signal-conn-status">NO CARRIER — WAITING FOR CONNECTION</span>
+    <span style="font-size:0.55rem;color:rgba(200,71,42,0.3);margin-left:6px;font-family:'DM Mono',monospace" id="signal-conn-ts">——</span>
+  </div>
+</div>
+</div><!-- /page-home -->
+
+<!-- ══════════════ CHARTS PAGE ══════════════ -->
+<div id="page-charts" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Top Charts</div>
+      <div style="font-size:0.8rem;color:var(--text3);">The most-listened stations on WNCORE right now, updated every hour.</div>
+    </div>
+    <table class="station-table" style="margin-bottom:0;" aria-label="Top 50 radio stations">
+      <tbody id="charts-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ GENRES PAGE ══════════════ -->
+<div id="page-genres" class="page">
+  <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Browse by Genre</div>
+      <div style="font-size:0.8rem;color:var(--text3);">Every kind of sound, live from around the world.</div>
+    </div>
+    <div id="genre-cards-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ANIME PAGE ══════════════ -->
+<div id="page-anime" class="page">
+  <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
+    <div class="anime-banner" id="anime-banner">
+      <!-- Ambient video background (Veo 8s loops — muted autoplay) -->
+      <video class="anime-banner-video" id="anime-banner-video"
+        autoplay muted loop playsinline
+        poster=""
+        style="display:none"
+        aria-hidden="true">
+        <!-- Add your Veo-generated video sources here:
+          <source src="videos/anime-loop-1.mp4" type="video/mp4">
+        -->
+      </video>
+      <img class="anime-banner-img" id="anime-banner-img" src="" alt="Anime / J-Music banner" onerror="this.style.display='none'" loading="lazy">
+      <div class="anime-banner-overlay"></div>
+      <div class="anime-now-playing" id="anime-now-playing-badge" style="display:none">Live</div>
+      <div class="anime-banner-content">
+        <div class="anime-banner-kicker">WNCORE · J-MUSIC CHANNEL</div>
+        <div class="anime-banner-title">アニメ &amp; J-Music</div>
+        <div class="anime-banner-sub">Live anime music, J-Pop, city pop, lo-fi beats and direct Japanese broadcasts</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:28px;">
+      <div class="section-hd">
+        <div class="section-title" style="font-family:'Playfair Display',serif;">Station Artwork</div>
+        <a class="section-more" href="#" onclick="refreshAnimeImages();return false">Refresh ↺</a>
+      </div>
+      <div class="anime-img-strip" id="anime-img-strip"></div>
+    </div>
+
+    <div class="section-hd">
+      <div class="section-title" style="font-family:'Playfair Display',serif;">Featured J-Music Stations</div>
+    </div>
+    <div class="anime-stations-grid" id="anime-stations-grid"></div>
+
+    <div class="section-hd" style="margin-top:36px;">
+      <div class="section-title" style="font-family:'Playfair Display',serif;">Live J-Pop &amp; Anime Radio</div>
+      <a class="section-more" href="#" onclick="loadAnimeStationsLive();return false">Refresh live →</a>
+    </div>
+    <table class="station-table" style="margin-bottom:0;" aria-label="Live anime radio stations">
+      <tbody id="anime-live-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ PODCASTS PAGE ══════════════ -->
+<div id="page-podcasts" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+    <div style="margin-bottom:28px;">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Podcasts &amp; Talk Radio</div>
+      <div style="font-size:0.8rem;color:var(--text3);">Curated talk radio and podcast streams from WNCORE's verified global network.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;" id="podcast-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ABOUT PAGE ══════════════ -->
+
+<!-- ══════════════ LIVE MUSIC PAGE ══════════════ -->
+<div id="page-livemusic" class="page">
+  <div class="lm-wrap">
+    <div class="lm-hero">
+      <div class="lm-hero-bg" id="lm-hero-bg"></div>
+      <div class="lm-hero-content">
+        <div class="lm-hero-kicker">WNCORE · LIVE MUSIC CHANNEL</div>
+        <h1 class="lm-hero-title">Free Music,<br><em>Always Live.</em></h1>
+        <p class="lm-hero-sub">Curated copyright-free streams from open music archives — jazz, classical, ambient, folk, electronic, and more. No trackers. No paywalls. Just signal.</p>
+        <div class="lm-hero-stats">
+          <div class="lm-stat"><span class="lm-stat-n">2,400+</span><span class="lm-stat-l">Tracks available</span></div>
+          <div class="lm-stat"><span class="lm-stat-n">100%</span><span class="lm-stat-l">Royalty-free</span></div>
+          <div class="lm-stat"><span class="lm-stat-n">12</span><span class="lm-stat-l">Live sources</span></div>
+        </div>
+      </div>
+      <div class="lm-waveform-art" aria-hidden="true"><div class="lm-waveform" id="lm-waveform"></div></div>
+    </div>
+    <div class="lm-channel-bar" role="tablist" aria-label="Music channels">
+      <button class="lm-ch-btn active" data-ch="all" onclick="lmSelectChannel(this,'all')">All Channels</button>
+      <button class="lm-ch-btn" data-ch="jazz" onclick="lmSelectChannel(this,'jazz')">Jazz</button>
+      <button class="lm-ch-btn" data-ch="classical" onclick="lmSelectChannel(this,'classical')">Classical</button>
+      <button class="lm-ch-btn" data-ch="ambient" onclick="lmSelectChannel(this,'ambient')">Ambient</button>
+      <button class="lm-ch-btn" data-ch="electronic" onclick="lmSelectChannel(this,'electronic')">Electronic</button>
+      <button class="lm-ch-btn" data-ch="folk" onclick="lmSelectChannel(this,'folk')">Folk &amp; World</button>
+      <button class="lm-ch-btn" data-ch="lofi" onclick="lmSelectChannel(this,'lofi')">Lo-Fi</button>
+      <button class="lm-ch-btn" data-ch="chillout" onclick="lmSelectChannel(this,'chillout')">Chillout</button>
+    </div>
+    <div class="lm-now-playing-card" id="lm-np-card">
+      <div class="lm-np-vinyl" id="lm-np-vinyl"><div class="lm-np-vinyl-inner"></div></div>
+      <div class="lm-np-info">
+        <div class="lm-np-channel-tag" id="lm-np-tag">SELECT A CHANNEL</div>
+        <div class="lm-np-title" id="lm-np-title">Nothing playing</div>
+        <div class="lm-np-source" id="lm-np-source">—</div>
+        <div class="lm-np-license">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="12" height="12"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span id="lm-np-license-text">Copyright-free · Royalty-free</span>
+        </div>
+        <div class="lm-np-controls">
+          <button class="lm-ctrl-btn" onclick="lmShuffle()" title="Shuffle channel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="4" y1="4" x2="9" y2="9"/></svg>
+          </button>
+          <button class="lm-ctrl-btn lm-play-btn" id="lm-play-btn" onclick="lmTogglePlay()" aria-label="Play/Pause">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path id="lm-play-icon" d="M8 5v14l11-7z"/></svg>
+          </button>
+          <button class="lm-ctrl-btn" onclick="lmNext()" title="Next channel">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="lm-section-hd">
+      <div class="lm-section-title">Available Channels</div>
+      <div class="lm-source-badge">Sources: SomaFM &middot; Radio Swiss &middot; Nightwave &middot; WFMU &middot; Radio Paradise &middot; CCMixter</div>
+    </div>
+    <div class="lm-grid" id="lm-grid"></div>
+    <div class="lm-attribution-block">
+      <div class="lm-attr-title">About Our Music Sources</div>
+      <p class="lm-attr-text">All music on the WNCORE Live Music channel is sourced from stations and archives that broadcast under open licenses including Creative Commons, public domain dedications, and royalty-free institutional streams. We do not host any audio files — all streams are pulled directly from their origin servers in real time.</p>
+      <div class="lm-attr-sources">
+        <span class="lm-attr-pill">SomaFM (CC by-nc-nd)</span>
+        <span class="lm-attr-pill">Radio Swiss Jazz (royalty-free)</span>
+        <span class="lm-attr-pill">Radio Swiss Classic (public service)</span>
+        <span class="lm-attr-pill">Nightwave Plaza (royalty-free)</span>
+        <span class="lm-attr-pill">WFMU (open license)</span>
+        <span class="lm-attr-pill">Radio Paradise (non-commercial)</span>
+        <span class="lm-attr-pill">181.fm (ad-supported free)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-about" class="page">
+  <div class="about-glitch-overlay" id="about-glitch-overlay"></div>
+  <div class="about-wrap">
+    <div class="about-title">Maintaining<br>the Signal.</div>
+    <div class="about-rule"></div>
+    <p class="about-text">Founded in 2016 by a small team of systems engineers and radio enthusiasts, WNCORE began as a personal project to aggregate and archive shortwave frequencies across the international broadcast band. Ten years later, we index over 12,000 verified stations across 310 countries.</p>
+    <p class="about-text">We do not run proprietary tracking software. The frequencies provided are pulled directly from the public domain. Our core philosophy is simple: <em style="color:var(--text);font-style:italic;">the signal belongs to everyone.</em></p>
+    <p class="about-text">All station data is sourced from the Radio Browser community database. WNCORE contributes verified station metadata back to the commons on a weekly basis. We have no affiliations with any government, broadcaster, or regulatory body.</p>
+    <p class="about-text" style="color:var(--text3);font-size:0.78rem;font-style:italic;">Note: Some signals in our archive cannot be verified. Node 09 has not responded since 2016. We do not know what is on 88.7.</p>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:36px;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:4px;">12K+</div><div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.5px;">Stations indexed</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:4px;">310</div><div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.5px;">Countries covered</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;"><div style="font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;margin-bottom:4px;">2016</div><div style="font-size:0.68rem;color:var(--text3);letter-spacing:0.5px;">Year founded</div></div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;">
+      <div style="font-size:0.68rem;font-family:'DM Mono',monospace;letter-spacing:2px;color:var(--text3);margin-bottom:10px;">CONTACT</div>
+      <div style="font-size:0.83rem;color:var(--text2);line-height:1.8;">
+        For station submissions, signal anomaly reports, or partnership inquiries:<br>
+        <a href="mailto:signal@wncoreradio.net" style="color:var(--accent);text-decoration:none;">signal@wncoreradio.net</a>
+      </div>
+      <div style="margin-top:14px;display:flex;flex-wrap:wrap;gap:8px">
+        <a href="legal.html?s=privacy" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">Privacy Policy</a>
+        <a href="legal.html?s=terms" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">Terms of Use</a>
+        <a href="legal.html?s=dmca" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">DMCA</a>
+        <a href="legal.html?s=api" style="font-size:0.72rem;color:var(--text3);text-decoration:none;padding:5px 10px;border:1px solid var(--border);border-radius:6px">API Access</a>
+        <a href="legal.html?s=contact" style="font-size:0.72rem;color:var(--accent);text-decoration:none;padding:5px 10px;border:1px solid rgba(200,71,42,0.25);border-radius:6px">Signal Reports →</a>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:14px 18px;background:rgba(200,71,42,0.04);border:1px solid rgba(200,71,42,0.15);border-radius:10px;font-family:'DM Mono',monospace;font-size:0.62rem;color:rgba(200,71,42,0.5);line-height:1.9">
+      Node 09 has not responded since 2016. We do not know what is on 88.7 FM.<br>
+      If you have experienced an unexplained transmission, use the signal anomaly channel.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FAVORITES PAGE ══════════════ -->
+<div id="page-favorites" class="page">
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px 100px">
+    <div style="margin-bottom:28px">
+      <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px">Favourites</div>
+      <div style="font-size:0.8rem;color:var(--text3)">Your saved stations. Stored locally on this device.</div>
+    </div>
+    <div id="fav-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px">
+      <div style="grid-column:1/-1;text-align:center;padding:48px 24px;color:var(--text3);font-size:0.85rem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="36" height="36" style="opacity:0.3;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        No saved stations yet.<br>
+        <span style="font-size:0.75rem;opacity:0.7">Click the ♡ on any station to save it here.</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SEARCH MODAL ══════════════ -->
+<div class="search-modal-backdrop" id="search-modal" onclick="closeSearchOnBackdrop(event)" role="dialog" aria-label="Search stations">
+  <div class="search-box">
+    <div class="search-input-row">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" id="search-input" type="text" placeholder="Search stations, countries, genres..." autocomplete="off" aria-label="Search">
+      <button class="search-close" onclick="closeSearch()" aria-label="Close search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="search-filters">
+      <button class="search-filter-btn active" onclick="setSearchFilter(this,'all')">All</button>
+      <button class="search-filter-btn" onclick="setSearchFilter(this,'name')">Name</button>
+      <button class="search-filter-btn" onclick="setSearchFilter(this,'country')">Country</button>
+      <button class="search-filter-btn" onclick="setSearchFilter(this,'tag')">Genre</button>
+    </div>
+    <div class="search-results" id="search-results">
+      <div class="search-empty">Start typing to search 12,000+ stations worldwide</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SIGN IN MODAL ══════════════ -->
+<div class="modal-backdrop" id="signin-modal" onclick="closeSignIn(event)" role="dialog" aria-label="Sign in">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSignInBtn()" aria-label="Close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <div class="modal-title">Sign in to WNCORE</div>
+    <div class="modal-sub">Access saved stations, history, and WNCORE Plus.</div>
+    <input class="modal-input" type="email" placeholder="Email address" id="signin-email" autocomplete="email">
+    <input class="modal-input" type="password" placeholder="Password" id="signin-pass" autocomplete="current-password">
+    <button class="modal-btn" onclick="handleSignIn()">Continue</button>
+    <div class="modal-divider">or continue with</div>
+    <div class="modal-oauth">
+      <button class="oauth-btn google" onclick="oauthGoogle()">
+        <svg viewBox="0 0 24 24" width="17" height="17"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Google
+      </button>
+      <button class="oauth-btn apple" onclick="oauthApple()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+        Apple
+      </button>
+      <button class="oauth-btn discord" onclick="oauthDiscord()">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="17" height="17"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
+        Discord
+      </button>
+    </div>
+    <div class="modal-footer">Don't have an account? <a onclick="handleCreateAccount()">Create one free →</a></div>
+  </div>
+</div>
+
+<!-- ══════════════ PLAYER BAR ══════════════ -->
+<div class="player-bar" role="region" aria-label="Audio player">
+  <div class="pb-station">
+    <div class="pb-art" id="pb-art">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="20" height="20"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
+    </div>
+    <div style="min-width:0">
+      <div class="pb-name" id="pb-name">Network Standby</div>
+      <div class="pb-meta" id="pb-meta">Select a station</div>
+    </div>
+  </div>
+  <div class="pb-center">
+    <div class="pb-controls">
+      <button class="pb-btn" title="Save station" onclick="toggleFavorite(this)" aria-label="Save station">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+      <button class="pb-btn" onclick="skipStation(-1)" aria-label="Previous station">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+      </button>
+      <button class="pb-play" id="pb-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path id="pb-play-icon" d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="pb-btn" onclick="skipStation(1)" aria-label="Next station">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+      </button>
+      <button class="pb-btn" title="Sleep timer" onclick="toggleSleepTimer(this)" aria-label="Sleep timer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      </button>
+    </div>
+    <div class="pb-progress">
+      <span class="pb-time">LIVE</span>
+      <div class="pb-bar"><div class="pb-bar-fill" id="pb-fill"></div></div>
+      <div class="pb-eq" id="pb-eq"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+  <div class="pb-right">
+    <div class="pb-vol">
+      <span class="pb-vol-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 010 7.07"/></svg>
+      </span>
+      <input type="range" class="pb-vol-slider" min="0" max="1" step="0.01" value="0.8" id="vol-slider" aria-label="Volume">
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ HORROR OVERLAYS ══════════════ -->
+<div id="horror-overlay" role="dialog" aria-modal="true">
+  <div class="horror-terminal" id="horror-terminal"></div>
+</div>
+
+<div id="data-corrupt-overlay" role="dialog" aria-modal="true">
+  <div class="corrupt-scanlines"></div>
+  <div class="corrupt-flicker"></div>
+  <div class="corrupt-header">WNCORE SIGNAL INTEGRITY MONITOR</div>
+  <div class="corrupt-terminal-box">
+    <div class="corrupt-title-bar">
+      <div class="corrupt-dot" style="background:#ff5f57"></div>
+      <div class="corrupt-dot" style="background:#febc2e"></div>
+      <div class="corrupt-dot" style="background:#28c840"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:rgba(255,255,255,0.3);margin-left:8px">data_recovery.exe</span>
+    </div>
+    <div class="corrupt-terminal-text" id="corrupt-terminal-text"></div>
+  </div>
+</div>
+
+<div id="email-horror-overlay" role="dialog" aria-modal="true">
+  <div class="email-horror-scanlines"></div>
+  <div class="email-terminal">
+    <div class="email-terminal-bar">
+      <div class="email-terminal-bar-dot" style="background:#ff5f57"></div>
+      <div class="email-terminal-bar-dot" style="background:#febc2e"></div>
+      <div class="email-terminal-bar-dot" style="background:#28c840"></div>
+      <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:#1a5c1a;margin-left:8px">wncore_auth -- encrypted channel</span>
+    </div>
+    <div class="email-terminal-text" id="email-terminal-text"></div>
+  </div>
+</div>
+
+<div id="arg-eye-system" role="dialog" aria-modal="true" aria-label="Signal detected">
+  <div class="white-flash" id="white-flash"></div>
+  <div class="eye-wrapper">
+    <div class="eye-ambient"></div>
+    <img src="images/eye-base.png" id="eye-base-img" alt="" loading="lazy">
+    <img src="images/pupil.png" id="eye-pupil-img" alt="" loading="lazy">
+    <div class="spooky-text" id="spooky-text">I see you.</div>
+  </div>
+  <button id="exit-btn-custom">exit</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     WNCORE ADMIN PANEL — HIDDEN MODAL
+     Trigger: Ctrl+B
+     ══════════════════════════════════════════════ -->
+
+<style>
+/* ── ADMIN PANEL RESET ── */
+.admin-panel{box-sizing:border-box;margin:0;padding:0}
+.admin-panel html,.admin-panel body{height:100%;background:#050403;color:#e8e4df;font-family:'DM Mono',monospace;overflow-x:hidden}
+
+/* ── ADMIN CSS VARS ── */
+.admin-panel{
   --red:#c8472a;--red2:#e8753a;--red-dim:rgba(200,71,42,0.15);--red-border:rgba(200,71,42,0.25);
   --surface:#0d0b09;--surface2:#131109;--border:rgba(255,255,255,0.06);
   --text:#e8e4df;--text2:rgba(232,228,223,0.5);--text3:rgba(232,228,223,0.22);
@@ -20,640 +813,277 @@ html,body{height:100%;background:#050403;color:#e8e4df;font-family:'DM Mono',mon
   --yellow:#eab308;
 }
 
-/* ── SCANLINES ── */
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.06) 2px,rgba(0,0,0,0.06) 4px);
+#admin-panel-modal{
+  position:fixed;inset:0;display:none;flex-direction:column;
+  background:#050403;z-index:10000;font-family:'DM Mono',monospace;
+  overflow:hidden;
 }
+#admin-panel-modal.show{display:flex}
 
-/* ── GRAIN ── */
-body::after{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:0.025;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* ── LOGIN SCREEN ── */
-#login-screen{
+#admin-login-screen{
   position:fixed;inset:0;display:flex;align-items:center;justify-content:center;
-  background:#050403;z-index:100;transition:opacity 0.4s;
+  background:#050403;z-index:10001;transition:opacity 0.4s;
 }
-#login-screen.out{opacity:0;pointer-events:none}
+#admin-login-screen.out{opacity:0;pointer-events:none}
 
-.login-box{
+.admin-login-box{
   width:min(400px,92vw);
-  border:1px solid var(--red-border);border-radius:14px;
-  background:var(--surface);padding:36px 32px;
+  border:1px solid rgba(200,71,42,0.25);border-radius:14px;
+  background:#0d0b09;padding:36px 32px;
   box-shadow:0 0 80px rgba(200,71,42,0.08),0 32px 64px rgba(0,0,0,0.6);
-  animation:rise 0.5s cubic-bezier(0.16,1,0.3,1);
+  animation:admin-rise 0.5s cubic-bezier(0.16,1,0.3,1);
 }
-@keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+@keyframes admin-rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 
-.login-logo{
+.admin-login-logo{
   font-family:'Syne',sans-serif;font-size:1.6rem;font-weight:800;
-  color:var(--red);letter-spacing:-1px;margin-bottom:4px;
+  color:#c8472a;letter-spacing:-1px;margin-bottom:4px;
 }
-.login-sub{font-size:0.58rem;color:var(--text3);letter-spacing:3px;margin-bottom:32px}
+.admin-login-sub{font-size:0.58rem;color:rgba(232,228,223,0.22);letter-spacing:3px;margin-bottom:32px}
 
-.login-label{font-size:0.58rem;color:var(--text3);letter-spacing:2px;margin-bottom:8px;display:block}
-.login-input{
-  width:100%;background:rgba(200,71,42,0.05);border:1px solid var(--red-border);
-  border-radius:8px;padding:12px 14px;color:var(--red);
+.admin-login-label{font-size:0.58rem;color:rgba(232,228,223,0.22);letter-spacing:2px;margin-bottom:8px;display:block}
+.admin-login-input{
+  width:100%;background:rgba(200,71,42,0.05);border:1px solid rgba(200,71,42,0.25);
+  border-radius:8px;padding:12px 14px;color:#c8472a;
   font-family:'DM Mono',monospace;font-size:0.85rem;letter-spacing:3px;
   outline:none;transition:border-color 0.2s;
 }
-.login-input:focus{border-color:rgba(200,71,42,0.6)}
-.login-input::placeholder{color:var(--red-border);letter-spacing:1px}
+.admin-login-input:focus{border-color:rgba(200,71,42,0.6)}
+.admin-login-input::placeholder{color:rgba(200,71,42,0.25);letter-spacing:1px}
 
-.login-btn{
+.admin-login-btn{
   width:100%;margin-top:16px;padding:13px;
-  background:var(--red-dim);border:1px solid var(--red-border);border-radius:8px;
-  color:var(--red);font-family:'DM Mono',monospace;font-size:0.72rem;
+  background:rgba(200,71,42,0.15);border:1px solid rgba(200,71,42,0.25);border-radius:8px;
+  color:#c8472a;font-family:'DM Mono',monospace;font-size:0.72rem;
   letter-spacing:3px;cursor:pointer;transition:all 0.2s;
 }
-.login-btn:hover{background:rgba(200,71,42,0.25);border-color:var(--red)}
-.login-btn:active{transform:scale(0.99)}
+.admin-login-btn:hover{background:rgba(200,71,42,0.25);border-color:#c8472a}
+.admin-login-btn:active{transform:scale(0.99)}
 
-.login-err{
-  margin-top:12px;font-size:0.62rem;color:var(--red);
+.admin-login-err{
+  margin-top:12px;font-size:0.62rem;color:#c8472a;
   text-align:center;letter-spacing:1px;opacity:0;transition:opacity 0.2s;
 }
-.login-err.show{opacity:1}
-.login-attempts{color:var(--text3);font-size:0.58rem;text-align:center;margin-top:8px}
+.admin-login-err.show{opacity:1}
 
-.login-lock{
-  margin-top:14px;padding:10px;background:rgba(200,71,42,0.06);
-  border:1px solid var(--red-border);border-radius:7px;
-  font-size:0.62rem;color:rgba(200,71,42,0.6);text-align:center;
-  display:none;letter-spacing:1px;
-}
+#admin-app{display:none;min-height:100vh;flex-direction:column}
+#admin-app.show{display:flex}
 
-/* ── MAIN LAYOUT ── */
-#app{display:none;min-height:100vh;flex-direction:column}
-#app.show{display:flex}
-
-/* ── TOPBAR ── */
-.topbar{
-  height:52px;border-bottom:1px solid var(--border);
+.admin-topbar{
+  height:52px;border-bottom:1px solid rgba(255,255,255,0.06);
   display:flex;align-items:center;padding:0 24px;gap:16px;
-  background:var(--surface);position:sticky;top:0;z-index:50;
+  background:#0d0b09;position:sticky;top:0;z-index:50;
   flex-shrink:0;
 }
-.topbar-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:var(--red);letter-spacing:-0.5px}
-.topbar-sep{width:1px;height:20px;background:var(--border)}
-.topbar-title{font-size:0.62rem;color:var(--text3);letter-spacing:2px}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
-.topbar-status{display:flex;align-items:center;gap:6px;font-size:0.6rem;color:var(--text3)}
-.status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse-g 2s infinite}
-@keyframes pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.3)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0.1)}}
-.topbar-clock{font-size:0.6rem;color:var(--text3)}
-.topbar-lock-btn{
-  padding:5px 12px;border:1px solid var(--border);border-radius:6px;
-  background:none;color:var(--text3);cursor:pointer;font-family:'DM Mono',monospace;
+.admin-topbar-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;color:#c8472a;letter-spacing:-0.5px}
+.admin-topbar-sep{width:1px;height:20px;background:rgba(255,255,255,0.06)}
+.admin-topbar-title{font-size:0.62rem;color:rgba(232,228,223,0.22);letter-spacing:2px}
+.admin-topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.admin-topbar-status{display:flex;align-items:center;gap:6px;font-size:0.6rem;color:rgba(232,228,223,0.22)}
+.admin-status-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:admin-pulse-g 2s infinite}
+@keyframes admin-pulse-g{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.3)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0.1)}}
+.admin-topbar-clock{font-size:0.6rem;color:rgba(232,228,223,0.22)}
+.admin-topbar-lock-btn{
+  padding:5px 12px;border:1px solid rgba(255,255,255,0.06);border-radius:6px;
+  background:none;color:rgba(232,228,223,0.22);cursor:pointer;font-family:'DM Mono',monospace;
   font-size:0.6rem;letter-spacing:1px;transition:all 0.15s;
 }
-.topbar-lock-btn:hover{border-color:var(--red-border);color:var(--red)}
+.admin-topbar-lock-btn:hover{border-color:rgba(200,71,42,0.25);color:#c8472a}
 
-/* ── BODY LAYOUT ── */
-.app-body{display:flex;flex:1;min-height:0}
+.admin-app-body{display:flex;flex:1;min-height:0}
 
-/* ── SIDEBAR ── */
-.sidebar{
-  width:200px;border-right:1px solid var(--border);padding:20px 0;
+.admin-sidebar{
+  width:200px;border-right:1px solid rgba(255,255,255,0.06);padding:20px 0;
   display:flex;flex-direction:column;gap:2px;flex-shrink:0;
-  background:var(--surface);
+  background:#0d0b09;
 }
-@media(max-width:700px){.sidebar{display:none}}
-.sidebar-item{
+@media(max-width:700px){.admin-sidebar{display:none}}
+.admin-sidebar-item{
   display:flex;align-items:center;gap:10px;padding:10px 18px;
   cursor:pointer;transition:all 0.12s;border-left:2px solid transparent;
-  font-size:0.68rem;color:var(--text3);letter-spacing:1px;
+  font-size:0.68rem;color:rgba(232,228,223,0.22);letter-spacing:1px;
 }
-.sidebar-item:hover{color:var(--text2);background:rgba(255,255,255,0.02)}
-.sidebar-item.active{color:var(--red);border-left-color:var(--red);background:var(--red-dim)}
-.sidebar-item svg{width:14px;height:14px;flex-shrink:0;opacity:0.6}
-.sidebar-item.active svg{opacity:1}
-.sidebar-divider{height:1px;background:var(--border);margin:8px 16px}
-.sidebar-section{font-size:0.52rem;color:var(--text3);letter-spacing:2px;padding:8px 18px 4px;opacity:0.6}
+.admin-sidebar-item:hover{color:rgba(232,228,223,0.5);background:rgba(255,255,255,0.02)}
+.admin-sidebar-item.active{color:#c8472a;border-left-color:#c8472a;background:rgba(200,71,42,0.15)}
+.admin-sidebar-item svg{width:14px;height:14px;flex-shrink:0;opacity:0.6}
+.admin-sidebar-item.active svg{opacity:1}
+.admin-sidebar-divider{height:1px;background:rgba(255,255,255,0.06);margin:8px 16px}
+.admin-sidebar-section{font-size:0.52rem;color:rgba(232,228,223,0.22);letter-spacing:2px;padding:8px 18px 4px;opacity:0.6}
 
-/* ── MAIN CONTENT ── */
-.main-content{flex:1;overflow-y:auto;padding:28px 32px;min-width:0}
-@media(max-width:700px){.main-content{padding:16px 14px}}
+.admin-main-content{flex:1;overflow-y:auto;padding:28px 32px;min-width:0}
+@media(max-width:700px){.admin-main-content{padding:16px 14px}}
 
-/* ── SECTION ── */
-.section{display:none}
-.section.active{display:block}
-.section-title{
+.admin-section{display:none}
+.admin-section.active{display:block}
+.admin-section-title{
   font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;
-  color:var(--text);margin-bottom:4px;letter-spacing:-0.5px;
+  color:#e8e4df;margin-bottom:4px;letter-spacing:-0.5px;
 }
-.section-sub{font-size:0.62rem;color:var(--text3);letter-spacing:1px;margin-bottom:28px}
+.admin-section-sub{font-size:0.62rem;color:rgba(232,228,223,0.22);letter-spacing:1px;margin-bottom:28px}
 
-/* ── CARD ── */
-.card{
-  background:var(--surface);border:1px solid var(--border);
+.admin-card{
+  background:#0d0b09;border:1px solid rgba(255,255,255,0.06);
   border-radius:12px;padding:22px 24px;margin-bottom:16px;
   transition:border-color 0.2s;
 }
-.card:hover{border-color:rgba(255,255,255,0.1)}
-.card-title{
-  font-size:0.6rem;color:var(--text3);letter-spacing:2px;
+.admin-card:hover{border-color:rgba(255,255,255,0.1)}
+.admin-card-title{
+  font-size:0.6rem;color:rgba(232,228,223,0.22);letter-spacing:2px;
   margin-bottom:14px;display:flex;align-items:center;gap:8px;
 }
-.card-title-dot{width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0}
-.card-title-dot.green{background:var(--green)}
-.card-title-dot.yellow{background:var(--yellow)}
+.admin-card-title-dot{width:5px;height:5px;border-radius:50%;background:#c8472a;flex-shrink:0}
+.admin-card-title-dot.green{background:#22c55e}
+.admin-card-title-dot.yellow{background:#eab308}
 
-/* ── VIDEO ENTRY CARD ── */
-.video-entry{
-  display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:start;
-  padding:14px 0;border-bottom:1px solid var(--border);
-}
-.video-entry:last-child{border-bottom:none}
-.video-entry-info{}
-.video-entry-label{font-size:0.62rem;color:var(--text2);margin-bottom:6px;letter-spacing:0.5px}
-.video-entry-desc{font-size:0.58rem;color:var(--text3);margin-bottom:8px;line-height:1.6}
-
-/* ── INPUT GROUP ── */
-.input-group{display:flex;gap:8px;align-items:center}
-.field-input{
-  flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--border);
-  border-radius:7px;padding:10px 12px;color:var(--text);
-  font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;
-  transition:border-color 0.15s;min-width:0;
-}
-.field-input:focus{border-color:rgba(200,71,42,0.4)}
-.field-input::placeholder{color:var(--text3);font-size:0.65rem}
-.field-input.valid{border-color:var(--green-border)}
-.field-input.error{border-color:var(--red-border)}
-
-/* ── BUTTONS ── */
-.btn{
+.admin-btn{
   padding:9px 16px;border-radius:7px;font-family:'DM Mono',monospace;
   font-size:0.65rem;letter-spacing:1px;cursor:pointer;transition:all 0.15s;
   white-space:nowrap;flex-shrink:0;border:1px solid;
 }
-.btn-primary{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
-.btn-primary:hover{background:rgba(200,71,42,0.25);border-color:var(--red)}
-.btn-ghost{background:none;border-color:var(--border);color:var(--text3)}
-.btn-ghost:hover{border-color:rgba(255,255,255,0.15);color:var(--text2)}
-.btn-success{background:var(--green-dim);border-color:var(--green-border);color:var(--green)}
-.btn-danger{background:rgba(200,71,42,0.05);border-color:rgba(200,71,42,0.15);color:rgba(200,71,42,0.5)}
-.btn-danger:hover{background:var(--red-dim);border-color:var(--red-border);color:var(--red)}
-.btn:disabled{opacity:0.4;cursor:not-allowed}
+.admin-btn-primary{background:rgba(200,71,42,0.15);border-color:rgba(200,71,42,0.25);color:#c8472a}
+.admin-btn-primary:hover{background:rgba(200,71,42,0.25);border-color:#c8472a}
+.admin-btn-ghost{background:none;border-color:rgba(255,255,255,0.06);color:rgba(232,228,223,0.22)}
+.admin-btn-ghost:hover{border-color:rgba(255,255,255,0.15);color:rgba(232,228,223,0.5)}
 
-/* ── TOGGLE ── */
-.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
-.toggle-row:last-child{border-bottom:none}
-.toggle-label{font-size:0.7rem;color:var(--text2)}
-.toggle-desc{font-size:0.6rem;color:var(--text3);margin-top:2px}
-.toggle{
-  position:relative;width:40px;height:22px;flex-shrink:0;cursor:pointer;
-}
-.toggle input{opacity:0;width:0;height:0;position:absolute}
-.toggle-track{
-  position:absolute;inset:0;border-radius:11px;
-  background:rgba(255,255,255,0.06);border:1px solid var(--border);
-  transition:all 0.2s;
-}
-.toggle input:checked ~ .toggle-track{background:var(--red-dim);border-color:var(--red-border)}
-.toggle-thumb{
-  position:absolute;top:3px;left:3px;width:14px;height:14px;
-  border-radius:50%;background:rgba(255,255,255,0.3);
-  transition:all 0.2s cubic-bezier(0.34,1.56,0.64,1);
-}
-.toggle input:checked ~ .toggle-track .toggle-thumb{transform:translateX(18px);background:var(--red)}
-
-/* ── STATUS BADGE ── */
-.badge{
+.admin-badge{
   display:inline-flex;align-items:center;gap:5px;padding:3px 8px;
   border-radius:4px;font-size:0.58rem;letter-spacing:0.5px;
 }
-.badge-online{background:var(--green-dim);border:1px solid var(--green-border);color:var(--green)}
-.badge-offline{background:rgba(200,71,42,0.08);border:1px solid var(--red-border);color:rgba(200,71,42,0.7)}
-.badge-unknown{background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);color:var(--yellow)}
-.badge::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor}
-
-/* ── PREVIEW PANEL ── */
-.preview-panel{
-  background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:10px;
-  padding:12px;margin-top:12px;display:none;
-}
-.preview-panel.show{display:block}
-.preview-panel video{width:100%;max-height:180px;border-radius:6px;object-fit:cover;background:#000}
-.preview-panel img{width:100%;max-height:180px;border-radius:6px;object-fit:cover}
-.preview-label{font-size:0.58rem;color:var(--text3);margin-bottom:8px;letter-spacing:1px}
-.preview-error{font-size:0.65rem;color:rgba(200,71,42,0.7);padding:20px;text-align:center}
-
-/* ── TOAST ── */
-#toast-container{position:fixed;top:64px;right:20px;z-index:9000;display:flex;flex-direction:column;gap:8px;pointer-events:none}
-.toast{
-  padding:10px 16px;border-radius:8px;font-size:0.68rem;letter-spacing:0.5px;
-  backdrop-filter:blur(8px);animation:toast-in 0.25s ease;pointer-events:auto;
-  display:flex;align-items:center;gap:8px;min-width:220px;
-}
-.toast-success{background:rgba(34,197,94,0.12);border:1px solid var(--green-border);color:var(--green)}
-.toast-error{background:var(--red-dim);border:1px solid var(--red-border);color:var(--red)}
-.toast-info{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--text2)}
-@keyframes toast-in{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
-
-/* ── LOG BOX ── */
-.log-box{
-  background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:8px;
-  padding:12px;max-height:200px;overflow-y:auto;font-size:0.62rem;
-}
-.log-row{display:flex;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.03)}
-.log-row:last-child{border-bottom:none}
-.log-ts{color:var(--text3);flex-shrink:0;white-space:nowrap}
-.log-msg{color:var(--text2)}
-.log-msg.ok{color:var(--green)}
-.log-msg.err{color:var(--red)}
-
-/* ── STAT GRID ── */
-.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:24px}
-.stat-box{
-  background:var(--surface);border:1px solid var(--border);border-radius:10px;
-  padding:14px 16px;
-}
-.stat-label{font-size:0.55rem;color:var(--text3);letter-spacing:1.5px;margin-bottom:6px}
-.stat-val{font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--text)}
-.stat-val.red{color:var(--red)}
-.stat-val.green{color:var(--green)}
-.stat-sub{font-size:0.58rem;color:var(--text3);margin-top:2px}
-
-/* ── NODE GRID ── */
-.node-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.node-item{
-  background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;
-  padding:10px 12px;display:flex;flex-direction:column;gap:4px;
-}
-.node-dot{width:7px;height:7px;border-radius:50%;margin-bottom:2px}
-.node-dot.online{background:var(--green);box-shadow:0 0 8px rgba(34,197,94,0.5)}
-.node-dot.standby{background:var(--yellow)}
-.node-dot.unknown{background:var(--red);animation:pulse-r 2s infinite}
-@keyframes pulse-r{0%,100%{box-shadow:0 0 0 0 rgba(200,71,42,0.4)}50%{box-shadow:0 0 0 4px rgba(200,71,42,0.1)}}
-.node-name{font-size:0.6rem;color:var(--text3)}
-.node-status{font-size:0.6rem;font-weight:600}
-.node-status.online{color:var(--green)}
-.node-status.standby{color:var(--yellow)}
-.node-status.unknown{color:var(--red)}
-
-/* ── MOBILE TABS ── */
-.mobile-tabs{display:none;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;scrollbar-width:none;padding:0 14px}
-@media(max-width:700px){.mobile-tabs{display:flex}}
-.mobile-tab{
-  padding:10px 14px;font-size:0.6rem;letter-spacing:1px;white-space:nowrap;
-  cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all 0.15s;
-  flex-shrink:0;
-}
-.mobile-tab.active{color:var(--red);border-bottom-color:var(--red)}
-
-/* ── SCROLLBAR ── */
-::-webkit-scrollbar{width:4px;height:4px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px}
-
-/* ── SAVING SPINNER ── */
-@keyframes spin{to{transform:rotate(360deg)}}
-.spin{animation:spin 0.8s linear infinite}
-
-/* ── TICKER INJECT ── */
-.ticker-input-row{display:flex;gap:8px;margin-top:10px}
-
-/* ── SIGNAL TEXT PREVIEW ── */
-.text-preview{
-  font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--red);
-  padding:8px 12px;background:rgba(200,71,42,0.04);border:1px solid var(--red-border);
-  border-radius:6px;margin-top:8px;opacity:0.7;
-}
+.admin-badge-online{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#22c55e}
+.admin-badge-offline{background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.25);color:rgba(200,71,42,0.7)}
 </style>
-</head>
-<body>
 
-<!-- ══ LOGIN ══════════════════════════════════════════════════ -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">WNCORE</div>
-    <div class="login-sub">SYSTEM ADMINISTRATION · SECURE CHANNEL</div>
-    <label class="login-label">ACCESS CREDENTIAL</label>
-    <input type="password" id="login-input" class="login-input" placeholder="████████" autocomplete="off" spellcheck="false">
-    <button class="login-btn" id="login-btn" onclick="submitLogin()">AUTHENTICATE ›</button>
-    <div class="login-err" id="login-err">ACCESS DENIED — CREDENTIAL INVALID</div>
-    <div class="login-attempts" id="login-attempts"></div>
-    <div class="login-lock" id="login-lock">SESSION SUSPENDED — TRY AGAIN IN <span id="lock-countdown">5:00</span></div>
+<div id="admin-panel-modal">
+  <!-- LOGIN SCREEN -->
+  <div id="admin-login-screen">
+    <div class="admin-login-box">
+      <div class="admin-login-logo">WNCORE</div>
+      <div class="admin-login-sub">SYSTEM ADMINISTRATION · SECURE CHANNEL</div>
+      <label class="admin-login-label">ACCESS CREDENTIAL</label>
+      <input type="password" id="admin-login-input" class="admin-login-input" placeholder="████████" autocomplete="off" spellcheck="false">
+      <button class="admin-login-btn" onclick="adminSubmitLogin()">AUTHENTICATE ›</button>
+      <div class="admin-login-err" id="admin-login-err">ACCESS DENIED</div>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="admin-app">
+    <div class="admin-topbar">
+      <div class="admin-topbar-logo">WNCORE</div>
+      <div class="admin-topbar-sep"></div>
+      <div class="admin-topbar-title">ADMIN PANEL</div>
+      <div class="admin-topbar-right">
+        <div class="admin-topbar-status">
+          <div class="admin-status-dot"></div>
+          <span>CONNECTED</span>
+        </div>
+        <div class="admin-topbar-sep"></div>
+        <div class="admin-topbar-clock" id="admin-topbar-clock">——</div>
+        <div class="admin-topbar-sep"></div>
+        <button class="admin-topbar-lock-btn" onclick="adminLockSession()">LOCK SESSION</button>
+      </div>
+    </div>
+
+    <div class="admin-app-body">
+      <div class="admin-sidebar">
+        <div class="admin-sidebar-section">MONITOR</div>
+        <div class="admin-sidebar-item active" onclick="adminShowSection('overview',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          OVERVIEW
+        </div>
+        <div class="admin-sidebar-divider"></div>
+        <div class="admin-sidebar-section">CONTENT</div>
+        <div class="admin-sidebar-item" onclick="adminShowSection('videos',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+          VIDEO MEDIA
+        </div>
+        <div class="admin-sidebar-item" onclick="adminShowSection('signals',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
+          ARG SIGNALS
+        </div>
+      </div>
+
+      <div class="admin-main-content">
+        <div id="admin-sec-overview" class="admin-section active">
+          <div class="admin-section-title">System Overview</div>
+          <div class="admin-section-sub">WNCORE BROADCAST NETWORK · CONFIGURATION</div>
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot green"></div>STATUS</div>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+              <span class="admin-badge admin-badge-online">CONNECTED</span>
+              <span style="font-size:0.65rem;color:rgba(232,228,223,0.22)">Admin panel loaded · Ctrl+B to toggle</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-sec-videos" class="admin-section">
+          <div class="admin-section-title">Video Media</div>
+          <div class="admin-section-sub">MANAGE VIDEO URLS FOR LIVE SITE</div>
+
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE VIDEO URL</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="url" id="admin-eye-url" class="admin-field-input" placeholder="https://" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_video_url','admin-eye-url')">SAVE</button>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>GLOBE VIDEO URL</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="url" id="admin-globe-url" class="admin-field-input" placeholder="https://" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('globe_video_url','admin-globe-url')">SAVE</button>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER URL</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="url" id="admin-anime-url" class="admin-field-input" placeholder="https://" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_url','admin-anime-url')">SAVE</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="admin-sec-signals" class="admin-section">
+          <div class="admin-section-title">ARG Signals</div>
+          <div class="admin-section-sub">88.7 FM · SIGNAL CONFIGURATION</div>
+
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>SIGNAL STATUS TEXT</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="text" id="admin-signal-text" class="admin-field-input" placeholder="NO CARRIER — WAITING FOR CONNECTION" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('signal_status_text','admin-signal-text')">SAVE</button>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE SPOOKY TEXT</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="text" id="admin-spooky-text" class="admin-field-input" placeholder="I see you." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_spooky_text','admin-spooky-text')">SAVE</button>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>TICKER MESSAGE</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="text" id="admin-ticker-text" class="admin-field-input" placeholder="ANOMALY DETECTED..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('ticker_inject','admin-ticker-text')">INJECT</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- ══ APP ════════════════════════════════════════════════════ -->
-<div id="app">
-
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="topbar-logo">WNCORE</div>
-    <div class="topbar-sep"></div>
-    <div class="topbar-title">ADMIN PANEL</div>
-    <div class="topbar-right">
-      <div class="topbar-status">
-        <div class="status-dot"></div>
-        <span id="topbar-conn">CONNECTED</span>
-      </div>
-      <div class="topbar-sep"></div>
-      <div class="topbar-clock" id="topbar-clock">——</div>
-      <div class="topbar-sep"></div>
-      <button class="topbar-lock-btn" onclick="lockSession()">LOCK SESSION</button>
-    </div>
-  </div>
-
-  <!-- MOBILE TABS -->
-  <div class="mobile-tabs">
-    <div class="mobile-tab active" onclick="showSection('overview',this)">OVERVIEW</div>
-    <div class="mobile-tab" onclick="showSection('videos',this)">VIDEOS</div>
-    <div class="mobile-tab" onclick="showSection('signals',this)">SIGNALS</div>
-    <div class="mobile-tab" onclick="showSection('nodes',this)">NODES</div>
-    <div class="mobile-tab" onclick="showSection('logs',this)">LOGS</div>
-  </div>
-
-  <div class="app-body">
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-      <div class="sidebar-section">MONITOR</div>
-      <div class="sidebar-item active" onclick="showSection('overview',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        OVERVIEW
-      </div>
-      <div class="sidebar-item" onclick="showSection('nodes',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-        NODE STATUS
-      </div>
-      <div class="sidebar-divider"></div>
-      <div class="sidebar-section">CONTENT</div>
-      <div class="sidebar-item" onclick="showSection('videos',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-        VIDEO MEDIA
-      </div>
-      <div class="sidebar-item" onclick="showSection('signals',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
-        ARG SIGNALS
-      </div>
-      <div class="sidebar-divider"></div>
-      <div class="sidebar-section">SYSTEM</div>
-      <div class="sidebar-item" onclick="showSection('logs',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        ACTIVITY LOG
-      </div>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-
-      <!-- ═══ OVERVIEW ═══ -->
-      <div id="sec-overview" class="section active">
-        <div class="section-title">System Overview</div>
-        <div class="section-sub">WNCORE BROADCAST NETWORK · REAL-TIME STATUS</div>
-
-        <div class="stat-grid" id="stat-grid">
-          <div class="stat-box">
-            <div class="stat-label">EYE VIDEO</div>
-            <div class="stat-val" id="stat-eye">—</div>
-            <div class="stat-sub" id="stat-eye-sub">checking...</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">GLOBE VIDEO</div>
-            <div class="stat-val" id="stat-globe">—</div>
-            <div class="stat-sub" id="stat-globe-sub">checking...</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">ANIME BANNER</div>
-            <div class="stat-val" id="stat-anime">—</div>
-            <div class="stat-sub" id="stat-anime-sub">checking...</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">NODE 09</div>
-            <div class="stat-val red">UNKNOWN</div>
-            <div class="stat-sub">88.7 MHz · no carrier</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot green"></div>SUPABASE CONNECTION</div>
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <span class="badge badge-online" id="db-badge">CONNECTED</span>
-            <span style="font-size:0.65rem;color:var(--text3)" id="db-url-display">—</span>
-            <button class="btn btn-ghost" style="margin-left:auto" onclick="fetchConfig(true)">↺ REFRESH</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>QUICK ACTIONS</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            <button class="btn btn-ghost" onclick="showSection('videos',document.querySelector('.sidebar-item:nth-child(6)'))">▶ MANAGE VIDEOS</button>
-            <button class="btn btn-ghost" onclick="showSection('signals',document.querySelector('.sidebar-item:nth-child(7)'))">⚡ ARG SIGNALS</button>
-            <button class="btn btn-danger" onclick="clearAllVideos()">✕ CLEAR ALL VIDEOS</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ VIDEO MEDIA ═══ -->
-      <div id="sec-videos" class="section">
-        <div class="section-title">Video Media</div>
-        <div class="section-sub">PASTE VIDEO URLS · CHANGES APPLY TO LIVE SITE IMMEDIATELY</div>
-
-        <!-- EYE VIDEO -->
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>ARG EYE SEQUENCE</div>
-          <div class="video-entry">
-            <div class="video-entry-info">
-              <div class="video-entry-label">EYE VIDEO URL</div>
-              <div class="video-entry-desc">Plays instead of the static eye image when the horror overlay triggers. MP4, WebM, or any direct video URL. Loops automatically. Recommended: 8s, square crop, no audio.</div>
-              <div class="input-group">
-                <input type="url" class="field-input" id="eye-url" placeholder="https://storage.googleapis.com/... or any direct .mp4 URL" oninput="previewVideo('eye')">
-                <button class="btn btn-primary" onclick="saveField('eye_video_url','eye-url','eye-save-btn')" id="eye-save-btn">SAVE</button>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
-                <label class="toggle" title="Enable/disable eye video">
-                  <input type="checkbox" id="eye-enabled" onchange="saveField('eye_video_enabled','eye-enabled','')">
-                  <div class="toggle-track"><div class="toggle-thumb"></div></div>
-                </label>
-                <span style="font-size:0.62rem;color:var(--text3)">VIDEO ENABLED (fallback to static images if off)</span>
-              </div>
-            </div>
-          </div>
-          <div class="preview-panel" id="eye-preview">
-            <div class="preview-label">PREVIEW</div>
-            <video id="eye-preview-vid" muted autoplay loop playsinline controls style="width:100%;max-height:200px;border-radius:6px;background:#000"></video>
-          </div>
-        </div>
-
-        <!-- GLOBE VIDEO -->
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>GLOBE AMBIENT VIDEO</div>
-          <div class="video-entry">
-            <div class="video-entry-info">
-              <div class="video-entry-label">GLOBE AMBIENT URL</div>
-              <div class="video-entry-desc">Subtle background video layered behind the 3D globe on the home page. Low opacity overlay. Best as abstract space/atmosphere loop. 8–16s, 16:9.</div>
-              <div class="input-group">
-                <input type="url" class="field-input" id="globe-url" placeholder="https://..." oninput="previewVideo('globe')">
-                <button class="btn btn-primary" onclick="saveField('globe_video_url','globe-url','globe-save-btn')" id="globe-save-btn">SAVE</button>
-              </div>
-            </div>
-          </div>
-          <div class="preview-panel" id="globe-preview">
-            <div class="preview-label">PREVIEW</div>
-            <video id="globe-preview-vid" muted autoplay loop playsinline controls style="width:100%;max-height:180px;border-radius:6px;background:#000"></video>
-          </div>
-        </div>
-
-        <!-- ANIME BANNER VIDEO -->
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>ANIME BANNER VIDEO</div>
-          <div class="video-entry">
-            <div class="video-entry-info">
-              <div class="video-entry-label">ANIME PAGE BANNER URL</div>
-              <div class="video-entry-desc">Background video for the Anime / J-Music page banner. Replaces the static image. Anime aesthetic recommended. 8s loop, 16:9 or wider.</div>
-              <div class="input-group">
-                <input type="url" class="field-input" id="anime-url" placeholder="https://..." oninput="previewVideo('anime')">
-                <button class="btn btn-primary" onclick="saveField('anime_banner_url','anime-url','anime-save-btn')" id="anime-save-btn">SAVE</button>
-              </div>
-            </div>
-          </div>
-          <div class="preview-panel" id="anime-preview">
-            <div class="preview-label">PREVIEW</div>
-            <video id="anime-preview-vid" muted autoplay loop playsinline controls style="width:100%;max-height:180px;border-radius:6px;background:#000"></video>
-          </div>
-        </div>
-
-        <!-- BROADCAST NOTES -->
-        <div class="card" style="border-color:rgba(234,179,8,0.15)">
-          <div class="card-title"><div class="card-title-dot yellow"></div>COMPATIBLE VIDEO SOURCES</div>
-          <div style="font-size:0.68rem;color:var(--text3);line-height:2">
-            ✓ &nbsp;Google Cloud Storage (public bucket) — <code style="color:var(--text2)">storage.googleapis.com/bucket/file.mp4</code><br>
-            ✓ &nbsp;Cloudflare R2 public URL<br>
-            ✓ &nbsp;GitHub raw content — <code style="color:var(--text2)">raw.githubusercontent.com/.../file.mp4</code><br>
-            ✓ &nbsp;Any direct .mp4 / .webm URL with CORS headers<br>
-            ✗ &nbsp;YouTube, Vimeo, Google Drive share links (use direct file URLs only)<br>
-            ✗ &nbsp;URLs behind auth or login walls
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══ ARG SIGNALS ═══ -->
-      <div id="sec-signals" class="section">
-        <div class="section-title">ARG Signals</div>
-        <div class="section-sub">88.7 FM · NODE 09 · SIGNAL_KAGE CONTROLS</div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>SIGNAL CONNECTION STATUS TEXT</div>
-          <div style="font-size:0.68rem;color:var(--text2);margin-bottom:10px">Displayed in the 88.7 FM signal box at the bottom of the home page.</div>
-          <div class="input-group">
-            <input type="text" class="field-input" id="signal-status-input" placeholder="NO CARRIER — WAITING FOR CONNECTION" maxlength="80" oninput="document.getElementById('signal-preview-text').textContent=this.value||'NO CARRIER — WAITING FOR CONNECTION'">
-            <button class="btn btn-primary" onclick="saveField('signal_status_text','signal-status-input','')">SAVE</button>
-          </div>
-          <div class="text-preview" id="signal-preview-text">NO CARRIER — WAITING FOR CONNECTION</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="setSignalPreset('NO CARRIER — WAITING FOR CONNECTION')">NO CARRIER</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="setSignalPreset('CARRIER DETECTED — STAND BY')">CARRIER DETECTED</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="setSignalPreset('SIGNAL_KAGE — ACTIVE TRANSMISSION')">KAGE ACTIVE</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="setSignalPreset('FREQUENCY LOCKED — 88.700 MHz')">FREQ LOCKED</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem;color:var(--red)" onclick="setSignalPreset('DO NOT TUNE TO 88.7')">WARNING</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>EYE SEQUENCE SPOOKY TEXT</div>
-          <div style="font-size:0.68rem;color:var(--text2);margin-bottom:10px">Text displayed over the eye during the horror overlay sequence.</div>
-          <div class="input-group">
-            <input type="text" class="field-input" id="spooky-text-input" placeholder="I see you." maxlength="60">
-            <button class="btn btn-primary" onclick="saveField('eye_spooky_text','spooky-text-input','')">SAVE</button>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="document.getElementById('spooky-text-input').value='I see you.'">I see you.</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="document.getElementById('spooky-text-input').value='you found me'">you found me</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="document.getElementById('spooky-text-input').value='88.7'">88.7</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="document.getElementById('spooky-text-input').value='don\'t tune in'">don't tune in</button>
-            <button class="btn btn-ghost" style="font-size:0.58rem" onclick="document.getElementById('spooky-text-input').value='SIGNAL_KAGE'">SIGNAL_KAGE</button>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>TICKER INJECT</div>
-          <div style="font-size:0.68rem;color:var(--text2);margin-bottom:10px">Inject a message into the live site's ticker banner. Stored in Supabase — shows on next page load for all visitors.</div>
-          <div class="input-group">
-            <input type="text" class="field-input" id="ticker-inject-input" placeholder="ANOMALY DETECTED ON NODE 09..." maxlength="120">
-            <button class="btn btn-primary" onclick="saveField('ticker_inject','ticker-inject-input','')">INJECT</button>
-          </div>
-          <div style="margin-top:8px;font-size:0.6rem;color:var(--text3)">Clear with empty string to remove. Shown as <span style="color:var(--red)">RED WARNING</span> text in ticker.</div>
-        </div>
-      </div>
-
-      <!-- ═══ NODES ═══ -->
-      <div id="sec-nodes" class="section">
-        <div class="section-title">Node Status</div>
-        <div class="section-sub">WNCORE BROADCAST NETWORK — NODE REGISTRY</div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>NODE REGISTRY</div>
-          <div class="node-grid" id="node-grid"></div>
-        </div>
-
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot"></div>NODE 09 — SPECIAL STATUS</div>
-          <div style="font-size:0.7rem;color:var(--text2);line-height:1.9;margin-bottom:14px">
-            Node 09 has not responded since <span style="color:var(--red)">2016-11-09 03:47:22 UTC</span>.<br>
-            Last known transmission: frequency 88.700 MHz, source unverified.<br>
-            All ping attempts return: <span style="font-family:monospace;color:rgba(200,71,42,0.6)">ETIMEDOUT — no route to host</span>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-ghost" onclick="pingNode9()">PING NODE 09</button>
-            <button class="btn btn-danger" disabled>DECOMMISSION</button>
-          </div>
-          <div id="ping-result" style="margin-top:10px;font-size:0.65rem;color:var(--red);display:none;font-family:monospace;line-height:1.8"></div>
-        </div>
-      </div>
-
-      <!-- ═══ LOGS ═══ -->
-      <div id="sec-logs" class="section">
-        <div class="section-title">Activity Log</div>
-        <div class="section-sub">ADMIN SESSION ACTIONS · LOCAL STORAGE</div>
-        <div class="card">
-          <div class="card-title"><div class="card-title-dot green"></div>SESSION LOG</div>
-          <div class="log-box" id="main-log-box">
-            <div class="log-row"><span class="log-ts">——</span><span class="log-msg">No activity yet this session</span></div>
-          </div>
-          <div style="margin-top:10px;display:flex;gap:8px">
-            <button class="btn btn-ghost" onclick="clearLog()">CLEAR LOG</button>
-            <button class="btn btn-ghost" onclick="exportLog()">EXPORT</button>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /main-content -->
-  </div><!-- /app-body -->
-</div><!-- /app -->
-
-<!-- TOAST CONTAINER -->
-<div id="toast-container"></div>
-
 <script>
-/* ═══════════════════════════════════════════════════
-   WNCORE ADMIN PANEL — MAIN SCRIPT
-   Ctrl+B to open from main site
-   Supabase config sync via /api/config
-═══════════════════════════════════════════════════ */
+// ─ ADMIN PANEL SYSTEM ─
+const ADMIN_PANEL_HASH = '3f7e2a1b5c8d9e4f';
+const ADMIN_PANEL_SESS = 'wncore_admin_sess2';
 
-// ─── CONFIG ──────────────────────────────────────
-// These are read-only anon values safe for client
-const SUPABASE_URL_CLIENT = ''; // Injected at runtime from meta or left blank — reads via /api/config
-const API_BASE = '/api/config'; // Vercel serverless function
-
-// Password hash (obfuscated)
-// Hash computed from password — stored as hex digest
-const _pwHash = '3f7e2a1b5c8d9e4f'; // SHA-like hash representation
-const SESS_KEY = 'wncore_adm2_sess';
-const LOG_KEY  = 'wncore_adm2_log';
-const FAIL_KEY = 'wncore_adm2_fail';
-
-// Simple hash function for password verification
-function _hash(str) {
+function adminHash(str) {
   let hash = 5381;
   for (let i = 0; i < str.length; i++) {
     hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
@@ -661,399 +1091,141 @@ function _hash(str) {
   return Math.abs(hash).toString(16).padStart(16, '0').slice(-16);
 }
 
-// ─── KEYBOARD SHORTCUT ───────────────────────────
+// Ctrl+B trigger
 document.addEventListener('keydown', (e) => {
   if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
     e.preventDefault();
-    document.getElementById('login-input').focus();
-  }
-});
-
-// ─── AUTH TOKEN (matches api/config.js) ──────────
-function makeAdminToken() {
-  const today = new Date().toISOString().slice(0, 10);
-  // Client-side mirror of server token — uses JWT_SECRET from env
-  // We pass a session-derived token the server can verify
-  // In practice the server checks btoa(JWT_SECRET + ':' + today)
-  // We store just a session flag; actual writes need the real token
-  // For this client: token stored in sessionStorage after auth
-  return sessionStorage.getItem('wncore_adm_token') || '';
-}
-
-// ─── LOGIN ────────────────────────────────────────
-let _fails = 0;
-let _lockUntil = 0;
-
-document.getElementById('login-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') submitLogin();
-});
-
-function submitLogin() {
-  if (Date.now() < _lockUntil) { showLockMessage(); return; }
-  const val = document.getElementById('login-input').value;
-  document.getElementById('login-input').value = '';
-  if (_hash(val) === _pwHash) {
-    _fails = 0;
-    // Store session
-    sessionStorage.setItem(SESS_KEY, btoa(JSON.stringify({t: Date.now(), u: 'siharu847'})));
-    // Store admin token for API calls (server validates with JWT_SECRET)
-    // Token is passed in x-wncore-admin header; server checks it
-    sessionStorage.setItem('wncore_adm_token', 'AUTH_' + Date.now());
-    addLog('AUTH_SUCCESS');
-    document.getElementById('login-screen').classList.add('out');
-    setTimeout(() => { document.getElementById('login-screen').style.display = 'none'; }, 400);
-    document.getElementById('app').classList.add('show');
-    initApp();
-  } else {
-    _fails++;
-    addLog('AUTH_FAIL');
-    const errEl = document.getElementById('login-err');
-    errEl.classList.add('show');
-    document.getElementById('login-attempts').textContent = `ATTEMPT ${_fails}/3`;
-    setTimeout(() => errEl.classList.remove('show'), 2000);
-    // Shake
-    const box = document.querySelector('.login-box');
-    box.style.animation = 'none';
-    box.offsetHeight; // reflow
-    box.style.animation = '';
-    if (_fails >= 3) {
-      _lockUntil = Date.now() + 300000;
-      showLockMessage();
+    const modal = document.getElementById('admin-panel-modal');
+    if (modal) {
+      if (modal.classList.contains('show')) {
+        modal.classList.remove('show');
+      } else {
+        modal.classList.add('show');
+        document.getElementById('admin-login-input').focus();
+      }
     }
   }
-}
-
-function showLockMessage() {
-  document.getElementById('login-lock').style.display = 'block';
-  const countdown = setInterval(() => {
-    const rem = Math.max(0, _lockUntil - Date.now());
-    const m = Math.floor(rem / 60000);
-    const s = Math.floor((rem % 60000) / 1000);
-    document.getElementById('lock-countdown').textContent = `${m}:${String(s).padStart(2,'0')}`;
-    if (rem <= 0) { clearInterval(countdown); document.getElementById('login-lock').style.display = 'none'; _fails = 0; }
-  }, 1000);
-}
-
-function lockSession() {
-  sessionStorage.removeItem(SESS_KEY);
-  sessionStorage.removeItem('wncore_adm_token');
-  addLog('LOCK_SESSION');
-  window.location.reload();
-}
-
-// Check if already authed on load
-window.addEventListener('DOMContentLoaded', () => {
-  const sess = sessionStorage.getItem(SESS_KEY);
-  if (sess) {
-    try {
-      const s = JSON.parse(atob(sess));
-      if (s.t && Date.now() - s.t < 3600000) {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app').classList.add('show');
-        initApp();
-        return;
-      }
-    } catch(e) {}
-  }
-  // Auto focus
-  setTimeout(() => document.getElementById('login-input').focus(), 100);
 });
 
-// ─── INIT APP ─────────────────────────────────────
-let _config = {};
+document.getElementById('admin-login-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') adminSubmitLogin();
+});
 
-async function initApp() {
-  startClock();
-  buildNodeGrid();
-  renderLog();
-  await fetchConfig();
+function adminSubmitLogin() {
+  const input = document.getElementById('admin-login-input');
+  const val = input.value;
+  input.value = '';
+  
+  if (adminHash(val) === ADMIN_PANEL_HASH) {
+    sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(Date.now()));
+    const screen = document.getElementById('admin-login-screen');
+    const app = document.getElementById('admin-app');
+    screen.style.display = 'none';
+    app.classList.add('show');
+    adminStartClock();
+    console.log('Admin authenticated');
+  } else {
+    const err = document.getElementById('admin-login-err');
+    err.classList.add('show');
+    setTimeout(() => err.classList.remove('show'), 2000);
+    const box = document.querySelector('.admin-login-box');
+    box.style.animation = 'none';
+    box.offsetHeight;
+    box.style.animation = 'admin-rise 0.3s ease';
+  }
 }
 
-// ─── CLOCK ────────────────────────────────────────
-function startClock() {
+function adminLockSession() {
+  sessionStorage.removeItem(ADMIN_PANEL_SESS);
+  document.getElementById('admin-app').classList.remove('show');
+  document.getElementById('admin-login-screen').style.display = 'flex';
+  document.getElementById('admin-login-input').value = '';
+}
+
+function adminStartClock() {
   function tick() {
     const n = new Date();
     const h = String(n.getUTCHours()).padStart(2,'0');
     const m = String(n.getUTCMinutes()).padStart(2,'0');
     const s = String(n.getUTCSeconds()).padStart(2,'0');
-    document.getElementById('topbar-clock').textContent = `${h}:${m}:${s} UTC`;
+    const el = document.getElementById('admin-topbar-clock');
+    if (el) el.textContent = `${h}:${m}:${s} UTC`;
   }
-  tick(); setInterval(tick, 1000);
+  tick();
+  setInterval(tick, 1000);
 }
 
-// ─── FETCH CONFIG FROM SUPABASE (via API) ─────────
-async function fetchConfig(loud = false) {
-  try {
-    const r = await fetch(API_BASE, { method: 'GET' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    _config = data;
-    applyConfigToForm(data);
-    updateOverviewStats(data);
-    document.getElementById('db-badge').className = 'badge badge-online';
-    document.getElementById('db-badge').textContent = 'CONNECTED';
-    document.getElementById('db-url-display').textContent = 'supabase · wncore_config';
-    if (loud) toast('Config refreshed from Supabase', 'success');
-    addLog('FETCH_CONFIG OK');
-  } catch(e) {
-    document.getElementById('db-badge').className = 'badge badge-offline';
-    document.getElementById('db-badge').textContent = 'OFFLINE';
-    if (loud) toast('Could not reach /api/config — check Vercel logs', 'error');
-    addLog('FETCH_CONFIG ERR: ' + e.message);
-  }
+function adminShowSection(id, el) {
+  document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.admin-sidebar-item').forEach(s => s.classList.remove('active'));
+  const sec = document.getElementById('admin-sec-' + id);
+  if (sec) sec.classList.add('active');
+  if (el) el.classList.add('active');
 }
 
-function applyConfigToForm(cfg) {
-  if (cfg.eye_video_url)       setVal('eye-url', cfg.eye_video_url);
-  if (cfg.globe_video_url)     setVal('globe-url', cfg.globe_video_url);
-  if (cfg.anime_banner_url)    setVal('anime-url', cfg.anime_banner_url);
-  if (cfg.signal_status_text)  setVal('signal-status-input', cfg.signal_status_text);
-  if (cfg.eye_spooky_text)     setVal('spooky-text-input', cfg.eye_spooky_text);
-  if (cfg.ticker_inject)       setVal('ticker-inject-input', cfg.ticker_inject);
-
-  const eyeEn = document.getElementById('eye-enabled');
-  if (eyeEn) eyeEn.checked = cfg.eye_video_enabled === 'true';
-
-  // Update signal text preview
-  const sp = document.getElementById('signal-preview-text');
-  if (sp && cfg.signal_status_text) sp.textContent = cfg.signal_status_text;
-
-  // Trigger previews if URLs exist
-  if (cfg.eye_video_url) previewVideo('eye', cfg.eye_video_url);
-  if (cfg.globe_video_url) previewVideo('globe', cfg.globe_video_url);
-  if (cfg.anime_banner_url) previewVideo('anime', cfg.anime_banner_url);
-}
-
-function updateOverviewStats(cfg) {
-  setStatBox('stat-eye', cfg.eye_video_url ? 'SET' : 'NONE', cfg.eye_video_url ? 'green' : '',
-             cfg.eye_video_url ? truncUrl(cfg.eye_video_url) : 'no video configured', 'stat-eye-sub');
-  setStatBox('stat-globe', cfg.globe_video_url ? 'SET' : 'NONE', cfg.globe_video_url ? 'green' : '',
-             cfg.globe_video_url ? truncUrl(cfg.globe_video_url) : 'no video configured', 'stat-globe-sub');
-  setStatBox('stat-anime', cfg.anime_banner_url ? 'SET' : 'NONE', cfg.anime_banner_url ? 'green' : '',
-             cfg.anime_banner_url ? truncUrl(cfg.anime_banner_url) : 'no video configured', 'stat-anime-sub');
-}
-
-function setStatBox(valId, val, colorClass, sub, subId) {
-  const el = document.getElementById(valId);
-  if (el) { el.textContent = val; el.className = 'stat-val' + (colorClass ? ' ' + colorClass : ''); }
-  const subEl = document.getElementById(subId);
-  if (subEl) subEl.textContent = sub;
-}
-
-function truncUrl(u) {
-  if (!u) return '';
-  try { return new URL(u).hostname + '/...'; } catch(e) { return u.slice(0, 30) + '...'; }
-}
-
-// ─── SAVE FIELD ───────────────────────────────────
-async function saveField(configKey, inputId, btnId) {
+async function adminSaveField(key, inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
-  const value = input.type === 'checkbox' ? String(input.checked) : input.value.trim();
-  const btn = btnId ? document.getElementById(btnId) : null;
-
-  if (btn) { btn.textContent = '...'; btn.disabled = true; }
-  input.classList.remove('valid','error');
-
+  const value = input.value.trim();
+  
   try {
-    // Build the admin token — in production this comes from the JWT_SECRET
-    // The server will verify it; for now we pass a session marker
-    // The real token is: btoa(`${JWT_SECRET}:${today}`) — server computes same
-    // We ask the user to have set JWT_SECRET in Vercel env; server validates
-    const today = new Date().toISOString().slice(0, 10);
-    // We can't compute JWT_SECRET on client (it's a server env var)
-    // So we use a session token that the server can validate differently:
-    // The server checks if the request comes with a valid session identifier
-    // For this implementation: the token is the base64 of "WNCORE_ADMIN:" + today
-    // Change in api/config.js to match if you want stronger auth
-    const token = btoa('WNCORE_ADMIN:' + today);
-
-    const r = await fetch(API_BASE, {
+    const token = btoa('WNCORE_ADMIN:' + new Date().toISOString().slice(0,10));
+    const r = await fetch('/api/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-wncore-admin': token },
-      body: JSON.stringify({ key: configKey, value })
+      body: JSON.stringify({ key, value })
     });
 
-    if (!r.ok) {
-      const err = await r.json().catch(()=>({error:'Unknown'}));
-      throw new Error(err.error || 'HTTP ' + r.status);
-    }
-
-    _config[configKey] = value;
-    input.classList.add('valid');
-    if (btn) { btn.textContent = '✓ SAVED'; btn.className = 'btn btn-success'; }
-    toast(`${configKey} saved`, 'success');
-    addLog(`SAVE ${configKey}`);
-    updateOverviewStats(_config);
-    setTimeout(() => {
-      if (btn) { btn.textContent = 'SAVE'; btn.className = 'btn btn-primary'; btn.disabled = false; }
-      input.classList.remove('valid');
-    }, 2000);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    input.style.borderColor = 'rgba(34,197,94,0.25)';
+    setTimeout(() => input.style.borderColor = '', 2000);
   } catch(e) {
-    input.classList.add('error');
-    if (btn) { btn.textContent = 'ERROR'; btn.className = 'btn btn-danger'; btn.disabled = false; }
-    toast('Save failed: ' + e.message, 'error');
-    addLog('SAVE ERR: ' + e.message);
-    setTimeout(() => {
-      if (btn) { btn.textContent = 'SAVE'; btn.className = 'btn btn-primary'; }
-      input.classList.remove('error');
-    }, 3000);
+    console.error('Save failed:', e);
+    input.style.borderColor = 'rgba(200,71,42,0.25)';
+    setTimeout(() => input.style.borderColor = '', 2000);
   }
-}
-
-// ─── VIDEO PREVIEW ────────────────────────────────
-function previewVideo(type, urlOverride) {
-  const inputId = type + '-url';
-  const url = urlOverride || document.getElementById(inputId)?.value?.trim();
-  const panel = document.getElementById(type + '-preview');
-  const vid = document.getElementById(type + '-preview-vid');
-  if (!panel || !vid) return;
-
-  if (!url) { panel.classList.remove('show'); return; }
-
-  panel.classList.add('show');
-  vid.src = url;
-  vid.load();
-  vid.onerror = () => {
-    vid.removeAttribute('src');
-    panel.innerHTML = '<div class="preview-label">PREVIEW</div><div class="preview-error">⚠ Cannot load video — check URL and CORS headers</div>';
-  };
-}
-
-// ─── CLEAR ALL VIDEOS ─────────────────────────────
-async function clearAllVideos() {
-  if (!confirm('Clear all video URLs? The live site will fall back to static images.')) return;
-  const keys = ['eye_video_url','globe_video_url','anime_banner_url'];
-  for (const k of keys) {
-    await fetch(API_BASE, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-wncore-admin': btoa('WNCORE_ADMIN:' + new Date().toISOString().slice(0,10)) },
-      body: JSON.stringify({ key: k, value: '' })
-    }).catch(()=>{});
-  }
-  ['eye-url','globe-url','anime-url'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
-  ['eye-preview','globe-preview','anime-preview'].forEach(id => { const el=document.getElementById(id); if(el) el.classList.remove('show'); });
-  await fetchConfig();
-  toast('All video URLs cleared', 'info');
-  addLog('CLEAR_ALL_VIDEOS');
-}
-
-// ─── SIGNAL PRESETS ───────────────────────────────
-function setSignalPreset(text) {
-  const inp = document.getElementById('signal-status-input');
-  if (inp) { inp.value = text; document.getElementById('signal-preview-text').textContent = text; }
-}
-
-// ─── NODE GRID ────────────────────────────────────
-function buildNodeGrid() {
-  const grid = document.getElementById('node-grid');
-  if (!grid) return;
-  const nodes = [
-    {id:'01',status:'online'},{id:'02',status:'online'},{id:'03',status:'standby'},
-    {id:'04',status:'online'},{id:'05',status:'online'},{id:'06',status:'online'},
-    {id:'07',status:'standby'},{id:'08',status:'online'},{id:'09',status:'unknown'},
-  ];
-  grid.innerHTML = nodes.map(n => `
-    <div class="node-item">
-      <div class="node-dot ${n.status}"></div>
-      <div class="node-name">NODE ${n.id}</div>
-      <div class="node-status ${n.status}">${n.status.toUpperCase()}</div>
-    </div>
-  `).join('');
-}
-
-function pingNode9() {
-  const result = document.getElementById('ping-result');
-  result.style.display = 'block';
-  const lines = [
-    'PING node09.wncore.internal (10.0.0.9): 56 data bytes',
-    'Request timeout for icmp_seq 0',
-    'Request timeout for icmp_seq 1',
-    'Request timeout for icmp_seq 2',
-    '--- node09.wncore.internal ping statistics ---',
-    '3 packets transmitted, 0 packets received, 100.0% packet loss',
-    '',
-    'TRACE: last known route dropped at 10.0.0.8 — 2016-11-09',
-    'NOTE: Node 09 IP still responds to ARP. Something is there.',
-  ];
-  result.textContent = '';
-  let i = 0;
-  const iv = setInterval(() => {
-    if (i >= lines.length) { clearInterval(iv); return; }
-    result.textContent += lines[i] + '\n';
-    i++;
-  }, 500);
-  addLog('PING_NODE09');
-}
-
-// ─── NAVIGATION ───────────────────────────────────
-function showSection(id, clickedEl) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.sidebar-item,.mobile-tab').forEach(b => b.classList.remove('active'));
-  const sec = document.getElementById('sec-' + id);
-  if (sec) sec.classList.add('active');
-  if (clickedEl) clickedEl.classList.add('active');
-}
-
-// ─── LOG ──────────────────────────────────────────
-function addLog(msg) {
-  const logs = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
-  logs.unshift({ t: new Date().toISOString(), m: msg });
-  if (logs.length > 100) logs.pop();
-  localStorage.setItem(LOG_KEY, JSON.stringify(logs));
-  renderLog();
-}
-
-function renderLog() {
-  const box = document.getElementById('main-log-box');
-  if (!box) return;
-  const logs = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
-  if (!logs.length) return;
-  box.innerHTML = logs.slice(0, 30).map(l => {
-    const isOk = l.m.includes('OK') || l.m.includes('SUCCESS') || l.m.includes('SAVE ');
-    const isErr = l.m.includes('ERR') || l.m.includes('FAIL') || l.m.includes('DENIED');
-    return `<div class="log-row">
-      <span class="log-ts">${l.t.slice(11,19)}</span>
-      <span class="log-msg ${isOk?'ok':isErr?'err':''}">${l.m}</span>
-    </div>`;
-  }).join('');
-}
-
-function clearLog() {
-  localStorage.removeItem(LOG_KEY);
-  document.getElementById('main-log-box').innerHTML = '<div class="log-row"><span class="log-ts">——</span><span class="log-msg">Log cleared</span></div>';
-}
-
-function exportLog() {
-  const logs = JSON.parse(localStorage.getItem(LOG_KEY) || '[]');
-  const text = logs.map(l => `${l.t} | ${l.m}`).join('\n');
-  const a = document.createElement('a');
-  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
-  a.download = 'wncore-admin-log-' + new Date().toISOString().slice(0,10) + '.txt';
-  a.click();
-}
-
-// ─── TOAST ────────────────────────────────────────
-function toast(msg, type = 'info') {
-  const c = document.getElementById('toast-container');
-  const el = document.createElement('div');
-  el.className = `toast toast-${type}`;
-  const icons = { success: '✓', error: '⚠', info: '·' };
-  el.innerHTML = `<span style="flex-shrink:0">${icons[type]||'·'}</span><span>${msg}</span>`;
-  c.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(12px)';
-    el.style.transition = 'all 0.2s';
-    setTimeout(() => el.remove(), 200);
-  }, 3000);
-}
-
-// ─── HELPERS ─────────────────────────────────────
-function setVal(id, val) {
-  const el = document.getElementById(id);
-  if (el) el.value = val;
 }
 </script>
+
+<script src="main.js" defer></script>
+<script src="improvements.js" defer></script>
+<script src="wrongness.js" defer></script>
+<script src="admin.js" defer></script>
+
+<script>
+// Signal connection box clock + ARG flicker
+(function(){
+  function updateSignalTs(){
+    const el = document.getElementById('signal-conn-ts');
+    if(!el) return;
+    const n = new Date();
+    const h = String(n.getUTCHours()).padStart(2,'0');
+    const m = String(n.getUTCMinutes()).padStart(2,'0');
+    const s = String(n.getUTCSeconds()).padStart(2,'0');
+    el.textContent = h+':'+m+':'+s+' UTC';
+  }
+  updateSignalTs();
+  setInterval(updateSignalTs, 1000);
+
+  // Occasional ARG flicker on signal status text
+  const FLICKERS = [
+    'CARRIER DETECTED — STAND BY',
+    'SIGNAL STRENGTH: UNKNOWN',
+    'SOURCE: SIGNAL_KAGE',
+    'NO CARRIER — WAITING FOR CONNECTION',
+    'FREQUENCY LOCKED — 88.700 MHz',
+    '— NO SIGNAL —',
+  ];
+  setInterval(function(){
+    const el = document.getElementById('signal-conn-status');
+    if(!el || Math.random() > 0.25) return;
+    const orig = el.textContent;
+    el.textContent = FLICKERS[Math.floor(Math.random()*FLICKERS.length)];
+    el.style.color = 'rgba(200,71,42,0.8)';
+    setTimeout(function(){ el.textContent = 'NO CARRIER — WAITING FOR CONNECTION'; el.style.color = ''; }, 420);
+  }, 8000);
+})();
+</script>
+
 </body>
 </html>
