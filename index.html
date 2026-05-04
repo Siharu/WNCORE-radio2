@@ -793,7 +793,7 @@
     <div class="eye-ambient"></div>
     <img src="images/eye-base.png" id="eye-base-img" alt="" loading="lazy">
     <video id="eye-pupil-video" autoplay muted loop playsinline style="position:absolute;width:180px;height:180px;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none">
-      <source src="ghuul.mp4" type="video/mp4">
+      <source id="eye-pupil-video-src" src="" type="video/mp4">
     </video>
     <div class="spooky-text" id="spooky-text">I see you.</div>
   </div>
@@ -1117,6 +1117,14 @@
           </div>
 
           <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE PUPIL VIDEO (Supabase URL)</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+              <input type="url" id="admin-eye-video-url" class="admin-field-input" placeholder="https://...supabase.co/storage/v1/object/public/..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_spooky_video','admin-eye-video-url')">SAVE</button>
+            </div>
+          </div>
+
+          <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot"></div>TICKER MESSAGE</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
               <input type="text" id="admin-ticker-text" class="admin-field-input" placeholder="ANOMALY DETECTED..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
@@ -1238,6 +1246,50 @@ async function adminSaveField(key, inputId) {
     setTimeout(() => input.style.borderColor = '', 2000);
   }
 }
+</script>
+
+<script>
+// Load saved config from Supabase and apply to page
+async function loadSiteConfig() {
+  try {
+    const r = await fetch('/api/config');
+    if (!r.ok) return;
+    const cfg = await r.json();
+
+    // Eye pupil video
+    if (cfg.eye_spooky_video) {
+      const src = document.getElementById('eye-pupil-video-src');
+      const vid = document.getElementById('eye-pupil-video');
+      if (src && vid) { src.src = cfg.eye_spooky_video; vid.load(); vid.play().catch(()=>{}); }
+    }
+
+    // Globe ambient video
+    if (cfg.globe_bg_video) {
+      const vid = document.getElementById('globe-ambient-video');
+      if (vid) {
+        vid.innerHTML = `<source src="${cfg.globe_bg_video}" type="video/mp4">`;
+        vid.load(); vid.play().catch(()=>{});
+      }
+    }
+
+    // Anime banner image/video
+    if (cfg.anime_banner_img) {
+      const vid = document.getElementById('anime-banner-video');
+      if (vid) {
+        vid.innerHTML = `<source src="${cfg.anime_banner_img}" type="video/mp4">`;
+        vid.load(); vid.play().catch(()=>{});
+      }
+    }
+
+    // Spooky text
+    if (cfg.eye_spooky_text) {
+      const el = document.getElementById('spooky-text');
+      if (el) el.textContent = cfg.eye_spooky_text;
+    }
+
+  } catch(e) { console.warn('Config load failed:', e); }
+}
+document.addEventListener('DOMContentLoaded', loadSiteConfig);
 </script>
 
 <script src="main.js" defer></script>
