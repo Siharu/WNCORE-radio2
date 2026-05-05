@@ -1,6 +1,6 @@
 // WNCORE Radio — Vercel Serverless API Route
-// Handles admin config reads/writes via Supabase
-// Compatible with Vercel Free (Hobby) plan — Node 20.x, CommonJS
+// Handles admin config reads/writes via Supabase REST API
+// Uses native fetch — zero npm dependencies, works on Vercel Hobby free tier
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -17,16 +17,19 @@ const VALID_KEYS = new Set([
   'ticker_inject',
 ]);
 
-// Lazy-load createClient only when env vars are present — prevents crash when package missing
-function getSupabaseClient() {
-  if (!supabaseUrl || !supabaseKey) return null;
-  try {
-    const { createClient } = require('@supabase/supabase-js');
-    return createClient(supabaseUrl, supabaseKey);
-  } catch (err) {
-    console.error('Supabase init failed:', err.message);
-    return null;
-  }
+// Supabase REST API base
+function sbUrl(path) {
+  return `${supabaseUrl}/rest/v1/${path}`;
+}
+
+// Shared headers for all Supabase REST calls
+function sbHeaders(extra = {}) {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': supabaseKey,
+    'Authorization': `Bearer ${supabaseKey}`,
+    ...extra,
+  };
 }
 
 module.exports = async function handler(req, res) {
@@ -36,55 +39,78 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Guard: Supabase not configured — return gracefully (never 500)
+  // Guard: Supabase not configured
   if (!supabaseUrl || !supabaseKey) {
     if (req.method === 'GET') return res.status(200).json({});
     return res.status(503).json({ error: 'Supabase not configured. Add SUPABASE_URL and SUPABASE_SERVICE_KEY to Vercel env vars.' });
   }
 
+  // Auth guard for writes
   if (req.method === 'POST') {
     const token = req.headers['x-admin-token'];
     if (token !== adminToken) return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const supabase = getSupabaseClient();
-  if (!supabase) {
-    if (req.method === 'GET') return res.status(200).json({});
-    return res.status(503).json({ error: 'Failed to initialize Supabase client' });
-  }
-
   try {
+    // ── POST: upsert a config value ──────────────────────────────────────────
     if (req.method === 'POST') {
       const { key, value } = req.body || {};
       if (!key || value === undefined) return res.status(400).json({ error: 'Missing key or value' });
       if (!VALID_KEYS.has(key)) return res.status(400).json({ error: 'Invalid key: ' + key });
 
-      const { data, error } = await supabase
-        .from('wncore_config')
-        .upsert({ config_key: key, config_value: value, updated_at: new Date().toISOString() }, { onConflict: 'config_key' })
-        .select();
+      const upsertRes = await fetch(
+        sbUrl('wncore_config?on_conflict=config_key'),
+        {
+          method: 'POST',
+          headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+          body: JSON.stringify({
+            config_key: key,
+            config_value: value,
+            updated_at: new Date().toISOString(),
+          }),
+        }
+      );
 
-      if (error) return res.status(500).json({ error: 'Failed to save config', details: error.message });
+      if (!upsertRes.ok) {
+        const err = await upsertRes.text();
+        console.error('Supabase upsert error:', err);
+        return res.status(500).json({ error: 'Failed to save config', details: err });
+      }
+
+      const data = await upsertRes.json();
       return res.status(200).json({ success: true, key, value, data });
     }
 
+    // ── GET: fetch one or all config values ──────────────────────────────────
     if (req.method === 'GET') {
       const { key } = req.query || {};
+
       if (key) {
-        const { data, error } = await supabase.from('wncore_config').select('config_value').eq('config_key', key).single();
-        if (error && error.code !== 'PGRST116') return res.status(500).json({ error: 'Failed to fetch config' });
-        return res.status(200).json({ [key]: data ? data.config_value : null });
+        const getRes = await fetch(
+          sbUrl(`wncore_config?config_key=eq.${encodeURIComponent(key)}&select=config_value&limit=1`),
+          { headers: sbHeaders({ 'Accept': 'application/json' }) }
+        );
+        if (!getRes.ok) return res.status(500).json({ error: 'Failed to fetch config' });
+        const rows = await getRes.json();
+        return res.status(200).json({ [key]: rows.length ? rows[0].config_value : null });
       }
 
-      const { data, error } = await supabase.from('wncore_config').select('config_key, config_value');
-      if (error) return res.status(200).json({}); // fail open on read
+      // All keys
+      const allRes = await fetch(
+        sbUrl('wncore_config?select=config_key,config_value'),
+        { headers: sbHeaders({ 'Accept': 'application/json' }) }
+      );
+      if (!allRes.ok) return res.status(200).json({}); // fail open on read
+
+      const rows = await allRes.json();
       const config = {};
-      (data || []).forEach(item => { config[item.config_key] = item.config_value; });
+      (rows || []).forEach(item => { config[item.config_key] = item.config_value; });
       res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
       return res.status(200).json(config);
     }
 
     return res.status(405).json({ error: 'Method not allowed' });
+
   } catch (err) {
     console.error('WNCORE config error:', err);
     if (req.method === 'GET') return res.status(200).json({});
