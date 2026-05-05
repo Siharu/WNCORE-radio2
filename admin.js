@@ -1,5 +1,5 @@
 /* WNCORE RADIO — ADMIN PANEL
- * Access: Ctrl+A (held 800ms) | Password protected
+ * Access: Ctrl+B (held 800ms) | Password protected
  * Obfuscated identifiers intentional
  */
 (function(){
@@ -12,26 +12,26 @@ const _0x3c = 'wncore_adm_log';        // activity log key
 const _0x4d = ['S','i','h','a','r','u','8','4','7'];  // password chars
 
 // ─── KEYBOARD TRIGGER (Ctrl+A held 800ms) ─────────────────────────────────
-let _ctrlAStart = 0;
-let _ctrlATimer = null;
+let _ctrlBStart = 0;
+let _ctrlBTimer = null;
 
 document.addEventListener('keydown', function(e){
-  if(e.ctrlKey && e.key === 'a'){
-    if(_ctrlAStart === 0){
-      _ctrlAStart = Date.now();
-      _ctrlATimer = setTimeout(function(){
+  if(e.ctrlKey && e.key === 'b'){
+    if(_ctrlBStart === 0){
+      _ctrlBStart = Date.now();
+      _ctrlBTimer = setTimeout(function(){
         e.preventDefault();
         openAdminPanel();
-        _ctrlAStart = 0;
+        _ctrlBStart = 0;
       }, 800);
     }
   }
 });
 
 document.addEventListener('keyup', function(e){
-  if(e.key === 'a' || e.key === 'Control'){
-    _ctrlAStart = 0;
-    if(_ctrlATimer){ clearTimeout(_ctrlATimer); _ctrlATimer = null; }
+  if(e.key === 'b' || e.key === 'Control'){
+    _ctrlBStart = 0;
+    if(_ctrlBTimer){ clearTimeout(_ctrlBTimer); _ctrlBTimer = null; }
   }
 });
 
@@ -53,6 +53,33 @@ function _setAuthed(){
 function _clearAuth(){
   sessionStorage.removeItem(_0x2b);
 }
+
+// ─── INACTIVITY TIMEOUT (20 min) ──────────────────────────────────────────
+let _inactivityTimer = null;
+const INACTIVITY_MS = 20 * 60 * 1000;
+
+function _resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(() => {
+    if (_isAuthed()) {
+      _clearAuth();
+      _log('SESSION_TIMEOUT');
+      const panel = document.getElementById('adm-panel');
+      if (panel && panel.style.display !== 'none') {
+        panel.style.display = 'none';
+        const msg = document.createElement('div');
+        msg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#111;color:#c84a2e;padding:22px 32px;border:1px solid #c84a2e;border-radius:6px;font-family:monospace;z-index:99999;font-size:0.9rem;';
+        msg.textContent = 'Admin session expired due to inactivity.';
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 3500);
+      }
+    }
+  }, INACTIVITY_MS);
+}
+
+['mousemove','keydown','click','touchstart'].forEach(ev => {
+  document.addEventListener(ev, () => { if (_isAuthed()) _resetInactivityTimer(); }, { passive: true });
+});
 
 // ─── ACTIVITY LOG ─────────────────────────────────────────────────────────
 function _log(action){

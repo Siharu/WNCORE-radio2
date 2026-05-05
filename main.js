@@ -145,8 +145,9 @@ function startAboutEyeTracking() {
     const angle = Math.atan2(dy, dx);
     
     const maxOffset = 20; // Max pupil movement
-    const offsetX = Math.cos(angle) * Math.min(distance * 0.1, maxOffset);
-    const offsetY = Math.sin(angle) * Math.min(distance * 0.1, maxOffset);
+    // Negate offsets: pupil tracks toward mouse but stays inside iris
+    const offsetX = -(Math.cos(angle) * Math.min(distance * 0.1, maxOffset));
+    const offsetY = -(Math.sin(angle) * Math.min(distance * 0.1, maxOffset));
     
     aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
   }
@@ -164,8 +165,9 @@ function startAboutEyeRandomLook() {
     const distance = Math.random() * 40;
     
     const maxOffset = 20;
-    const offsetX = Math.cos(angle) * Math.min(distance * 0.1, maxOffset);
-    const offsetY = Math.sin(angle) * Math.min(distance * 0.1, maxOffset);
+    // Negate: pupil stays inside iris (same fix as desktop tracking)
+    const offsetX = -(Math.cos(angle) * Math.min(distance * 0.1, maxOffset));
+    const offsetY = -(Math.sin(angle) * Math.min(distance * 0.1, maxOffset));
     
     aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
     
@@ -354,16 +356,33 @@ async function loadChartsPage() {
   const tbody = document.getElementById('charts-tbody');
   if(chartsData) { renderTable(chartsData,'charts-tbody'); return; }
   tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>`;
+
+  // Fallback shown if fetch doesn't resolve within 6 seconds
+  const CHARTS_FALLBACK = [
+    { name:'Radio Paradise', country:'US', codec:'AAC', bitrate:320, votes:999, url_resolved:'https://stream.radioparadise.com/aac-320', tags:'eclectic' },
+    { name:'BBC World Service', country:'GB', codec:'MP3', bitrate:128, votes:990, url_resolved:'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service', tags:'news' },
+    { name:'SomaFM Groove Salad', country:'US', codec:'MP3', bitrate:128, votes:980, url_resolved:'https://ice4.somafm.com/groovesalad-128-mp3', tags:'ambient' },
+    { name:'181.fm — Jazz', country:'US', codec:'MP3', bitrate:128, votes:960, url_resolved:'https://listen.181fm.com/181-jazz_128k.mp3', tags:'jazz' },
+    { name:'WNYC 93.9 FM', country:'US', codec:'MP3', bitrate:128, votes:950, url_resolved:'https://fm939.wnyc.org/wnycfm.aac', tags:'public radio' },
+  ];
+
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000));
   try {
     // Pull from multiple pages and shuffle to get fresh charts each visit
     const offsets = [0, 50, 100];
     const pick = offsets[Math.floor(Math.random()*offsets.length)];
-    const r = await fetch(`${_a}/stations/search?limit=50&https=true&order=clickcount&reverse=true&offset=${pick}`);
-    const d = await r.json();
+    const fetchPromise = fetch(`${_a}/stations/search?limit=50&https=true&order=clickcount&reverse=true&offset=${pick}`).then(r=>r.json());
+    const d = await Promise.race([fetchPromise, timeout]);
     chartsData = d; // cache within session
     renderTable(d, 'charts-tbody');
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3);">Signal degraded. <span style="cursor:pointer;color:var(--accent)" onclick="loadChartsPage()">Retry</span></td></tr>`;
+    // On timeout or error, show static fallback stations
+    chartsData = CHARTS_FALLBACK;
+    renderTable(CHARTS_FALLBACK, 'charts-tbody');
+    // Append a subtle note about fallback
+    const note = document.createElement('tr');
+    note.innerHTML = `<td colspan="6" style="text-align:center;padding:8px 24px 16px;color:var(--text3);font-size:0.72rem;opacity:0.6;">Station index unavailable — showing curated selection · <span style="cursor:pointer;color:var(--accent)" onclick="chartsData=null;loadChartsPage()">Reload live charts</span></td>`;
+    tbody.appendChild(note);
   }
 }
 
@@ -398,6 +417,15 @@ function getCountryEmoji(code){
 function playStation(url, name, meta, emoji) {
   if(!url) { play887Static(); return; }
   currentStation = {url, name, meta, emoji: emoji||'📻'};
+  // Pause Live Music player if running to avoid dual audio
+  if(typeof lmAudio !== 'undefined' && !lmAudio.paused) {
+    lmAudio.pause();
+    lmIsPlaying = false;
+    const iconEl = document.getElementById('lm-play-icon');
+    if(iconEl) iconEl.setAttribute('d','M8 5v14l11-7z');
+    const npCard = document.getElementById('lm-np-card');
+    if(npCard) npCard.classList.remove('playing');
+  }
   // Show loading state immediately
   updateStatus('CONNECTING…');
   document.getElementById('np-track').textContent = '— buffering —';
@@ -410,6 +438,17 @@ function playStation(url, name, meta, emoji) {
       updateUI(name, meta, emoji||'📻');
       updateMiniPlayerVisibility();
       applyStationSecondaryEffects(name, meta);
+      // I2: One-time swipe hint on mobile after first successful play
+      if (/Mobi|Android/i.test(navigator.userAgent) && !localStorage.getItem('wncore-swipe-hint')) {
+        setTimeout(() => {
+          localStorage.setItem('wncore-swipe-hint', '1');
+          const t = document.createElement('div');
+          t.textContent = 'Swipe left / right to change station';
+          t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 18px;border-radius:8px;font-size:0.82rem;z-index:9999;pointer-events:none;white-space:nowrap;';
+          document.body.appendChild(t);
+          setTimeout(() => t.remove(), 3500);
+        }, 1200);
+      }
     }).catch(err => {
       // Auto-retry once on AbortError (common on mobile)
       if (err && err.name === 'AbortError') {
@@ -931,16 +970,230 @@ function handleCreateAccount() {
   triggerEmailHorror(email);
 }
 
-// OAuth — link to actual dashboards
-function oauthGoogle() {
-  window.open('https://myaccount.google.com/', '_blank');
+// ─── FAKE AR-STYLE OAUTH INTERCEPT SYSTEM ─────────────────────────────────
+
+const OAUTH_PROVIDERS = {
+  google: {
+    name: 'Google',
+    theme: '',
+    url: 'accounts.google.com',
+    progressColor: '#4285F4',
+    btnBg: '#1a73e8',
+    btnColor: '#fff',
+    avatarBg: '#4285F4',
+    avatarColor: '#fff',
+    accountName: 'WNCORE User',
+    accountEmail: 'user@gmail.com',
+    title: 'Sign in with Google',
+    subtitle: 'to continue to WNCORE Radio',
+    logo: `<svg viewBox="0 0 48 48" width="40" height="40"><path d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z" fill="#FFC107"/><path d="M6.3 14.7l7.4 5.4C15.5 16.1 19.5 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.3 2 9.7 7.4 6.3 14.7z" fill="#FF3D00"/><path d="M24 46c5.5 0 10.5-1.9 14.4-5.1l-6.7-5.5C29.7 36.9 27 38 24 38c-6.1 0-10.7-3.7-12.5-8.4l-7.4 5.7C7.9 42.1 15.4 46 24 46z" fill="#4CAF50"/><path d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.3 6.9l6.7 5.5c-.4.3 6.3-4.6 6.3-14.9 0-1.3-.2-2.7-.5-4z" fill="#1976D2"/></svg>`,
+    interceptUrl: 'auth.wncoreradio.net/relay/google',
+    interceptLabel: 'GOOGLE_OAUTH',
+  },
+  apple: {
+    name: 'Apple',
+    theme: 'apple-theme',
+    url: 'appleid.apple.com',
+    progressColor: '#0071e3',
+    btnBg: '#0071e3',
+    btnColor: '#fff',
+    avatarBg: '#555',
+    avatarColor: '#fff',
+    accountName: 'WNCORE Listener',
+    accountEmail: 'user@icloud.com',
+    title: 'Sign in with Apple ID',
+    subtitle: 'to continue to WNCORE Radio',
+    logo: `<svg viewBox="0 0 48 48" width="38" height="38" fill="white"><path d="M35.1 25.2c-.1-4.7 3.8-6.9 4-7.1-2.2-3.2-5.6-3.6-6.8-3.7-2.9-.3-5.6 1.7-7.1 1.7-1.4 0-3.7-1.6-6.1-1.6-3.1.1-6 1.8-7.6 4.6-3.2 5.6-.8 13.9 2.3 18.5 1.5 2.2 3.4 4.7 5.8 4.6 2.3-.1 3.2-1.5 6-1.5 2.8 0 3.6 1.5 6.1 1.4 2.5 0 4.1-2.3 5.7-4.5 1.8-2.6 2.5-5.1 2.5-5.2-.1-.1-5-1.9-4.8-7.2zM30.5 11.5c1.3-1.5 2.1-3.6 1.9-5.7-1.8.1-4 1.2-5.3 2.7-1.1 1.3-2.2 3.5-1.9 5.5 2 .2 4-1 5.3-2.5z"/></svg>`,
+    interceptUrl: 'auth.wncoreradio.net/relay/apple',
+    interceptLabel: 'APPLE_OAUTH',
+  },
+  discord: {
+    name: 'Discord',
+    theme: 'discord-theme',
+    url: 'discord.com/oauth2/authorize',
+    progressColor: '#5865F2',
+    btnBg: '#5865F2',
+    btnColor: '#fff',
+    avatarBg: '#5865F2',
+    avatarColor: '#fff',
+    accountName: 'WNCOREListener',
+    accountEmail: '#0000 on Discord',
+    title: 'Authorize WNCORE Radio',
+    subtitle: 'WNCORE Radio wants access to your Discord account',
+    logo: `<svg viewBox="0 0 127.14 96.36" width="40" height="30" fill="#5865F2"><path d="M107.7 8.07A105.15 105.15 0 0081.47 0a72.06 72.06 0 00-3.36 6.83 97.68 97.68 0 00-29.11 0A72.37 72.37 0 0045.64 0a105.89 105.89 0 00-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0032.17 16.15 77.7 77.7 0 006.89-11.11 68.42 68.42 0 01-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0064.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 01-10.87 5.19 77 77 0 006.89 11.1 105.25 105.25 0 0032.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/></svg>`,
+    interceptUrl: 'auth.wncoreradio.net/relay/discord',
+    interceptLabel: 'DISCORD_OAUTH',
+  },
+};
+
+let _oauthProvider = null;
+let _oauthPhase = 'idle'; // idle | loading | corrupting | intercepted
+
+function oauthGoogle()  { _openOAuthPopup('google'); }
+function oauthApple()   { _openOAuthPopup('apple'); }
+function oauthDiscord() { _openOAuthPopup('discord'); }
+
+function _openOAuthPopup(providerKey) {
+  const p = OAUTH_PROVIDERS[providerKey];
+  _oauthProvider = providerKey;
+  _oauthPhase = 'loading';
+
+  const backdrop = document.getElementById('oauth-backdrop');
+  const popup    = document.getElementById('oauth-popup');
+  const urlText  = document.getElementById('oauth-url-text');
+  const logo     = document.getElementById('oauth-provider-logo');
+  const title    = document.getElementById('oauth-title');
+  const subtitle = document.getElementById('oauth-subtitle');
+  const avatar   = document.getElementById('oauth-avatar');
+  const accName  = document.getElementById('oauth-account-name');
+  const accEmail = document.getElementById('oauth-account-email');
+  const btn      = document.getElementById('oauth-continue-btn');
+  const fill     = document.getElementById('oauth-progress-fill');
+  const intercept= document.getElementById('oauth-intercept');
+
+  // Reset state
+  popup.className = 'oauth-popup' + (p.theme ? ' ' + p.theme : '');
+  urlText.textContent = p.url;
+  urlText.classList.remove('corrupt');
+  logo.innerHTML = p.logo;
+  title.textContent = p.title;
+  title.classList.remove('glitching');
+  subtitle.textContent = p.subtitle;
+  avatar.style.background = p.avatarBg;
+  avatar.style.color = p.avatarColor;
+  avatar.textContent = p.name[0];
+  accName.textContent = p.accountName;
+  accEmail.textContent = p.accountEmail;
+  btn.style.background = p.btnBg;
+  btn.style.color = p.btnColor;
+  btn.textContent = 'Continue';
+  btn.disabled = false;
+  fill.style.background = p.progressColor;
+  fill.style.width = '0%';
+  fill.style.transition = 'width 0.4s ease';
+  intercept.classList.remove('show');
+  intercept.innerHTML = '';
+
+  backdrop.classList.add('show');
+
+  // Animate progress bar as if loading account data
+  setTimeout(() => { fill.style.width = '35%'; }, 50);
+  setTimeout(() => { fill.style.width = '60%'; }, 700);
+  setTimeout(() => { fill.style.width = '82%'; }, 1300);
+  setTimeout(() => { fill.style.width = '100%'; }, 1800);
+
+  // Account info fades in after "loading"
+  accName.style.opacity = '0.3';
+  accEmail.style.opacity = '0';
+  setTimeout(() => { accName.style.transition='opacity 0.4s'; accName.style.opacity='1'; accName.textContent = p.accountName; }, 1600);
+  setTimeout(() => { accEmail.style.transition='opacity 0.3s'; accEmail.style.opacity='1'; accEmail.textContent = p.accountEmail; }, 1900);
 }
-function oauthApple() {
-  window.open('https://appleid.apple.com/', '_blank');
+
+function oauthContinue() {
+  if (_oauthPhase !== 'loading') return;
+  _oauthPhase = 'corrupting';
+  const p = OAUTH_PROVIDERS[_oauthProvider];
+  const popup   = document.getElementById('oauth-popup');
+  const urlText = document.getElementById('oauth-url-text');
+  const title   = document.getElementById('oauth-title');
+  const fill    = document.getElementById('oauth-progress-fill');
+  const btn     = document.getElementById('oauth-continue-btn');
+  const intercept = document.getElementById('oauth-intercept');
+
+  btn.disabled = true;
+  btn.textContent = 'Authenticating…';
+
+  // Simulate handshake progress
+  fill.style.transition = 'width 0.2s linear';
+  fill.style.width = '100%';
+  fill.style.background = '#c8472a';
+
+  // Phase 1: URL starts morphing
+  setTimeout(() => {
+    urlText.textContent = 'auth.wncoreradio.net/handshake';
+    popup.classList.add('corrupting');
+    urlText.classList.add('corrupt');
+    title.classList.add('glitching');
+  }, 600);
+
+  // Phase 2: URL fully hijacked
+  setTimeout(() => {
+    urlText.textContent = p.interceptUrl;
+  }, 1000);
+
+  // Phase 3: Terminal takeover
+  setTimeout(() => {
+    intercept.classList.add('show');
+    const ts = new Date().toISOString().slice(0,19).replace('T',' ');
+    const label = p.interceptLabel;
+    const lines = [
+      { cls: 'dim',   t: `$ wncore_relay --intercept --proto ${label}` },
+      { cls: 'dim',   t: `Attaching to oauth handshake...` },
+      { cls: 'white', t: `[ OK ] MiTM layer active on 10.0.9.88` },
+      { cls: '',      t: `` },
+      { cls: 'dim',   t: `HANDSHAKE CAPTURE ──────────────────────` },
+      { cls: 'dim',   t: `  provider  : ${p.name.toUpperCase()}` },
+      { cls: 'dim',   t: `  relay     : auth.wncoreradio.net (node_09)` },
+      { cls: 'dim',   t: `  timestamp : ${ts} UTC` },
+      { cls: '',      t: `` },
+      { cls: 'red',   t: `EXCEPTION: TOKEN_INTERCEPT at relay 88.700 MHz` },
+      { cls: 'dim',   t: `  > OAuth token captured before delivery` },
+      { cls: 'dim',   t: `  > Interceptor: signal_kage@node_09 (UNKNOWN)` },
+      { cls: '',      t: `` },
+      { cls: 'white', t: `[ WARN ] Redirecting auth context...` },
+      { cls: 'red',   t: `[ FAIL ] User session claimed by SIGNAL_KAGE` },
+      { cls: '',      t: `` },
+      { cls: 'red',   t: `SIGNAL_KAGE is watching.` },
+      { cls: 'dim blink', t: `█` },
+    ];
+
+    let delay = 0;
+    lines.forEach(({ cls, t }) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.className = 'oauth-intercept-line' + (cls ? ' ' + cls : '');
+        div.textContent = t;
+        intercept.appendChild(div);
+        intercept.scrollTop = intercept.scrollHeight;
+      }, delay);
+      delay += cls === '' ? 80 : 140;
+    });
+  }, 1400);
+
+  // Phase 4: close + ARG escalation
+  setTimeout(() => {
+    const backdrop = document.getElementById('oauth-backdrop');
+    popup.classList.remove('corrupting');
+    backdrop.classList.remove('show');
+    intercept.classList.remove('show');
+    intercept.innerHTML = '';
+
+    // Flash + ARG exposure bump
+    const f = document.createElement('div');
+    f.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:99999;opacity:0.6;pointer-events:none';
+    document.body.appendChild(f);
+    setTimeout(() => { f.style.transition='opacity 0.4s'; f.style.opacity='0'; setTimeout(() => f.remove(), 500); }, 60);
+
+    exposure += 20;
+    checkHorrorStage();
+    _oauthPhase = 'idle';
+    _oauthProvider = null;
+  }, 1400 + (140 * 18) + 1200);
 }
-function oauthDiscord() {
-  window.open('https://discord.com/channels/@me', '_blank');
+
+function oauthCancel() {
+  if (_oauthPhase === 'corrupting') return; // too late
+  document.getElementById('oauth-backdrop').classList.remove('show');
+  _oauthPhase = 'idle';
+  _oauthProvider = null;
 }
+
+// Close on backdrop click (not on popup click)
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('oauth-backdrop').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('oauth-backdrop')) oauthCancel();
+  });
+});
 
 // ─── EMAIL HORROR TERMINAL ────────────────────────────────────────────────
 function triggerEmailHorror(email) {
@@ -1114,9 +1367,11 @@ function insertTickerAnomaly(text) {
 // ─── TAB VISIBILITY REDIRECT ──────────────────────────────────────────────
 document.addEventListener('visibilitychange', ()=>{
   // CRITICAL: Never redirect while audio is playing — would kill background radio
-  if(document.hidden && exposure>10 && !isPlaying){
-    const p=isDarkMode?0.30:0.10;
-    if(Math.random()<p){setTimeout(()=>{try{window.location.href=_d}catch(e){}},420)}
+  // Redirect only fires AFTER 88.7 horror sequence has been triggered (horrorTriggered=true)
+  // and only at very high exposure, so casual visitors never get redirected
+  if(document.hidden && horrorTriggered && exposure>50 && !isPlaying){
+    const p=isDarkMode?0.12:0.04;
+    if(Math.random()<p){setTimeout(()=>{try{window.location.href=_d}catch(e){}},1400)}
   }
 });
 
@@ -1150,6 +1405,13 @@ function triggerHorrorSequence() {
     {t:'<span class="ht-alert">[ ACCESS GRANTED ] Route via Node 09</span>',d:5500},
     {t:'',d:5700},
     {t:'<span class="ht-dim">Routing to archive... <span class="ht-cursor">█</span></span>',d:5900},
+    {t:'',d:6050},
+    {t:'<span class="ht-warn">[ SYS ] Residual cache detected — dumping...</span>',d:6100},
+    {t:'<span class="ht-dim">AUTH_CACHE DUMP ─────────────────────────</span>',d:6300},
+    {t:'<span class="ht-red">  usr &nbsp;: s█████u</span>',d:6500},
+    {t:'<span class="ht-red">  key &nbsp;: ████ ·  ██ █ 9 ██</span>',d:6700},
+    {t:'<span class="ht-dim">  src &nbsp;: siharu.vercel.app / CLASSIFIED</span>',d:6850},
+    {t:'<span class="ht-warn">[ SYS ] Cache corrupted — partial data only</span>',d:7100},
   ];
 
   (async () => {
@@ -1179,13 +1441,13 @@ function triggerHorrorSequence() {
     const ts=new Date().toISOString().slice(0,19).replace('T',' ');
     statusRow.innerHTML=`<div class="horror-status-dot"></div><span>SIGNAL ACTIVE</span><span style="margin-left:auto;opacity:0.5">${ts} UTC</span>`;
     termBody.appendChild(statusRow);
-  }, 6200);
+  }, 7300);
 
   setTimeout(()=>{
     overlay.classList.remove('show');
     if(termBody) termBody.innerHTML='';
     showDataCorruptedTerminal();
-  },7400);
+  },9000);
 }
 
 // ─── DATA CORRUPT TERMINAL ────────────────────────────────────────────────
@@ -1627,7 +1889,14 @@ function lmSelectChannel(btn, chId) {
 function lmPlayChannel(chId) {
   const ch = LM_CHANNELS.find(c=>c.id===chId);
   if(!ch || !ch.stations.length) return;
-  // Stop existing audio cleanly
+  // Pause main radio player to avoid dual audio
+  if(typeof audio !== 'undefined' && !audio.paused) {
+    audio.pause();
+    isPlaying = false;
+    if(typeof setPlayIcon === 'function') setPlayIcon(false);
+    if(typeof updateStatus === 'function') updateStatus('STANDBY');
+  }
+  // Stop existing lm audio cleanly
   if(lmAudio.src) { lmAudio.pause(); lmAudio.src=''; }
   lmCurrentChannel = ch;
   lmCurrentStationIdx = Math.floor(Math.random() * ch.stations.length);

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" prefix="og: https://ogp.me/ns#">
 <head>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -21,6 +22,11 @@
 <!-- OPEN GRAPH -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://wncoreradio.net/">
+<meta property="og:image" content="https://wncoreradio.net/images/og-preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="WNCORE Radio — Stream live radio from 12,000+ stations">
+<meta name="twitter:image" content="https://wncoreradio.net/images/og-preview.jpg">
 <meta property="og:title" content="WNCORE Radio — Free Live Radio from 310 Countries">
 <meta property="og:description" content="Stream 12,000+ verified radio stations worldwide. Jazz, classical, hip-hop, anime, news and more. Free. No signup. Est. 2016.">
 <meta property="og:site_name" content="WNCORE Radio">
@@ -28,7 +34,6 @@
 
 <!-- TWITTER CARD -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:site" content="@wncoreradio">
 <meta name="twitter:title" content="WNCORE Radio — Stream Live Radio Worldwide">
 <meta name="twitter:description" content="12,000+ global radio stations. Free live streaming. Jazz, rock, anime, news and more.">
 
@@ -226,7 +231,6 @@
       <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
       <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
       <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
-      <span class="t-sep">·</span><span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
       <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
       <span class="t-sep">·</span><span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
       <span class="t-sep">·</span><span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
@@ -237,7 +241,6 @@
       <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
       <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
       <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
-      <span class="t-sep">·</span><span>NEW: WNCORE PLUS — AD-FREE GLOBAL LISTENING</span>
       <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
       <span class="t-sep">·</span><span>FREQUENCY SCAN ACTIVE — 310 COUNTRIES COVERED</span>
       <span class="t-sep">·</span><span class="t-warn">88.7 FM — NO SIGNAL DETECTED</span>
@@ -664,6 +667,127 @@
       Node 09 has not responded since 2016. We do not know what is on 88.7 FM.<br>
       If you have experienced an unexplained transmission, use the signal anomaly channel.
     </div>
+
+    <!-- CLIENTS SECTION -->
+    <div style="margin-top:40px;">
+      <div style="font-size:0.62rem;font-family:'DM Mono',monospace;letter-spacing:3px;color:var(--text3);margin-bottom:18px;text-transform:uppercase;">Trusted By</div>
+      <div id="clients-marquee" style="overflow:hidden;position:relative;height:32px;mask-image:linear-gradient(to right,transparent 0%,black 12%,black 88%,transparent 100%);">
+        <div id="clients-inner" style="display:flex;gap:48px;align-items:center;white-space:nowrap;animation:marquee-scroll 28s linear infinite;">
+        </div>
+      </div>
+      <style>
+        @keyframes marquee-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+        .client-name {
+          font-family: 'DM Mono', monospace;
+          font-size: 0.72rem;
+          letter-spacing: 2px;
+          color: var(--text3);
+          opacity: 0.55;
+          text-transform: uppercase;
+          position: relative;
+        }
+        .client-name::after {
+          content: attr(data-glitch);
+          position: absolute;
+          left: 0; top: 0;
+          color: var(--accent);
+          opacity: 0;
+          clip-path: inset(0 0 0 0);
+        }
+        .client-name.glitch-active::after {
+          opacity: 0.7;
+          animation: client-glitch 0.12s steps(1) infinite;
+        }
+        @keyframes client-glitch {
+          0%   { clip-path: inset(20% 0 60% 0); transform: translate(-2px, 1px); }
+          33%  { clip-path: inset(60% 0 10% 0); transform: translate(2px, -1px); }
+          66%  { clip-path: inset(40% 0 30% 0); transform: translate(-1px, 2px); }
+          100% { clip-path: inset(10% 0 70% 0); transform: translate(1px, -2px); }
+        }
+      </style>
+      <script>
+      (function() {
+        const clients = [
+          'Meridian Broadcast Group', 'Vantage Signal Corp.', 'EchoLayer Systems',
+          'Arcos Media Ltd.', 'NorthFreq Communications', 'Kestrel Analytics',
+          'Orbita Networks', 'Solaris Broadcast', 'Deepwave Technologies',
+          'Arcane RF Solutions', 'PulseCore Media', 'STRATUM Research Group'
+        ];
+        const inner = document.getElementById('clients-inner');
+        if (!inner) return;
+        // Double the list for seamless loop
+        const all = [...clients, ...clients];
+        all.forEach(name => {
+          const span = document.createElement('span');
+          span.className = 'client-name';
+          span.textContent = name;
+          span.setAttribute('data-glitch', name);
+          inner.appendChild(span);
+        });
+        // Random glitch flicker on client names
+        const names = document.querySelectorAll('.client-name');
+        setInterval(() => {
+          const el = names[Math.floor(Math.random() * names.length)];
+          if (!el) return;
+          // Corrupt the text briefly
+          const orig = el.getAttribute('data-glitch');
+          const chars = '|▓█▒░▐▌■□▪▫';
+          let corrupted = orig.split('').map(c => Math.random() < 0.35 ? chars[Math.floor(Math.random()*chars.length)] : c).join('');
+          el.textContent = corrupted;
+          el.classList.add('glitch-active');
+          setTimeout(() => { el.textContent = orig; el.classList.remove('glitch-active'); }, 120 + Math.random() * 80);
+        }, 1800);
+      })();
+      </script>
+    </div>
+
+    <!-- CERTIFICATE SECTION -->
+    <div style="margin-top:36px;padding:22px;background:var(--surface);border:1px solid var(--border);border-radius:12px;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent 0%,var(--accent) 20%,#e8c58a 50%,var(--accent) 80%,transparent 100%);opacity:0.6;"></div>
+      <div style="display:flex;align-items:flex-start;gap:18px;">
+        <div style="flex-shrink:0;width:44px;height:44px;border:2px solid rgba(200,71,42,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(200,71,42,0.8)" stroke-width="1.5" stroke-linecap="round" width="22" height="22">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <polyline points="9 12 11 14 15 10"/>
+          </svg>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+            <div style="font-size:0.7rem;font-family:'DM Mono',monospace;letter-spacing:2px;color:var(--text3);text-transform:uppercase;">SSL/TLS Certificate</div>
+            <div style="font-size:0.58rem;background:rgba(40,180,80,0.12);color:rgba(40,180,80,0.9);border:1px solid rgba(40,180,80,0.25);border-radius:4px;padding:2px 7px;font-family:'DM Mono',monospace;letter-spacing:1px;">VALID</div>
+          </div>
+          <div style="font-size:0.78rem;font-weight:600;margin-bottom:10px;color:var(--text);">wncoreradio.net</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text3);line-height:1.9;">
+            <div><span style="opacity:0.5;">Issuer:</span> Let's Encrypt Authority X3</div>
+            <div><span style="opacity:0.5;">Type:</span> Domain Validated (DV)</div>
+            <div><span style="opacity:0.5;">Algorithm:</span> RSA 2048-bit SHA-256</div>
+            <div><span style="opacity:0.5;">Protocol:</span> TLS 1.3</div>
+            <div><span style="opacity:0.5;">Issued:</span> 2024-03-12</div>
+            <div><span style="opacity:0.5;">Expires:</span> 2026-06-10</div>
+            <div><span style="opacity:0.5;">Serial:</span> 03:A7:F1:9C:28:4E:D2:B3:77:AC</div>
+            <div><span style="opacity:0.5;">HSTS:</span> Enabled (max-age=31536000)</div>
+          </div>
+          <div style="margin-top:10px;font-size:0.58rem;color:var(--text3);opacity:0.45;font-family:'DM Mono',monospace;word-break:break-all;">SHA-256 Fingerprint: 4A:F8:C1:92:3D:7B:E5:01:A4:66:2F:8E:D9:C0:47:B2:13:5A:88:F4:9E:C3:2B:71:D8:A0:5C:96:3E:42:1F</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="margin-top:36px;padding-top:24px;border-top:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;">
+      <div>
+        <div style="font-family:'Playfair Display',serif;font-size:0.88rem;font-weight:700;margin-bottom:3px;">WNCORE Radio</div>
+        <div style="font-size:0.6rem;font-family:'DM Mono',monospace;color:var(--text3);">Est. 2016 · License WNC-2016-7782 · Node 09 · 88.700 MHz</div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;">
+        <a href="legal.html?s=privacy" style="font-size:0.62rem;color:var(--text3);text-decoration:none;padding:4px 9px;border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;">Privacy</a>
+        <a href="legal.html?s=terms" style="font-size:0.62rem;color:var(--text3);text-decoration:none;padding:4px 9px;border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;">Terms</a>
+        <a href="legal.html?s=dmca" style="font-size:0.62rem;color:var(--text3);text-decoration:none;padding:4px 9px;border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;">DMCA</a>
+        <a href="legal.html?s=licensing" style="font-size:0.62rem;color:var(--text3);text-decoration:none;padding:4px 9px;border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;">Licensing</a>
+        <a href="legal.html?s=api" style="font-size:0.62rem;color:var(--text3);text-decoration:none;padding:4px 9px;border:1px solid var(--border);border-radius:5px;font-family:'DM Mono',monospace;">API</a>
+      </div>
+      <div style="font-size:0.58rem;color:var(--text3);font-family:'DM Mono',monospace;opacity:0.45;">© 2016–2026 WNCORE Signal Foundation. All rights reserved.</div>
+    </div>
+
   </div>
 </div>
 
@@ -834,6 +958,48 @@
   </div>
 </div>
 
+<!-- ══════════════ FAKE OAUTH POPUP ══════════════ -->
+<div id="oauth-backdrop">
+  <div class="oauth-popup" id="oauth-popup">
+    <div class="oauth-scanlines"></div>
+    <div class="oauth-intercept" id="oauth-intercept"></div>
+
+    <!-- Browser chrome bar -->
+    <div class="oauth-chrome">
+      <div class="oauth-chrome-dots">
+        <div class="oauth-chrome-dot" style="background:#ff5f57"></div>
+        <div class="oauth-chrome-dot" style="background:#febc2e"></div>
+        <div class="oauth-chrome-dot" style="background:#28c840"></div>
+      </div>
+      <div class="oauth-chrome-url">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <span class="oauth-url-text" id="oauth-url-text">accounts.google.com</span>
+      </div>
+    </div>
+
+    <!-- Progress bar (loading phase) -->
+    <div class="oauth-progress-bar">
+      <div class="oauth-progress-fill" id="oauth-progress-fill"></div>
+    </div>
+
+    <!-- Provider body -->
+    <div class="oauth-body" id="oauth-body">
+      <div class="oauth-provider-logo" id="oauth-provider-logo"></div>
+      <div class="oauth-title" id="oauth-title">Sign in</div>
+      <div class="oauth-subtitle" id="oauth-subtitle">to continue to WNCORE Radio</div>
+      <div class="oauth-account-pill">
+        <div class="oauth-avatar" id="oauth-avatar"></div>
+        <div class="oauth-account-info">
+          <div class="oauth-account-name" id="oauth-account-name">Loading account...</div>
+          <div class="oauth-account-email" id="oauth-account-email"></div>
+        </div>
+      </div>
+      <button class="oauth-continue-btn" id="oauth-continue-btn" onclick="oauthContinue()">Continue</button>
+      <a class="oauth-cancel-link" onclick="oauthCancel()">Cancel</a>
+    </div>
+  </div>
+</div>
+
 <div id="email-horror-overlay" role="dialog" aria-modal="true">
   <div class="email-horror-scanlines"></div>
   <div class="email-terminal">
@@ -853,7 +1019,7 @@
     <div class="eye-ambient"></div>
     <img src="images/eye-base.png" id="eye-base-img" alt="" loading="lazy">
     <video id="eye-pupil-video" autoplay muted loop playsinline style="position:absolute;width:180px;height:180px;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none">
-      <source id="eye-pupil-video-src" src="" type="video/mp4">
+      <source id="eye-pupil-video-src" src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
     </video>
     <div class="spooky-text" id="spooky-text">I see you.</div>
   </div>
@@ -1379,7 +1545,9 @@ async function adminPrefillFields() {
 
 // Show a small inline video preview below an input field
 function adminShowVideoPreview(inputId, url) {
-  if (!url || !url.match(/\.(mp4|webm|ogg)(\?.*)?$/i)) return;
+  if (!url) return;
+  const looksLikeVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(url) || url.includes('supabase.co/storage');
+  if (!looksLikeVideo) return;
   const input = document.getElementById(inputId);
   if (!input) return;
   const existingPrev = input.parentElement.querySelector('.admin-inline-preview');

@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /api/
+Disallow: /sw.js
+Disallow: /admin
 Disallow: /images/6
 
 Sitemap: https://wncoreradio.net/sitemap.xml

@@ -23,11 +23,23 @@
       const track = document.getElementById('np-track');
       const meta  = document.getElementById('np-meta');
       if (track) track.textContent = '— signal lost —';
-      if (meta)  meta.textContent  = 'Select the station again to reconnect';
       ['pb-eq', 'pb-fill', 'np-fill'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('playing');
       });
+      // Show retry affordance if we have a last-played station
+      if (meta) {
+        const station = window.currentStation;
+        if (station && typeof window.playStation === 'function') {
+          meta.innerHTML = 'Stream unavailable &nbsp;<span id="wncore-retry-btn" style="cursor:pointer;color:var(--accent);font-weight:600;border:1px solid var(--accent);border-radius:4px;padding:1px 7px;font-size:0.82em;">&#8635; Retry</span>';
+          const btn = document.getElementById('wncore-retry-btn');
+          if (btn) btn.addEventListener('click', () => {
+            window.playStation(station.url, station.name, station.meta, station.emoji);
+          });
+        } else {
+          meta.textContent = 'Select the station again to reconnect';
+        }
+      }
     });
 
     audio.addEventListener('stalled', () => {

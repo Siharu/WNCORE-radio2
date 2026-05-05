@@ -546,3 +546,11 @@
     display: none !important;
   }
 }
+
+/* ─── Touch target minimum sizes (48px per WCAG 2.5.5) ─────────────────── */
+@media (max-width: 768px) {
+  .nav-btn { min-height: 48px; min-width: 48px; }
+  .fav-btn, .share-btn, .eq-btn { min-height: 48px; min-width: 48px; display: inline-flex; align-items: center; justify-content: center; }
+  .station-row { min-height: 48px; }
+  .genre-chip { min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; }
+}
