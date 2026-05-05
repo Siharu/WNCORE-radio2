@@ -1,10 +1,5 @@
 {
   "version": 2,
-  "outputDirectory": ".",
-  "functions": {
-    "api/config.js": { "maxDuration": 10 },
-    "api/chat.js":   { "maxDuration": 10 }
-  },
   "headers": [
     {
       "source": "/manifest.json",
@@ -14,13 +9,9 @@
       "source": "/api/(.*)",
       "headers": [
         { "key": "Access-Control-Allow-Origin", "value": "*" },
-        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" }
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type, x-admin-token" }
       ]
     }
-  ],
-  "routes": [
-    { "src": "/api/config", "dest": "/api/config.js" },
-    { "src": "/api/chat",   "dest": "/api/chat.js"   },
-    { "src": "/(.*)",       "dest": "/$1"             }
   ]
 }
