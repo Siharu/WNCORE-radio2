@@ -2,7 +2,7 @@
    WNCORE RADIO v3 — GLOBAL STYLESHEET
    ARG / Radio hybrid frontend
 ═══════════════════════════════════════════════════════ */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap');
+/* Google Fonts loaded via <link> in index.html (non-blocking) */
 
 :root {
   --bg:#f5f3ef; --surface:#ffffff; --surface2:#f0ede8;
@@ -390,11 +390,21 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .pb-play{width:36px;height:36px;border-radius:50%;background:#fff;color:#1a1814;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s}
 .pb-play:hover{transform:scale(1.06)}
 .pb-play svg{width:16px;height:16px}
+/* Smooth fade for play/pause icons */
+.pb-play svg, .pb-btn svg, #mini-player svg { transition: opacity 160ms ease, transform 160ms ease; }
+.pb-play svg.fading, .pb-btn svg.fading, #mini-player svg.fading { opacity: 0; transform: scale(0.96); }
+/* Fallback: any SVG set to .fading will fade out */
+svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease, transform 160ms ease; }
 .pb-progress{width:100%;max-width:380px;display:flex;align-items:center;gap:8px;min-width:0}
 .pb-bar{flex:1;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;cursor:pointer;min-width:0}
 .pb-bar-fill{height:100%;background:#fff;border-radius:2px;width:0}
-.pb-bar-fill.playing{animation:pbFill 10s linear infinite}
-@keyframes pbFill{0%{width:0}100%{width:100%}}
+.pb-bar-fill.playing{width:100%;opacity:0.06;transition:width 400ms linear,opacity 220ms ease}
+@keyframes pbLivePulse{0%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:0.6}100%{transform:scale(1);opacity:1}}
+
+/* Subtle live indicator shown near the time label when streaming live */
+.pb-time.live{position:relative;padding-left:12px}
+.pb-time.live::before{
+  content:'';position:absolute;left:2px;top:50%;transform:translateY(-50%);width:8px;height:8px;border-radius:50%;background:var(--accent, #c8472a);box-shadow:0 0 8px rgba(200,71,42,0.12);animation:pbLivePulse 1.6s ease-in-out infinite}
 .pb-time{font-family:'DM Mono',monospace;font-size:0.58rem;color:rgba(255,255,255,0.3);white-space:nowrap;flex-shrink:0}
 .pb-right{width:180px;flex-shrink:0;display:flex;align-items:center;justify-content:flex-end;gap:12px}
 .pb-vol{display:flex;align-items:center;gap:7px}
@@ -475,10 +485,10 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .corrupt-dot{width:10px;height:10px;border-radius:50%;box-shadow:0 0 5px currentColor}
 .corrupt-terminal-text{font-family:'DM Mono',monospace;font-size:0.75rem;line-height:2.1;padding:20px 24px;min-height:220px;max-height:320px;overflow-y:auto;color:rgba(255,0,102,0.7);text-shadow:0 0 8px rgba(255,0,102,0.4);letter-spacing:1px;background:linear-gradient(to bottom,rgba(255,0,102,0.02),transparent);animation:textPulse 2s ease-in-out infinite}
 @keyframes textPulse{0%,100%{text-shadow:0 0 8px rgba(255,0,102,0.4)}50%{text-shadow:0 0 15px rgba(255,0,102,0.6),0 0 25px rgba(0,255,200,0.2)}}
-.ct-red{color:rgba(255,0,102,0.95);text-shadow:0 0 10px rgba(255,0,102,0.8),0 0 5px rgba(255,0,102,0.5);font-weight:bold}
-.ct-dim{color:rgba(255,0,102,0.25);text-shadow:0 0 5px rgba(255,0,102,0.1)}
-.ct-white{color:rgba(0,255,200,0.8);text-shadow:0 0 10px rgba(0,255,200,0.6),0 0 5px rgba(255,0,102,0.2)}
-.ct-glitch{animation:textGlitchMask 0.15s step-end infinite;color:rgba(255,0,102,0.95)}
+.ct-red{color:rgba(210,60,60,0.9);font-weight:600}
+.ct-dim{color:rgba(138,134,128,0.3)}
+.ct-white{color:rgba(212,208,200,0.8)}
+.ct-glitch{animation:textGlitchMask 0.15s step-end infinite;color:rgba(210,60,60,0.9)}
 @keyframes textGlitchMask{0%{clip-path:none;transform:translateX(0);color:rgba(255,0,102,0.95)}33%{clip-path:inset(20% 0 60% 0);transform:translateX(3px);color:rgba(0,255,200,0.7)}66%{clip-path:inset(60% 0 20% 0);transform:translateX(-3px);color:rgba(255,0,102,0.95)}100%{clip-path:none;transform:translateX(0);color:rgba(255,0,102,0.95)}}
 
 /* ── EYE SYSTEM ── */

@@ -45,6 +45,7 @@
   <div class="legal-nav">
     <button class="legal-nav-btn active" onclick="showLegal('privacy',this)">Privacy Policy</button>
     <button class="legal-nav-btn" onclick="showLegal('terms',this)">Terms of Service</button>
+    <button class="legal-nav-btn" onclick="showLegal('licensing',this)">Licensing</button>
     <button class="legal-nav-btn" onclick="showLegal('api',this)">API Access</button>
     <button class="legal-nav-btn" onclick="showLegal('dmca',this)">DMCA Policy</button>
     <button class="legal-nav-btn" onclick="showLegal('contact',this)">Contact / Reports</button>
@@ -162,6 +163,44 @@
       NOTE: An internal draft version of these Terms (v10.8, dated 2016-10-01) included a Section 12.9 titled "Frequency Anomaly Acknowledgment" requiring users to confirm they understood that <span class="arg-redacted">███████████████████████████████████████████████████</span>. This clause was removed from the final version. We do not comment on why.<br>
       If you have experienced an unexplained transmission, do not contact us using this form. You already know the frequency.
     </div>
+  </div>
+
+  <!-- LICENSING -->
+  <div id="legal-licensing" class="legal-section">
+    <div class="legal-title">Licensing</div>
+    <div class="legal-subtitle">BROADCAST LICENSE WNC-2016-7782 · ESTABLISHED 2016 · TOKYO / DISTRIBUTED NODES</div>
+
+    <div class="legal-h2">Platform License</div>
+    <div class="legal-p">WNCORE Radio operates under Broadcast License ID <strong>WNC-2016-7782</strong>, issued 2016. WNCORE does not own, produce, or distribute the audio content streamed through this platform. All streams are sourced from third-party broadcasters via the Radio Browser public index and direct broadcaster agreements.</div>
+
+    <div class="legal-h2">Stream Content</div>
+    <div class="legal-p">Each station streamed through WNCORE Radio is operated independently by its respective broadcaster. WNCORE functions as a directory and relay layer only. We do not transcode, store, or modify audio streams. All rights to broadcast content remain with the originating station.</div>
+    <div class="legal-p">Stations listed in our index have been submitted to the Radio Browser community database. WNCORE does not independently verify the licensing status of individual streams. If you are a rights holder and believe a stream is infringing, please refer to our <button style="background:none;border:none;color:var(--accent);cursor:pointer;padding:0;font-size:inherit;font-family:inherit;text-decoration:underline" onclick="showLegal('dmca',document.querySelector('.legal-nav-btn:nth-child(5)'))">DMCA policy</button>.</div>
+
+    <div class="legal-h2">Live Music Section</div>
+    <div class="legal-p">The Live Music section features streams provided under royalty-free, Creative Commons, or public domain licenses. Sources include Free Music Archive (FMA), Musopen, and broadcaster-authorized streams. All tracks in this section are cleared for listener use without royalty obligation.</div>
+
+    <div class="legal-h2">WNCORE Platform Software</div>
+    <div class="legal-p">The WNCORE Radio web application — including its interface, design, and systems — is proprietary. Unauthorized reproduction, scraping, or resale of the platform or its interface is prohibited. Station data sourced from Radio Browser is redistributed under the Radio Browser database terms (CC0).</div>
+
+    <div class="legal-h2">Broadcast Infrastructure</div>
+    <table class="legal-table">
+      <thead><tr><th>Detail</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td>License ID</td><td>WNC-2016-7782</td></tr>
+        <tr><td>Established</td><td>2016</td></tr>
+        <tr><td>Headquarters</td><td>Tokyo, Japan / Distributed Nodes</td></tr>
+        <tr><td>Index Source</td><td>Radio Browser Community Database (radio-browser.info)</td></tr>
+        <tr><td>Station Count</td><td>12,000+ verified stations</td></tr>
+        <tr><td>Coverage</td><td>310 countries and territories</td></tr>
+        <tr><td>Stream Type</td><td>Relay (no transcoding or storage)</td></tr>
+        <tr><td>Content License</td><td>Per-broadcaster (not held by WNCORE)</td></tr>
+      </tbody>
+    </table>
+
+    <div class="legal-h2">Licensing Inquiries</div>
+    <div class="legal-p">For licensing questions, partnership agreements, or content clearance requests, contact: <a href="mailto:licensing@wncoreradio.net" style="color:var(--accent)">licensing@wncoreradio.net</a></div>
+    <div class="legal-p" style="font-size:0.75rem;color:var(--text3);margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">Effective date: March 12, 2016 &nbsp;·&nbsp; Last updated: January 2025 &nbsp;·&nbsp; WNCORE Radio Network</div>
   </div>
 
   <!-- API ACCESS -->
@@ -484,13 +523,19 @@ function triggerContactARG(idx, event) {
 </script>
 
 <script>
-// Handle URL param to open correct legal tab
+// Handle URL param to open correct legal tab e.g. legal.html?s=privacy
 document.addEventListener('DOMContentLoaded', function(){
   const params = new URLSearchParams(window.location.search);
   const s = params.get('s');
-  if(s) {
-    const btn = document.querySelector('.legal-nav-btn[onclick*="showLegal('' + s + ''"]');
-    if(btn) showLegal(s, btn);
+  if (s) {
+    const btns = document.querySelectorAll('.legal-nav-btn');
+    for (const btn of btns) {
+      const oc = btn.getAttribute('onclick') || '';
+      if (oc.indexOf("'" + s + "'") !== -1) {
+        showLegal(s, btn);
+        break;
+      }
+    }
   }
 });
 </script>

@@ -10,6 +10,47 @@ const audio = document.getElementById('audio');
 let isPlaying=false, isDarkMode=false, isMinimal=false;
 let currentStation=null, exposure=0, horrorTriggered=false;
 let searchFilter='all', searchDebounce, mobileMenuOpen=false;
+let _progressInterval = null;
+
+function formatTime(s){
+  if(!isFinite(s) || s < 0) return '00:00';
+  const m = Math.floor(s/60); const sec = Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');
+}
+
+function startProgressSync(){
+  const pbFill = document.getElementById('pb-fill');
+  const pbTime = document.querySelector('.pb-time');
+  if(!_progressInterval) {
+    _progressInterval = setInterval(()=>{
+      try{
+        if(!audio) return;
+        const dur = audio.duration;
+        if(dur && isFinite(dur) && dur > 0){
+          const pct = Math.max(0, Math.min(100, (audio.currentTime / dur) * 100));
+          if(pbFill) pbFill.style.width = pct + '%';
+          if(pbTime) pbTime.textContent = `${formatTime(audio.currentTime)} / ${formatTime(dur)}`;
+          if(pbFill) pbFill.classList.remove('playing');
+          if(pbTime) pbTime.classList.remove('live');
+        } else {
+          // Live stream — show steady state without misleading progress
+          if(pbFill) pbFill.style.width = '100%';
+          if(pbTime) pbTime.textContent = 'LIVE';
+          if(pbFill) pbFill.classList.add('playing');
+          if(pbTime) pbTime.classList.add('live');
+        }
+      }catch(e){}
+    }, 500);
+  }
+}
+
+function stopProgressSync(){
+  const pbFill = document.getElementById('pb-fill');
+  const pbTime = document.querySelector('.pb-time');
+  if(_progressInterval){ clearInterval(_progressInterval); _progressInterval = null; }
+  if(pbFill) { pbFill.style.width = '0%'; pbFill.classList.remove('playing'); }
+  if(pbTime) { pbTime.textContent = 'LIVE'; pbTime.classList.remove('live'); }
+}
 
 // ─── ANTI-SAVE PROTECTION ────────────────────────────────────────────────
 document.addEventListener('contextmenu', e => {
@@ -269,6 +310,7 @@ function initGlobeWhenReady() {
       globe.pointOfView({altitude:2.2});
     } catch(e) {}
   }
+  }
 }
 document.addEventListener('globe-ready', initGlobeWhenReady);
 
@@ -356,13 +398,63 @@ function getCountryEmoji(code){
 function playStation(url, name, meta, emoji) {
   if(!url) { play887Static(); return; }
   currentStation = {url, name, meta, emoji: emoji||'📻'};
+  // Show loading state immediately
+  updateStatus('CONNECTING…');
+  document.getElementById('np-track').textContent = '— buffering —';
   audio.src = url;
   audio.volume = document.getElementById('vol-slider').value;
-  audio.play().then(() => {
-    isPlaying = true;
-    updateUI(name, meta, emoji||'📻');
-  }).catch(() => updateStatus('STREAM UNAVAILABLE'));
-  exposure += 8;
+  const playPromise = audio.play();
+  if (playPromise !== undefined) {
+    playPromise.then(() => {
+      isPlaying = true;
+      updateUI(name, meta, emoji||'📻');
+      updateMiniPlayerVisibility();
+      applyStationSecondaryEffects(name, meta);
+    }).catch(err => {
+      // Auto-retry once on AbortError (common on mobile)
+      if (err && err.name === 'AbortError') {
+        setTimeout(() => {
+          audio.play().then(() => {
+            isPlaying = true;
+            updateUI(name, meta, emoji||'📻');
+            updateMiniPlayerVisibility();
+            applyStationSecondaryEffects(name, meta);
+          }).catch(() => updateStatus('STREAM UNAVAILABLE'));
+        }, 800);
+      } else {
+        updateStatus('STREAM UNAVAILABLE');
+        document.getElementById('np-track').textContent = '— signal lost —';
+      }
+    });
+  }
+  exposure += 8 + (window._corruptionBoost || 0);
+}
+
+function applyStationSecondaryEffects(name, meta) {
+  if (!name || !meta) return;
+  const combined = (name + meta).toLowerCase();
+  
+  // Horror/paranormal stations: apply slight distortion on start
+  if (combined.includes('horror') || combined.includes('paranormal') || combined.includes('creepy')) {
+    try {
+      initAudioFX();
+      if (waveshaper) {
+        waveshaper.curve = makeDistortionCurve(40);
+        setTimeout(() => {
+          if (waveshaper) waveshaper.curve = makeDistortionCurve(0);
+        }, 3000);
+      }
+    } catch(e) {}
+    // Trigger ticker anomaly
+    if (HORROR.stage >= 1) insertTickerAnomaly('PARANORMAL FREQUENCY DETECTED');
+  }
+  
+  // Japan stations: increase wrongness probability slightly
+  if (combined.includes('japan') || combined.includes('jp') || combined.includes('j-pop') || combined.includes('anime')) {
+    if (window.WRONGNESS && typeof window.WRONGNESS.spike === 'function') {
+      window.WRONGNESS.spike(3); // Boost wrongness by 3% for Japan stations
+    }
+  }
 }
 
 function playFeatured(idx) {
@@ -383,10 +475,56 @@ function play887Static() {
   exposure += 20;
   updateUI('88.7 FM', 'Signal Lost', '📻');
   document.getElementById('np-track').textContent = '— static —';
-  // Spooky message always shows when 88.7 is clicked
+
+  // ── 88.7 SPECIAL BEHAVIOR ──────────────────────────────────────────────────
+  // 1. UI lag spike — freeze player name, glitch through states
+  const pbName = document.getElementById('pb-name');
+  const npTrack = document.getElementById('np-track');
+  const lagStates = ['CONNECTING…','LOCATING SIGNAL…','HANDSHAKE FAILED','REROUTING…','CARRIER DETECTED','88.700 MHz'];
+  let lagIdx = 0;
+  pbName.textContent = 'CONNECTING…';
+  const lagInt = setInterval(() => {
+    if (lagIdx < lagStates.length) { pbName.textContent = lagStates[lagIdx++]; }
+    else { clearInterval(lagInt); pbName.textContent = '88.7 FM — Signal Lost'; }
+  }, 280);
+
+  // 2. Distorted audio start — heavy distortion that never fully resolves
   setTimeout(() => {
-    document.getElementById('np-track').textContent = '"...they lied to us... send help... any way possible..."';
-  }, 2800);
+    try {
+      initAudioFX();
+      if (audioCtx && waveshaper && lowpass && gainNode) {
+        waveshaper.curve = makeDistortionCurve(380);
+        const now = audioCtx.currentTime;
+        lowpass.frequency.setValueAtTime(800, now);
+        // Gain flutter — intermittent signal
+        gainNode.gain.setValueAtTime(0.0, now);
+        gainNode.gain.linearRampToValueAtTime(0.4, now + 0.3);
+        gainNode.gain.linearRampToValueAtTime(0.1, now + 0.6);
+        gainNode.gain.linearRampToValueAtTime(0.6, now + 0.9);
+        gainNode.gain.linearRampToValueAtTime(0.0, now + 1.4);
+        gainNode.gain.linearRampToValueAtTime(0.3, now + 1.8);
+        // Decay distortion to a still-degraded level — never clean
+        let distAmt = 380;
+        const distDecay = setInterval(() => {
+          distAmt = Math.max(120, distAmt - 18);
+          if (waveshaper) waveshaper.curve = makeDistortionCurve(distAmt);
+          if (distAmt <= 120) clearInterval(distDecay);
+        }, 120);
+      }
+    } catch(e) {}
+  }, 400);
+
+  // 3. Message sequence — feels like a transmission coming through
+  setTimeout(() => { npTrack.textContent = '— no carrier —'; }, 1200);
+  setTimeout(() => { npTrack.textContent = '— signal intercepted —'; }, 2200);
+  setTimeout(() => { npTrack.textContent = '"...they lied to us... send help... any way possible..."'; }, 2800);
+
+  // 4. Body outline flicker — 3 red pulses, deniable
+  let flickCount = 0;
+  const flickInt = setInterval(() => {
+    document.body.style.outline = flickCount % 2 === 0 ? '1px solid rgba(200,71,42,0.6)' : '';
+    if (++flickCount >= 6) { clearInterval(flickInt); document.body.style.outline = ''; }
+  }, 220);
 }
 
 function updateUI(name, meta, emoji) {
@@ -394,6 +532,11 @@ function updateUI(name, meta, emoji) {
   document.getElementById('np-name').textContent = name;
   document.getElementById('pb-meta').textContent = meta;
   document.getElementById('np-meta').textContent = meta;
+  // Update mini-player (mobile sticky player)
+  const miniName = document.getElementById('mini-name');
+  const miniMeta = document.getElementById('mini-meta');
+  if(miniName) miniName.textContent = name;
+  if(miniMeta) miniMeta.textContent = meta;
   // SVG radio icon in player art instead of emoji
   document.getElementById('pb-art').innerHTML = SVG.radio;
   document.getElementById('np-art-icon').innerHTML = SVG.radio;
@@ -408,8 +551,28 @@ function updateStatus(msg) { document.getElementById('pb-name').textContent = ms
 const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
 const ICON_PAUSE = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
 function setPlayIcon(playing) {
-  document.getElementById('pb-play-icon').innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
-  document.getElementById('np-play-icon').innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+  // Fade-out, replace, fade-in for each player SVG to create a micro-transition
+  function fadeReplace(el, content){
+    try{
+      const svg = el.closest && el.closest('svg') ? el.closest('svg') : (el.nodeName==='svg'?el:null);
+      if(!svg){ el.innerHTML = content; return; }
+      svg.classList.add('fading');
+      // wait for CSS transition out
+      setTimeout(()=>{
+        svg.innerHTML = content;
+        // force reflow then remove fading to fade in
+        void svg.offsetWidth;
+        svg.classList.remove('fading');
+      }, 160);
+    }catch(e){ try{ el.innerHTML = content }catch(_){} }
+  }
+
+  const pbPath = document.getElementById('pb-play-icon');
+  if(pbPath) fadeReplace(pbPath, playing ? ICON_PAUSE : ICON_PLAY);
+  const npPath = document.getElementById('np-play-icon');
+  if(npPath) fadeReplace(npPath, playing ? ICON_PAUSE : ICON_PLAY);
+  const miniPath = document.getElementById('mini-play-icon');
+  if(miniPath) fadeReplace(miniPath, playing ? ICON_PAUSE : ICON_PLAY);
 }
 
 function togglePlay() {
@@ -417,10 +580,29 @@ function togglePlay() {
   if(isPlaying) {
     audio.pause(); isPlaying=false; setPlayIcon(false);
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('playing')});
+    stopProgressSync();
   } else {
     audio.play(); isPlaying=true; setPlayIcon(true);
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('playing')});
+    startProgressSync();
   }
+  updateMiniPlayerVisibility();
+}
+
+function updateMiniPlayerVisibility() {
+  const miniPlayer = document.getElementById('mini-player');
+  const npPage = document.getElementById('page-np');
+  if(!miniPlayer) return;
+  // Show mini-player if playing and now-playing page is NOT active
+  const showMini = isPlaying && npPage && !npPage.classList.contains('active');
+  miniPlayer.setAttribute('data-visible', showMini ? 'true' : 'false');
+}
+
+// Attach audio play/pause listeners to keep UI in sync when playback state changes externally
+if (audio) {
+  audio.addEventListener('play', () => { isPlaying = true; setPlayIcon(true); startProgressSync(); });
+  audio.addEventListener('pause', () => { isPlaying = false; setPlayIcon(false); stopProgressSync(); });
+  audio.addEventListener('ended', () => { isPlaying = false; setPlayIcon(false); stopProgressSync(); });
 }
 
 function toggleFavorite(btn) {
@@ -575,6 +757,7 @@ function showPage(id, linkEl) {
   if(id==='anime') loadAnimePage();
   if(id==='about') initAboutEerie();
   if(id==='livemusic') loadLiveMusicPage();
+  updateMiniPlayerVisibility();
 }
 
 // ─── GENRES PAGE ──────────────────────────────────────────────────────────
@@ -768,31 +951,34 @@ function triggerEmailHorror(email) {
   exposure += 25;
 
   // Partially scramble the email for effect
-  const scrambled = email.split('').map(c => Math.random()<0.4 ? String.fromCharCode(c.charCodeAt(0)^(Math.floor(Math.random()*15)+1)) : c).join('');
+  const scrambled = email.split('').map(c => Math.random()<0.35 ? String.fromCharCode(c.charCodeAt(0)^(Math.floor(Math.random()*12)+1)) : c).join('');
+  const domain = email.includes('@') ? email.split('@')[1] : 'unknown';
+  const ts = new Date().toISOString().slice(0,19).replace('T',' ');
 
   const lines = [
-    {t:`<span class="et-dim">$ WNCORE_AUTH --register --email "${email}"</span>`,d:0},
-    {t:`<span class="et-dim">connecting to auth.wncoreradio.net...</span>`,d:400},
-    {t:`<span class="et-white">[ OK ] TLS handshake complete</span>`,d:900},
-    {t:`<span class="et-dim">sending credentials to node_09...</span>`,d:1400},
-    {t:`<span class="et-white">[ OK ] packet dispatched</span>`,d:1800},
-    {t:``,d:2000},
-    {t:`<span class="et-err">EXCEPTION: ROUTING_ANOMALY</span>`,d:2100},
-    {t:`<span class="et-err">packet intercepted at relay 88.700 MHz</span>`,d:2400},
-    {t:`<span class="et-dim">attempting recovery...</span>`,d:2700},
-    {t:``,d:2900},
-    {t:`<span class="et-err">ERROR: memory segment 0x${Math.floor(Math.random()*0xFFFF).toString(16).toUpperCase()} corrupted</span>`,d:3000},
-    {t:`<span class="et-dim">dumping stack trace:</span>`,d:3300},
-    {t:`<span class="et-dim">&nbsp;&nbsp;&nbsp;&gt; auth_dispatch() [node_09/core/auth.c:247]</span>`,d:3500},
-    {t:`<span class="et-dim">&nbsp;&nbsp;&nbsp;&gt; relay_forward() [signal_kage/intercept.c:88]</span>`,d:3700},
-    {t:`<span class="et-dim">&nbsp;&nbsp;&nbsp;&gt; ██████████::██████(${scrambled})</span>`,d:3900},
-    {t:`<span class="et-dim">&nbsp;&nbsp;&nbsp;&gt; [CALL STACK OVERFLOW]</span>`,d:4100},
-    {t:``,d:4300},
-    {t:`<span class="et-err">CRITICAL: account data written to unknown sink</span>`,d:4400},
-    {t:`<span class="et-dim">destination: [REDACTED] ██████████ [REDACTED]</span>`,d:4700},
-    {t:`<span class="et-err">SIGNAL_KAGE has your data.</span>`,d:5100},
-    {t:``,d:5400},
-    {t:`<span class="et-dim">returning to base... <span class="et-cursor">_</span></span>`,d:5700},
+    {t:`<span class="et-dim">$ wncore_auth --register --email "${email}" --node signal_kage</span>`,d:0},
+    {t:`<span class="et-dim">Resolving auth.wncoreradio.net...</span>`,d:400},
+    {t:`<span class="et-white">[ OK ] DNS resolved: 10.0.9.88 (node_09)</span>`,d:800},
+    {t:`<span class="et-dim">Establishing encrypted channel...</span>`,d:1100},
+    {t:`<span class="et-white">[ OK ] TLS 1.3 · AES-256-GCM · ${ts}</span>`,d:1500},
+    {t:`<span class="et-dim">Dispatching credentials to auth relay...</span>`,d:1900},
+    {t:`<span class="et-white">[ OK ] Packet dispatched → auth.wncoreradio.net</span>`,d:2200},
+    {t:``,d:2400},
+    {t:`<span class="et-err">EXCEPTION: ROUTING_ANOMALY at relay 88.700 MHz</span>`,d:2500},
+    {t:`<span class="et-dim">  > Packet intercepted before destination</span>`,d:2800},
+    {t:`<span class="et-dim">  > Interceptor: signal_kage@node_09 (UNKNOWN)</span>`,d:3100},
+    {t:`<span class="et-err">  > Credentials exposed: ${scrambled}</span>`,d:3400},
+    {t:``,d:3700},
+    {t:`<span class="et-dim">Stack trace:</span>`,d:3800},
+    {t:`<span class="et-dim">  auth_dispatch() [node_09/core/auth.c:247]</span>`,d:4000},
+    {t:`<span class="et-dim">  relay_forward() [signal_kage/intercept.c:88]</span>`,d:4200},
+    {t:`<span class="et-dim">  ████████::capture("${domain}")</span>`,d:4400},
+    {t:``,d:4600},
+    {t:`<span class="et-err">CRITICAL: Account data written to unknown sink</span>`,d:4800},
+    {t:`<span class="et-dim">  Destination: [REDACTED] ████ [REDACTED]</span>`,d:5100},
+    {t:`<span class="et-err">SIGNAL_KAGE has your data.</span>`,d:5500},
+    {t:``,d:5800},
+    {t:`<span class="et-dim">Returning to base... <span class="et-cursor">█</span></span>`,d:6100},
   ];
 
   lines.forEach(({t,d}) => {
@@ -802,19 +988,16 @@ function triggerEmailHorror(email) {
     }, d);
   });
 
-  // Auto-dismiss and go home
   setTimeout(()=>{
     overlay.classList.remove('show');
     termText.innerHTML='';
-    // Flash screen
     const f=document.createElement('div');
-    f.style.cssText='position:fixed;inset:0;background:#fff;z-index:99999;opacity:0.8;transition:opacity 0.5s;pointer-events:none';
+    f.style.cssText='position:fixed;inset:0;background:#fff;z-index:99999;opacity:0.7;transition:opacity 0.4s;pointer-events:none';
     document.body.appendChild(f);
     setTimeout(()=>{f.style.opacity='0';setTimeout(()=>f.remove(),500)},80);
-    // Bump exposure to escalate horror
     exposure+=15;
     checkHorrorStage();
-  }, 6800);
+  }, 7200);
 }
 
 // ─── ABOUT PAGE EERIE EFFECT ─────────────────────────────────────────────
@@ -880,6 +1063,14 @@ function checkHorrorStage() {
 }
 
 function startStage1() {
+  // Auto-enable ambient white noise at barely perceptible level (P4.3)
+  if (typeof window.setAmbientVolume === 'function') {
+    try {
+      window.setAmbientVolume(0.03);
+      window.enableAmbient('white');
+    } catch(e) {}
+  }
+  
   setInterval(()=>{ if(HORROR.stage>=1&&Math.random()<(isDarkMode?0.12:0.28)) triggerMicroGlitch(); },8000);
   setTimeout(()=>{ if(HORROR.stage>=1) insertTickerAnomaly('SIGNAL ANOMALY DETECTED ON 88.7'); },22000);
 }
@@ -922,7 +1113,8 @@ function insertTickerAnomaly(text) {
 
 // ─── TAB VISIBILITY REDIRECT ──────────────────────────────────────────────
 document.addEventListener('visibilitychange', ()=>{
-  if(document.hidden&&exposure>10){
+  // CRITICAL: Never redirect while audio is playing — would kill background radio
+  if(document.hidden && exposure>10 && !isPlaying){
     const p=isDarkMode?0.30:0.10;
     if(Math.random()<p){setTimeout(()=>{try{window.location.href=_d}catch(e){}},420)}
   }
@@ -932,46 +1124,94 @@ document.addEventListener('visibilitychange', ()=>{
 function triggerHorrorSequence() {
   horrorTriggered=true;
   const overlay=document.getElementById('horror-overlay');
-  const terminal=document.getElementById('horror-terminal');
+  const termBody=document.getElementById('horror-terminal-body')||document.getElementById('horror-terminal');
   overlay.classList.add('show');
+  if(termBody) termBody.innerHTML='';
+
   const lines=[
-    {t:'WNCORE SIGNAL MONITOR v2.1',d:0},{t:'————————————————————————',d:600},
-    {t:'',d:800},{t:'CRITICAL ANOMALY DETECTED.',d:1000,r:true},{t:'',d:1600},
-    {t:'SOURCE FREQ : 88.700 MHz',d:1800},{t:'ORIGIN NODE : 09',d:2200},
-    {t:'CALLSIGN &nbsp;&nbsp;: <span style="letter-spacing:2px">SIGNAL_KAGE</span>',d:2600},
-    {t:'STATUS &nbsp;&nbsp;&nbsp;&nbsp;: CARRIER CONFIRMED',d:3000,r:true},{t:'',d:3400},
-    {t:'BYPASSING AUTHENTICATION LAYER...',d:3600},
-    {t:'<span style="color:rgba(200,71,42,0.5)">ACCESS GRANTED</span>',d:4400},{t:'',d:4600},
-    {t:'ROUTING TO ARCHIVE...',d:4800},{t:'<span class="h-cursor">_</span>',d:5400},
+    {t:'<span class="ht-dim">$ wncore_monitor --freq 88.700 --authenticate</span>',d:0},
+    {t:'<span class="ht-dim">Connecting to WNCORE Signal Network...</span>',d:500},
+    {t:'<span class="ht-ok">[ OK ] TLS 1.3 handshake complete</span>',d:1000},
+    {t:'<span class="ht-ok">[ OK ] Node authentication successful</span>',d:1300},
+    {t:'',d:1500},
+    {t:'<span class="ht-dim">Scanning 88.700 MHz...</span>',d:1700},
+    {t:'<span class="ht-warn">[ WARN ] Unexpected carrier signal detected</span>',d:2100},
+    {t:'',d:2400},
+    {t:'<span class="ht-norm">SIGNAL REPORT ─────────────────────────────</span>',d:2600},
+    {t:'<span class="ht-dim">  FREQ &nbsp;&nbsp;&nbsp;: 88.700 MHz</span>',d:2900},
+    {t:'<span class="ht-dim">  NODE &nbsp;&nbsp;&nbsp;: 09 · ORIGIN UNKNOWN</span>',d:3100},
+    {t:'<span class="ht-dim">  CALLSIGN : SIGNAL_KAGE</span>',d:3300},
+    {t:'<span class="ht-red">  STATUS &nbsp;: CARRIER CONFIRMED — NOT DECOMMISSIONED</span>',d:3600},
+    {t:'<span class="ht-dim">  UPTIME &nbsp;: since 2016-03-12 08:00:00 UTC</span>',d:3900},
+    {t:'',d:4100},
+    {t:'<span class="ht-warn">[ WARN ] Bypassing authentication layer...</span>',d:4300},
+    {t:'<span class="ht-red">[ FAIL ] Access denied — rerouting</span>',d:4700},
+    {t:'<span class="ht-dim">Establishing alternate route...</span>',d:5000},
+    {t:'<span class="ht-alert">[ ACCESS GRANTED ] Route via Node 09</span>',d:5500},
+    {t:'',d:5700},
+    {t:'<span class="ht-dim">Routing to archive... <span class="ht-cursor">█</span></span>',d:5900},
   ];
-  lines.forEach(({t,d,r})=>{
-    setTimeout(()=>{terminal.innerHTML+=`<div style="${r?'color:#ff5533;':''}">${t}</div>`;terminal.scrollTop=terminal.scrollHeight;},d);
-  });
-  setTimeout(()=>{overlay.classList.remove('show');showDataCorruptedTerminal();},6500);
+
+  (async () => {
+    for (const {t, d} of lines) {
+      await new Promise(r => setTimeout(r, d));
+      if (!termBody) return;
+      const line = document.createElement('div');
+      line.innerHTML = t || '&nbsp;';
+      termBody.appendChild(line);
+      termBody.scrollTop = termBody.scrollHeight;
+      
+      // Use typewriter effect if available
+      if (window.typeLineInto) {
+        try {
+          const container = document.createElement('div');
+          container.innerHTML = t || '&nbsp;';
+          await window.typeLineInto(container, t || '&nbsp;', 22);
+        } catch(e) {}
+      }
+    }
+  })();
+
+  setTimeout(()=>{
+    if(!termBody) return;
+    const statusRow=document.createElement('div');
+    statusRow.className='horror-status-row';
+    const ts=new Date().toISOString().slice(0,19).replace('T',' ');
+    statusRow.innerHTML=`<div class="horror-status-dot"></div><span>SIGNAL ACTIVE</span><span style="margin-left:auto;opacity:0.5">${ts} UTC</span>`;
+    termBody.appendChild(statusRow);
+  }, 6200);
+
+  setTimeout(()=>{
+    overlay.classList.remove('show');
+    if(termBody) termBody.innerHTML='';
+    showDataCorruptedTerminal();
+  },7400);
 }
 
 // ─── DATA CORRUPT TERMINAL ────────────────────────────────────────────────
 const CORRUPT_LINES = [
-  {t:'<span class="ct-red">DATA CORRUPTED</span>',d:0},
-  {t:'<span class="ct-dim">initializing recovery protocol...</span>',d:500},
-  {t:'',d:700},
-  {t:'<span class="ct-dim">scanning memory block 0x00FF3A...</span>',d:900},
-  {t:'<span class="ct-red">ERROR: integrity check failed</span>',d:1400},
-  {t:'<span class="ct-dim">attempting fallback read...</span>',d:1900},
-  {t:'',d:2100},
-  {t:'<span class="ct-white">RECOVERED FRAGMENT [node_09/blacksite/log_2016.arc]</span>',d:2300},
-  {t:'<span class="ct-dim">——————————————————————————</span>',d:2700},
-  {t:'<span class="ct-dim">they told us 88.7 was decommissioned.</span>',d:3000},
-  {t:'<span class="ct-dim">it was never decommissioned.</span>',d:3600},
-  {t:'<span class="ct-red">SIGNAL_KAGE is still broadcasting.</span>',d:4200},
-  {t:'<span class="ct-dim">we don\'t know to whom.</span>',d:4800},
-  {t:'',d:5100},
-  {t:'<span class="ct-dim">coordinates: [REDACTED]  [REDACTED]</span>',d:5300},
-  {t:'<span class="ct-dim">last ping: right now.</span>',d:5800},
-  {t:'',d:6000},
-  {t:'<span class="ct-red ct-glitch">YOU ARE BEING WATCHED.</span>',d:6400},
-  {t:'<span class="ct-dim">——————————————————————————</span>',d:6900},
-  {t:'<span class="ct-dim">closing fragment... </span><span class="ct-red">unable to close.</span>',d:7200},
+  {t:'<span class="ct-white">[ WNCORE SIGNAL INTEGRITY MONITOR — RESTRICTED ]</span>',d:0},
+  {t:'<span class="ct-dim">─────────────────────────────────────────────────────────</span>',d:300},
+  {t:'',d:500},
+  {t:'<span class="ct-dim">initiating data recovery on node_09 archive...</span>',d:700},
+  {t:'<span class="ct-dim">scanning memory block 0x00FF3A...</span>',d:1100},
+  {t:'<span class="ct-red">ERROR: integrity check failed at sector 0x00FF3A</span>',d:1600},
+  {t:'<span class="ct-dim">attempting fallback read from cold storage...</span>',d:2000},
+  {t:'<span class="ct-red">ERROR: fallback failed — segment overwritten</span>',d:2400},
+  {t:'',d:2600},
+  {t:'<span class="ct-white">RECOVERED FRAGMENT [node_09/blacksite/log_2016.arc]</span>',d:2800},
+  {t:'<span class="ct-dim">─────────────────────────────────────────────────────────</span>',d:3100},
+  {t:'<span class="ct-dim">they told us 88.7 was decommissioned in march 2016.</span>',d:3400},
+  {t:'<span class="ct-dim">it was never decommissioned.</span>',d:4000},
+  {t:'',d:4300},
+  {t:'<span class="ct-red">SIGNAL_KAGE is still broadcasting.</span>',d:4600},
+  {t:'<span class="ct-dim">we do not know to whom.</span>',d:5100},
+  {t:'<span class="ct-dim">coordinates: [REDACTED]  [REDACTED]</span>',d:5500},
+  {t:'<span class="ct-dim">last verified ping: right now.</span>',d:6000},
+  {t:'',d:6200},
+  {t:'<span class="ct-red ct-glitch">YOU ARE BEING WATCHED.</span>',d:6600},
+  {t:'<span class="ct-dim">─────────────────────────────────────────────────────────</span>',d:7100},
+  {t:'<span class="ct-dim">closing fragment... </span><span class="ct-red">unable to close.</span>',d:7400},
   {t:'<span class="ct-red">IT KNOWS YOU\'RE HERE.</span>',d:7900},
   {t:'',d:8200},
 ];
@@ -980,9 +1220,26 @@ function showDataCorruptedTerminal() {
   const o=document.getElementById('data-corrupt-overlay');
   const t=document.getElementById('corrupt-terminal-text');
   o.classList.add('show'); t.innerHTML='';
-  CORRUPT_LINES.forEach(({t:txt,d})=>{
-    setTimeout(()=>{const line=document.createElement('div');line.innerHTML=txt||(txt===''?'&nbsp;':txt);t.appendChild(line);t.scrollTop=t.scrollHeight;},d);
-  });
+  
+  (async () => {
+    for (const {t: txt, d} of CORRUPT_LINES) {
+      await new Promise(r => setTimeout(r, d));
+      const line = document.createElement('div');
+      line.innerHTML = txt || (txt === '' ? '&nbsp;' : txt);
+      t.appendChild(line);
+      t.scrollTop = t.scrollHeight;
+      
+      // Type out line character by character if window.typeLineInto is available
+      if (window.typeLineInto) {
+        try {
+          const container = document.createElement('div');
+          container.innerHTML = txt || '&nbsp;';
+          await window.typeLineInto(container, txt || '&nbsp;', 22);
+        } catch(e) {}
+      }
+    }
+  })();
+  
   setTimeout(()=>{o.classList.remove('show');showEyes();},9500);
 }
 
@@ -1021,11 +1278,31 @@ let audioCtx,sourceNode,waveshaper,lowpass,gainNode;
 function initAudioFX(){
   if(!audioCtx){
     try{
-      audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-      sourceNode=audioCtx.createMediaElementSource(audio);
-      waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
-      lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
-      sourceNode.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
+      // SHARED CONTEXT: If improvements.js EQ init ran first, reuse its context.
+      // Otherwise create one and expose it so improvements.js can reuse it.
+      if(window._sharedAudioCtx && window._sharedSourceNode){
+        audioCtx=window._sharedAudioCtx;
+        sourceNode=window._sharedSourceNode;
+        // Re-connect: insert waveshaper+lowpass+gain after the EQ distortion node
+        // or directly from source if EQ isn't connected yet
+        waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
+        lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
+        // Connect at end of chain: if EQ distortion node exists, plug into it
+        // Otherwise plug directly from source
+        const eqOut=window._eqDistortionNode||sourceNode;
+        try{ eqOut.disconnect(); }catch(e){}
+        eqOut.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
+      } else {
+        audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+        sourceNode=audioCtx.createMediaElementSource(audio);
+        waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
+        lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
+        sourceNode.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
+        // Expose for improvements.js to reuse
+        window._sharedAudioCtx=audioCtx;
+        window._sharedSourceNode=sourceNode;
+        window._sharedGainNode=gainNode;
+      }
     }catch(e){}
   }
   if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
@@ -1350,26 +1627,45 @@ function lmSelectChannel(btn, chId) {
 function lmPlayChannel(chId) {
   const ch = LM_CHANNELS.find(c=>c.id===chId);
   if(!ch || !ch.stations.length) return;
+  // Stop existing audio cleanly
+  if(lmAudio.src) { lmAudio.pause(); lmAudio.src=''; }
   lmCurrentChannel = ch;
   lmCurrentStationIdx = Math.floor(Math.random() * ch.stations.length);
+  // Update channel bar active state
+  document.querySelectorAll('.lm-ch-btn').forEach(b=>b.classList.toggle('active', b.dataset.ch===chId));
   lmStartStation();
 }
 
+let _lmRetries = 0;
 function lmStartStation() {
   if(!lmCurrentChannel) return;
   const station = lmCurrentChannel.stations[lmCurrentStationIdx];
+  // Update title to loading state
+  const titleEl = document.getElementById('lm-np-title');
+  if(titleEl) titleEl.textContent = 'Connecting...';
   lmAudio.src = station.url;
-  lmAudio.play().then(()=>{
-    lmIsPlaying = true;
-    lmUpdateUI(station);
-    lmSetWaveformState(true);
-    // Spike wrongness when music starts
-    if(window.WRONGNESS) window.WRONGNESS.spike(5);
-  }).catch(()=>{
-    // Try next station
-    lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
-    lmStartStation();
-  });
+  lmAudio.load();
+  const p = lmAudio.play();
+  if(p) {
+    p.then(()=>{
+      _lmRetries = 0;
+      lmIsPlaying = true;
+      lmUpdateUI(station);
+      lmSetWaveformState(true);
+      if(window.WRONGNESS) window.WRONGNESS.spike(5);
+    }).catch(()=>{
+      // Try next station with retry limit
+      _lmRetries++;
+      if(_lmRetries < lmCurrentChannel.stations.length) {
+        lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
+        setTimeout(lmStartStation, 600);
+      } else {
+        _lmRetries = 0;
+        if(titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
+        lmSetWaveformState(false);
+      }
+    });
+  }
 }
 
 function lmUpdateUI(station) {
@@ -1560,6 +1856,49 @@ function initScrollHeader() {
     header.classList.toggle('scrolled', window.scrollY > 4);
   }, {passive:true});
 }
+
+// ─── SWIPE GESTURES (P2.2 — MOBILE CONTROLS) ─────────────────────────────
+(function initSwipeGestures() {
+  let touchStartX = 0, touchStartY = 0, touchStartTime = 0;
+  document.addEventListener('touchstart', e => {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = Date.now();
+  }, { passive: true });
+  
+  document.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    const dy = e.changedTouches[0].clientY - touchStartY;
+    const duration = Date.now() - touchStartTime;
+    const absX = Math.abs(dx);
+    const absY = Math.abs(dy);
+    const isHorizontal = absX > 60 && absX > absY * 1.5;
+    const isVertical = absY > 80 && absY > absX * 1.5;
+    
+    // Horizontal swipe — navigate through history
+    if (isHorizontal && duration < 600) {
+      try {
+        const h = JSON.parse(localStorage.getItem('wncore-history-v2') || '[]');
+        if (!h.length || !currentStation) return;
+        const cur = h.findIndex(s => s.url === currentStation.url);
+        if (cur === -1) return;
+        const next = dx < 0 ? cur + 1 : cur - 1; // left swipe = next, right swipe = prev
+        if (h[next]) {
+          playStation(h[next].url, h[next].name, h[next].meta, h[next].emoji || '📻');
+        }
+      } catch(e) {}
+    }
+    
+    // Vertical swipe up — open now-playing page on mobile
+    if (isVertical && dy < 0 && duration < 600 && window.innerWidth <= 768) {
+      try {
+        if (typeof window.showPage === 'function' && isPlaying) {
+          window.showPage('np');
+        }
+      } catch(e) {}
+    }
+  }, { passive: true });
+})();
 
 // ─── INIT UI INJECTIONS ────────────────────────────────────────────────
 // showPage already handles livemusic — no patching needed

@@ -572,3 +572,73 @@ function injectAdminStyles(){
 }
 
 })();
+
+// ─── ADMIN EXTRA FUNCTIONS ────────────────────────────────────────────────
+function adminInjectTicker() {
+  const input = document.getElementById('admin-ticker-inject');
+  if(!input || !input.value.trim()) return;
+  const msg = input.value.trim();
+  
+  // Inject into live ticker
+  const inner = document.getElementById('ticker-inner');
+  if(inner) {
+    const s = document.createElement('span');
+    s.className = 't-warn';
+    s.textContent = ' ⚠ ' + msg.toUpperCase() + ' ⚠ ';
+    s.style.cssText = 'animation: blink 1s step-end 6; color: var(--accent);';
+    inner.insertBefore(s, inner.firstChild);
+    inner.appendChild(s.cloneNode(true));
+  }
+  
+  // Save via API
+  adminSaveField('ticker_inject', 'admin-ticker-inject');
+  input.value = '';
+  
+  // Show success
+  input.style.borderColor = 'rgba(34,197,94,0.25)';
+  setTimeout(() => input.style.borderColor = '', 2000);
+}
+
+function adminSaveFeatured(idx) {
+  const nameEl = document.getElementById(`admin-feat${idx}-name`);
+  const urlEl = document.getElementById(`admin-feat${idx}-url`);
+  const metaEl = document.getElementById(`admin-feat${idx}-meta`);
+  if(!nameEl || !urlEl) return;
+  
+  const data = { name: nameEl.value.trim(), url: urlEl.value.trim(), meta: metaEl?.value.trim() || '' };
+  if(!data.name || !data.url) return;
+  
+  // Store in localStorage for now (server-side would persist to DB)
+  try {
+    const existing = JSON.parse(localStorage.getItem('wncore_admin_featured') || '{}');
+    existing[`station_${idx}`] = data;
+    localStorage.setItem('wncore_admin_featured', JSON.stringify(existing));
+    [nameEl, urlEl, metaEl].filter(Boolean).forEach(el => {
+      el.style.borderColor = 'rgba(34,197,94,0.25)';
+      setTimeout(() => el.style.borderColor = '', 2000);
+    });
+  } catch(e) {}
+}
+
+// Load admin-saved featured stations on init
+(function loadAdminFeatured() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('wncore_admin_featured') || '{}');
+    Object.entries(saved).forEach(([key, data]) => {
+      const idx = key.replace('station_', '');
+      const cards = document.querySelectorAll('.featured-card');
+      const card = cards[parseInt(idx) - 1];
+      if(card && data.name) {
+        const nameEl = card.querySelector('.fc-name');
+        const metaEl = card.querySelector('.fc-meta');
+        if(nameEl) nameEl.textContent = data.name;
+        if(metaEl && data.meta) metaEl.textContent = data.meta;
+        if(data.url) {
+          card.onclick = () => {
+            if(window.playStation) window.playStation(data.url, data.name, data.meta || '', '📻');
+          };
+        }
+      }
+    });
+  } catch(e) {}
+})();

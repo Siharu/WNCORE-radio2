@@ -630,19 +630,44 @@ function initEQ() {
   const au = document.getElementById('audio');
   if (!au || _eqConnected) return;
   try {
-    _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    const src = _audioCtx.createMediaElementSource(au);
-    _bassFilter   = _audioCtx.createBiquadFilter(); _bassFilter.type = 'lowshelf';  _bassFilter.frequency.value = 200;
-    _midFilter    = _audioCtx.createBiquadFilter(); _midFilter.type = 'peaking';    _midFilter.frequency.value = 1000; _midFilter.Q.value = 1;
-    _trebleFilter = _audioCtx.createBiquadFilter(); _trebleFilter.type = 'highshelf'; _trebleFilter.frequency.value = 4000;
-    _distortionNode = _audioCtx.createWaveShaper();
-    src.connect(_bassFilter);
-    _bassFilter.connect(_midFilter);
-    _midFilter.connect(_trebleFilter);
-    _trebleFilter.connect(_distortionNode);
-    _distortionNode.connect(_audioCtx.destination);
+    // CRITICAL: Reuse the shared audio context from main.js (window._sharedAudioCtx)
+    // to avoid InvalidStateError from calling createMediaElementSource() twice on the same element.
+    // main.js sets window._sharedAudioCtx and window._sharedSourceNode when it calls initAudioFX().
+    // If that hasn't happened yet, we create the context ourselves and expose it for main.js to reuse.
+    if (window._sharedAudioCtx && window._sharedSourceNode) {
+      _audioCtx = window._sharedAudioCtx;
+      // Re-route: source → EQ chain → main.js gain → destination
+      _bassFilter   = _audioCtx.createBiquadFilter(); _bassFilter.type = 'lowshelf';  _bassFilter.frequency.value = 200;
+      _midFilter    = _audioCtx.createBiquadFilter(); _midFilter.type = 'peaking';    _midFilter.frequency.value = 1000; _midFilter.Q.value = 1;
+      _trebleFilter = _audioCtx.createBiquadFilter(); _trebleFilter.type = 'highshelf'; _trebleFilter.frequency.value = 4000;
+      _distortionNode = _audioCtx.createWaveShaper();
+      // Disconnect existing source→destination, insert EQ chain before gainNode
+      try { window._sharedSourceNode.disconnect(); } catch(e) {}
+      window._sharedSourceNode.connect(_bassFilter);
+      _bassFilter.connect(_midFilter);
+      _midFilter.connect(_trebleFilter);
+      _trebleFilter.connect(_distortionNode);
+      // Connect to main.js gainNode if available, else to destination
+      _distortionNode.connect(window._sharedGainNode || _audioCtx.destination);
+    } else {
+      // main.js hasn't run initAudioFX yet — create context here and mark it as shared
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const src = _audioCtx.createMediaElementSource(au);
+      window._sharedAudioCtx = _audioCtx;
+      window._sharedSourceNode = src;
+      _bassFilter   = _audioCtx.createBiquadFilter(); _bassFilter.type = 'lowshelf';  _bassFilter.frequency.value = 200;
+      _midFilter    = _audioCtx.createBiquadFilter(); _midFilter.type = 'peaking';    _midFilter.frequency.value = 1000; _midFilter.Q.value = 1;
+      _trebleFilter = _audioCtx.createBiquadFilter(); _trebleFilter.type = 'highshelf'; _trebleFilter.frequency.value = 4000;
+      _distortionNode = _audioCtx.createWaveShaper();
+      src.connect(_bassFilter);
+      _bassFilter.connect(_midFilter);
+      _midFilter.connect(_trebleFilter);
+      _trebleFilter.connect(_distortionNode);
+      _distortionNode.connect(_audioCtx.destination);
+      window._sharedGainNode = null; // will be wired by main.js when it runs
+    }
     _eqConnected = true;
-  } catch {}
+  } catch(e) { console.warn('[EQ] initEQ failed:', e); }
 }
 
 function applyEQPreset(presetKey) {
@@ -2326,14 +2351,19 @@ function startWaveformDraw(audioEl) {
   if (!_waveCanvas) buildPlayerWaveform();
   if (!_waveCanvas) return;
   try {
+    // CRITICAL: Reuse shared audio context — never call createMediaElementSource twice on the same element.
+    // The shared context and source node are established by whichever of main.js/improvements.js runs first.
     if (!_waveAudioCtxShared) {
-      _waveAudioCtxShared = new (window.AudioContext || window.webkitAudioContext)();
+      _waveAudioCtxShared = window._sharedAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
     }
     if (!_waveAnalyser) {
-      const src = _waveAudioCtxShared.createMediaElementSource(audioEl);
       _waveAnalyser = _waveAudioCtxShared.createAnalyser();
       _waveAnalyser.fftSize = 64;
-      src.connect(_waveAnalyser);
+      // Tap off the shared source node — do NOT call createMediaElementSource again
+      if (window._sharedSourceNode) {
+        window._sharedSourceNode.connect(_waveAnalyser);
+      }
+      // Analyser connects to destination for passthrough (doesn't affect audio output)
       _waveAnalyser.connect(_waveAudioCtxShared.destination);
     }
     cancelAnimationFrame(_waveRaf);
