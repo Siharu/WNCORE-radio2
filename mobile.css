@@ -190,11 +190,22 @@
 /* ── LIVE MUSIC PAGE MOBILE ── */
 @media (max-width: 768px) {
   .lm-grid { grid-template-columns: 1fr !important; }
-  .lm-hero { padding: 32px 16px; }
+  .lm-hero {
+    padding: 32px 16px;
+    /* FIX: Remove overflow:hidden on mobile so stacked hero content isn't clipped.
+       The decorative bg/video are position:absolute with pointer-events:none so
+       they don't cause layout issues without overflow:hidden. */
+    overflow: visible;
+    /* Let height grow naturally to fit all stacked content */
+    min-height: unset;
+    height: auto;
+  }
   .lm-hero-title { font-size: 2rem; }
   .lm-hero-stats { gap: 12px; }
   .lm-now-playing-card { flex-direction: column; align-items: flex-start; }
   .lm-np-vinyl { width: 70px; height: 70px; }
+  /* FIX: Ensure content is not hidden behind the fixed player bar + mobile bottom nav */
+  .lm-wrap { padding-bottom: calc(var(--player-h) + 56px + 24px); }
 }
 
 /* ── CHARTS PAGE MOBILE ── */

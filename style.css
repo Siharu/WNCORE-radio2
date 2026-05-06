@@ -1013,7 +1013,7 @@ body.dark-mode .bsb-sep { color:rgba(240,237,232,0.2); }
 
 /* ── MOBILE LIVE MUSIC ── */
 @media (max-width:768px) {
-  .lm-hero { flex-direction:column;padding:40px 20px;min-height:auto; }
+  .lm-hero { flex-direction:column;padding:40px 20px;min-height:auto;overflow:visible;height:auto; }
   .lm-waveform-art { display:none; }
   .lm-hero-stats { gap:20px; }
   .lm-now-playing-card { flex-direction:column;text-align:center;padding:20px; }

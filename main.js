@@ -717,6 +717,20 @@ function toggleSleepTimer(btn) {
 
 document.getElementById('vol-slider').addEventListener('input', e => { audio.volume = e.target.value; });
 
+// ─── MOUSE WHEEL VOLUME CONTROL ──────────────────────────────────────────
+// Allow scrolling over the player bar to adjust volume
+document.querySelector('.pb-vol').addEventListener('wheel', e => {
+  e.preventDefault();
+  const slider = document.getElementById('vol-slider');
+  if (!slider) return;
+  const step = 0.05;
+  let newVal = parseFloat(slider.value) + (e.deltaY < 0 ? step : -step);
+  newVal = Math.min(1, Math.max(0, newVal));
+  slider.value = newVal;
+  audio.volume = newVal;
+  try { localStorage.setItem('wncore-vol', newVal); } catch {}
+}, { passive: false });
+
 // ─── THEME ────────────────────────────────────────────────────────────────
 function toggleDark() {
   isDarkMode = !isDarkMode;
@@ -1864,7 +1878,9 @@ let lmCurrentChannel = null;
 let lmCurrentStationIdx = 0;
 let lmIsPlaying = false;
 const lmAudio = new Audio();
-lmAudio.crossOrigin = 'anonymous';
+// NOTE: Do NOT set crossOrigin='anonymous' here — most radio streams don't send
+// CORS headers, and setting it causes the browser to block them entirely.
+// Audio playback does not require CORS unless you need Web Audio API analysis.
 
 function loadLiveMusicPage() {
   buildLmWaveform();
