@@ -2265,3 +2265,13 @@ function removeFavorite(idx) {
   localStorage.setItem('wncore_favs', JSON.stringify(favs));
   loadFavoritesPage();
 }
+// ─── EXPOSE LM INTERNALS FOR PATCH COMPATIBILITY ──────────────────────────
+// improvements_patch.js overrides lmStartStation and calls window.lmUpdateUI /
+// window.lmSetWaveformState — expose them so the patched version doesn't throw.
+window.lmUpdateUI        = lmUpdateUI;
+window.lmSetWaveformState = lmSetWaveformState;
+window.lmPlayChannel     = lmPlayChannel;
+window.lmStartStation    = lmStartStation;
+window.lmTogglePlay      = lmTogglePlay;
+window.lmNext            = lmNext;
+window.lmShuffle         = lmShuffle;
