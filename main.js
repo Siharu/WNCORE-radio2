@@ -735,6 +735,8 @@ document.querySelector('.pb-vol').addEventListener('wheel', e => {
 function toggleDark() {
   isDarkMode = !isDarkMode;
   document.body.classList.toggle('dark-mode', isDarkMode);
+  // Always remove dark-pre flash-prevention class — it's only needed before JS loads
+  document.documentElement.classList.remove('dark-pre');
   try { localStorage.setItem('wncore-dark', isDarkMode?'1':'0'); } catch(e){}
 }
 try {
@@ -742,6 +744,9 @@ try {
     isDarkMode=true; document.body.classList.add('dark-mode');
   }
 } catch(e){}
+// Remove dark-pre flash-prevention class now that JS has loaded and applied the real theme.
+// If left on <html>, its background:#0e0c0a!important overrides light mode permanently.
+document.documentElement.classList.remove('dark-pre');
 
 // ─── SKIP STATION ─────────────────────────────────────────────────────────
 let _lastStations = [];
