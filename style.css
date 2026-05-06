@@ -1143,12 +1143,18 @@ body.dark-mode .bsb-sep { color:rgba(240,237,232,0.2); }
 .country-filter-wrap {
   display:flex;align-items:center;gap:10px;padding:10px 24px;
   border-bottom:1px solid var(--border);background:var(--surface);
+  flex-wrap:wrap; /* allow wrapping on narrow screens */
 }
 .cf-label { font-size:0.72rem;color:var(--text3);white-space:nowrap; }
 .country-filter-select {
   font-size:0.75rem;padding:5px 10px;border-radius:6px;
   border:1px solid var(--border);background:var(--surface2);
-  color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;max-width:260px;
+  color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;
+  max-width:260px;min-width:0;flex:1; /* flex:1 so it fills remaining row width */
+}
+@media (max-width:480px) {
+  .country-filter-wrap { padding:8px 14px; }
+  .country-filter-select { max-width:100%;width:100%; }
 }
 
 /* ── SIDEBAR COLLAPSE ── */

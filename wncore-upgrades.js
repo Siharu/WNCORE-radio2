@@ -392,6 +392,41 @@
   .dark #wnc-chat-footer { color: rgba(255,255,255,0.25); }
   .dark #wnc-chat-msgs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
 
+  /* ── Mobile chat: btn stays above player bar, panel is a bottom sheet
+        that sits flush on top of the player bar, never overlapping content ── */
+  @media (max-width: 768px) {
+    #wnc-chat-btn {
+      bottom: calc(var(--player-h, 80px) + 10px);
+      right: 12px;
+      width: 42px;
+      height: 42px;
+      z-index: 490; /* below player bar (500) so never floats on top of it */
+    }
+    #wnc-chat-panel {
+      position: fixed;
+      left: 0;
+      right: 0;
+      /* Sit directly on top of the player bar — no gap, no overlap below it */
+      bottom: var(--player-h, 80px);
+      top: auto;
+      width: 100%;
+      max-width: 100%;
+      /* Limit height so it never covers the header — leaves ~56px for header */
+      height: min(52dvh, 400px);
+      border-radius: 14px 14px 0 0;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      transform: translateY(100%);
+      opacity: 1;
+      z-index: 489; /* below player bar and chat button */
+    }
+    #wnc-chat-panel.open {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
   /* Background play banner */
   #bgplay-banner {
     position: fixed;

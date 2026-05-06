@@ -1374,9 +1374,12 @@ setInterval(()=>{ if(isPlaying){exposure+=1; checkHorrorStage()} },5000);
 setInterval(()=>{ exposure+=0.5; checkHorrorStage(); },12000);
 
 function checkHorrorStage() {
+  // Stages 1 & 2 only activate after the user has clicked 88.7 FM.
+  // horrorTriggered is set to true inside triggerHorrorSequence() which is
+  // only called from playFeatured(2) — the 88.7 FM card click.
+  if(!horrorTriggered) return;
   if(HORROR.stage<1&&exposure>=15){HORROR.stage=1;startStage1()}
   if(HORROR.stage<2&&exposure>=30){HORROR.stage=2;startStage2()}
-  // Full horror sequence only triggers when clicking 88.7 FM, not automatically
 }
 
 function startStage1() {
@@ -1653,10 +1656,11 @@ function showEyes(){
   animateEye();
 }
 
-// Random eye trigger (every 45s check after exposure > 5)
+// Random corrupt terminal — only fires AFTER user has clicked 88.7 FM card
+// (horrorTriggered=true). Never fires on casual visitors.
 let randomEyeTriggered=false;
 setInterval(()=>{
-  if(randomEyeTriggered||horrorTriggered||eyeActive)return;
+  if(randomEyeTriggered||!horrorTriggered||eyeActive)return;
   if(exposure<5)return;
   const p=isDarkMode?0.30:0.10;
   if(Math.random()<p){
