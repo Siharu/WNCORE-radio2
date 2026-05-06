@@ -75,7 +75,9 @@ body{
   * { -webkit-tap-highlight-color:transparent; }
   /* Disable backdrop-filter on mobile — extremely expensive on most Android GPUs */
   header { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; background:var(--bg)!important; }
-  .player-bar { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; background:rgba(26,24,20,0.99)!important; }
+  .player-bar { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
+  body.dark-mode .player-bar { background:rgba(26,24,20,0.99)!important; }
+  body:not(.dark-mode) .player-bar { background:rgba(245,243,239,0.99)!important; }
   /* Disable grain overlay SVG filter on mobile */
   .grain-overlay { display:none!important; }
   /* Reduce ticker animation to CSS only, no JS reflow triggers */
@@ -2546,3 +2548,64 @@ body.dark-mode .lang-btn.active { background:#f0ede8;color:#0e0d0b; }
   100% { text-shadow: none; }
 }
 .oauth-title.glitching { animation: rgb-split 0.12s steps(1) infinite; }
+
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE FIXES — elements that were stuck dark
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Player bar: light mode version ── */
+body:not(.dark-mode) .player-bar {
+  background: rgba(245, 243, 239, 0.97);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+body:not(.dark-mode) .pb-name { color: var(--text); }
+body:not(.dark-mode) .pb-meta { color: var(--text2); }
+body:not(.dark-mode) .pb-btn  { color: var(--text3); }
+body:not(.dark-mode) .pb-btn:hover { color: var(--text); }
+body:not(.dark-mode) .pb-play { background: var(--text); color: var(--bg); }
+body:not(.dark-mode) .pb-bar  { background: rgba(0, 0, 0, 0.1); }
+body:not(.dark-mode) .pb-bar-fill { background: var(--text); }
+body:not(.dark-mode) .pb-time { color: var(--text3); }
+body:not(.dark-mode) .pb-vol-icon { color: var(--text3); }
+body:not(.dark-mode) .pb-vol-slider { background: rgba(0, 0, 0, 0.15); }
+body:not(.dark-mode) .pb-vol-slider::-webkit-slider-thumb { background: var(--text); }
+body:not(.dark-mode) .pb-art  { background: rgba(0, 0, 0, 0.06); }
+body:not(.dark-mode) .pb-art svg { color: var(--text3); }
+body:not(.dark-mode) .pb-eq span { background: rgba(0, 0, 0, 0.25); }
+body:not(.dark-mode) .pb-eq.playing span { background: var(--text2); }
+
+/* ── Now-playing art box: light mode version ── */
+body:not(.dark-mode) .np-art {
+  background: linear-gradient(135deg, var(--surface2) 0%, var(--surface) 100%);
+}
+body:not(.dark-mode) .np-art::after {
+  background: linear-gradient(135deg, rgba(200, 71, 42, 0.08), transparent);
+}
+body:not(.dark-mode) .np-wave span { background: rgba(0, 0, 0, 0.2); }
+
+/* ── ARG sidebar card: needs light-mode-friendly colours ── */
+body:not(.dark-mode) .arg-card {
+  background: var(--surface2);
+  border-color: rgba(200, 71, 42, 0.2);
+}
+body:not(.dark-mode) .arg-freq  { color: rgba(0, 0, 0, 0.08); }
+body:not(.dark-mode) .arg-status { color: var(--text3); }
+body:not(.dark-mode) .arg-status .redacted {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+/* ── Broadcast status bar separator: invisible on light bg fix ── */
+body:not(.dark-mode) .bsb-sep { color: rgba(0, 0, 0, 0.25); }
+
+/* ── Mini-player (injected by improvements.js) ── */
+body:not(.dark-mode) .mini-player {
+  background: rgba(245, 243, 239, 0.97);
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--text);
+}
+body:not(.dark-mode) .mini-player-name { color: var(--text); }
+body:not(.dark-mode) .mini-player-btn  { color: var(--text2); border-color: var(--border); }
+body:not(.dark-mode) .mini-player-btn:hover { color: var(--text); }
+body:not(.dark-mode) #mini-name { color: var(--text); }
+body:not(.dark-mode) #mini-meta { color: var(--text2); }
+
