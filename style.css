@@ -491,20 +491,16 @@ svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease,
 .ct-glitch{animation:textGlitchMask 0.15s step-end infinite;color:rgba(210,60,60,0.9)}
 @keyframes textGlitchMask{0%{clip-path:none;transform:translateX(0);color:rgba(255,0,102,0.95)}33%{clip-path:inset(20% 0 60% 0);transform:translateX(3px);color:rgba(0,255,200,0.7)}66%{clip-path:inset(60% 0 20% 0);transform:translateX(-3px);color:rgba(255,0,102,0.95)}100%{clip-path:none;transform:translateX(0);color:rgba(255,0,102,0.95)}}
 
-/* ── EYE SYSTEM ── */
-#arg-eye-system{display:none;position:fixed;inset:0;z-index:10000;background:#050403;cursor:none;overflow:hidden;align-items:center;justify-content:center}
-#arg-eye-system.active{display:flex}
-.eye-wrapper{position:relative;width:600px;height:400px;max-width:90vw}
-.eye-ambient{position:absolute;inset:-40px;background:radial-gradient(ellipse at center,rgba(200,71,42,0.08) 0%,transparent 70%);pointer-events:none;animation:eyeAmbientPulse 4s ease-in-out infinite}
-@keyframes eyeAmbientPulse{0%,100%{opacity:0.5}50%{opacity:1}}
-#eye-base-img{width:100%;height:100%;object-fit:contain;position:relative;z-index:2;pointer-events:none}
-#eye-pupil-img{position:absolute;width:180px;height:180px;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none}
-.spooky-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-family:'DM Mono',monospace;font-size:2.5rem;letter-spacing:4px;opacity:0;z-index:3;text-shadow:0 0 15px rgba(200,71,42,1);pointer-events:none;transition:opacity 1s ease}
+/* ── EYE SYSTEM — FULLSCREEN VIDEO ── */
+#arg-eye-system{display:none;position:fixed;inset:0;z-index:10000;background:#000;cursor:none;overflow:hidden}
+#arg-eye-system.active{display:block}
+#eye-pupil-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1;pointer-events:none}
+.spooky-text{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-family:'DM Mono',monospace;font-size:2.5rem;letter-spacing:4px;opacity:0;z-index:3;text-shadow:0 0 15px rgba(200,71,42,1);pointer-events:none;transition:opacity 1s ease}
 .glitch-text{animation:textGlitch 0.15s infinite}
 @keyframes textGlitch{0%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 2px),calc(-50% + 2px))}40%{transform:translate(calc(-50% + 2px),calc(-50% - 2px))}60%{transform:translate(calc(-50% - 2px),calc(-50% - 2px))}80%{transform:translate(calc(-50% + 2px),calc(-50% + 2px))}100%{transform:translate(-50%,-50%)}}
 .white-flash{position:absolute;inset:0;background:#fff;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.1s}
-#exit-btn-custom{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.5);border:1px solid rgba(200,71,42,0.4);color:rgba(200,71,42,0.6);font-family:'DM Mono',monospace;font-size:1rem;padding:10px 30px;cursor:crosshair;z-index:10;transition:all 0.3s;letter-spacing:2px}
-#exit-btn-custom:hover{background:rgba(200,71,42,0.1);color:#c8472a;border-color:#c8472a;box-shadow:0 0 15px rgba(200,71,42,0.2)}
+#exit-btn-custom{position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.6);border:1px solid rgba(200,71,42,0.5);color:rgba(200,71,42,0.8);font-family:'DM Mono',monospace;font-size:0.85rem;padding:10px 30px;cursor:crosshair;z-index:10;transition:all 0.3s;letter-spacing:3px;text-transform:uppercase}
+#exit-btn-custom:hover{background:rgba(200,71,42,0.15);color:#c8472a;border-color:#c8472a;box-shadow:0 0 20px rgba(200,71,42,0.3)}
 
 /* ── EMAIL HORROR TERMINAL ── */
 #email-horror-overlay{
@@ -583,7 +579,6 @@ svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease,
   .anime-banner{height:160px}
   .anime-banner-title{font-size:1.5rem}
   .st-country,.st-bitrate{display:none}
-  #eye-pupil-img{width:100px;height:100px}
   .corrupt-terminal-text{font-size:0.62rem}
   /* Hide globe hint on mobile since there's no interactive globe */
   .globe-hint { display:none!important; }
@@ -2101,7 +2096,6 @@ body.dark-mode .lang-btn.active { background:#f0ede8;color:#0e0d0b; }
 /* ── HORROR OVERLAYS MOBILE ── */
 @media (max-width: 480px) {
   .horror-terminal { font-size: 0.72rem; }
-  .eye-wrapper { width: 280px; height: 200px; }
 }
 
 /* ── SECTION HEADER MOBILE ── */

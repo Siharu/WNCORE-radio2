@@ -949,10 +949,8 @@
   <div class="corrupt-header">WNCORE SIGNAL INTEGRITY MONITOR</div>
   <div class="corrupt-terminal-box">
     <div class="corrupt-title-bar">
-      <div class="corrupt-dot" style="background:#ff5f57"></div>
-      <div class="corrupt-dot" style="background:#febc2e"></div>
-      <div class="corrupt-dot" style="background:#28c840"></div>
-      <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:rgba(255,255,255,0.3);margin-left:8px">data_recovery.exe</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.48rem;color:rgba(180,50,40,0.55);letter-spacing:2px">WNCORE//SIGINT · data_recovery.exe</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.42rem;color:rgba(100,150,115,0.3);letter-spacing:2px">PROCESS ACTIVE</span>
     </div>
     <div class="corrupt-terminal-text" id="corrupt-terminal-text"></div>
   </div>
@@ -1004,10 +1002,8 @@
   <div class="email-horror-scanlines"></div>
   <div class="email-terminal">
     <div class="email-terminal-bar">
-      <div class="email-terminal-bar-dot" style="background:#ff5f57"></div>
-      <div class="email-terminal-bar-dot" style="background:#febc2e"></div>
-      <div class="email-terminal-bar-dot" style="background:#28c840"></div>
-      <span style="font-family:'DM Mono',monospace;font-size:0.6rem;color:#1a5c1a;margin-left:8px">wncore_auth -- encrypted channel</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.46rem;color:rgba(0,160,60,0.4);letter-spacing:2.5px;border:1px solid rgba(0,160,60,0.18);padding:2px 7px;border-radius:2px">⬛ SECURE CHANNEL</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.42rem;color:rgba(0,120,50,0.3);letter-spacing:2px;margin-left:auto">wncore_auth · enc</span>
     </div>
     <div class="email-terminal-text" id="email-terminal-text"></div>
   </div>
@@ -1015,14 +1011,10 @@
 
 <div id="arg-eye-system" role="dialog" aria-modal="true" aria-label="Signal detected">
   <div class="white-flash" id="white-flash"></div>
-  <div class="eye-wrapper">
-    <div class="eye-ambient"></div>
-    <img src="images/eye-base.png" id="eye-base-img" alt="" loading="lazy">
-    <video id="eye-pupil-video" autoplay muted loop playsinline style="position:absolute;width:180px;height:180px;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none">
-      <source id="eye-pupil-video-src" src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
-    </video>
-    <div class="spooky-text" id="spooky-text">I see you.</div>
-  </div>
+  <video id="eye-pupil-video" autoplay muted loop playsinline>
+    <source id="eye-pupil-video-src" src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
+  </video>
+  <div class="spooky-text" id="spooky-text">I see you.</div>
   <button id="exit-btn-custom">exit</button>
 </div>
 

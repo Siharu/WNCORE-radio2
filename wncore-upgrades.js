@@ -718,68 +718,72 @@
 (function injectTerminalCSS() {
   const s = document.createElement('style');
   s.textContent = `
-  /* Realistic PS1 prompt styling */
-  .ht-ps1  { color: #5faf5f; font-weight: 600; }
-  .ht-cmd  { color: #8ab4e8; }
-  .ht-ok   { color: #28c840; }
-  .ht-warn { color: #febc2e; }
-  .ht-red  { color: #ff5f57; }
-  .ht-alert{ color: #ff8c42; font-weight: 600; letter-spacing: 0.08em; }
-  .ht-dim  { color: #6b6762; }
-  .ht-norm { color: #9a9690; }
-  .ht-white{ color: #d4d0c8; letter-spacing: 0.05em; }
+  /* Military phosphor palette — cold, restricted-access aesthetic */
+  .ht-ps1   { color: rgba(50, 160, 80, 0.7) !important; font-weight: 500; }
+  .ht-cmd   { color: rgba(120, 170, 200, 0.65) !important; }
+  .ht-ok    { color: rgba(50, 170, 80, 0.8) !important; }
+  .ht-warn  { color: rgba(200, 160, 55, 0.75) !important; }
+  .ht-red   { color: rgba(210, 60, 50, 0.9) !important; }
+  .ht-alert { color: rgba(220, 70, 50, 1) !important; font-weight: 600; letter-spacing: 0.1em; }
+  .ht-dim   { color: rgba(70, 110, 80, 0.38) !important; }
+  .ht-norm  { color: rgba(110, 155, 120, 0.55) !important; }
+  .ht-white { color: rgba(150, 195, 160, 0.88) !important; letter-spacing: 0.07em; }
   .ht-cursor {
     display: inline-block;
-    width: 8px; height: 1em;
-    background: #28c840;
+    width: 7px; height: 0.88em;
+    background: rgba(100, 180, 120, 0.85);
     vertical-align: text-bottom;
-    animation: term-blink 1.1s step-end infinite;
+    animation: term-blink 1s step-end infinite;
     margin-left: 2px;
+    border-radius: 1px;
   }
   @keyframes term-blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-  /* Horror terminal body — professional look */
+  /* Terminal body — deep dark, phosphor substrate */
   .horror-terminal-body {
-    font-family: 'DM Mono', 'Cascadia Code', 'Fira Code', 'Courier New', monospace !important;
-    font-size: 0.775rem !important;
-    line-height: 1.75 !important;
-    letter-spacing: 0.04em !important;
-    padding: 20px 24px 24px !important;
-    min-height: 320px !important;
-    overflow-y: auto;
-    max-height: 420px;
+    font-family: 'DM Mono', 'Fira Code', 'Courier New', monospace !important;
+    font-size: 0.78rem !important;
+    line-height: 1.78 !important;
+    letter-spacing: 0.05em !important;
+    padding: 18px 22px 22px !important;
+    min-height: 300px !important;
+    overflow-y: auto !important;
+    max-height: 68vh !important;
+    background: #020304 !important;
   }
   .horror-terminal-body div {
-    color: #6b6762 !important;
-    font-size: 0.775rem !important;
+    color: rgba(100, 145, 115, 0.55) !important;
+    font-size: 0.78rem !important;
     white-space: pre-wrap;
+    line-height: 1.78 !important;
   }
 
-  /* Horror terminal chrome — proper macOS-style title bar */
+  /* Chrome bar — dark, strict, institutional */
   .horror-terminal-chrome {
-    padding: 10px 14px !important;
-    background: #2b2b2b !important;
-    border-bottom: 1px solid rgba(0,0,0,0.5) !important;
-    border-radius: 10px 10px 0 0 !important;
+    padding: 7px 14px !important;
+    background: #030405 !important;
+    border-bottom: 1px solid rgba(30, 90, 50, 0.2) !important;
+    border-radius: 0 !important;
   }
   .horror-terminal {
-    border-radius: 10px !important;
+    border-radius: 2px !important;
+    background: #020304 !important;
+    border: 1px solid rgba(30, 90, 50, 0.22) !important;
     box-shadow:
-      0 0 0 1px rgba(0,0,0,0.6),
-      0 2px 4px rgba(0,0,0,0.3),
-      0 20px 80px rgba(0,0,0,0.8),
-      0 0 60px rgba(180,10,30,0.08) !important;
+      0 0 0 1px rgba(0,0,0,0.95),
+      0 0 80px rgba(15, 70, 35, 0.07),
+      0 40px 100px rgba(0,0,0,0.96) !important;
   }
 
-  /* ARG: faint "someone is watching" watermark text in terminal */
+  /* Watermark — barely visible, menacing */
   .horror-terminal-body::before {
     content: 'SESSION LOGGED · SIGNAL MONITORED · DO NOT SHARE';
     position: absolute;
-    bottom: 12px; right: 16px;
+    bottom: 10px; right: 14px;
     font-family: 'DM Mono', monospace;
-    font-size: 0.5rem;
+    font-size: 0.42rem;
     letter-spacing: 3px;
-    color: rgba(180,10,30,0.06);
+    color: rgba(30, 90, 50, 0.08);
     pointer-events: none;
     z-index: 0;
     text-transform: uppercase;

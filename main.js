@@ -1518,21 +1518,9 @@ let eyeActive=false,eyeExitTriggered=false,eyeAnimFrame=null;
 document.addEventListener('mousemove',e=>{if(!eyeActive||eyeExitTriggered)return;mouseX=e.clientX;mouseY=e.clientY;lastMouseMove=Date.now();});
 function lerp(s,e,a){return(1-a)*s+a*e}
 function animateEye(){
+  // Video is now fullscreen — no pupil position animation needed.
+  // Keep the loop alive so eyeActive flag stays consistent for exit logic.
   if(!eyeActive){eyeAnimFrame=null;return}
-  const idle=(Date.now()-lastMouseMove)>2000;
-  if(eyeExitTriggered){tX=0;tY=0}
-  else if(idle){tX=0;tY=0}
-  else{
-    const cx=window.innerWidth/2,cy=window.innerHeight/2;
-    const maxR=Math.min(window.innerWidth,window.innerHeight)*0.05;
-    const dx=mouseX-cx,dy=mouseY-cy;
-    const angle=Math.atan2(dy,dx),dist=Math.min(Math.hypot(dx,dy)*0.12,maxR);
-    tX=Math.cos(angle)*dist;tY=Math.sin(angle)*dist;
-  }
-  const jX=(Math.random()-0.5)*1.5,jY=(Math.random()-0.5)*1.5;
-  const speed=eyeExitTriggered?0.02:(idle?0.04:0.08);
-  pX=lerp(pX,tX,speed);pY=lerp(pY,tY,speed);
-  pupil.style.transform=`translate(calc(-50% + ${pX+jX}px), calc(-50% + ${pY+jY}px))`;
   eyeAnimFrame=requestAnimationFrame(animateEye);
 }
 
