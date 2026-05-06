@@ -392,34 +392,35 @@
   .dark #wnc-chat-footer { color: rgba(255,255,255,0.25); }
   .dark #wnc-chat-msgs::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
 
-  /* ── Mobile chat: btn stays above player bar, panel is a bottom sheet
-        that sits flush on top of the player bar, never overlapping content ── */
+  /* ── Mobile chat: btn sits above the mobile bottom nav + player bar stack.
+        Panel is a bottom sheet anchored on top of the nav bar. ── */
   @media (max-width: 768px) {
     #wnc-chat-btn {
-      bottom: calc(var(--player-h, 80px) + 10px);
+      /* player bar + 56px mobile nav + 10px clearance */
+      bottom: calc(var(--player-h, 68px) + 56px + 10px);
       right: 12px;
       width: 42px;
       height: 42px;
-      z-index: 490; /* below player bar (500) so never floats on top of it */
+      z-index: 482; /* above mobile nav (481), below player bar (500) */
     }
     #wnc-chat-panel {
       position: fixed;
       left: 0;
       right: 0;
-      /* Sit directly on top of the player bar — no gap, no overlap below it */
-      bottom: var(--player-h, 80px);
+      /* Sit on top of mobile nav bar (which itself sits on player bar) */
+      bottom: calc(var(--player-h, 68px) + 56px);
       top: auto;
       width: 100%;
       max-width: 100%;
-      /* Limit height so it never covers the header — leaves ~56px for header */
-      height: min(52dvh, 400px);
+      /* Cap at ~50% screen so header stays visible */
+      height: min(50dvh, 380px);
       border-radius: 14px 14px 0 0;
       border-left: none;
       border-right: none;
       border-bottom: none;
       transform: translateY(100%);
       opacity: 1;
-      z-index: 489; /* below player bar and chat button */
+      z-index: 482;
     }
     #wnc-chat-panel.open {
       transform: translateY(0);

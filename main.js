@@ -1759,8 +1759,8 @@ const LM_CHANNELS = [
     stations:[
       {url:'https://stream.soma.fm/groovesalad256.mp3',          name:'SomaFM Groove Salad',  src:'SomaFM'},
       {url:'https://stream.soma.fm/groovesalad.mp3',             name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://stream.soma.fm/jazz24.mp3',                  name:'Jazz24',               src:'SomaFM'},
-      {url:'https://live.leanstream.co/CJAZZFM',                 name:'CJAZZ 91.1 FM',        src:'CJAZZ'},
+      {url:'https://stream.soma.fm/jazz24128.mp3',               name:'Jazz24',               src:'SomaFM'},
+      {url:'https://stream.soma.fm/bootliquor128.mp3',           name:'SomaFM Boot Liquor',   src:'SomaFM'},
     ]
   },
   {
@@ -1775,7 +1775,7 @@ const LM_CHANNELS = [
     stations:[
       {url:'https://stream.soma.fm/thetrip128.mp3',              name:'SomaFM The Trip',      src:'SomaFM'},
       {url:'https://stream.soma.fm/deepspaceone.mp3',            name:'SomaFM Deep Space One',src:'SomaFM'},
-      {url:'https://live.musopen.org:8085/streamvbr0',           name:'Musopen Classical',    src:'Musopen'},
+      {url:'https://stream.soma.fm/sonicuniverse128.mp3',        name:'SomaFM Sonic Universe', src:'SomaFM'},
     ]
   },
   {
@@ -1836,7 +1836,7 @@ const LM_CHANNELS = [
     icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>',
     stations:[
       {url:'https://radio.plaza.one/mp3',                        name:'Nightwave Plaza',  src:'Nightwave'},
-      {url:'https://ice1.somafm.com/lush-128-mp3.mp3',          name:'SomaFM Lush',      src:'SomaFM'},
+      {url:'https://stream.soma.fm/lush128.mp3',                 name:'SomaFM Lush',      src:'SomaFM'},
       {url:'https://stream.soma.fm/fluid128.mp3',                name:'SomaFM Fluid',     src:'SomaFM'},
       {url:'https://stream.soma.fm/cliqhop128.mp3',              name:'SomaFM cliqhop',   src:'SomaFM'},
     ]
