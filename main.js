@@ -282,16 +282,61 @@ function initGlobeWhenReady() {
   if (IS_MOBILE_DEVICE) {
     // On mobile: show a static placeholder, skip Three.js/WebGL globe entirely
     // to prevent freezing and high GPU/memory usage
-    globeContainer.style.cssText = 'display:flex;align-items:center;justify-content:center;';
+    globeContainer.style.cssText = 'position:absolute;inset:0;overflow:hidden;';
     globeContainer.innerHTML = `
-      <div style="text-align:center;color:rgba(255,255,255,0.5);padding:20px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="80" height="80" style="opacity:0.4;margin-bottom:12px;">
-          <circle cx="12" cy="12" r="10"/>
-          <line x1="2" y1="12" x2="22" y2="12"/>
-          <path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
-        </svg>
-        <div style="font-size:0.7rem;letter-spacing:2px;opacity:0.5;">TAP A STATION TO TUNE IN</div>
-      </div>`;
+      <style>
+        @keyframes wnc-ring-pulse {
+          0%   { transform: translate(-50%,-50%) scale(0.3); opacity: 0.7; }
+          100% { transform: translate(-50%,-50%) scale(2.8); opacity: 0; }
+        }
+        @keyframes wnc-bar-wave {
+          0%,100% { transform: scaleY(0.3); }
+          50%      { transform: scaleY(1); }
+        }
+        @keyframes wnc-dot-blink {
+          0%,100% { opacity:1; } 50% { opacity:0.2; }
+        }
+        .wnc-mob-ring {
+          position: absolute;
+          top: 50%; left: 50%;
+          width: 120px; height: 120px;
+          border-radius: 50%;
+          border: 1px solid rgba(200,71,42,0.35);
+          animation: wnc-ring-pulse 3s ease-out infinite;
+          pointer-events: none;
+        }
+        .wnc-mob-ring:nth-child(2) { animation-delay: 1s; }
+        .wnc-mob-ring:nth-child(3) { animation-delay: 2s; }
+        .wnc-mob-bars {
+          position: absolute;
+          bottom: 28px; right: 24px;
+          display: flex; align-items: flex-end; gap: 3px;
+        }
+        .wnc-mob-bar {
+          width: 3px; background: rgba(200,71,42,0.5);
+          border-radius: 2px; transform-origin: bottom;
+        }
+      </style>
+
+      <!-- Pulsing rings -->
+      <div class="wnc-mob-ring"></div>
+      <div class="wnc-mob-ring"></div>
+      <div class="wnc-mob-ring"></div>
+
+      <!-- Center node -->
+      <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#c8472a;margin:0 auto 10px;animation:wnc-dot-blink 1.4s step-end infinite;box-shadow:0 0 12px rgba(200,71,42,0.6);"></div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.52rem;letter-spacing:3px;color:rgba(200,71,42,0.5);text-transform:uppercase;">Signal Active</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.44rem;letter-spacing:2px;color:rgba(255,255,255,0.18);margin-top:4px;">88.700 MHz · NODE 09</div>
+      </div>
+
+      <!-- EQ bars bottom right -->
+      <div class="wnc-mob-bars">
+        ${[18,28,14,34,22,30,16,26,12,20].map((h,i) =>
+          `<div class="wnc-mob-bar" style="height:${h}px;animation:wnc-bar-wave ${0.6+i*0.07}s ease-in-out infinite;animation-delay:${i*0.06}s;"></div>`
+        ).join('')}
+      </div>
+    `;
   } else {
     try {
       globe = Globe()(globeContainer)

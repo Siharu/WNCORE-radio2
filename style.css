@@ -563,8 +563,8 @@ svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease,
   .rec-grid{grid-template-columns:1fr}
   .anime-stations-grid{grid-template-columns:1fr}
   /* Globe section smaller on mobile — JS skips WebGL entirely */
-  .globe-section{height:200px}
-  .globe-overlay-left{width:100%;padding:24px 20px}
+  .globe-section{height:240px}
+  .globe-overlay-left{width:100%;padding:20px 20px 16px}
   .globe-title{font-size:1.5rem}
   .globe-sub{display:none}
   .globe-stats{gap:14px}
@@ -582,9 +582,20 @@ svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease,
   .corrupt-terminal-text{font-size:0.62rem}
   /* Hide globe hint on mobile since there's no interactive globe */
   .globe-hint { display:none!important; }
-  /* Smaller globe section height since it just shows static icon */
-  .globe-section { height:180px!important; }
-  .globe-overlay-left { position:relative;z-index:2; }
+  /* Globe section on mobile — signal visualization on right, text on left */
+  .globe-section { height:240px!important; }
+  .globe-overlay-left {
+    position:absolute;
+    width:55%;
+    padding:20px 16px 16px 20px;
+    z-index:2;
+  }
+  #globe-container {
+    position:absolute;
+    right:0; top:0; bottom:0;
+    width:45%;
+    z-index:1;
+  }
   .genre-strip{padding:0 12px}
   /* Ensure tables don't overflow */
   .station-table{font-size:0.75rem}
