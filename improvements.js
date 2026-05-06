@@ -2180,9 +2180,9 @@ function initPageTransitions() {
   const s = document.createElement('style');
   s.id = 'pt-style';
   s.textContent = `
-    .page { opacity:0; transform:translateY(6px); transition:opacity 0.22s ease, transform 0.22s ease; pointer-events:none; }
-    .page.active { opacity:1; transform:translateY(0); pointer-events:auto; }
-    .page.page-exit { opacity:0; transform:translateY(-4px); }
+    .page { display:none; opacity:0; transform:translateY(6px); transition:opacity 0.22s ease, transform 0.22s ease; pointer-events:none; }
+    .page.active { display:block; opacity:1; transform:translateY(0); pointer-events:auto; }
+    .page.page-exit { display:block; opacity:0; transform:translateY(-4px); pointer-events:none; }
   `;
   document.head.appendChild(s);
 

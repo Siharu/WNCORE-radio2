@@ -1747,31 +1747,31 @@ const LM_CHANNELS = [
     id:'jazz',
     name:'WNCORE Jazz',
     genre:'Jazz',
-    desc:'SomaFM Groove Salad + Radio Swiss Jazz — cool jazz, bebop, smooth sessions.',
+    desc:'SomaFM Groove Salad + Jazz24 — cool jazz, bebop, smooth sessions.',
     license:'CC by-nc-nd',
     color:'rgba(200,130,42,0.12)',
     fgColor:'#c8822a',
     icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
     stations:[
-      {url:'https://stream.soma.fm/groovesalad256.mp3',   name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://stream.soma.fm/groovesalad.mp3',      name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://www.radioswissjazz.ch/live/mp3_128.m3u', name:'Radio Swiss Jazz', src:'Radio Swiss'},
-      {url:'https://listen.181fm.com/181-jazz_128k.mp3',  name:'181.fm Jazz',          src:'181.fm'},
+      {url:'https://stream.soma.fm/groovesalad256.mp3',          name:'SomaFM Groove Salad',  src:'SomaFM'},
+      {url:'https://stream.soma.fm/groovesalad.mp3',             name:'SomaFM Groove Salad',  src:'SomaFM'},
+      {url:'https://stream.soma.fm/jazz24.mp3',                  name:'Jazz24',               src:'SomaFM'},
+      {url:'https://live.leanstream.co/CJAZZFM',                 name:'CJAZZ 91.1 FM',        src:'CJAZZ'},
     ]
   },
   {
     id:'classical',
     name:'WNCORE Classical',
     genre:'Classical',
-    desc:'Radio Swiss Classic and symphonic streams — orchestral, chamber, opera.',
+    desc:'Classical streams — orchestral, chamber, opera.',
     license:'Public service',
     color:'rgba(37,99,235,0.08)',
     fgColor:'#2563eb',
     icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>',
     stations:[
-      {url:'https://www.radioswissclassic.ch/live/mp3_128.m3u', name:'Radio Swiss Classic', src:'Radio Swiss'},
-      {url:'https://listen.181fm.com/181-classical_128k.mp3',   name:'181.fm Classical',    src:'181.fm'},
-      {url:'https://stream.soma.fm/thetrip128.mp3',             name:'SomaFM The Trip',     src:'SomaFM'},
+      {url:'https://stream.soma.fm/thetrip128.mp3',              name:'SomaFM The Trip',      src:'SomaFM'},
+      {url:'https://stream.soma.fm/deepspaceone.mp3',            name:'SomaFM Deep Space One',src:'SomaFM'},
+      {url:'https://live.musopen.org:8085/streamvbr0',           name:'Musopen Classical',    src:'Musopen'},
     ]
   },
   {
@@ -1831,10 +1831,10 @@ const LM_CHANNELS = [
     fgColor:'#c026d3',
     icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>',
     stations:[
-      {url:'https://radio.plaza.one/mp3',              name:'Nightwave Plaza',        src:'Nightwave'},
-      {url:'https://ice1.somafm.com/lush-128-mp3',     name:'SomaFM Lush',            src:'SomaFM'},
-      {url:'https://stream.soma.fm/fluid128.mp3',      name:'SomaFM Fluid',           src:'SomaFM'},
-      {url:'https://pool.nightwave.io/plaza.mp3',      name:'Nightwave Lo-Fi',        src:'Nightwave'},
+      {url:'https://radio.plaza.one/mp3',                        name:'Nightwave Plaza',  src:'Nightwave'},
+      {url:'https://ice1.somafm.com/lush-128-mp3.mp3',          name:'SomaFM Lush',      src:'SomaFM'},
+      {url:'https://stream.soma.fm/fluid128.mp3',                name:'SomaFM Fluid',     src:'SomaFM'},
+      {url:'https://stream.soma.fm/cliqhop128.mp3',              name:'SomaFM cliqhop',   src:'SomaFM'},
     ]
   },
   {
@@ -1952,6 +1952,7 @@ function lmPlayChannel(chId) {
   }
   // Stop existing lm audio cleanly
   if(lmAudio.src) { lmAudio.pause(); lmAudio.src=''; }
+  _lmRetries = 0; // reset retry counter on every new channel selection
   lmCurrentChannel = ch;
   lmCurrentStationIdx = Math.floor(Math.random() * ch.stations.length);
   // Update channel bar active state

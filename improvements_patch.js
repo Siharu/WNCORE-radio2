@@ -119,69 +119,9 @@
   };
 })();
 
-// ─── LIVE MUSIC FIX: Better audio handling with fallbacks ─────────────────
-(function patchLiveMusic() {
-  'use strict';
-  
-  // Wait for lmCurrentChannel and lmAudio to be available
-  function waitForLiveMusic() {
-    if(typeof window.lmPlayChannel !== 'function') {
-      setTimeout(waitForLiveMusic, 500);
-      return;
-    }
-    
-    const orig_lmPlayChannel = window.lmPlayChannel;
-    window.lmPlayChannel = function(chId) {
-      // Update channel bar buttons
-      document.querySelectorAll('.lm-ch-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.ch === chId);
-      });
-      orig_lmPlayChannel(chId);
-    };
-    
-    const orig_lmStartStation = window.lmStartStation;
-    window.lmStartStation = function() {
-      if(!window.lmCurrentChannel) return;
-      const ch = window.lmCurrentChannel;
-      const station = ch.stations[window.lmCurrentStationIdx];
-      
-      // Show loading state in UI
-      const titleEl = document.getElementById('lm-np-title');
-      if(titleEl) titleEl.textContent = 'Connecting...';
-      
-      const lmAudio = window.lmAudio;
-      if(!lmAudio) return;
-      
-      lmAudio.src = '';
-      lmAudio.src = station.url;
-      lmAudio.load();
-      
-      const playAttempt = lmAudio.play();
-      if(playAttempt) {
-        playAttempt.then(() => {
-          window.lmIsPlaying = true;
-          window.lmUpdateUI(station);
-          window.lmSetWaveformState(true);
-          showToast(`▶ ${station.name}`);
-        }).catch(() => {
-          // Try next station in list
-          window.lmCurrentStationIdx = (window.lmCurrentStationIdx + 1) % ch.stations.length;
-          // Only retry up to 3 times  
-          if(!lmAudio._retryCount) lmAudio._retryCount = 0;
-          lmAudio._retryCount++;
-          if(lmAudio._retryCount < 3) {
-            setTimeout(() => window.lmStartStation(), 800);
-          } else {
-            lmAudio._retryCount = 0;
-            if(titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
-          }
-        });
-      }
-    };
-  }
-  
-  setTimeout(waitForLiveMusic, 1000);
-})();
+// ─── LIVE MUSIC FIX: Removed — original lmStartStation in main.js handles
+// playback correctly via closure. The previous patch caused silent early-returns
+// because window.lmAudio is undefined (const declarations don't populate window). ───
 
 // ─── SHARE BUTTON SYSTEM ───────────────────────────────────────────────────
 function initShareSystem() {
