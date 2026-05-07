@@ -347,7 +347,7 @@
       <div class="section-title">Recommended</div>
     </div>
     <div class="rec-grid" id="rec-grid">
-      <div class="rec-card" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient · Chill')">
+      <div class="rec-card" onclick="playRec('https://ice6.somafm.com/groovesalad-256-mp3','SomaFM Groove Salad','Ambient · Chill')">
         <div class="rec-art" style="background:linear-gradient(135deg,#1a2a1a,#2a4a2a)">
           <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/><path d="M10.49 22.67c-3.72 4.35-8.94 5.66-16.88 5.85"/></svg>
         </div>
@@ -365,7 +365,7 @@
         </div>
         <div class="rec-info"><div class="rec-name">181.fm Jazz</div><div class="rec-desc">Jazz · Smooth</div></div>
       </div>
-      <div class="rec-card" onclick="playRec('https://stream.soma.fm/defcon128.mp3','SomaFM DEF CON Radio','Electronic · Hacker')">
+      <div class="rec-card" onclick="playRec('https://ice6.somafm.com/defcon-128-mp3','SomaFM DEF CON Radio','Electronic · Hacker')">
         <div class="rec-art" style="background:linear-gradient(135deg,#1a0a0a,#3a1a1a)">
           <svg viewBox="0 0 24 24" fill="none" stroke="rgba(200,71,42,0.8)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
         </div>
@@ -424,7 +424,7 @@
           <div class="tr-info"><div class="tr-name">BBC World Service</div><div class="tr-meta">News · Talk</div></div>
           <div class="tr-listeners">8.8K</div>
         </div>
-        <div class="trending-item" onclick="playRec('https://stream.soma.fm/groovesalad256.mp3','SomaFM Groove Salad','Ambient')">
+        <div class="trending-item" onclick="playRec('https://ice6.somafm.com/groovesalad-256-mp3','SomaFM Groove Salad','Ambient')">
           <div class="tr-rank">3</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
           <div class="tr-info"><div class="tr-name">SomaFM Groove Salad</div><div class="tr-meta">Ambient · Chill</div></div>
           <div class="tr-listeners">3.1K</div>
@@ -1176,6 +1176,24 @@
 }
 .admin-badge-online{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);color:#22c55e}
 .admin-badge-offline{background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.25);color:rgba(200,71,42,0.7)}
+
+/* ── NEW ADMIN UX CLASSES ── */
+.admin-field-input{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;transition:border-color 0.3s}
+.admin-field-input:focus{border-color:rgba(200,71,42,0.5)}
+.admin-field-url{flex:1;min-width:0}
+.admin-field-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.admin-upload-btn{white-space:nowrap;font-size:0.65rem!important}
+.admin-page-block{margin-bottom:22px;padding:16px;background:rgba(200,71,42,0.06);border:1px solid rgba(200,71,42,0.12);border-radius:10px}
+.admin-page-block-label{font-size:0.62rem;color:rgba(255,255,255,0.45);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.admin-page-block-label::before{content:'';display:inline-block;width:5px;height:5px;background:#c8472a;border-radius:50%}
+.admin-preview-thumb{background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.04);border-radius:8px;overflow:hidden;height:110px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.admin-preview-placeholder{text-align:center;font-size:0.62rem;color:rgba(255,255,255,0.2);font-family:'DM Mono',monospace;line-height:1.6}
+.admin-preview-placeholder span{font-size:0.55rem;opacity:0.6}
+.admin-field-status{font-size:0.6rem;margin-top:6px;min-height:16px;transition:color 0.2s;font-family:'DM Mono',monospace;letter-spacing:0.3px}
+.admin-field-status--saving{color:rgba(232,228,223,0.35)}
+.admin-field-status--ok{color:#22c55e}
+.admin-field-status--err{color:#ef4444}
+.admin-field-status--saved{color:rgba(34,197,94,0.55)}
 </style>
 
 <div id="admin-panel-modal">
@@ -1198,234 +1216,222 @@
       <div class="admin-topbar-sep"></div>
       <div class="admin-topbar-title">ADMIN PANEL</div>
       <div class="admin-topbar-right">
-        <div class="admin-topbar-status">
-          <div class="admin-status-dot"></div>
-          <span>CONNECTED</span>
-        </div>
-        <div class="admin-topbar-sep"></div>
+        <div class="admin-topbar-status"><div style="width:6px;height:6px;background:#22c55e;border-radius:50%;box-shadow:0 0 6px #22c55e"></div>CONNECTED</div>
         <div class="admin-topbar-clock" id="admin-topbar-clock">——</div>
-        <div class="admin-topbar-sep"></div>
         <button class="admin-topbar-lock-btn" onclick="adminLockSession()">LOCK SESSION</button>
       </div>
     </div>
-
     <div class="admin-app-body">
       <div class="admin-sidebar">
-        <div class="admin-sidebar-section">MONITOR</div>
-        <div class="admin-sidebar-item active" onclick="adminShowSection('overview',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-          OVERVIEW
-        </div>
-        <div class="admin-sidebar-divider"></div>
-        <div class="admin-sidebar-section">CONTENT</div>
-        <div class="admin-sidebar-item" onclick="adminShowSection('videos',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-          VIDEO MEDIA
-        </div>
-        <div class="admin-sidebar-item" onclick="adminShowSection('signals',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
-          ARG SIGNALS
-        </div>
-        <div class="admin-sidebar-divider"></div>
-        <div class="admin-sidebar-section">MANAGE</div>
-        <div class="admin-sidebar-item" onclick="adminShowSection('ticker',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
-          TICKER FEED
-        </div>
-        <div class="admin-sidebar-item" onclick="adminShowSection('featured',this)">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          FEATURED STATIONS
-        </div>
+        <div class="admin-sidebar-group">MONITOR</div>
+        <div class="admin-sidebar-item active" onclick="adminShowSection('overview',this)">OVERVIEW</div>
+        <div class="admin-sidebar-group">CONTENT</div>
+        <div class="admin-sidebar-item" onclick="adminShowSection('videos',this)">VIDEO MEDIA</div>
+        <div class="admin-sidebar-item" onclick="adminShowSection('signals',this)">ARG SIGNALS</div>
+        <div class="admin-sidebar-group">MANAGE</div>
+        <div class="admin-sidebar-item" onclick="adminShowSection('ticker',this)">TICKER FEED</div>
+        <div class="admin-sidebar-item" onclick="adminShowSection('featured',this)">FEATURED STATIONS</div>
       </div>
 
       <div class="admin-main-content">
+
+        <!-- ── OVERVIEW ── -->
         <div id="admin-sec-overview" class="admin-section active">
           <div class="admin-section-title">System Overview</div>
           <div class="admin-section-sub">WNCORE BROADCAST NETWORK · CONFIGURATION</div>
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot green"></div>STATUS</div>
-            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:8px">
               <span class="admin-badge admin-badge-online">CONNECTED</span>
               <span style="font-size:0.65rem;color:rgba(232,228,223,0.22)">Admin panel loaded · Ctrl+B to toggle</span>
             </div>
           </div>
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>QUICK ACTIONS</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px">
+              <button class="admin-btn admin-btn-ghost" onclick="adminShowSection('videos',document.querySelector('.admin-sidebar-item:nth-child(4)'))">📺 Edit Videos</button>
+              <button class="admin-btn admin-btn-ghost" onclick="adminShowSection('ticker',document.querySelector('.admin-sidebar-item:nth-child(7)'))">📡 Inject Ticker</button>
+              <button class="admin-btn admin-btn-ghost" onclick="adminShowSection('signals',document.querySelector('.admin-sidebar-item:nth-child(5)'))">👁 ARG Signals</button>
+            </div>
+          </div>
         </div>
 
+        <!-- ── VIDEO MEDIA ── -->
         <div id="admin-sec-videos" class="admin-section">
           <div class="admin-section-title">Video Media</div>
-          <div class="admin-section-sub">MANAGE VIDEOS BY SECTION</div>
+          <div class="admin-section-sub">MANAGE VIDEOS BY SECTION · paste a Supabase URL or upload a file</div>
 
-          <!-- HOME PAGE SECTION -->
-          <div style="margin-bottom:20px;padding:14px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.15);border-radius:8px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <div style="width:6px;height:6px;background:#c8472a;border-radius:50%"></div>
-              <div style="font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase">HOME PAGE</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;margin-bottom:12px">
-              <div style="background:linear-gradient(to bottom, rgba(200,71,42,0.1), rgba(0,0,0,0.4));height:120px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:0.7rem;font-family:'DM Mono',monospace">
-                <div style="text-align:center">
-                  <div style="font-size:0.65rem;margin-bottom:4px">📺 GLOBE SECTION BACKGROUND</div>
-                  <div style="font-size:0.6rem;opacity:0.6">Full-width behind interactive globe</div>
-                </div>
-              </div>
+          <!-- HOME PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">HOME PAGE</div>
+            <div class="admin-preview-thumb" id="prev-globe_bg_video">
+              <div class="admin-preview-placeholder">📺 GLOBE SECTION BACKGROUND<br><span>Full-width behind interactive globe</span></div>
             </div>
             <div class="admin-card" style="margin:0">
               <div class="admin-card-title"><div class="admin-card-title-dot"></div>GLOBE SECTION BACKGROUND</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-                <input type="url" id="admin-globe-bg-url" class="admin-field-input" placeholder="https://..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-globe-bg-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-globe-bg-url','globe_bg_video')">↑ UPLOAD</button>
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('globe_bg_video','admin-globe-bg-url')">SAVE</button>
               </div>
+              <div class="admin-field-status" id="status-globe_bg_video"></div>
             </div>
           </div>
 
-          <!-- ANIME PAGE SECTION -->
-          <div style="margin-bottom:20px;padding:14px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.15);border-radius:8px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <div style="width:6px;height:6px;background:#c8472a;border-radius:50%"></div>
-              <div style="font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase">ANIME & J-MUSIC PAGE</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;margin-bottom:12px">
-              <div style="background:linear-gradient(to bottom, rgba(200,71,42,0.1), rgba(0,0,0,0.4));height:140px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:0.7rem;font-family:'DM Mono',monospace">
-                <div style="text-align:center">
-                  <div style="font-size:0.65rem;margin-bottom:4px">🎬 ANIME BANNER</div>
-                  <div style="font-size:0.6rem;opacity:0.6">Large hero banner at page top</div>
-                </div>
-              </div>
+          <!-- ANIME PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">ANIME &amp; J-MUSIC PAGE</div>
+            <div class="admin-preview-thumb" id="prev-anime_banner_img">
+              <div class="admin-preview-placeholder">🎬 ANIME BANNER<br><span>Large hero banner at page top</span></div>
             </div>
             <div class="admin-card" style="margin:0">
-              <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER — IMAGE URL</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-                <input type="url" id="admin-anime-banner-url" class="admin-field-input" placeholder="https://... (jpg/png)" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>ANIME BANNER — IMAGE URL <span style="font-size:0.58rem;color:rgba(200,71,42,0.7);margin-left:6px">jpg/png</span></div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-anime-banner-url" class="admin-field-input admin-field-url" placeholder="https://... (jpg/png)">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-anime-banner-url','anime_banner_img')">↑ UPLOAD</button>
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_img','admin-anime-banner-url')">SAVE</button>
               </div>
-              <div class="admin-card-title" style="margin-top:14px"><div class="admin-card-title-dot"></div>ANIME BANNER — VIDEO URL <span style="font-size:0.58rem;color:rgba(200,71,42,0.6);margin-left:6px">overrides image</span></div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-                <input type="url" id="admin-anime-banner-video-url" class="admin-field-input" placeholder="https://... (mp4)" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <div class="admin-field-status" id="status-anime_banner_img"></div>
+
+              <div class="admin-card-title" style="margin-top:16px"><div class="admin-card-title-dot"></div>ANIME BANNER — VIDEO URL <span style="font-size:0.58rem;color:rgba(200,71,42,0.7);margin-left:6px">overrides image · mp4</span></div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-anime-banner-video-url" class="admin-field-input admin-field-url" placeholder="https://... (mp4)">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-anime-banner-video-url','anime_banner_video')">↑ UPLOAD</button>
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_video','admin-anime-banner-video-url')">SAVE</button>
               </div>
+              <div class="admin-field-status" id="status-anime_banner_video"></div>
             </div>
           </div>
 
-          <!-- LIVE MUSIC PAGE SECTION -->
-          <div style="margin-bottom:20px;padding:14px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.15);border-radius:8px">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-              <div style="width:6px;height:6px;background:#c8472a;border-radius:50%"></div>
-              <div style="font-size:0.72rem;color:rgba(255,255,255,0.6);letter-spacing:0.5px;text-transform:uppercase">LIVE MUSIC PAGE</div>
-            </div>
-            <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.04);border-radius:6px;overflow:hidden;margin-bottom:12px">
-              <div style="background:linear-gradient(to bottom, rgba(200,71,42,0.1), rgba(0,0,0,0.4));height:130px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,0.3);font-size:0.7rem;font-family:'DM Mono',monospace">
-                <div style="text-align:center">
-                  <div style="font-size:0.65rem;margin-bottom:4px">🎵 HERO BACKGROUND</div>
-                  <div style="font-size:0.6rem;opacity:0.6">Hero section top of page</div>
-                </div>
-              </div>
+          <!-- LIVE MUSIC PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">LIVE MUSIC PAGE</div>
+            <div class="admin-preview-thumb" id="prev-livemusic_hero_bg">
+              <div class="admin-preview-placeholder">🎵 HERO BACKGROUND<br><span>Hero section top of page</span></div>
             </div>
             <div class="admin-card" style="margin:0">
               <div class="admin-card-title"><div class="admin-card-title-dot"></div>LIVE MUSIC HERO BACKGROUND</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-                <input type="url" id="admin-livemusic-bg-url" class="admin-field-input" placeholder="https://..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-livemusic-bg-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-livemusic-bg-url','livemusic_hero_bg')">↑ UPLOAD</button>
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('livemusic_hero_bg','admin-livemusic-bg-url')">SAVE</button>
               </div>
+              <div class="admin-field-status" id="status-livemusic_hero_bg"></div>
             </div>
           </div>
+
+          <!-- hidden file input for uploads -->
+          <input type="file" id="admin-upload-file-input" accept="video/*,image/*" style="display:none" onchange="adminHandleUpload(this)">
         </div>
 
+        <!-- ── ARG SIGNALS ── -->
         <div id="admin-sec-signals" class="admin-section">
           <div class="admin-section-title">ARG Signals</div>
           <div class="admin-section-sub">88.7 FM · SIGNAL CONFIGURATION</div>
 
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot"></div>SIGNAL STATUS TEXT</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="text" id="admin-signal-text" class="admin-field-input" placeholder="NO CARRIER — WAITING FOR CONNECTION" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+            <div style="font-size:0.6rem;color:rgba(232,228,223,0.3);margin-top:6px;margin-bottom:10px">Shown in the 88.7 FM transmission log box</div>
+            <div class="admin-field-row">
+              <input type="text" id="admin-signal-text" class="admin-field-input" placeholder="NO CARRIER — WAITING FOR CONNECTION">
               <button class="admin-btn admin-btn-primary" onclick="adminSaveField('signal_status_text','admin-signal-text')">SAVE</button>
             </div>
+            <div class="admin-field-status" id="status-signal_status_text"></div>
           </div>
 
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE SPOOKY TEXT</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="text" id="admin-spooky-text" class="admin-field-input" placeholder="I see you." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+            <div style="font-size:0.6rem;color:rgba(232,228,223,0.3);margin-top:6px;margin-bottom:10px">Text that appears on the eyeball hover</div>
+            <div class="admin-field-row">
+              <input type="text" id="admin-spooky-text" class="admin-field-input" placeholder="I see you.">
               <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_spooky_text','admin-spooky-text')">SAVE</button>
             </div>
+            <div class="admin-field-status" id="status-eye_spooky_text"></div>
           </div>
 
           <div class="admin-card">
-            <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE PUPIL VIDEO (Supabase URL)</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="url" id="admin-eye-video-url" class="admin-field-input" placeholder="https://... (video URL)" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>EYE PUPIL VIDEO</div>
+            <div style="font-size:0.6rem;color:rgba(232,228,223,0.3);margin-top:6px;margin-bottom:10px">Video playing inside the eye pupil (Supabase URL or upload)</div>
+            <div class="admin-preview-thumb" id="prev-eye_spooky_video" style="max-height:100px;margin-bottom:10px">
+              <div class="admin-preview-placeholder">👁 EYE VIDEO<br><span>Plays inside the eyeball</span></div>
+            </div>
+            <div class="admin-field-row">
+              <input type="url" id="admin-eye-video-url" class="admin-field-input admin-field-url" placeholder="https://... (video URL)">
+              <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-eye-video-url','eye_spooky_video')">↑ UPLOAD</button>
               <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_spooky_video','admin-eye-video-url')">SAVE</button>
             </div>
+            <div class="admin-field-status" id="status-eye_spooky_video"></div>
           </div>
+        </div>
 
-          <div class="admin-card">
-            <div class="admin-card-title"><div class="admin-card-title-dot"></div>TICKER MESSAGE</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="text" id="admin-ticker-text" class="admin-field-input" placeholder="ANOMALY DETECTED..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
-              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('ticker_inject','admin-ticker-text')">INJECT</button>
-            </div>
-          </div>
+        <!-- ── TICKER FEED ── -->
         <div id="admin-sec-ticker" class="admin-section">
           <div class="admin-section-title">Ticker Feed</div>
           <div class="admin-section-sub">INJECT LIVE MESSAGES INTO THE BROADCAST TICKER</div>
+
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot"></div>INJECT MESSAGE</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-              <input type="text" id="admin-ticker-inject" class="admin-field-input" placeholder="MESSAGE TO INJECT..." style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:10px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;min-width:0;">
+            <div style="font-size:0.6rem;color:rgba(232,228,223,0.3);margin-top:6px;margin-bottom:10px">Message will appear as a ⚠ warning in the live ticker. Prefix "ANOMALY:", "NODE 09:", or "88.7:" for themed messages.</div>
+            <div class="admin-field-row">
+              <input type="text" id="admin-ticker-inject" class="admin-field-input" placeholder="MESSAGE TO INJECT...">
               <button class="admin-btn admin-btn-primary" onclick="adminInjectTicker()">INJECT</button>
             </div>
-            <div style="margin-top:10px;font-size:0.6rem;color:rgba(232,228,223,0.22)">Message will appear as a ⚠ warning in the live ticker. Prefix "ANOMALY:", "NODE 09:", or "88.7:" for themed messages.</div>
+            <div class="admin-field-status" id="status-ticker_inject"></div>
           </div>
+
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot green"></div>PRESET MESSAGES</div>
             <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
-              <button class="admin-btn admin-btn-ghost" onclick="document.getElementById('admin-ticker-inject').value='NODE 09 STATUS: CARRIER DETECTED'">NODE 09: CARRIER DETECTED</button>
-              <button class="admin-btn admin-btn-ghost" onclick="document.getElementById('admin-ticker-inject').value='88.7 FM SIGNAL ANOMALY — DO NOT ADJUST RECEIVER'">88.7 ANOMALY WARNING</button>
-              <button class="admin-btn admin-btn-ghost" onclick="document.getElementById('admin-ticker-inject').value='SIGNAL_KAGE TRANSMISSION INTERCEPTED — STAND BY'">SIGNAL_KAGE INTERCEPTED</button>
-              <button class="admin-btn admin-btn-ghost" onclick="document.getElementById('admin-ticker-inject').value='EMERGENCY BROADCAST — ALL STATIONS STAND BY'">EMERGENCY BROADCAST</button>
+              <button class="admin-btn admin-btn-ghost" onclick="adminPresetTicker('NODE 09 STATUS: CARRIER DETECTED')">NODE 09: CARRIER DETECTED</button>
+              <button class="admin-btn admin-btn-ghost" onclick="adminPresetTicker('88.7 FM SIGNAL ANOMALY — DO NOT ADJUST RECEIVER')">88.7 ANOMALY WARNING</button>
+              <button class="admin-btn admin-btn-ghost" onclick="adminPresetTicker('SIGNAL_KAGE TRANSMISSION INTERCEPTED — STAND BY')">SIGNAL_KAGE INTERCEPTED</button>
+              <button class="admin-btn admin-btn-ghost" onclick="adminPresetTicker('EMERGENCY BROADCAST — ALL STATIONS STAND BY')">EMERGENCY BROADCAST</button>
             </div>
           </div>
         </div>
 
+        <!-- ── FEATURED STATIONS ── -->
         <div id="admin-sec-featured" class="admin-section">
           <div class="admin-section-title">Featured Stations</div>
           <div class="admin-section-sub">CONFIGURE THE 3 FEATURED CARDS ON THE HOME PAGE</div>
+
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot"></div>FEATURED STATION 1 (LEFT)</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-              <input type="text" id="admin-feat1-name" class="admin-field-input" placeholder="Station Name" style="flex:1;min-width:120px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:9px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;">
-              <input type="url" id="admin-feat1-url" class="admin-field-input" placeholder="Stream URL" style="flex:2;min-width:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:9px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              <input type="text" id="admin-feat1-name" class="admin-field-input" placeholder="Station Name" style="flex:1;min-width:120px">
+              <input type="url" id="admin-feat1-url" class="admin-field-input" placeholder="Stream URL" style="flex:2;min-width:180px">
             </div>
             <div style="margin-top:8px;display:flex;gap:8px">
-              <input type="text" id="admin-feat1-meta" class="admin-field-input" placeholder="Genre · Location · Bitrate" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:9px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;">
+              <input type="text" id="admin-feat1-meta" class="admin-field-input" placeholder="Genre · Location · Bitrate" style="flex:1">
               <button class="admin-btn admin-btn-primary" onclick="adminSaveFeatured(1)">SAVE</button>
             </div>
+            <div class="admin-field-status" id="status-feat1"></div>
           </div>
+
           <div class="admin-card">
             <div class="admin-card-title"><div class="admin-card-title-dot"></div>FEATURED STATION 2 (CENTER)</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
-              <input type="text" id="admin-feat2-name" class="admin-field-input" placeholder="Station Name" style="flex:1;min-width:120px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:9px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;">
-              <input type="url" id="admin-feat2-url" class="admin-field-input" placeholder="Stream URL" style="flex:2;min-width:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:9px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              <input type="text" id="admin-feat2-name" class="admin-field-input" placeholder="Station Name" style="flex:1;min-width:120px">
+              <input type="url" id="admin-feat2-url" class="admin-field-input" placeholder="Stream URL" style="flex:2;min-width:180px">
             </div>
             <div style="margin-top:8px;display:flex;gap:8px">
-              <input type="text" id="admin-feat2-meta" class="admin-field-input" placeholder="Genre · Location · Bitrate" style="flex:1;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:7px;padding:9px 12px;color:#e8e4df;font-family:'DM Mono',monospace;font-size:0.72rem;outline:none;">
+              <input type="text" id="admin-feat2-meta" class="admin-field-input" placeholder="Genre · Location · Bitrate" style="flex:1">
               <button class="admin-btn admin-btn-primary" onclick="adminSaveFeatured(2)">SAVE</button>
             </div>
+            <div class="admin-field-status" id="status-feat2"></div>
           </div>
         </div>
 
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+      </div><!-- /admin-main-content -->
+    </div><!-- /admin-app-body -->
+  </div><!-- /admin-app -->
+</div><!-- /admin-panel-modal -->
+
 
 <script>
 // ─ ADMIN PANEL SYSTEM ─
 const ADMIN_PANEL_SESS = 'wncore_admin_sess2';
-
-// Auth is handled server-side via /api/config with x-admin-token header
-// No client-side password comparison
+let _adminUploadTarget = { inputId: null, key: null };
 
 // Ctrl+B trigger
 document.addEventListener('keydown', (e) => {
@@ -1458,7 +1464,7 @@ async function adminSubmitLogin() {
       headers: { 'Content-Type': 'application/json', 'x-admin-token': val },
       body: JSON.stringify({ key: '_auth_check', value: '' })
     });
-    // 400 = bad key but authenticated; 401 = wrong token
+    // 400 = bad key but authenticated (token valid); 401 = wrong token
     if (res.status === 400 || res.ok) {
       sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(val));
       const screen = document.getElementById('admin-login-screen');
@@ -1471,10 +1477,6 @@ async function adminSubmitLogin() {
       const err = document.getElementById('admin-login-err');
       err.classList.add('show');
       setTimeout(() => err.classList.remove('show'), 2000);
-      const box = document.querySelector('.admin-login-box');
-      box.style.animation = 'none';
-      box.offsetHeight;
-      box.style.animation = 'admin-rise 0.3s ease';
     }
   } catch(e) {
     console.error('Admin auth error', e);
@@ -1509,62 +1511,124 @@ function adminShowSection(id, el) {
   if (el) el.classList.add('active');
 }
 
-// Prefill admin fields with currently saved config values
+// ── Status / toast helpers ──
+function adminSetStatus(key, state, msg) {
+  const el = document.getElementById('status-' + key);
+  if (!el) return;
+  el.className = 'admin-field-status admin-field-status--' + state;
+  el.textContent = msg;
+  if (state === 'ok' || state === 'err') {
+    setTimeout(() => { el.textContent = ''; el.className = 'admin-field-status'; }, 4000);
+  }
+}
+
+// ── Prefill all fields from saved config ──
 async function adminPrefillFields() {
   try {
     const r = await fetch('/api/config');
     if (!r.ok) return;
     const cfg = await r.json();
     const MAP = {
-      'admin-globe-bg-url': cfg.globe_bg_video,
-      'admin-anime-banner-url': cfg.anime_banner_img,
-      'admin-anime-banner-video-url': cfg.anime_banner_video,
-      'admin-livemusic-bg-url': cfg.livemusic_hero_bg,
-      'admin-eye-video-url': cfg.eye_spooky_video,
-      'admin-spooky-text': cfg.eye_spooky_text,
-      'admin-signal-text': cfg.signal_status_text,
-      'admin-ticker-text': cfg.ticker_inject,
+      'admin-globe-bg-url':          { key: 'globe_bg_video',      isMedia: true  },
+      'admin-anime-banner-url':       { key: 'anime_banner_img',    isMedia: true  },
+      'admin-anime-banner-video-url': { key: 'anime_banner_video',  isMedia: true  },
+      'admin-livemusic-bg-url':       { key: 'livemusic_hero_bg',   isMedia: true  },
+      'admin-eye-video-url':          { key: 'eye_spooky_video',    isMedia: true  },
+      'admin-spooky-text':            { key: 'eye_spooky_text',     isMedia: false },
+      'admin-signal-text':            { key: 'signal_status_text',  isMedia: false },
+      'admin-ticker-text':            { key: 'ticker_inject',       isMedia: false },
     };
-    Object.entries(MAP).forEach(([id, val]) => {
-      const el = document.getElementById(id);
+    Object.entries(MAP).forEach(([inputId, { key, isMedia }]) => {
+      const val = cfg[key];
+      const el = document.getElementById(inputId);
       if (el && val) {
         el.value = val;
-        el.style.borderColor = 'rgba(34,197,94,0.2)';
-        // Show inline video preview for video fields
-        if (id.includes('video') || id.includes('bg-url') || id.includes('bg-url')) {
-          adminShowVideoPreview(id, val);
-        }
+        el.style.borderColor = 'rgba(34,197,94,0.25)';
+        if (isMedia) adminShowMediaPreview(key, val);
+        adminSetStatus(key, 'saved', '✓ Saved: ' + val.split('/').pop().slice(0,48));
       }
     });
   } catch(e) {}
 }
 
-// Show a small inline video preview below an input field
-function adminShowVideoPreview(inputId, url) {
+// ── Media preview (video or image) in the preview thumb ──
+function adminShowMediaPreview(key, url) {
   if (!url) return;
-  const looksLikeVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(url) || url.includes('supabase.co/storage');
-  if (!looksLikeVideo) return;
-  const input = document.getElementById(inputId);
-  if (!input) return;
-  const existingPrev = input.parentElement.querySelector('.admin-inline-preview');
-  if (existingPrev) existingPrev.remove();
-  const wrap = document.createElement('div');
-  wrap.className = 'admin-inline-preview';
-  wrap.style.cssText = 'margin-top:8px;border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.07);background:#000;max-height:120px;';
-  const vid = document.createElement('video');
-  vid.src = url; vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
-  vid.style.cssText = 'width:100%;max-height:120px;object-fit:cover;display:block;';
-  vid.onerror = () => wrap.remove();
-  wrap.appendChild(vid);
-  input.parentElement.appendChild(wrap);
+  const container = document.getElementById('prev-' + key);
+  if (!container) return;
+  const isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(url) || url.includes('supabase.co/storage');
+  const isImage = /\.(jpe?g|png|gif|webp)(\?|$)/i.test(url);
+  container.innerHTML = '';
+  if (isVideo) {
+    const vid = document.createElement('video');
+    vid.src = url; vid.autoplay = true; vid.muted = true; vid.loop = true; vid.playsInline = true;
+    vid.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;';
+    vid.onerror = () => { container.innerHTML = '<div class="admin-preview-placeholder">⚠ Video failed to load</div>'; };
+    container.appendChild(vid);
+  } else if (isImage) {
+    const img = document.createElement('img');
+    img.src = url; img.alt = '';
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;';
+    img.onerror = () => { container.innerHTML = '<div class="admin-preview-placeholder">⚠ Image failed to load</div>'; };
+    container.appendChild(img);
+  }
 }
 
+// ── Save a single field ──
 async function adminSaveField(key, inputId) {
   const input = document.getElementById(inputId);
   if (!input) return;
   const value = input.value.trim();
-  
-  // Read token from sessionStorage — never hardcode
+
+  let adminToken = '';
+  try {
+    const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
+    adminToken = raw ? atob(raw) : '';
+  } catch(e) {}
+
+  adminSetStatus(key, 'saving', '⟳ Saving…');
+
+  try {
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+      body: JSON.stringify({ key, value })
+    });
+
+    if (!r.ok) {
+      let detail = '';
+      try { const j = await r.json(); detail = j.error || ''; } catch(_) {}
+      throw new Error('HTTP ' + r.status + (detail ? ' — ' + detail : ''));
+    }
+
+    input.style.borderColor = 'rgba(34,197,94,0.35)';
+    setTimeout(() => input.style.borderColor = '', 3000);
+    adminSetStatus(key, 'ok', '✓ Saved successfully');
+    adminShowMediaPreview(key, value);
+  } catch(e) {
+    console.error('Save failed:', e);
+    input.style.borderColor = 'rgba(200,71,42,0.5)';
+    setTimeout(() => input.style.borderColor = '', 3000);
+    adminSetStatus(key, 'err', '✗ ' + e.message);
+  }
+}
+
+// ── Upload: trigger hidden file input ──
+function adminTriggerUpload(inputId, key) {
+  _adminUploadTarget = { inputId, key };
+  const fi = document.getElementById('admin-upload-file-input');
+  if (fi) { fi.value = ''; fi.click(); }
+}
+
+// ── Upload: handle file selected ──
+async function adminHandleUpload(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const { inputId, key } = _adminUploadTarget;
+  if (!inputId || !key) return;
+
+  adminSetStatus(key, 'saving', '⟳ Uploading ' + file.name + '…');
+
   let adminToken = '';
   try {
     const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
@@ -1572,24 +1636,81 @@ async function adminSaveField(key, inputId) {
   } catch(e) {}
 
   try {
-    const r = await fetch('/api/config', {
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('key', key);
+
+    const r = await fetch('/api/upload', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'x-admin-token': adminToken
-      },
-      body: JSON.stringify({ key, value })
+      headers: { 'x-admin-token': adminToken },
+      body: fd
     });
 
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    input.style.borderColor = 'rgba(34,197,94,0.25)';
-    setTimeout(() => input.style.borderColor = '', 2000);
-    // Show video preview inline after save
-    adminShowVideoPreview(inputId, value);
+    if (r.ok) {
+      const data = await r.json();
+      const url = data.url || data.publicUrl || '';
+      if (url) {
+        const input = document.getElementById(inputId);
+        if (input) { input.value = url; input.style.borderColor = 'rgba(34,197,94,0.35)'; }
+        adminSetStatus(key, 'ok', '✓ Uploaded — saving URL…');
+        await adminSaveField(key, inputId);
+        return;
+      }
+    }
+    // If no upload API, fall back to showing instructions
+    adminSetStatus(key, 'err', '✗ No /api/upload endpoint — paste the Supabase URL manually after uploading in Supabase Storage');
   } catch(e) {
-    console.error('Save failed:', e);
-    input.style.borderColor = 'rgba(200,71,42,0.25)';
-    setTimeout(() => input.style.borderColor = '', 2000);
+    adminSetStatus(key, 'err', '✗ Upload failed: ' + e.message);
+  }
+}
+
+// ── Ticker ──
+function adminPresetTicker(msg) {
+  const el = document.getElementById('admin-ticker-inject');
+  if (el) el.value = msg;
+}
+
+function adminInjectTicker() {
+  const el = document.getElementById('admin-ticker-inject');
+  if (!el) return;
+  const msg = el.value.trim();
+  if (!msg) return;
+  adminSaveField('ticker_inject', 'admin-ticker-inject');
+  // Also inject live into DOM ticker if visible
+  const ticker1 = document.querySelector('.ticker-content');
+  if (ticker1) {
+    const span = document.createElement('span');
+    span.textContent = ' ⚠ ' + msg + ' · ';
+    span.style.color = '#c8472a';
+    ticker1.prepend(span);
+  }
+}
+
+// ── Featured Stations ──
+async function adminSaveFeatured(num) {
+  const name = document.getElementById('admin-feat' + num + '-name')?.value.trim() || '';
+  const url  = document.getElementById('admin-feat' + num + '-url')?.value.trim()  || '';
+  const meta = document.getElementById('admin-feat' + num + '-meta')?.value.trim() || '';
+  const key  = 'featured_station_' + num;
+
+  let adminToken = '';
+  try {
+    const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
+    adminToken = raw ? atob(raw) : '';
+  } catch(e) {}
+
+  adminSetStatus('feat' + num, 'saving', '⟳ Saving…');
+
+  try {
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken },
+      body: JSON.stringify({ key, value: JSON.stringify({ name, url, meta }) })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    adminSetStatus('feat' + num, 'ok', '✓ Saved');
+  } catch(e) {
+    adminSetStatus('feat' + num, 'err', '✗ ' + e.message);
   }
 }
 
@@ -1618,6 +1739,7 @@ window._updateTickerCount = function(count) {
   setTimeout(jitter, 3000 + Math.random() * 4000);
 })();
 </script>
+
 
 <script>
 // Load saved config from Supabase and apply to page
