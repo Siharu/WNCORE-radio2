@@ -72,12 +72,18 @@ module.exports = async function handler(req, res) {
       );
 
       if (!upsertRes.ok) {
-        const err = await upsertRes.text();
-        console.error('Supabase upsert error:', err);
+        let err = '';
+        try { err = await upsertRes.text(); } catch(_) {}
+        console.error('Supabase upsert error:', upsertRes.status, err);
+        // If table doesn't exist yet, give a helpful message
+        if (err.includes('does not exist') || err.includes('relation')) {
+          return res.status(500).json({ error: 'Supabase table "wncore_config" not found. Run the setup SQL in your Supabase project.', details: err });
+        }
         return res.status(500).json({ error: 'Failed to save config', details: err });
       }
 
-      const data = await upsertRes.json();
+      let data = null;
+      try { data = await upsertRes.json(); } catch(_) {}
       return res.status(200).json({ success: true, key, value, data });
     }
 
