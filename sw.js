@@ -1,6 +1,6 @@
 // WNCORE Radio — Service Worker v6
 // Enables iOS background audio entitlements + static asset caching
-const CACHE = 'wncore-v6';
+const CACHE = 'wncore-v7';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -9,8 +9,11 @@ const PRECACHE = [
   '/horror_upgrade.css',
   '/main.js',
   '/improvements.js',
-  '/wrongness.js',
+  '/improvements_patch.js',
   '/wncore-upgrades.js',
+  '/v5-fixes.js',
+  '/wrongness.js',
+  '/admin.js',
   '/manifest.json'
 ];
 

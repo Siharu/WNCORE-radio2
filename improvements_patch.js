@@ -15,19 +15,8 @@
     const input = document.getElementById('search-input');
     if(input) {
       input.focus();
-      // Fix: re-attach event so country filter actually searches country field
-      input.removeEventListener('input', input._wnSearchHandler);
-      input._wnSearchHandler = function(e) {
-        clearTimeout(window._searchDebounce);
-        const q = e.target.value.trim();
-        if(q.length < 2) {
-          document.getElementById('search-results').innerHTML = '<div class="search-empty">Start typing to search 12,000+ stations worldwide</div>';
-          return;
-        }
-        document.getElementById('search-results').innerHTML = '<div class="search-empty">Scanning frequencies...</div>';
-        window._searchDebounce = setTimeout(() => window.doSearchFixed(q), 300);
-      };
-      input.addEventListener('input', input._wnSearchHandler);
+      // Country filter fix is handled by doSearchFixed() below
+      // Removed duplicate input event listener (caused double API calls - B14 fix)
     }
   };
 

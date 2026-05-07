@@ -78,10 +78,11 @@
   }
   var obs = new IntersectionObserver(function(entries){
     if(entries[0].isIntersecting){ loadGlobe(); obs.disconnect(); }
-  }, { threshold: 0.01 });
+  }, { threshold: 0.01, rootMargin: "200px" });
   document.addEventListener('DOMContentLoaded', function(){
     var el = document.getElementById('globe-container');
-    if(el) obs.observe(el); else loadGlobe();
+    if(el) obs.observe(el);
+    // B20: Removed else loadGlobe() fallback - if container missing, globe not needed
   });
 })();
 </script>
@@ -92,7 +93,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap">
 <link rel="stylesheet" href="style.css">
 <script>try{if(localStorage.getItem('wncore-dark')==='1')document.documentElement.classList.add('dark-pre')}catch(e){}</script>
-<style>.dark-pre body,.dark-pre{background:#0e0c0a!important;color:#e8e4df!important}</style>
+<style>.dark-pre body,.dark-pre{background:#0e0c0a!important;color:#e8e4df!important}.dark-pre header,.dark-pre .player-bar,.dark-pre .sidebar{background:#0e0c0a!important}</style>
 <link rel="stylesheet" href="mobile.css">
 <link rel="stylesheet" href="horror_upgrade.css">
 </head>
@@ -228,7 +229,7 @@
   <div class="ticker-track">
     <div class="ticker-inner" id="ticker-inner">
       <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
-      <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span><span id="ticker-station-count">12,841 VERIFIED STATIONS ONLINE</span>
       <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
       <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
       <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
@@ -238,7 +239,7 @@
       <span class="t-sep">·</span><span>LAST VERIFIED TRANSMISSION: 14:22:07 UTC</span>
       <span class="t-sep">·</span>
       <span>WNCORE GLOBAL ARRAY — CELEBRATING 10 YEARS OF INDEPENDENT BROADCASTING</span>
-      <span class="t-sep">·</span><span>12,841 VERIFIED STATIONS ONLINE</span>
+      <span class="t-sep">·</span><span id="ticker-station-count">12,841 VERIFIED STATIONS ONLINE</span>
       <span class="t-sep">·</span><span>SIGNAL INTEGRITY: 99.1%</span>
       <span class="t-sep">·</span><span>TODAY'S TOP GENRE: JAZZ</span>
       <span class="t-sep">·</span><span class="t-warn">NODE 09 STATUS: UNKNOWN</span>
@@ -511,7 +512,7 @@
           <source src="videos/anime-loop-1.mp4" type="video/mp4">
         -->
       </video>
-      <img class="anime-banner-img" id="anime-banner-img" src="" alt="Anime / J-Music banner" onerror="this.style.display='none'" loading="lazy">
+      <img class="anime-banner-img" id="anime-banner-img"  alt="Anime / J-Music banner"  loading="lazy">
       <div class="anime-banner-overlay"></div>
       <div class="anime-now-playing" id="anime-now-playing-badge" style="display:none">Live</div>
       <div class="anime-banner-content">
@@ -906,7 +907,7 @@
 </div>
 
 <!-- ══════════════ MINI-PLAYER (MOBILE) ══════════════ -->
-<div id="mini-player" class="mini-player" style="display:none">
+<div id="mini-player" class="mini-player">
   <div class="mini-player-content">
     <div class="mini-player-art" id="mini-art">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="36" height="36"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
@@ -1303,6 +1304,11 @@
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_video','admin-anime-banner-video-url')">SAVE</button>
               </div>
             </div>
+    <div class="admin-card">
+      <div class="admin-card-title">LIVE MUSIC HERO BG VIDEO</div>
+      <input id="admin-lm-hero-url" class="admin-input" type="url" placeholder="https://...mp4 (Live Music hero background)">
+      <button class="admin-btn" onclick="adminSaveField('livemusic_hero_bg','admin-lm-hero-url')">SAVE</button>
+    </div>
           </div>
 
           <!-- LIVE MUSIC PAGE SECTION -->
@@ -1421,16 +1427,10 @@
 
 <script>
 // ─ ADMIN PANEL SYSTEM ─
-const ADMIN_PANEL_HASH = '$2a$12$SP1Ej10hibZ2GQT3ytJaZ.vhtlZb5bNBw/CArQf5W4yrTO4rTscHO'; // bcrypt hash of Siharu847
 const ADMIN_PANEL_SESS = 'wncore_admin_sess2';
 
-// Simple bcrypt verification simulation (server-side would do real bcrypt)
-// For now, we'll accept the password and validate server-side
-function adminValidatePassword(password) {
-  // Client-side: just check if it matches known password
-  // In production, send to server for bcrypt verification
-  return password === 'Siharu847';
-}
+// Auth is handled server-side via /api/config with x-admin-token header
+// No client-side password comparison
 
 // Ctrl+B trigger
 document.addEventListener('keydown', (e) => {
@@ -1452,28 +1452,37 @@ document.getElementById('admin-login-input')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') adminSubmitLogin();
 });
 
-function adminSubmitLogin() {
+async function adminSubmitLogin() {
   const input = document.getElementById('admin-login-input');
   const val = input.value;
   input.value = '';
-  
-  if (adminValidatePassword(val)) {
-    sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(Date.now()));
-    const screen = document.getElementById('admin-login-screen');
-    const app = document.getElementById('admin-app');
-    screen.style.display = 'none';
-    app.classList.add('show');
-    adminStartClock();
-    adminPrefillFields();
-    console.log('Admin authenticated');
-  } else {
-    const err = document.getElementById('admin-login-err');
-    err.classList.add('show');
-    setTimeout(() => err.classList.remove('show'), 2000);
-    const box = document.querySelector('.admin-login-box');
-    box.style.animation = 'none';
-    box.offsetHeight;
-    box.style.animation = 'admin-rise 0.3s ease';
+
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': val },
+      body: JSON.stringify({ key: '_auth_check', value: '' })
+    });
+    // 400 = bad key but authenticated; 401 = wrong token
+    if (res.status === 400 || res.ok) {
+      sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(val));
+      const screen = document.getElementById('admin-login-screen');
+      const app = document.getElementById('admin-app');
+      screen.style.display = 'none';
+      app.classList.add('show');
+      adminStartClock();
+      adminPrefillFields();
+    } else {
+      const err = document.getElementById('admin-login-err');
+      err.classList.add('show');
+      setTimeout(() => err.classList.remove('show'), 2000);
+      const box = document.querySelector('.admin-login-box');
+      box.style.animation = 'none';
+      box.offsetHeight;
+      box.style.animation = 'admin-rise 0.3s ease';
+    }
+  } catch(e) {
+    console.error('Admin auth error', e);
   }
 }
 
@@ -1581,6 +1590,12 @@ async function adminSaveField(key, inputId) {
     setTimeout(() => input.style.borderColor = '', 2000);
   }
 }
+
+// B25: Update ticker station count from live data
+window._updateTickerCount = function(count) {
+  const el = document.getElementById('ticker-station-count');
+  if (el && count) el.textContent = count.toLocaleString() + ' VERIFIED STATIONS ONLINE';
+};
 </script>
 
 <script>
@@ -1621,7 +1636,8 @@ async function loadSiteConfig() {
       }
     } else if (cfg.anime_banner_img) {
       const img = document.getElementById('anime-banner-img');
-      if (img) { img.src = cfg.anime_banner_img; img.style.display = ''; }
+      if (img) { img.src = cfg.anime_banner_img;
+        img.style.display = "block"; img.style.display = ''; }
     }
 
     // Live music hero background video

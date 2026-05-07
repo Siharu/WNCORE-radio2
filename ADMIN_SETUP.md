@@ -64,7 +64,7 @@ git push
 ## Admin Panel
 
 - **Open**: `Ctrl+B` anywhere on the site
-- **Password**: `Siharu847` (stored as bcrypt hash in index.html)
+- **Password**: `[PASSWORD_REDACTED — use env var WNCORE_ADMIN_TOKEN]` (stored as bcrypt hash in index.html)
 - **Sections**:
   - **Overview** — system status
   - **Video Media** — set background videos for Globe, Anime, Live Music sections

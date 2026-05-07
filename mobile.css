@@ -246,7 +246,7 @@
 
 /* ── MOBILE BOTTOM NAV ADJUSTMENTS ── */
 @media (max-width: 768px) {
-  body { padding-bottom: calc(var(--player-h) + 56px); }
+  body {  }
   .mobile-bottom-nav {
     bottom: var(--player-h);
     border-top: 1px solid var(--border);
@@ -416,10 +416,8 @@
 
 /* ── GLOBAL TOUCH TARGETS ── */
 @media (max-width: 768px) {
-  button, a, [role="button"] {
-    min-height: 48px;
-    min-width: 48px;
-  }
+  .pb-btn, .pb-play, .mbn-btn, .fav-btn, .share-btn, .eq-btn, .scroll-top-btn, .mobile-menu-btn, .search-btn, .sign-in-btn { min-height: 44px; min-width: 44px; }
+  .station-row { min-height: 48px; }
   .genre-btn, .search-filter-btn, .lm-ch-btn {
     min-height: 48px;
   }
@@ -445,7 +443,7 @@
 @media (max-width: 768px) {
   .mini-player {
     position: fixed;
-    bottom: 56px;
+    bottom: calc(var(--player-h) + 56px);
     left: 0;
     right: 0;
     height: 52px;

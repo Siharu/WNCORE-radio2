@@ -5,11 +5,10 @@
 (function(){
 'use strict';
 
-// ─── OBFUSCATED CONSTANTS ──────────────────────────────────────────────────
-const _0x1a = btoa('Siharu847');        // admin password hash base
+// ─── CONSTANTS ──────────────────────────────────────────────────
+// B01/B11/B18 fix: No client-side password storage - auth is server-side via /api/config
 const _0x2b = 'wncore_adm_sess';       // session key
 const _0x3c = 'wncore_adm_log';        // activity log key
-const _0x4d = ['S','i','h','a','r','u','8','4','7'];  // password chars
 
 // ─── KEYBOARD TRIGGER (Ctrl+A held 800ms) ─────────────────────────────────
 let _ctrlBStart = 0;

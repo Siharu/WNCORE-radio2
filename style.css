@@ -63,7 +63,7 @@ body.minimal-mode.dark-mode{--bg:#111;--surface:#1a1a1a;--surface2:#222;--text:#
 /* ── BODY ── */
 body{
   font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
-  overflow-x:hidden;padding-top:var(--header-h);padding-bottom:var(--player-h);
+  overflow-x:hidden;padding-top:var(--header-h);padding-bottom:calc(var(--player-h) + 56px);
   /* Prevent overscroll bounce causing layout shifts on mobile */
   overscroll-behavior-y:none;
   /* Improve touch scroll performance */
@@ -153,7 +153,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 
 /* ── MOBILE MENU ── */
 .mobile-menu-btn{display:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
-.mobile-nav{display:none;position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:var(--bg);z-index:490;padding:24px;overflow-y:auto;flex-direction:column;gap:8px}
+.mobile-nav{display:none;position:fixed;top:var(--header-h);left:0;right:0;bottom:0;background:var(--bg);z-index:495;padding:24px;overflow-y:auto;flex-direction:column;gap:8px}
 .mobile-nav.open{display:flex}
 .mobile-nav a{font-size:1.1rem;color:var(--text2);text-decoration:none;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-weight:500;display:flex;align-items:center;gap:10px}
 .mobile-nav a:hover,.mobile-nav a.active{background:var(--surface2);color:var(--text)}
@@ -540,7 +540,7 @@ svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease,
   .anime-stations-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:900px){
-  :root{--header-h:58px}
+  :root{--header-h:56px}
   .page-wrap{grid-template-columns:1fr;gap:0;padding:28px 16px}
   .sidebar{display:none}
   .featured-row{grid-template-columns:1fr 1fr;gap:8px}

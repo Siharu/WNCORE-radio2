@@ -1299,16 +1299,23 @@ function patchExistingFunctions() {
 
 // Patch showPage to handle favorites
 function patchShowPage() {
-  if (typeof showPage === 'function' && !showPage._favPatched) {
+  if (typeof showPage === 'function' && !showPage._wnPatched) {
     const orig = showPage;
     window.showPage = function(id, linkEl) {
+      // Page transition effect
+      const current = document.querySelector('.page.active');
+      if (current) {
+        current.classList.add('page-exit');
+        setTimeout(() => { current.classList.remove('page-exit'); }, 220);
+      }
       orig(id, linkEl);
+      // Favorites rendering
       if (id === 'favorites') {
         buildFavoritesPage();
         renderFavoritesPage();
       }
     };
-    window.showPage._favPatched = true;
+    window.showPage._wnPatched = true;
   }
 }
 
@@ -2186,19 +2193,7 @@ function initPageTransitions() {
   `;
   document.head.appendChild(s);
 
-  // Patch showPage for transitions
-  if (typeof showPage === 'function' && !showPage._ptPatched) {
-    const orig = showPage;
-    window.showPage = function(id, linkEl) {
-      const current = document.querySelector('.page.active');
-      if (current) {
-        current.classList.add('page-exit');
-        setTimeout(() => { current.classList.remove('page-exit'); }, 220);
-      }
-      orig(id, linkEl);
-    };
-    window.showPage._ptPatched = true;
-  }
+  // showPage patching handled by patchShowPage() in boot()
 }
 
 
