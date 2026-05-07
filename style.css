@@ -64,8 +64,6 @@ body.minimal-mode.dark-mode{--bg:#111;--surface:#1a1a1a;--surface2:#222;--text:#
 body{
   font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
   overflow-x:hidden;padding-top:var(--header-h);padding-bottom:calc(var(--player-h) + 56px);
-  /* Prevent overscroll bounce causing layout shifts on mobile */
-  overscroll-behavior-y:none;
   /* Improve touch scroll performance */
   -webkit-overflow-scrolling:touch;
 }
@@ -697,7 +695,7 @@ body.dark-mode .featured-card--arg { background: #0e0905; }
 
 /* ── HERO ── */
 .lm-hero {
-  position:relative;overflow:hidden;
+  position:relative;overflow:visible;
   background:linear-gradient(135deg,#0e0d0b 0%,#1a100a 40%,#0e0e1a 100%);
   min-height:380px;display:flex;align-items:center;gap:48px;
   padding:60px 48px;

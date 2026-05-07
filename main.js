@@ -849,11 +849,12 @@ async function doSearch(q) {
 function showPage(id, linkEl) {
   // Load page-specific data
   if(id==='favorites') loadFavoritesPage();
+  const already = document.getElementById('page-'+id)?.classList.contains('active');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('nav a, .mobile-nav a').forEach(a=>a.classList.remove('active'));
   if(linkEl) linkEl.classList.add('active');
-  window.scrollTo({top:0,behavior:'smooth'});
+  if(!already) window.scrollTo({top:0,behavior:'smooth'});
   if(id==='charts') loadChartsPage();
   if(id==='podcasts') loadPodcastsPage();
   if(id==='genres') loadGenrePage();
