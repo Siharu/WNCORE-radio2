@@ -1741,6 +1741,16 @@ function initAnimeVideo() {
 // ─── INIT ─────────────────────────────────────────────────────────────────
 buildGenreStrip();
 loadStations();
+// Populate home page Top Charts mini-table on first load
+// loadChartsPage() only fires when navigating to page-charts, so we prime it here
+// to populate station-tbody using the same data + cache
+(async function initHomeCharts() {
+  await loadChartsPage();
+  // After charts data is cached, also render into home page station-tbody
+  if (chartsData && chartsData.length) {
+    renderTable(chartsData, 'station-tbody');
+  }
+})();
 
 // ═══════════════════════════════════════════════════════
 //   WNCORE LIVE MUSIC CHANNEL
