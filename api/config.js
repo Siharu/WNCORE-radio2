@@ -15,6 +15,9 @@ const VALID_KEYS = new Set([
   'eye_spooky_text',
   'signal_status_text',
   'ticker_inject',
+  'featured_station_1',
+  'featured_station_2',
+  'featured_station_3',
 ]);
 
 // Supabase REST API base
