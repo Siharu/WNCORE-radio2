@@ -1013,7 +1013,7 @@
 <div id="arg-eye-system" role="dialog" aria-modal="true" aria-label="Signal detected">
   <div class="white-flash" id="white-flash"></div>
   <video id="eye-pupil-video" autoplay muted loop playsinline>
-    <source id="eye-pupil-video-src" src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
+    <source id="eye-pupil-video-src" src="" type="video/mp4">
   </video>
   <div class="spooky-text" id="spooky-text">I see you.</div>
   <button id="exit-btn-custom">exit</button>
@@ -1304,11 +1304,6 @@
                 <button class="admin-btn admin-btn-primary" onclick="adminSaveField('anime_banner_video','admin-anime-banner-video-url')">SAVE</button>
               </div>
             </div>
-    <div class="admin-card">
-      <div class="admin-card-title">LIVE MUSIC HERO BG VIDEO</div>
-      <input id="admin-lm-hero-url" class="admin-input" type="url" placeholder="https://...mp4 (Live Music hero background)">
-      <button class="admin-btn" onclick="adminSaveField('livemusic_hero_bg','admin-lm-hero-url')">SAVE</button>
-    </div>
           </div>
 
           <!-- LIVE MUSIC PAGE SECTION -->
@@ -1569,12 +1564,19 @@ async function adminSaveField(key, inputId) {
   if (!input) return;
   const value = input.value.trim();
   
+  // Read token from sessionStorage — never hardcode
+  let adminToken = '';
+  try {
+    const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
+    adminToken = raw ? atob(raw) : '';
+  } catch(e) {}
+
   try {
     const r = await fetch('/api/config', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json', 
-        'x-admin-token': 'WNCORE_ADMIN'
+        'x-admin-token': adminToken
       },
       body: JSON.stringify({ key, value })
     });

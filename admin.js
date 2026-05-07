@@ -44,13 +44,23 @@ function _isAuthed(){
   } catch(e){ return false; }
 }
 
-function _setAuthed(){
-  const token = {t: Date.now(), u: 'admin', role: 'SIHARU847'};
+function _setAuthed(tokenVal){
+  const token = {t: Date.now(), u: 'admin'};
   sessionStorage.setItem(_0x2b, btoa(JSON.stringify(token)));
+  // Store token for API calls within this session
+  if(tokenVal) sessionStorage.setItem(_0x2b + '_tk', btoa(tokenVal));
+}
+
+function _getToken(){
+  try {
+    const raw = sessionStorage.getItem(_0x2b + '_tk');
+    return raw ? atob(raw) : '';
+  } catch(e){ return ''; }
 }
 
 function _clearAuth(){
   sessionStorage.removeItem(_0x2b);
+  sessionStorage.removeItem(_0x2b + '_tk');
 }
 
 // ─── INACTIVITY TIMEOUT (20 min) ──────────────────────────────────────────
@@ -173,29 +183,39 @@ window.__admSubmit = function(){
   const val = inp.value;
   inp.value = '';
 
-  // Check password
-  const correct = _0x4d.join('');
-  if(val === correct){
-    _failCount = 0;
-    _setAuthed();
-    _log('AUTH_SUCCESS');
-    closeAdminOverlay();
-    setTimeout(showAdminDashboard, 100);
-  } else {
-    _failCount++;
-    _log('AUTH_FAIL');
-    const errEl = document.getElementById('adm-error');
-    const attEl = document.getElementById('adm-attempts');
-    if(errEl) errEl.style.display='block';
-    if(attEl) attEl.textContent = _failCount;
-    if(_failCount >= 3){
-      _lockUntil = Date.now() + 300000; // 5min lockout
-      document.getElementById('adm-hint').style.display='block';
+  // Server-side auth — no client-side password storage
+  fetch('/api/config', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': val },
+    body: JSON.stringify({ key: '_auth_check', value: '' })
+  }).then(res => {
+    // 400 = valid token but invalid key (expected); 401 = wrong token
+    if (res.status === 400 || res.ok) {
+      _failCount = 0;
+      _setAuthed(val);
+      _log('AUTH_SUCCESS');
+      closeAdminOverlay();
+      setTimeout(showAdminDashboard, 100);
+    } else {
+      _failCount++;
+      _log('AUTH_FAIL');
+      const errEl = document.getElementById('adm-error');
+      const attEl = document.getElementById('adm-attempts');
+      if(errEl) errEl.style.display='block';
+      if(attEl) attEl.textContent = _failCount;
+      if(_failCount >= 3){
+        _lockUntil = Date.now() + 300000; // 5min lockout
+        document.getElementById('adm-hint').style.display='block';
+      }
+      const panel = document.getElementById('adm-panel');
+      if(panel){ panel.classList.add('adm-shake'); setTimeout(()=>panel.classList.remove('adm-shake'),400); }
     }
-    // Shake effect
+  }).catch(() => {
+    _failCount++;
+    _log('AUTH_NET_ERR');
     const panel = document.getElementById('adm-panel');
     if(panel){ panel.classList.add('adm-shake'); setTimeout(()=>panel.classList.remove('adm-shake'),400); }
-  }
+  });
 };
 
 window.__admClose = function(){
@@ -342,7 +362,7 @@ function showAdminDashboard(){
         </div>
       </div>
       <div class="adm-footer-bar">
-        <span>SESSION: SIHARU847 · AUTHENTICATED</span>
+        <span>SESSION: AUTHENTICATED</span>
         <span id="adm-ts">——</span>
       </div>
     </div>
