@@ -172,6 +172,7 @@
 </header>
 
 <!-- MOBILE NAV -->
+<div class="mobile-nav-backdrop" id="mobile-nav-backdrop" onclick="toggleMobileMenu()"></div>
 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
   <a href="#" onclick="showPage('home',this);toggleMobileMenu();return false" class="active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/></svg>
@@ -1018,6 +1019,48 @@
   <div class="spooky-text" id="spooky-text">I see you.</div>
   <button id="exit-btn-custom">exit</button>
 </div>
+
+<!-- GHUUL REVEAL — fullscreen video played after eye exit, before ARG redirect -->
+<div id="ghuul-overlay" style="
+  display:none;
+  position:fixed;inset:0;
+  z-index:99999;
+  background:#000;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+">
+  <video id="ghuul-video" autoplay muted playsinline
+    style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
+    <source src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
+  </video>
+  <div id="ghuul-static" style="
+    position:absolute;inset:0;
+    background:repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.15) 0px,
+      rgba(0,0,0,0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events:none;
+    animation:ghuul-flicker 0.08s step-end infinite;
+  "></div>
+  <div id="ghuul-freq" style="
+    position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+    font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:4px;
+    color:rgba(200,71,42,0.7);text-align:center;
+    animation:ghuul-flicker 0.3s step-end infinite;
+    pointer-events:none;
+  ">88.7 — SIGNAL ACQUIRED</div>
+</div>
+<style>
+@keyframes ghuul-flicker {
+  0%,94%,100%{opacity:1}
+  95%,97%{opacity:0.3}
+  96%,98%{opacity:0.8}
+}
+</style>
 
 <!-- ═══════════════════════════════════════════════
      WNCORE ADMIN PANEL — HIDDEN MODAL

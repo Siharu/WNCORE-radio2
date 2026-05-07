@@ -611,7 +611,7 @@ html, body {
   header, .header-inner {
     max-width: 100vw;
     box-sizing: border-box;
-    overflow: hidden;
+    /* NOTE: do NOT set overflow:hidden here — clips the mobile-menu-btn */
   }
 
   /* Featured row: full width single column */
@@ -1168,5 +1168,174 @@ html, body {
 
   .wncore-footer {
     padding-bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom) + 8px) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   WNCORE MOBILE — UX OVERHAUL PASS
+   Fixes: menu cutoff, chat widget position, overall
+   breathing room / open feel (TuneIn/iHeart reference)
+═══════════════════════════════════════════════════════ */
+
+/* ── FIX: Header must never clip the hamburger button ── */
+@media (max-width: 768px) {
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+    /* Give the menu button room to breathe */
+    padding-right: 14px !important;
+  }
+  /* Ensure hamburger is always fully visible and tappable */
+  .mobile-menu-btn {
+    flex-shrink: 0 !important;
+    margin-left: auto;
+    overflow: visible !important;
+    position: relative;
+    z-index: 501;
+  }
+}
+
+/* ── FIX: Chat widget — proper mobile positioning ── */
+/* On mobile the stack from bottom is:
+   safe-area → player bar (68px) → bottom nav (54px)
+   Chat button should sit just above that stack        */
+@media (max-width: 768px) {
+  #wnc-chat-btn {
+    bottom: calc(var(--player-h, 68px) + 54px + 14px) !important;
+    right: 14px !important;
+    width: 46px !important;
+    height: 46px !important;
+  }
+  #wnc-chat-panel {
+    bottom: calc(var(--player-h, 68px) + 54px + 70px) !important;
+    right: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-width: 380px !important;
+    height: min(480px, calc(100dvh - var(--player-h, 68px) - 54px - 80px)) !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* ── BREATHING ROOM: Open, spacious mobile layout ── */
+@media (max-width: 768px) {
+  /* Hero globe: taller, less cramped */
+  .globe-section {
+    height: 280px !important;
+  }
+
+  /* Stats row: generous spacing */
+  .globe-stats {
+    gap: 20px !important;
+    margin-top: 10px;
+  }
+
+  /* Page content: more padding so content doesn't feel wall-to-wall */
+  .page-wrap {
+    padding: 20px 16px !important;
+    gap: 28px !important;
+  }
+
+  /* Section headers: more vertical breathing */
+  .section-hd {
+    margin-bottom: 16px !important;
+    margin-top: 8px;
+  }
+
+  /* Featured cards: row layout with icon — feels like TuneIn */
+  .featured-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Station table rows: taller, easier to tap */
+  .station-row {
+    min-height: 54px !important;
+  }
+
+  /* Trending items: cleaner spacing */
+  .trending-item {
+    padding: 12px 0 !important;
+  }
+
+  /* Sidebar/arg card: compact but not claustrophobic */
+  .arg-card {
+    padding: 20px !important;
+    border-radius: 14px !important;
+  }
+
+  /* Genre strip: visible, scrollable, not wrapping */
+  .genre-strip {
+    padding-top: 2px !important;
+    padding-bottom: 8px !important;
+  }
+}
+
+/* ── Small phones (≤480px): tighter but still open ── */
+@media (max-width: 480px) {
+  .globe-section {
+    height: 240px !important;
+  }
+
+  .globe-title {
+    font-size: 1.4rem !important;
+  }
+
+  .page-wrap {
+    padding: 16px 14px !important;
+    gap: 22px !important;
+  }
+
+  /* Featured cards go full single-column, row style */
+  .featured-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .featured-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 14px !important;
+    padding: 14px 16px !important;
+    min-height: 68px;
+  }
+
+  /* Don't let fc-listeners/badge clutter the row */
+  .fc-now {
+    font-size: 0.62rem;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Rec grid: 2-col feels open enough */
+  .rec-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  /* Station table: more row padding */
+  .station-table td {
+    padding: 12px 6px !important;
+  }
+}
+
+/* ── Mobile nav drawer: breathe ── */
+@media (max-width: 768px) {
+  .mobile-nav {
+    padding: 28px 20px !important;
+    gap: 4px !important;
+  }
+  .mobile-nav a,
+  .mobile-nav button {
+    padding: 14px 16px !important;
+    font-size: 1rem !important;
+    border-radius: 10px !important;
+    display: flex;
+    align-items: center;
+    min-height: 52px;
   }
 }

@@ -169,7 +169,7 @@
   /* ── Chat Widget ─────────────────────────── */
   #wnc-chat-btn {
     position: fixed;
-    bottom: 90px;
+    bottom: 100px;
     right: 20px;
     width: 52px;
     height: 52px;

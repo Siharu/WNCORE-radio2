@@ -782,7 +782,11 @@ function toggleMobileMenu() {
   mobileMenuOpen = !mobileMenuOpen;
   const nav = document.getElementById('mobile-nav');
   const btn = document.getElementById('mobile-menu-btn');
+  const backdrop = document.getElementById('mobile-nav-backdrop');
   nav.classList.toggle('open', mobileMenuOpen);
+  if(backdrop) backdrop.classList.toggle('open', mobileMenuOpen);
+  // Lock body scroll when menu is open so page doesn't scroll behind drawer
+  document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
   btn.innerHTML = mobileMenuOpen
     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
@@ -1632,8 +1636,12 @@ function makeDistortionCurve(amount){
 
 exitBtn.addEventListener('click',()=>{
   if(eyeExitTriggered)return;eyeExitTriggered=true;exitBtn.style.display='none';
+
+  // White flash
   flash.style.transition='opacity 0.06s';flash.style.opacity='1';
   setTimeout(()=>{flash.style.transition='opacity 0.4s';flash.style.opacity='0';},80);
+
+  // Spooky text + audio distortion
   setTimeout(()=>{spookyText.style.opacity='1';spookyText.classList.add('glitch-text');},2200);
   if(isPlaying){
     initAudioFX();
@@ -1642,10 +1650,29 @@ exitBtn.addEventListener('click',()=>{
       const now=audioCtx.currentTime;lowpass.frequency.setValueAtTime(20000,now);lowpass.frequency.exponentialRampToValueAtTime(300,now+3);
       const wobbleInt=setInterval(()=>{audio.playbackRate=1+(Math.random()-0.5)*0.4},200);
       const volInt=setInterval(()=>{gainNode.gain.value=Math.random()>0.3?1:0},150);
-      setTimeout(()=>{clearInterval(wobbleInt);clearInterval(volInt);audio.pause();},6000);
+      setTimeout(()=>{clearInterval(wobbleInt);clearInterval(volInt);audio.pause();},5000);
     }
   }
-  setTimeout(()=>{window.location.href=_d},7000);
+
+  // After 5s: hide eye system, show ghuul video fullscreen
+  setTimeout(()=>{
+    eyeSys.classList.remove('active');
+    const ghuulOverlay = document.getElementById('ghuul-overlay');
+    const ghuulVideo   = document.getElementById('ghuul-video');
+    if(ghuulOverlay){
+      ghuulOverlay.style.display='flex';
+      if(ghuulVideo){
+        ghuulVideo.currentTime=0;
+        ghuulVideo.play().catch(()=>{});
+        // If video ends before timeout, redirect immediately
+        ghuulVideo.addEventListener('ended',()=>{
+          window.location.href=_d;
+        },{once:true});
+      }
+    }
+    // Hard redirect after 4s regardless (in case video is short or fails)
+    setTimeout(()=>{ window.location.href=_d; },4000);
+  }, 5000);
 });
 
 function showEyes(){
