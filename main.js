@@ -1770,7 +1770,7 @@ const LM_CHANNELS = [
     stations:[
       {url:'https://ice6.somafm.com/groovesalad-256-mp3',          name:'SomaFM Groove Salad',  src:'SomaFM'},
       {url:'https://ice6.somafm.com/groovesalad-128-mp3',             name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://ice6.somafm.com/jazz24-128-mp3',               name:'Jazz24',               src:'SomaFM'},
+      {url:'https://live.jazz24.org/jazz24.mp3',                    name:'Jazz24',               src:'Jazz24'},
       {url:'https://ice6.somafm.com/bootliquor-128-mp3',           name:'SomaFM Boot Liquor',   src:'SomaFM'},
     ]
   },
