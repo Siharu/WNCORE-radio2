@@ -1768,10 +1768,10 @@ const LM_CHANNELS = [
     fgColor:'#c8822a',
     icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
     stations:[
-      {url:'https://stream.soma.fm/groovesalad256.mp3',          name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://stream.soma.fm/groovesalad.mp3',             name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://stream.soma.fm/jazz24128.mp3',               name:'Jazz24',               src:'SomaFM'},
-      {url:'https://stream.soma.fm/bootliquor128.mp3',           name:'SomaFM Boot Liquor',   src:'SomaFM'},
+      {url:'https://ice6.somafm.com/groovesalad-256-mp3',          name:'SomaFM Groove Salad',  src:'SomaFM'},
+      {url:'https://ice6.somafm.com/groovesalad-128-mp3',             name:'SomaFM Groove Salad',  src:'SomaFM'},
+      {url:'https://ice6.somafm.com/jazz24-128-mp3',               name:'Jazz24',               src:'SomaFM'},
+      {url:'https://ice6.somafm.com/bootliquor-128-mp3',           name:'SomaFM Boot Liquor',   src:'SomaFM'},
     ]
   },
   {
@@ -1784,9 +1784,9 @@ const LM_CHANNELS = [
     fgColor:'#2563eb',
     icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>',
     stations:[
-      {url:'https://stream.soma.fm/thetrip128.mp3',              name:'SomaFM The Trip',      src:'SomaFM'},
-      {url:'https://stream.soma.fm/deepspaceone.mp3',            name:'SomaFM Deep Space One',src:'SomaFM'},
-      {url:'https://stream.soma.fm/sonicuniverse128.mp3',        name:'SomaFM Sonic Universe', src:'SomaFM'},
+      {url:'https://ice6.somafm.com/thetrip-128-mp3',              name:'SomaFM The Trip',      src:'SomaFM'},
+      {url:'https://ice6.somafm.com/deepspaceone-128-mp3',            name:'SomaFM Deep Space One',src:'SomaFM'},
+      {url:'https://ice6.somafm.com/sonicuniverse-128-mp3',        name:'SomaFM Sonic Universe', src:'SomaFM'},
     ]
   },
   {
@@ -1799,10 +1799,10 @@ const LM_CHANNELS = [
     fgColor:'#7c3aed',
     icon:'<circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/>',
     stations:[
-      {url:'https://stream.soma.fm/spacestation128.mp3', name:'SomaFM Space Station', src:'SomaFM'},
-      {url:'https://stream.soma.fm/dronezone128.mp3',    name:'SomaFM Drone Zone',    src:'SomaFM'},
-      {url:'https://stream.soma.fm/thetrip128.mp3',      name:'SomaFM The Trip',      src:'SomaFM'},
-      {url:'https://stream.soma.fm/deepspaceone.mp3',    name:'SomaFM Deep Space One',src:'SomaFM'},
+      {url:'https://ice6.somafm.com/spacestation-128-mp3', name:'SomaFM Space Station', src:'SomaFM'},
+      {url:'https://ice6.somafm.com/dronezone-128-mp3',    name:'SomaFM Drone Zone',    src:'SomaFM'},
+      {url:'https://ice6.somafm.com/thetrip-128-mp3',      name:'SomaFM The Trip',      src:'SomaFM'},
+      {url:'https://ice6.somafm.com/deepspaceone-128-mp3',    name:'SomaFM Deep Space One',src:'SomaFM'},
     ]
   },
   {
@@ -1815,10 +1815,10 @@ const LM_CHANNELS = [
     fgColor:'#0891b2',
     icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/>',
     stations:[
-      {url:'https://stream.soma.fm/beatblender128.mp3',    name:'SomaFM Beat Blender',   src:'SomaFM'},
-      {url:'https://stream.soma.fm/u80s128.mp3',           name:'SomaFM Underground 80s', src:'SomaFM'},
-      {url:'https://stream.soma.fm/defcon128.mp3',         name:'SomaFM DEF CON Radio',   src:'SomaFM'},
-      {url:'https://stream.soma.fm/illstreet128.mp3',      name:'SomaFM Illinois Street', src:'SomaFM'},
+      {url:'https://ice6.somafm.com/beatblender-128-mp3',    name:'SomaFM Beat Blender',   src:'SomaFM'},
+      {url:'https://ice6.somafm.com/u80s-128-mp3',           name:'SomaFM Underground 80s', src:'SomaFM'},
+      {url:'https://ice6.somafm.com/defcon-128-mp3',         name:'SomaFM DEF CON Radio',   src:'SomaFM'},
+      {url:'https://ice6.somafm.com/illstreet-128-mp3',      name:'SomaFM Illinois Street', src:'SomaFM'},
     ]
   },
   {
@@ -1831,9 +1831,9 @@ const LM_CHANNELS = [
     fgColor:'#65a30d',
     icon:'<path d="M9 18V5l12-2v13"/>',
     stations:[
-      {url:'https://stream.soma.fm/folkfwd128.mp3',    name:'SomaFM Folk Forward',    src:'SomaFM'},
-      {url:'https://stream.soma.fm/covers128.mp3',     name:'SomaFM Covers',          src:'SomaFM'},
-      {url:'https://stream.soma.fm/reggae128.mp3',     name:'SomaFM Reggae',          src:'SomaFM'},
+      {url:'https://ice6.somafm.com/folkfwd-128-mp3',    name:'SomaFM Folk Forward',    src:'SomaFM'},
+      {url:'https://ice6.somafm.com/covers-128-mp3',     name:'SomaFM Covers',          src:'SomaFM'},
+      {url:'https://ice6.somafm.com/reggae-128-mp3',     name:'SomaFM Reggae',          src:'SomaFM'},
     ]
   },
   {
@@ -1847,9 +1847,9 @@ const LM_CHANNELS = [
     icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>',
     stations:[
       {url:'https://radio.plaza.one/mp3',                        name:'Nightwave Plaza',  src:'Nightwave'},
-      {url:'https://stream.soma.fm/lush128.mp3',                 name:'SomaFM Lush',      src:'SomaFM'},
-      {url:'https://stream.soma.fm/fluid128.mp3',                name:'SomaFM Fluid',     src:'SomaFM'},
-      {url:'https://stream.soma.fm/cliqhop128.mp3',              name:'SomaFM cliqhop',   src:'SomaFM'},
+      {url:'https://ice6.somafm.com/lush-128-mp3',                 name:'SomaFM Lush',      src:'SomaFM'},
+      {url:'https://ice6.somafm.com/fluid-128-mp3',                name:'SomaFM Fluid',     src:'SomaFM'},
+      {url:'https://ice6.somafm.com/cliqhop-128-mp3',              name:'SomaFM cliqhop',   src:'SomaFM'},
     ]
   },
   {
@@ -1862,10 +1862,10 @@ const LM_CHANNELS = [
     fgColor:'#0d9488',
     icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     stations:[
-      {url:'https://stream.soma.fm/secretagent128.mp3',  name:'SomaFM Secret Agent',   src:'SomaFM'},
-      {url:'https://stream.soma.fm/missioncontrol.mp3',  name:'SomaFM Mission Control', src:'SomaFM'},
-      {url:'https://stream.soma.fm/cliqhop128.mp3',      name:'SomaFM cliqhop idm',    src:'SomaFM'},
-      {url:'https://stream.soma.fm/dubstep128.mp3',      name:'SomaFM Dubstep',         src:'SomaFM'},
+      {url:'https://ice6.somafm.com/secretagent-128-mp3',  name:'SomaFM Secret Agent',   src:'SomaFM'},
+      {url:'https://ice6.somafm.com/missioncontrol-128-mp3',  name:'SomaFM Mission Control', src:'SomaFM'},
+      {url:'https://ice6.somafm.com/cliqhop-128-mp3',      name:'SomaFM cliqhop idm',    src:'SomaFM'},
+      {url:'https://ice6.somafm.com/dubstep-128-mp3',      name:'SomaFM Dubstep',         src:'SomaFM'},
     ]
   },
   {

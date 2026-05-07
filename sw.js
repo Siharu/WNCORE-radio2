@@ -1,6 +1,6 @@
-// WNCORE Radio — Service Worker v6
+// WNCORE Radio — Service Worker v7
 // Enables iOS background audio entitlements + static asset caching
-const CACHE = 'wncore-v7';
+const CACHE = 'wncore-v8';
 const PRECACHE = [
   '/',
   '/index.html',
@@ -34,13 +34,29 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
-  // Pass-through API calls — never cache them
-  if (e.request.url.includes('/api/')) return;
-  // Network-first, fall back to cache for static assets
+  const url = e.request.url;
+
+  // Pass-through: API calls, external URLs, and audio streams — never intercept
+  if (
+    url.includes('/api/') ||
+    url.includes('somafm.com') ||
+    url.includes('soma.fm') ||
+    url.includes('plaza.one') ||
+    url.includes('listen.moe') ||
+    url.includes('radioking.com') ||
+    url.includes('radioparadise.com') ||
+    url.includes('bbcmedia.co.uk') ||
+    url.includes('nightwave.io') ||
+    url.includes('streamguys') ||
+    url.includes('monocle.com') ||
+    !url.startsWith(self.location.origin)
+  ) return;
+
+  // Network-first, fall back to cache for same-origin static assets only
   e.respondWith(
     fetch(e.request).then(r => {
-      // Cache successful responses for static assets
-      if (r && r.status === 200 && e.request.method === 'GET') {
+      // Only cache successful GET responses for same-origin assets
+      if (r && r.status === 200 && e.request.method === 'GET' && r.type !== 'opaque') {
         const clone = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {});
       }
