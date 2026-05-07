@@ -59,6 +59,8 @@ module.exports = async function handler(req, res) {
     if (req.method === 'POST') {
       const { key, value } = req.body || {};
       if (!key || value === undefined) return res.status(400).json({ error: 'Missing key or value' });
+      // Auth probe — admin.js sends this to verify the token is valid; just confirm and return
+      if (key === '_auth_check') return res.status(200).json({ ok: true });
       if (!VALID_KEYS.has(key)) return res.status(400).json({ error: 'Invalid key: ' + key });
 
       const upsertRes = await fetch(
