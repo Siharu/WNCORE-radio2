@@ -1922,33 +1922,52 @@ function buildLmWaveform() {
   }).join('');
 }
 
+// Royalty-free Unsplash images keyed by channel id
+const LM_CARD_IMAGES = {
+  jazz:       'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=600&q=80',
+  classical:  'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=600&q=80',
+  ambient:    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
+  electronic: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&q=80',
+  folk:       'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&q=80',
+  lofi:       'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80',
+  chillout:   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
+};
+
 function buildLmGrid() {
   const grid = document.getElementById('lm-grid');
   if(!grid) return;
   const channels = LM_CHANNELS.filter(c=>c.id!=='all');
   const fakeListeners = () => Math.floor(800 + Math.random() * 3200);
-  grid.innerHTML = channels.map(ch => `
+  grid.innerHTML = channels.map(ch => {
+    const img = LM_CARD_IMAGES[ch.id] || '';
+    return `
     <div class="lm-card" id="lm-card-${ch.id}"
       style="--lm-color:${ch.color};--lm-color-bg:${ch.color};--lm-color-fg:${ch.fgColor}"
       onclick="lmPlayChannel('${ch.id}')">
-      <div class="lm-card-top">
-        <div class="lm-card-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20">${ch.icon}</svg>
+      <div class="lm-card-img-wrap" style="--lm-img:url('${img}')">
+        <div class="lm-card-img"></div>
+        <div class="lm-card-img-overlay"></div>
+        <div class="lm-card-img-top-row">
+          <div class="lm-card-live-badge"><span class="lm-live-dot"></span>LIVE</div>
+          <div class="lm-card-listeners-badge">${fakeListeners().toLocaleString()} listening</div>
         </div>
-        <div>
-          <div class="lm-card-name">${ch.name}</div>
-          <div class="lm-card-genre">${ch.genre}</div>
+        <div class="lm-card-play-circle">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><path d="M8 5v14l11-7z"/></svg>
         </div>
       </div>
-      <div class="lm-card-desc">${ch.desc}</div>
-      <div class="lm-card-meta">
-        <div class="lm-card-listeners"><div class="lm-live-dot"></div>${fakeListeners().toLocaleString()} listening</div>
-        <div class="lm-card-license">${ch.license}</div>
+      <div class="lm-card-body">
+        <div class="lm-card-genre-tag">${ch.genre}</div>
+        <div class="lm-card-name">${ch.name}</div>
+        <div class="lm-card-desc">${ch.desc}</div>
+        <div class="lm-card-footer">
+          <div class="lm-card-license-pill">${ch.license}</div>
+          <div class="lm-card-stations-count">${ch.stations.length} streams</div>
+        </div>
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 }
-
 function lmSelectChannel(btn, chId) {
   document.querySelectorAll('.lm-ch-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
