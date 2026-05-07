@@ -666,3 +666,507 @@ html, body {
     padding: 8px 20px !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   WNCORE MOBILE — COMPREHENSIVE FIX PASS
+   Addresses layout, readability, spacing, player UX
+   on all mobile screens (≤768px primary, ≤480px secondary)
+═══════════════════════════════════════════════════════ */
+
+/* ── 1. PLAYER BAR — mobile layout overhaul ── */
+@media (max-width: 768px) {
+  .player-bar {
+    padding: 0 10px;
+    gap: 8px;
+    height: var(--player-h);
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+  }
+
+  /* Station info: art + name/meta, no fixed width */
+  .pb-station {
+    width: auto;
+    flex: 1;
+    min-width: 0;
+    gap: 8px;
+  }
+
+  /* Art stays square */
+  .pb-art {
+    width: 36px;
+    height: 36px;
+    border-radius: 7px;
+    flex-shrink: 0;
+  }
+
+  /* Name truncates properly */
+  .pb-name {
+    font-size: 0.78rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .pb-meta {
+    font-size: 0.6rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Center controls — hide progress bar, keep play + skip only */
+  .pb-center {
+    display: none;
+  }
+
+  /* Show just fav + play on mobile */
+  .pb-controls-mobile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .pb-play {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .pb-right {
+    display: none;
+  }
+}
+
+/* ── 2. GLOBE SECTION — better mobile hero ── */
+@media (max-width: 480px) {
+  .globe-section {
+    height: 200px !important;
+  }
+
+  .globe-title {
+    font-size: 1.3rem !important;
+    margin-bottom: 6px;
+  }
+
+  .globe-overlay-left {
+    padding: 16px 14px 12px !important;
+  }
+
+  .globe-stats {
+    gap: 10px !important;
+    flex-wrap: nowrap;
+  }
+
+  .globe-stat-num {
+    font-size: 1rem;
+  }
+
+  .globe-stat-label {
+    font-size: 0.58rem;
+  }
+}
+
+/* ── 3. FEATURED CARDS — better proportions on mobile ── */
+@media (max-width: 600px) {
+  .featured-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 20px;
+  }
+
+  .featured-card {
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  /* Make featured cards feel like tappable rows */
+  .featured-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+/* ── 4. SECTION HEADERS — tighten spacing ── */
+@media (max-width: 480px) {
+  .section-hd {
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .section-title {
+    font-size: 1.05rem !important;
+  }
+}
+
+/* ── 5. REC CARDS — properly sized on small screens ── */
+@media (max-width: 480px) {
+  .rec-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 7px;
+  }
+
+  .rec-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 11px;
+    gap: 6px;
+    min-height: 0;
+  }
+
+  .rec-card-art {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* ── 6. TRENDING ITEMS — more breathing room ── */
+@media (max-width: 480px) {
+  .trending-item {
+    padding: 10px 0;
+    gap: 8px;
+  }
+
+  .tr-rank {
+    font-size: 0.68rem;
+    min-width: 16px;
+  }
+
+  .tr-name {
+    font-size: 0.75rem;
+  }
+
+  .tr-meta {
+    font-size: 0.6rem;
+  }
+
+  .tr-listeners {
+    font-size: 0.62rem;
+  }
+}
+
+/* ── 7. STATION TABLE — better mobile reading ── */
+@media (max-width: 480px) {
+  .station-table {
+    font-size: 0.72rem;
+  }
+
+  .station-table td {
+    padding: 10px 4px;
+  }
+
+  .st-tags {
+    display: none;
+  }
+
+  /* Favorite button always visible and tappable */
+  .fav-btn {
+    min-width: 40px;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── 8. LIVE MUSIC PAGE — hero and channel strip ── */
+@media (max-width: 768px) {
+  .lm-hero {
+    padding: 28px 16px 24px !important;
+    min-height: unset !important;
+    height: auto !important;
+  }
+
+  .lm-hero-title {
+    font-size: 1.9rem !important;
+    line-height: 1.1;
+  }
+
+  .lm-hero-stats {
+    gap: 20px !important;
+    flex-wrap: wrap;
+  }
+
+  .lm-channel-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 10px 14px;
+  }
+
+  .lm-channel-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .lm-ch-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    font-size: 0.72rem;
+    min-height: 38px;
+    white-space: nowrap;
+  }
+
+  .lm-now-playing-card {
+    flex-direction: row !important;
+    gap: 14px;
+  }
+
+  .lm-np-vinyl {
+    width: 60px !important;
+    height: 60px !important;
+    flex-shrink: 0;
+  }
+
+  .lm-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lm-hero-title {
+    font-size: 1.6rem !important;
+  }
+
+  .lm-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .lm-card-stations-count {
+    font-size: 0.65rem;
+  }
+}
+
+/* ── 9. ANIME PAGE — hero banner and station grid ── */
+@media (max-width: 480px) {
+  .anime-banner {
+    height: 140px !important;
+  }
+
+  .anime-banner-title {
+    font-size: 1.3rem !important;
+  }
+
+  .anime-stations-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 7px;
+  }
+}
+
+/* ── 10. GENRE STRIP — horizontal scroll, no wrapping ── */
+@media (max-width: 768px) {
+  .genre-strip {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 12px 6px !important;
+    scrollbar-width: none;
+    gap: 6px;
+  }
+
+  .genre-strip::-webkit-scrollbar { display: none; }
+
+  .genre-btn {
+    flex-shrink: 0;
+    white-space: nowrap;
+    min-height: 36px;
+    padding: 5px 14px;
+    font-size: 0.72rem;
+  }
+}
+
+/* ── 11. SEARCH MODAL — full-screen on mobile ── */
+@media (max-width: 480px) {
+  .search-modal-backdrop {
+    padding: 0 !important;
+    align-items: flex-start !important;
+  }
+
+  .search-box {
+    border-radius: 0 0 12px 12px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  .search-input {
+    font-size: 1rem !important;
+    padding: 16px 14px !important;
+  }
+
+  .search-results {
+    max-height: 60vh !important;
+  }
+}
+
+/* ── 12. MODALS — slide up from bottom on mobile ── */
+@media (max-width: 480px) {
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .modal-box {
+    border-radius: 18px 18px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 20px 18px 32px !important;
+  }
+}
+
+/* ── 13. FOOTER — tighter and padded for player+nav ── */
+@media (max-width: 480px) {
+  .wncore-footer {
+    padding-bottom: calc(var(--player-h) + 56px + 12px) !important;
+  }
+
+  .wncore-footer-inner {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .footer-tagline {
+    font-size: 0.68rem;
+  }
+}
+
+/* ── 14. BOTTOM NAV — ensure it's always above player ── */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    bottom: var(--player-h) !important;
+    height: 54px;
+  }
+
+  .mbn-btn {
+    font-size: 0.55rem;
+    gap: 2px;
+  }
+
+  .mbn-btn svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ── 15. HEADER MOBILE — logo + hamburger only ── */
+@media (max-width: 480px) {
+  .header-inner {
+    padding: 0 12px;
+  }
+
+  .logo-mark {
+    font-size: 1.05rem !important;
+  }
+
+  header {
+    height: 52px;
+  }
+}
+
+/* ── 16. PAGE WRAP — consistent safe area padding ── */
+@media (max-width: 480px) {
+  .page-wrap {
+    padding: 16px 12px !important;
+    gap: 18px !important;
+  }
+}
+
+/* ── 17. SIDEBAR CARDS — horizontal scroll when shown ── */
+@media (max-width: 768px) {
+  /* ARG card shown in main flow */
+  .arg-card {
+    border-radius: 12px;
+    padding: 16px;
+  }
+
+  .arg-freq {
+    font-size: 2rem;
+  }
+
+  .arg-status {
+    font-size: 0.6rem;
+  }
+}
+
+/* ── 18. PODCAST GRID ── */
+@media (max-width: 480px) {
+  #podcast-grid {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+}
+
+/* ── 19. ABOUT PAGE ── */
+@media (max-width: 480px) {
+  .about-wrap {
+    padding: 24px 14px 100px !important;
+  }
+
+  .about-title {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ── 20. TICKER — more legible on small screens ── */
+@media (max-width: 360px) {
+  .ticker-inner {
+    font-size: 0.5rem;
+  }
+
+  .ticker-wrap {
+    height: 22px;
+  }
+}
+
+/* ── 21. PREVENT ALL HORIZONTAL OVERFLOW ── */
+@media (max-width: 768px) {
+  * {
+    max-width: 100%;
+  }
+
+  img, video, iframe, embed, object {
+    max-width: 100% !important;
+    height: auto;
+  }
+}
+
+/* ── 22. MOBILE MENU DRAWER — ensure full-width proper ── */
+@media (max-width: 768px) {
+  .mobile-nav-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 600;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-nav-inner {
+    padding: 16px 16px calc(var(--player-h) + 56px + 16px);
+  }
+}
+
+/* ── 23. SAFE AREA INSETS (notch/home indicator support) ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .player-bar {
+    padding-bottom: calc(env(safe-area-inset-bottom));
+    height: calc(var(--player-h) + env(safe-area-inset-bottom));
+  }
+
+  .mobile-bottom-nav {
+    bottom: calc(var(--player-h) + env(safe-area-inset-bottom)) !important;
+  }
+
+  .wncore-footer {
+    padding-bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom) + 8px) !important;
+  }
+}
