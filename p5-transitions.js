@@ -1,202 +1,174 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   WNCORE — PERSONA 5 TRANSITION ENGINE
+   WNCORE — PERSONA 5 TRANSITION ENGINE  v2
    File: p5-transitions.js
-   Runs after: main.js, improvements.js, wncore-upgrades.js, v5-fixes.js
+   Must load last — after main.js, improvements.js, all patches
    ═══════════════════════════════════════════════════════════════════════ */
 
 (function () {
   'use strict';
 
-  /* ── 1. WIPE OVERLAY DOM ─────────────────────────────────────────────── */
+  /* ── 1. BUILD WIPE OVERLAY ─────────────────────────────────────────── */
   function buildWipe() {
     if (document.getElementById('p5-wipe')) return;
-    const wipe = document.createElement('div');
+    var wipe = document.createElement('div');
     wipe.id = 'p5-wipe';
     wipe.innerHTML = '<div id="p5-wipe-a"></div><div id="p5-wipe-b"></div>';
     document.body.appendChild(wipe);
   }
 
-  /* ── 2. CORE WIPE SEQUENCE ───────────────────────────────────────────── */
-  // Returns a Promise that resolves when the wipe-out is complete.
-  // Phase A: panels sweep IN  (covers content)
-  // Phase B: caller swaps the page
-  // Phase C: panels sweep OUT (reveals new content)
+  /* ── 2. WIPE SEQUENCE ──────────────────────────────────────────────── */
+  var _wiping = false;
+
   function runWipe(swapFn) {
-    return new Promise(function (resolve) {
-      const wipe = document.getElementById('p5-wipe');
-      if (!wipe) {
-        // Fallback: no wipe element, just run the swap
-        swapFn();
-        resolve();
-        return;
-      }
+    // Prevent stacking wipes if user clicks fast
+    if (_wiping) {
+      swapFn();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
 
-      // Reset to off-screen left before starting
-      wipe.classList.remove('in', 'out');
+    var wipe = document.getElementById('p5-wipe');
+    if (!wipe) {
+      swapFn();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
 
-      // Force a reflow so the removal of classes is applied before re-adding
-      void wipe.offsetWidth;
+    _wiping = true;
 
-      // Phase A: sweep in
-      wipe.classList.add('in');
+    // Reset: remove both classes, force panels back to start position
+    wipe.classList.remove('in', 'out');
+    var a = document.getElementById('p5-wipe-a');
+    var b = document.getElementById('p5-wipe-b');
+    // Temporarily disable transition so the reset is instant
+    if (a) { a.style.transition = 'none'; a.style.transform = 'translateX(-115%)'; }
+    if (b) { b.style.transition = 'none'; b.style.transform = 'translateX(-115%)'; }
 
+    // Force reflow
+    void wipe.offsetWidth;
+
+    // Remove inline styles so CSS class transitions take over
+    if (a) a.style.cssText = '';
+    if (b) b.style.cssText = '';
+
+    // Phase A: sweep IN (220ms + 20ms delay on b = ~250ms total)
+    wipe.classList.add('in');
+
+    setTimeout(function () {
+      // Phase B: swap content while panels are covering the screen
+      swapFn();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      // Trigger enter animation on newly active page
+      requestAnimationFrame(function () {
+        var activePage = document.querySelector('.page.active');
+        if (activePage) {
+          activePage.classList.remove('p5-enter');
+          void activePage.offsetWidth; // reflow to restart animation
+          activePage.classList.add('p5-enter');
+          activePage.addEventListener('animationend', function handler() {
+            activePage.classList.remove('p5-enter');
+            activePage.removeEventListener('animationend', handler);
+          });
+        }
+      });
+
+      // Small pause at peak coverage, then sweep OUT
       setTimeout(function () {
-        // Phase B: swap content while panels are covering the screen
-        swapFn();
+        wipe.classList.remove('in');
+        void wipe.offsetWidth;
+        wipe.classList.add('out');
 
-        // Small pause at peak coverage
+        // After out sweep completes (210ms + 15ms = ~230ms), clean up
         setTimeout(function () {
-          // Phase C: sweep out
-          wipe.classList.remove('in');
-          wipe.classList.add('out');
+          wipe.classList.remove('out');
+          _wiping = false;
+        }, 250);
+      }, 60);
 
-          // After sweep-out, trigger page enter animation
-          setTimeout(function () {
-            wipe.classList.remove('out');
-            resolve();
-          }, 220);
-        }, 60);
-      }, 230); // wait for sweep-in to complete (220ms + small buffer)
-    });
+    }, 255); // wait for full sweep-in to finish
   }
 
-  /* ── 3. PATCH showPage ───────────────────────────────────────────────── */
-  // We wrap whatever showPage is at boot time (already patched by
-  // improvements.js patchShowPage). We ONLY add the wipe; we do not
-  // replicate the original logic.
-  function installP5Transitions() {
-    // Guard: don't double-patch
+  /* ── 3. PATCH showPage ─────────────────────────────────────────────── */
+  function installP5Patch() {
     if (typeof window.showPage !== 'function') return;
     if (window.showPage._p5Patched) return;
 
-    const previousShowPage = window.showPage;
+    var prevShowPage = window.showPage;
 
     window.showPage = function p5ShowPage(id, linkEl) {
-      // Get currently active page element
-      const currentPage = document.querySelector('.page.active');
-      const nextPage    = document.getElementById('page-' + id);
+      var nextPage = document.getElementById('page-' + id);
+      var currPage = document.querySelector('.page.active');
 
-      // If same page or page not found, defer to original with no wipe
-      if (!nextPage || (currentPage && currentPage === nextPage)) {
-        previousShowPage(id, linkEl);
+      // Same page or not found — no wipe, just run
+      if (!nextPage || (currPage && currPage === nextPage)) {
+        prevShowPage(id, linkEl);
         return;
       }
 
-      // Remove the p5-enter class from all pages to prevent stale animation
-      document.querySelectorAll('.page').forEach(function (p) {
-        p.classList.remove('p5-enter');
-      });
-
-      // Run the wipe, then call the original showPage inside it
       runWipe(function () {
-        // Call the previously-patched showPage (which handles favorites,
-        // charts loading, active class toggling, etc.)
-        previousShowPage(id, linkEl);
-
-        // Trigger the enter animation on the newly-active page
-        // Use rAF to ensure the display:block has been applied first
-        requestAnimationFrame(function () {
-          const activePage = document.getElementById('page-' + id);
-          if (activePage) {
-            activePage.classList.add('p5-enter');
-            // Clean up after animation ends
-            activePage.addEventListener('animationend', function handler() {
-              activePage.classList.remove('p5-enter');
-              activePage.removeEventListener('animationend', handler);
-            });
-          }
-        });
+        prevShowPage(id, linkEl);
       });
-
-      // Scroll to top: improvements.js does window.scrollTo but inside
-      // the wipe we want it to happen after the swap
-      // The original already calls scrollTo; this is a safety net
-      window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
     window.showPage._p5Patched = true;
   }
 
-  /* ── 4. GENRE PILL STAMP EFFECT ─────────────────────────────────────── */
+  /* ── 4. GENRE PILL STAMP ───────────────────────────────────────────── */
   function initGenreStamps() {
-    // Use event delegation on the genre strip (loaded dynamically)
     document.addEventListener('click', function (e) {
-      const btn = e.target.closest('.genre-btn');
+      var btn = e.target.closest('.genre-btn');
       if (!btn) return;
       btn.classList.remove('p5-stamp');
-      // Force reflow so removing+adding the class restarts the animation
       void btn.offsetWidth;
       btn.classList.add('p5-stamp');
-      btn.addEventListener('animationend', function handler() {
+      btn.addEventListener('animationend', function h() {
         btn.classList.remove('p5-stamp');
-        btn.removeEventListener('animationend', handler);
+        btn.removeEventListener('animationend', h);
       });
     });
   }
 
-  /* ── 5. MOBILE BOTTOM NAV TAP EFFECT ────────────────────────────────── */
+  /* ── 5. MOBILE BOTTOM NAV TAP ──────────────────────────────────────── */
   function initMbnTaps() {
     document.addEventListener('click', function (e) {
-      const btn = e.target.closest('.mbn-btn');
+      var btn = e.target.closest('.mbn-btn');
       if (!btn) return;
       btn.classList.remove('p5-tap');
       void btn.offsetWidth;
       btn.classList.add('p5-tap');
-      btn.addEventListener('animationend', function handler() {
+      btn.addEventListener('animationend', function h() {
         btn.classList.remove('p5-tap');
-        btn.removeEventListener('animationend', handler);
+        btn.removeEventListener('animationend', h);
       });
     });
   }
 
-  /* ── 6. MOBILE SCROLL FIX ────────────────────────────────────────────── */
-  // Problem: on mobile, after switching pages, content sometimes appears
-  // stuck because the browser hasn't repositioned the scroll. We reset
-  // the scroll on every page switch (the wipe covers the jump).
-  // Already called in the patched showPage above, but we also hook into
-  // the mobile bottom nav buttons in case they bypass showPage.
-  function initMobileScrollFix() {
-    document.addEventListener('click', function (e) {
-      const mbnBtn = e.target.closest('.mbn-btn');
-      if (mbnBtn) {
-        // Short delay so the page swap happens first, then snap to top
-        setTimeout(function () {
-          window.scrollTo({ top: 0, behavior: 'instant' });
-        }, 50);
-      }
-    });
+  /* ── 6. REMOVE LEGACY TRANSITION STYLE ────────────────────────────── */
+  // improvements.js injects <style id="pt-style"> with weak fade rules.
+  // We remove it so our CSS takes over cleanly.
+  function removeLegacyStyle() {
+    var el = document.getElementById('pt-style');
+    if (el) el.remove();
   }
 
-  /* ── 7. OVERRIDE THE EXISTING pt-style BLOCK ─────────────────────────── */
-  // improvements.js injects a <style id="pt-style"> with weak transitions.
-  // We remove it and let our CSS file take over.
-  function removeLegacyTransitionStyle() {
-    const existing = document.getElementById('pt-style');
-    if (existing) {
-      existing.remove();
-    }
-  }
-
-  /* ── 8. BOOT ─────────────────────────────────────────────────────────── */
+  /* ── 7. BOOT ───────────────────────────────────────────────────────── */
   function boot() {
-    removeLegacyTransitionStyle();
+    removeLegacyStyle();
     buildWipe();
-    installP5Transitions();
+    // Use setTimeout(0) so all other deferred scripts have fully executed
+    // their boot sequences (bootV2, patchShowPage, etc.) before we patch
+    setTimeout(function () {
+      installP5Patch();
+    }, 0);
     initGenreStamps();
     initMbnTaps();
-    initMobileScrollFix();
   }
 
-  // Wait for all other scripts to have run their boot sequences.
-  // All scripts use 'defer', so DOMContentLoaded fires after them.
-  // We add a small setTimeout to ensure bootV2() in improvements.js
-  // (which runs at DOMContentLoaded or immediately) has finished patching.
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      setTimeout(boot, 0);
-    });
+    document.addEventListener('DOMContentLoaded', boot);
   } else {
-    setTimeout(boot, 0);
+    boot();
   }
 
 })();
