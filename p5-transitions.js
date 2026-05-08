@@ -20,7 +20,6 @@
   var _wiping = false;
 
   function runWipe(swapFn) {
-    // Prevent stacking wipes if user clicks fast
     if (_wiping) {
       swapFn();
       window.scrollTo({ top: 0, behavior: 'instant' });
@@ -36,35 +35,32 @@
 
     _wiping = true;
 
-    // Reset: remove both classes, force panels back to start position
+    /* Reset panels to off-screen left instantly */
     wipe.classList.remove('in', 'out');
     var a = document.getElementById('p5-wipe-a');
     var b = document.getElementById('p5-wipe-b');
-    // Temporarily disable transition so the reset is instant
     if (a) { a.style.transition = 'none'; a.style.transform = 'translateX(-115%)'; }
     if (b) { b.style.transition = 'none'; b.style.transform = 'translateX(-115%)'; }
 
-    // Force reflow
-    void wipe.offsetWidth;
+    void wipe.offsetWidth; /* force reflow */
 
-    // Remove inline styles so CSS class transitions take over
     if (a) a.style.cssText = '';
     if (b) b.style.cssText = '';
 
-    // Phase A: sweep IN (220ms + 20ms delay on b = ~250ms total)
+    /* Phase A: sweep IN */
     wipe.classList.add('in');
 
     setTimeout(function () {
-      // Phase B: swap content while panels are covering the screen
+      /* Phase B: swap page + scroll reset */
       swapFn();
       window.scrollTo({ top: 0, behavior: 'instant' });
 
-      // Trigger enter animation on newly active page
+      /* Trigger enter animation on incoming page */
       requestAnimationFrame(function () {
         var activePage = document.querySelector('.page.active');
         if (activePage) {
           activePage.classList.remove('p5-enter');
-          void activePage.offsetWidth; // reflow to restart animation
+          void activePage.offsetWidth;
           activePage.classList.add('p5-enter');
           activePage.addEventListener('animationend', function handler() {
             activePage.classList.remove('p5-enter');
@@ -73,20 +69,19 @@
         }
       });
 
-      // Small pause at peak coverage, then sweep OUT
+      /* Phase C: sweep OUT after brief hold */
       setTimeout(function () {
         wipe.classList.remove('in');
         void wipe.offsetWidth;
         wipe.classList.add('out');
 
-        // After out sweep completes (210ms + 15ms = ~230ms), clean up
         setTimeout(function () {
           wipe.classList.remove('out');
           _wiping = false;
         }, 250);
       }, 60);
 
-    }, 255); // wait for full sweep-in to finish
+    }, 255);
   }
 
   /* ── 3. PATCH showPage ─────────────────────────────────────────────── */
@@ -100,7 +95,6 @@
       var nextPage = document.getElementById('page-' + id);
       var currPage = document.querySelector('.page.active');
 
-      // Same page or not found — no wipe, just run
       if (!nextPage || (currPage && currPage === nextPage)) {
         prevShowPage(id, linkEl);
         return;
@@ -145,8 +139,9 @@
   }
 
   /* ── 6. REMOVE LEGACY TRANSITION STYLE ────────────────────────────── */
-  // improvements.js injects <style id="pt-style"> with weak fade rules.
-  // We remove it so our CSS takes over cleanly.
+  /* Must run inside the same setTimeout(0) as installP5Patch so that
+     bootV2() in improvements.js (which also runs at DOMContentLoaded)
+     has already injected and we can reliably remove it. */
   function removeLegacyStyle() {
     var el = document.getElementById('pt-style');
     if (el) el.remove();
@@ -154,15 +149,16 @@
 
   /* ── 7. BOOT ───────────────────────────────────────────────────────── */
   function boot() {
-    removeLegacyStyle();
     buildWipe();
-    // Use setTimeout(0) so all other deferred scripts have fully executed
-    // their boot sequences (bootV2, patchShowPage, etc.) before we patch
-    setTimeout(function () {
-      installP5Patch();
-    }, 0);
     initGenreStamps();
     initMbnTaps();
+
+    /* Defer patch + style removal so all other deferred scripts
+       (improvements.js bootV2, patchShowPage, etc.) have run first */
+    setTimeout(function () {
+      removeLegacyStyle();
+      installP5Patch();
+    }, 0);
   }
 
   if (document.readyState === 'loading') {
