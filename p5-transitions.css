@@ -1,11 +1,10 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   WNCORE — PERSONA 5 TRANSITION SYSTEM
+   WNCORE — PERSONA 5 TRANSITION SYSTEM  v2
    File: p5-transitions.css
    Load after: horror_upgrade.css
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ── WIPE OVERLAY ──────────────────────────────────────────────────────── */
-/* Two diagonal slash panels that sweep across on page change */
 #p5-wipe {
   position: fixed;
   inset: 0;
@@ -20,103 +19,84 @@
   top: -10%;
   width: 70%;
   height: 120%;
-  /* Diagonal slash shape */
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
-  transform: translateX(-110%);
+  transform: translateX(-115%);
   will-change: transform;
+  transition: none;
 }
 
 #p5-wipe-a {
   left: -5%;
   background: #c8472a;
-  transition: transform 0ms;
 }
 
 #p5-wipe-b {
-  left: 25%;
+  left: 28%;
   background: #1a1814;
-  opacity: 0.85;
-  transition: transform 0ms;
+  opacity: 0.88;
 }
 
-/* IN: panels sweep right-to-center */
-#p5-wipe.in #p5-wipe-a,
-#p5-wipe.in #p5-wipe-b {
+/* IN: sweep from left to center */
+#p5-wipe.in #p5-wipe-a {
   transition: transform 220ms cubic-bezier(0.86, 0, 0.07, 1);
   transform: translateX(0%);
 }
 
 #p5-wipe.in #p5-wipe-b {
-  transition-delay: 25ms;
+  transition: transform 230ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition-delay: 20ms;
+  transform: translateX(0%);
 }
 
-/* OUT: panels sweep left off screen */
-#p5-wipe.out #p5-wipe-a,
-#p5-wipe.out #p5-wipe-b {
-  transform: translateX(0%); /* already there */
+/* OUT: sweep right off screen */
+#p5-wipe.out #p5-wipe-a {
   transition: transform 200ms cubic-bezier(0.86, 0, 0.07, 1);
+  transform: translateX(115%);
 }
 
-/* ── PAGE VISIBILITY DURING TRANSITIONS ─────────────────────────────────── */
-/* Override the existing pt-style injected by improvements.js              */
-/* We keep display:none/block (JS handles it) but override the fade.        */
-/* We use a wrapping class instead so pages animate without stacking.       */
-
-.page {
-  display: none;
-  animation: none !important;
+#p5-wipe.out #p5-wipe-b {
+  transition: transform 210ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition-delay: 15ms;
+  transform: translateX(115%);
 }
 
-.page.active {
-  display: block;
-}
-
-/* P5 enter: page fades in after the wipe reveals it */
+/* ── PAGE ENTER ANIMATION ──────────────────────────────────────────────── */
 .page.p5-enter {
-  display: block;
-  animation: p5PageEnter 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+  animation: p5PageEnter 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
 }
 
 @keyframes p5PageEnter {
-  from {
-    opacity: 0;
-    transform: translateX(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0);    }
 }
 
-/* ── GENRE PILL STAMP EFFECT ─────────────────────────────────────────────── */
+/* ── GENRE PILL — click stamp ripple ──────────────────────────────────── */
 .genre-btn {
   position: relative;
   overflow: hidden;
 }
 
-/* Ripple on click */
 .genre-btn::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: var(--p5-red, #c8472a);
+  background: #c8472a;
   opacity: 0;
   border-radius: inherit;
-  transform: scale(0.6);
+  transform: scale(0.5);
   pointer-events: none;
 }
 
 .genre-btn.p5-stamp::after {
-  animation: p5Stamp 320ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: p5Stamp 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes p5Stamp {
-  0%   { opacity: 0.35; transform: scale(0.6); }
-  60%  { opacity: 0.12; transform: scale(1.05); }
-  100% { opacity: 0;    transform: scale(1.05); }
+  0%   { opacity: 0.3;  transform: scale(0.5);  }
+  60%  { opacity: 0.1;  transform: scale(1.04); }
+  100% { opacity: 0;    transform: scale(1.04); }
 }
 
-/* Active genre pill: red slash underline */
 .genre-btn.active {
   background: var(--text, #1a1814);
   color: #fff;
@@ -126,8 +106,7 @@
   transition: all 0.12s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* ── NAV LINK ACTIVE INDICATOR ───────────────────────────────────────────── */
-/* Persona 5-style: red slash beside active nav item */
+/* ── HEADER NAV — red slash on active link ─────────────────────────────── */
 header nav a {
   position: relative;
 }
@@ -135,14 +114,14 @@ header nav a {
 header nav a.active::before {
   content: '';
   position: absolute;
-  left: -3px;
+  left: -4px;
   top: 50%;
   transform: translateY(-50%) skewX(-18deg);
   width: 3px;
   height: 60%;
   background: #c8472a;
   border-radius: 1px;
-  animation: p5NavSlash 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: p5NavSlash 160ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes p5NavSlash {
@@ -150,116 +129,65 @@ header nav a.active::before {
   to   { height: 60%; opacity: 1; }
 }
 
-/* ── MOBILE BOTTOM NAV — P5 STYLE ────────────────────────────────────────── */
-/* Override the existing .mobile-bottom-nav styles with sharper P5 look     */
-.mobile-bottom-nav {
-  position: fixed !important;
-  left: 0;
-  right: 0;
-  bottom: var(--player-h);
-  height: 56px;
-  background: var(--bg);
-  border-top: 1px solid rgba(200, 71, 42, 0.25) !important;
-  display: flex;
-  align-items: stretch;
-  z-index: 481;
-  /* P5-style: subtle red glow on top edge */
-  box-shadow: 0 -1px 0 0 rgba(200, 71, 42, 0.08),
-              0 -8px 24px rgba(0, 0, 0, 0.18);
-}
-
-.mbn-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: none;
-  border: none;
-  color: var(--text3);
-  font-size: 0.58rem;
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  cursor: pointer;
-  position: relative;
-  transition: color 0.15s;
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* P5 slash indicator on active bottom nav button */
-.mbn-btn.active {
-  color: var(--text);
-}
-
-.mbn-btn.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%) skewX(-12deg);
-  width: 28px;
-  height: 2px;
-  background: #c8472a;
-  border-radius: 0 0 2px 2px;
-  animation: p5TabSlash 180ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes p5TabSlash {
-  from { width: 0; opacity: 0; }
-  to   { width: 28px; opacity: 1; }
-}
-
-/* Tap ripple on bottom nav */
-.mbn-btn::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border-radius: 8px;
-  background: rgba(200, 71, 42, 0.12);
-  opacity: 0;
-  transform: scale(0.5);
-  pointer-events: none;
-}
-
-.mbn-btn.p5-tap::after {
-  animation: p5BtnTap 280ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes p5BtnTap {
-  0%   { opacity: 1; transform: scale(0.5); }
-  100% { opacity: 0; transform: scale(1.2); }
-}
-
-/* ── MOBILE HEADER: always visible with content above nav ───────────────── */
-/* Fixes the "stuck at bottom, nothing showing at top" issue.               */
-/* Root cause: .page doesn't scroll to top reliably on showPage().          */
-/* Solution: ensure body scrolls, not a child element, and enforce          */
-/* that the header stays visible after page switch via scroll reset.        */
-
+/* ── MOBILE ONLY — all bottom nav overrides inside media query ─────────── */
 @media (max-width: 768px) {
-  /* Ensure pages are not overflow-hidden on mobile */
-  .page.active {
-    min-height: 60vh; /* prevents collapsed pages from not scrolling */
+  .mobile-bottom-nav {
+    border-top: 1px solid rgba(200, 71, 42, 0.3) !important;
+    box-shadow: 0 -1px 0 rgba(200, 71, 42, 0.08),
+                0 -8px 20px rgba(0, 0, 0, 0.2);
   }
 
-  /* Safe padding for all page content above bottom controls */
-  .page.active > *:last-child {
-    padding-bottom: calc(var(--player-h) + 56px + 24px);
+  .mbn-btn.active {
+    color: var(--text);
   }
 
-  /* Genre strip: stays sticky below header on mobile */
+  .mbn-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) skewX(-10deg);
+    width: 24px;
+    height: 2px;
+    background: #c8472a;
+    border-radius: 0 0 2px 2px;
+    animation: p5TabSlash 160ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes p5TabSlash {
+    from { width: 0; opacity: 0; }
+    to   { width: 24px; opacity: 1; }
+  }
+
+  .mbn-btn {
+    position: relative;
+  }
+
+  .mbn-btn::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 8px;
+    background: rgba(200, 71, 42, 0.15);
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+  }
+
+  .mbn-btn.p5-tap::after {
+    animation: p5BtnTap 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes p5BtnTap {
+    0%   { opacity: 1; transform: scale(0.4); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+
   .genre-strip-wrap {
     position: sticky;
     top: var(--header-h);
     z-index: 200;
-    /* Subtle backdrop so it reads above content on scroll */
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
     background: var(--bg);
-    /* Slightly transparent so sticky strip reads cleanly over content */
-    opacity: 0.96;
   }
 
   body.dark-mode .genre-strip-wrap {
@@ -267,11 +195,12 @@ header nav a.active::before {
   }
 }
 
-/* ── SAFE-AREA SUPPORT (notched phones) ─────────────────────────────────── */
+/* ── SAFE-AREA (notched phones) ────────────────────────────────────────── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
-  .mobile-bottom-nav {
-    bottom: calc(var(--player-h) + env(safe-area-inset-bottom)) !important;
-    padding-bottom: env(safe-area-inset-bottom);
-    height: calc(56px + env(safe-area-inset-bottom));
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+      height: calc(56px + env(safe-area-inset-bottom));
+    }
   }
 }
