@@ -11,6 +11,13 @@
   z-index: 9800;
   pointer-events: none;
   overflow: hidden;
+  /* Hidden at rest — only visible during active wipe */
+  visibility: hidden;
+}
+
+#p5-wipe.in,
+#p5-wipe.out {
+  visibility: visible;
 }
 
 #p5-wipe-a,
