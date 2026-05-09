@@ -282,12 +282,22 @@
     canvas.id = 'wnc-constellation';
     canvas.setAttribute('aria-hidden', 'true');
 
-    var globeContainer = document.getElementById('globe-container');
-    if (globeContainer) {
-      section.insertBefore(canvas, globeContainer);
-    } else {
-      section.appendChild(canvas);
+    /* Insert canvas as first child of globe-section so it sits behind overlay */
+    section.insertBefore(canvas, section.firstChild);
+
+    /* Forcibly hide globe-container even if main.js set inline styles on it.
+       main.js uses IS_MOBILE_DEVICE (UA sniff) and sets style.cssText which
+       beats our CSS display:none. We override after a tick to ensure we run
+       after main.js's globe-ready event handler fires. */
+    function hideGlobeContainer() {
+      var gc = document.getElementById('globe-container');
+      if (gc) {
+        gc.style.cssText = 'display:none!important;width:0;height:0;visibility:hidden;position:absolute;z-index:-1;pointer-events:none;';
+      }
     }
+    hideGlobeContainer();
+    /* Also hide after globe-ready fires (main.js sets styles in that event) */
+    document.addEventListener('globe-ready', hideGlobeContainer);
 
     ctx = canvas.getContext('2d');
 

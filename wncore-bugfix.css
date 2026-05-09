@@ -58,17 +58,37 @@
   }
 }
 
-/* ── BUG 6: Mobile globe section — constellation canvas conflicts ───
-   main.js on IS_MOBILE_DEVICE inserts its own placeholder HTML into
-   #globe-container via innerHTML. Our CSS hides #globe-container,
-   so that placeholder is also hidden. The constellation canvas is
-   inserted as a sibling before it, which is correct. However,
-   fixMobileHome() in improvements_patch.js sets a min-height via JS
-   which can override our 300px height. Reinforce it.              */
+/* ── BUG: Globe container inline style overrides our display:none ───────
+   main.js sets globeContainer.style.cssText on mobile, which beats CSS.
+   We hide it by making it zero-size and invisible instead, which works
+   even against inline styles via visibility and pointer-events.          */
 @media (max-width: 768px) {
-  .globe-section {
-    height: 300px !important;
-    min-height: 300px !important;
+  #globe-container {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    z-index: -1 !important;
+  }
+}
+
+/* ── BUG: Chat panel peeks above bottom nav when hidden on mobile ───────
+   The panel uses transform:translateY(100%) to hide, but its bottom
+   anchor (player-h + 56px) means 100% of panel height doesn't fully
+   clear the bottom nav. Use translateY(110%) + visibility:hidden.       */
+@media (max-width: 768px) {
+  #wnc-chat-panel:not(.open) {
+    transform: translateY(110%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  #wnc-chat-panel.open {
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
   }
 }
 
