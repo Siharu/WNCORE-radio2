@@ -1,0 +1,143 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   WNCORE — BUG FIX PATCH
+   File: wncore-bugfix.css
+   Fixes visual bugs found in audit. Load after wncore-mobile-fix.css
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── BUG 1: Chat button hidden behind mobile bottom nav ─────────────
+   #wnc-chat-btn uses hardcoded bottom:100px which doesn't account for
+   the 56px mobile-bottom-nav sitting above the player bar.
+   On mobile it needs: player-h + 56px (bottom nav) + gap           */
+@media (max-width: 768px) {
+  #wnc-chat-btn {
+    bottom: calc(var(--player-h, 76px) + 56px + 12px) !important;
+    right: 14px !important;
+  }
+
+  #wnc-chat-panel {
+    bottom: calc(var(--player-h, 76px) + 56px + 66px) !important;
+    right: 14px !important;
+    /* Constrain height so it doesn't go above header */
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 80px) !important;
+  }
+}
+
+/* ── BUG 2: Background-play banner hidden behind mobile bottom nav ──
+   #bgplay-banner uses hardcoded bottom:80px                        */
+@media (max-width: 768px) {
+  #bgplay-banner {
+    bottom: calc(var(--player-h, 76px) + 56px + 10px) !important;
+  }
+}
+
+/* ── BUG 3: Swipe hint toast hidden behind bottom nav ───────────────
+   The inline swipe hint in playStation uses bottom:90px            */
+@media (max-width: 768px) {
+  /* The swipe hint is appended to body with inline style — override
+     via attribute selector on the style content isn't possible,
+     so we target it by its unique text positioning characteristics.
+     It has no class/id, so we patch it in JS (wncore-bugfix.js).  */
+}
+
+/* ── BUG 4: wncore-toast clips behind player on mobile ─────────────
+   horror_upgrade.css sets bottom: calc(var(--player-h, 76px) + 16px)
+   which doesn't account for the 56px mobile bottom nav             */
+@media (max-width: 768px) {
+  .wncore-toast {
+    bottom: calc(var(--player-h, 76px) + 56px + 12px) !important;
+  }
+}
+
+/* ── BUG 5: toast-container (improvements.js system) also clips ─────
+   .toast-container bottom: calc(var(--player-h,80px) + 32px)
+   on mobile needs bottom nav offset                                */
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: calc(var(--player-h, 76px) + 56px + 16px) !important;
+    left: 12px !important;
+  }
+}
+
+/* ── BUG 6: Mobile globe section — constellation canvas conflicts ───
+   main.js on IS_MOBILE_DEVICE inserts its own placeholder HTML into
+   #globe-container via innerHTML. Our CSS hides #globe-container,
+   so that placeholder is also hidden. The constellation canvas is
+   inserted as a sibling before it, which is correct. However,
+   fixMobileHome() in improvements_patch.js sets a min-height via JS
+   which can override our 300px height. Reinforce it.              */
+@media (max-width: 768px) {
+  .globe-section {
+    height: 300px !important;
+    min-height: 300px !important;
+  }
+}
+
+/* ── BUG 7: Scroll-top btn inside .skel block ───────────────────────
+   In style.css, .scroll-top-btn is nested INSIDE the .skel ruleset
+   which means it only applies when inside a skeleton. The standalone
+   mobile override at mobile.css:353 has the correct position.
+   No action needed — confirmed mobile.css rule is correct.        */
+
+/* ── BUG 8: page-wrap paddingBottom overridden by JS ───────────────
+   fixMobileHome() sets pageWrap.style.paddingBottom = '20px' via JS
+   which overrides our CSS. We cannot !important inline styles but
+   we can ensure our body padding-bottom handles scroll clearance.
+   The page-wrap paddingBottom of 20px from JS is fine since body
+   itself has the correct padding-bottom. No further action needed. */
+
+/* ── BUG 9: Mini-player z-index conflicts on mobile ────────────────
+   The draggable mini-widget can overlap the bottom nav.            */
+@media (max-width: 768px) {
+  #wncore-mini-widget {
+    bottom: calc(var(--player-h, 76px) + 56px + 8px) !important;
+    /* Prevent it from being dragged under the bottom nav */
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 16px);
+  }
+}
+
+/* ── BUG 10: Station modal on mobile needs bottom clearance ─────── */
+@media (max-width: 768px) {
+  .station-modal-panel,
+  #station-modal {
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px) !important;
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── BUG 11: Similar stations panel clips on mobile ─────────────── */
+@media (max-width: 768px) {
+  #similar-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+    max-height: calc(60dvh) !important;
+  }
+}
+
+/* ── BUG 12: EQ panel clips on mobile ───────────────────────────── */
+@media (max-width: 768px) {
+  #eq-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ── BUG 13: Ambient panel clips on mobile ──────────────────────── */
+@media (max-width: 768px) {
+  #ambient-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ── BUG 14: Theme panel clips on mobile ───────────────────────── */
+@media (max-width: 768px) {
+  #theme-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ── BUG 15: Scrobble panel clips on mobile ─────────────────────── */
+@media (max-width: 768px) {
+  #scrobble-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
