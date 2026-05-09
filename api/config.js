@@ -25,6 +25,13 @@ const VALID_KEYS = new Set([
   'featured_station_1',
   'featured_station_2',
   'featured_station_3',
+  // New media slots
+  'genre_hero_video',
+  'charts_hero_video',
+  'podcasts_hero_video',
+  'about_bg_video',
+  'ghuul_video_url',
+  'home_hero_video',
 ]);
 
 // Supabase REST API base
