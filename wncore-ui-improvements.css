@@ -1,0 +1,697 @@
+/* ═══════════════════════════════════════════════════════════════
+   WNCORE RADIO — UI/UX IMPROVEMENTS PATCH
+   Drop this into index.html AFTER all other stylesheets:
+   <link rel="stylesheet" href="wncore-ui-improvements.css">
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. SMOOTHER TRANSITIONS THROUGHOUT ────────────────────── */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 120ms;
+  --transition-base: 200ms;
+  --transition-slow: 380ms;
+}
+
+/* ─── 2. ENHANCED HEADER ────────────────────────────────────── */
+header {
+  backdrop-filter: blur(24px) saturate(1.4);
+  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  transition: box-shadow var(--transition-base) var(--ease-out),
+              background var(--transition-base);
+}
+header.scrolled {
+  box-shadow: 0 1px 0 var(--border), 0 4px 20px rgba(0,0,0,0.06);
+}
+body.dark-mode header.scrolled {
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.35);
+}
+
+/* Nav links: smooth underline indicator */
+nav a {
+  position: relative;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+nav a svg {
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+nav a:hover svg {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ─── 3. PLAYER BAR — HEAVILY IMPROVED ──────────────────────── */
+.player-bar {
+  background: rgba(14, 12, 10, 0.98) !important;
+  border-top: 1px solid rgba(255,255,255,0.08) !important;
+  backdrop-filter: blur(32px) saturate(1.5) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.5) !important;
+  transition: transform var(--transition-slow) var(--ease-out);
+}
+body:not(.dark-mode) .player-bar {
+  background: rgba(248, 246, 242, 0.97) !important;
+  border-top: 1px solid rgba(0,0,0,0.09) !important;
+}
+body:not(.dark-mode) .pb-name { color: var(--text) !important; }
+body:not(.dark-mode) .pb-meta { color: var(--text2) !important; }
+body:not(.dark-mode) .pb-btn  { color: var(--text2) !important; }
+body:not(.dark-mode) .pb-btn:hover { color: var(--text) !important; }
+body:not(.dark-mode) .pb-play {
+  background: var(--text) !important;
+  color: var(--bg) !important;
+}
+body:not(.dark-mode) .pb-bar {
+  background: rgba(0,0,0,0.1) !important;
+}
+body:not(.dark-mode) .pb-bar-fill {
+  background: var(--text) !important;
+}
+body:not(.dark-mode) .pb-time {
+  color: var(--text3) !important;
+}
+body:not(.dark-mode) .pb-vol-icon svg {
+  color: var(--text2) !important;
+  stroke: var(--text2) !important;
+}
+
+/* Player art: pulsing ring when playing */
+.pb-art {
+  position: relative;
+  border-radius: 10px !important;
+  overflow: visible !important;
+  transition: transform var(--transition-base) var(--ease-spring);
+}
+.pb-art.playing::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  border: 1.5px solid var(--accent);
+  opacity: 0.5;
+  animation: pb-ring-pulse 2.4s ease-in-out infinite;
+}
+@keyframes pb-ring-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 0.15; transform: scale(1.06); }
+}
+
+/* Play button: springy scale */
+.pb-play {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              background var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+.pb-play:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+.pb-play:active { transform: scale(0.95) !important; }
+
+/* Progress bar: thicker + interactive hover */
+.pb-bar {
+  height: 4px !important;
+  border-radius: 4px !important;
+  position: relative;
+  transition: height var(--transition-fast);
+}
+.pb-bar:hover { height: 6px !important; }
+.pb-bar-fill {
+  height: 100% !important;
+  border-radius: 4px !important;
+  transition: width 0.3s linear;
+}
+
+/* Volume slider: custom track */
+.pb-vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.15);
+  outline: none;
+  cursor: pointer;
+  transition: height var(--transition-fast);
+}
+body:not(.dark-mode) .pb-vol-slider {
+  background: rgba(0,0,0,0.12);
+}
+.pb-vol-slider:hover { height: 5px; }
+.pb-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  transition: transform var(--transition-fast) var(--ease-spring);
+}
+body:not(.dark-mode) .pb-vol-slider::-webkit-slider-thumb {
+  background: var(--text);
+}
+.pb-vol-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* pb-btn hover: subtle background */
+.pb-btn {
+  border-radius: 8px !important;
+  padding: 7px !important;
+  transition: color var(--transition-fast), background var(--transition-fast),
+              transform var(--transition-fast) var(--ease-spring) !important;
+}
+.pb-btn:hover {
+  background: rgba(255,255,255,0.08) !important;
+  transform: scale(1.08) !important;
+}
+body:not(.dark-mode) .pb-btn:hover {
+  background: rgba(0,0,0,0.06) !important;
+}
+.pb-btn:active { transform: scale(0.92) !important; }
+
+/* ─── 4. FEATURED CARDS — PREMIUM FEEL ──────────────────────── */
+.featured-card {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base) var(--ease-out),
+              border-color var(--transition-base) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+.featured-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.12) !important;
+  border-color: rgba(200,71,42,0.2) !important;
+}
+body.dark-mode .featured-card:hover {
+  box-shadow: 0 20px 48px rgba(0,0,0,0.5) !important;
+  border-color: rgba(200,71,42,0.25) !important;
+}
+.featured-card:active { transform: translateY(-2px) scale(0.99) !important; }
+
+/* ARG card variant: subtle red glow */
+.featured-card--arg {
+  background: rgba(200,71,42,0.03) !important;
+}
+.featured-card--arg:hover {
+  border-color: rgba(200,71,42,0.35) !important;
+  box-shadow: 0 20px 48px rgba(200,71,42,0.1), 0 0 0 1px rgba(200,71,42,0.15) !important;
+}
+
+/* ─── 5. STATION TABLE ROWS ──────────────────────────────────── */
+.station-table tr {
+  transition: background var(--transition-fast) !important;
+  border-radius: 8px;
+}
+.station-table tr:hover .st-name {
+  color: var(--accent);
+}
+.station-table tr:hover .st-play-btn {
+  background: var(--text) !important;
+  color: #fff !important;
+  border-color: var(--text) !important;
+  transform: scale(1.1);
+}
+.st-play-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+
+/* ─── 6. GENRE STRIP PILLS ───────────────────────────────────── */
+.genre-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+  font-weight: 500;
+}
+.genre-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.genre-btn.active {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+.genre-btn:active { transform: scale(0.97); }
+
+/* ─── 7. SIDEBAR CARDS ───────────────────────────────────────── */
+.sidebar-card {
+  transition: box-shadow var(--transition-base) var(--ease-out) !important;
+}
+.sidebar-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+body.dark-mode .sidebar-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* Now Playing art: smoother wave animation */
+.np-wave span {
+  animation: wave 1.4s ease-in-out infinite !important;
+  min-height: 3px;
+}
+.np-wave span:nth-child(2) { animation-delay: .15s !important; }
+.np-wave span:nth-child(3) { animation-delay: .28s !important; }
+.np-wave span:nth-child(4) { animation-delay: .42s !important; }
+.np-wave span:nth-child(5) { animation-delay: .55s !important; }
+.np-wave span:nth-child(6) { animation-delay: .68s !important; }
+.np-wave span:nth-child(7) { animation-delay: .8s !important; }
+.np-wave span:nth-child(8) { animation-delay: .92s !important; }
+@keyframes wave {
+  0%, 100% { height: 3px; opacity: 0.4; }
+  50%       { height: 18px; opacity: 1; }
+}
+
+/* Play button in sidebar: spring */
+.np-play-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              opacity var(--transition-fast) !important;
+}
+.np-play-btn:hover { transform: scale(1.1) !important; }
+.np-play-btn:active { transform: scale(0.93) !important; }
+
+/* Trending items */
+.trending-item {
+  border-radius: 8px;
+  padding: 9px 8px !important;
+  margin: 0 -8px;
+  transition: background var(--transition-fast), padding-left var(--transition-fast) var(--ease-out) !important;
+}
+.trending-item:hover {
+  background: var(--surface2);
+  padding-left: 14px !important;
+}
+.tr-rank {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text3);
+  width: 18px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.tr-listeners {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text3);
+  white-space: nowrap;
+  padding: 2px 6px;
+  background: var(--surface2);
+  border-radius: 8px;
+}
+
+/* ─── 8. SEARCH MODAL ────────────────────────────────────────── */
+.search-modal-backdrop {
+  transition: opacity var(--transition-base) !important;
+}
+.search-modal-backdrop.open {
+  animation: modal-fade-in var(--transition-base) var(--ease-out);
+}
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.search-box {
+  animation: search-slide-in var(--transition-slow) var(--ease-out);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.2) !important;
+}
+@keyframes search-slide-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.search-result-item {
+  transition: background var(--transition-fast),
+              padding-left var(--transition-fast) var(--ease-out) !important;
+}
+.search-result-item:hover { padding-left: 24px !important; }
+.search-filter-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.search-filter-btn:hover { transform: translateY(-1px); }
+.search-filter-btn.active { transform: none; }
+
+/* ─── 9. REC CARDS ───────────────────────────────────────────── */
+.rec-card {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base) var(--ease-out),
+              border-color var(--transition-base) !important;
+}
+.rec-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.09) !important;
+  border-color: rgba(200,71,42,0.18) !important;
+}
+.rec-card:active { transform: scale(0.98) !important; }
+
+/* ─── 10. SIGN-IN MODAL ──────────────────────────────────────── */
+.modal-box {
+  animation: modal-slide-in var(--transition-slow) var(--ease-out) !important;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.18) !important;
+}
+@keyframes modal-slide-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              opacity var(--transition-fast) !important;
+}
+.modal-btn:hover {
+  opacity: 0.88 !important;
+  transform: translateY(-1px);
+}
+.modal-btn:active { transform: scale(0.97); }
+.modal-input {
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+}
+.modal-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(200,71,42,0.1);
+}
+.oauth-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              box-shadow var(--transition-fast) !important;
+}
+.oauth-btn:hover { transform: translateY(-2px) !important; }
+.oauth-btn:active { transform: scale(0.96) !important; }
+
+/* ─── 11. TICKER: SMOOTHER GRADIENT FADE-EDGES ───────────────── */
+.ticker-track {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+/* ─── 12. GLOBE SECTION ──────────────────────────────────────── */
+.globe-section {
+  transition: opacity var(--transition-slow);
+}
+.globe-overlay-left {
+  background: linear-gradient(to right,
+    rgba(3,7,18,0.97) 55%,
+    rgba(3,7,18,0.7) 80%,
+    transparent 100%) !important;
+}
+.globe-stat-num {
+  transition: color var(--transition-fast);
+}
+.globe-stat:hover .globe-stat-num { color: var(--accent2); }
+
+/* ─── 13. SECTION HEADERS ────────────────────────────────────── */
+.section-more {
+  transition: color var(--transition-fast), transform var(--transition-fast) !important;
+  display: inline-block;
+}
+.section-more:hover {
+  color: var(--accent) !important;
+  transform: translateX(3px);
+}
+
+/* ─── 14. MOBILE MINI PLAYER ─────────────────────────────────── */
+.mini-player {
+  transition: transform var(--transition-slow) var(--ease-out) !important;
+}
+.mini-player-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              color var(--transition-fast) !important;
+}
+.mini-player-btn:hover { transform: scale(1.12) !important; }
+.mini-player-btn:active { transform: scale(0.9) !important; }
+
+/* ─── 15. MOBILE NAV ─────────────────────────────────────────── */
+.mobile-nav a {
+  transition: background var(--transition-fast),
+              color var(--transition-fast),
+              transform var(--transition-fast) var(--ease-out),
+              padding-left var(--transition-fast) var(--ease-out) !important;
+}
+.mobile-nav a:active { transform: scale(0.98) !important; }
+
+/* ─── 16. THEME TOGGLE ───────────────────────────────────────── */
+.theme-toggle-track {
+  transition: background var(--transition-base), border-color var(--transition-base) !important;
+}
+.theme-toggle-thumb {
+  transition: transform 0.32s var(--ease-spring),
+              background var(--transition-base) !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.2) !important;
+}
+.theme-toggle:hover .theme-toggle-track {
+  border-color: var(--accent);
+}
+
+/* ─── 17. SIGN IN BUTTON ─────────────────────────────────────── */
+.sign-in-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              opacity var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+}
+.sign-in-btn:hover {
+  opacity: 0.88 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+.sign-in-btn:active { transform: scale(0.96) !important; }
+
+/* ─── 18. LIVE DOT: SMOOTHER PULSE ──────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(22,163,74,0.2); }
+  50%       { box-shadow: 0 0 0 6px rgba(22,163,74,0.08); }
+}
+
+/* ─── 19. PAGE TRANSITIONS ───────────────────────────────────── */
+.page.active {
+  animation: page-enter 0.28s var(--ease-out) both;
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── 20. ARG CARD ───────────────────────────────────────────── */
+.arg-card {
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.arg-card:hover {
+  box-shadow: 0 0 24px rgba(200,71,42,0.12), inset 0 0 24px rgba(200,71,42,0.04);
+  border-color: rgba(200,71,42,0.3);
+}
+
+/* ─── 21. LIVE MUSIC PAGE ────────────────────────────────────── */
+.lm-ch-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.lm-ch-btn:hover { transform: translateY(-1px); }
+.lm-ch-btn:active { transform: scale(0.96); }
+.lm-ctrl-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.lm-ctrl-btn:hover { transform: scale(1.12) !important; }
+.lm-ctrl-btn:active { transform: scale(0.9) !important; }
+.lm-grid .lm-channel-card {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.lm-grid .lm-channel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+}
+
+/* ─── 22. ADMIN PANEL: IMPROVED ──────────────────────────────── */
+.adm-submit-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.adm-submit-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 16px rgba(200,71,42,0.2) !important;
+}
+.adm-submit-btn:active { transform: scale(0.97) !important; }
+.adm-action-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.adm-action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(200,71,42,0.15) !important;
+}
+.adm-danger-btn {
+  transition: all var(--transition-fast) !important;
+}
+.adm-input:focus {
+  box-shadow: 0 0 0 3px rgba(200,71,42,0.12) !important;
+}
+
+/* ─── 23. TOAST NOTIFICATIONS ───────────────────────────────── */
+/* Used by improvements.js for save/copy confirmations */
+.wncore-toast {
+  position: fixed;
+  bottom: calc(var(--player-h) + 18px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--text);
+  color: var(--bg);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  padding: 10px 18px;
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  white-space: nowrap;
+  transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+}
+.wncore-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.wncore-toast.success { background: #16a34a; color: #fff; }
+.wncore-toast.error   { background: var(--accent); color: #fff; }
+.wncore-toast.warn    { background: #b45309; color: #fff; }
+
+/* ─── 24. LOADING SKELETON SHIMMER ──────────────────────────── */
+.skeleton-row td {
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 25%,
+    var(--surface) 50%,
+    var(--surface2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+  height: 48px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── 25. FOCUS VISIBLE: KEYBOARD ACCESSIBILITY ─────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─── 26. SCROLLBAR: REFINED ─────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text3);
+}
+
+/* ─── 27. SELECTION COLOUR ───────────────────────────────────── */
+::selection {
+  background: rgba(200,71,42,0.2);
+  color: var(--text);
+}
+
+/* ─── 28. GENRE CARDS (GENRES PAGE) ─────────────────────────── */
+#genre-cards-grid > * {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base), opacity var(--transition-base);
+}
+#genre-cards-grid > *:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+}
+
+/* ─── 29. PODCAST GRID ───────────────────────────────────────── */
+#podcast-grid > * {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base), border-color var(--transition-base);
+}
+#podcast-grid > *:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+  border-color: rgba(200,71,42,0.15);
+}
+
+/* ─── 30. HEADER SCROLL SHRINK EFFECT ────────────────────────── */
+header {
+  transition: height var(--transition-base), box-shadow var(--transition-base);
+}
+header.compact {
+  height: 54px;
+}
+header.compact .logo-freq {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* ─── 31. BOTTOM MOBILE NAV ACTIVE INDICATOR ─────────────────── */
+/* Matches any mobile bottom nav that improvements.js might render */
+.bottom-nav-item.active svg {
+  color: var(--accent);
+}
+.bottom-nav-item {
+  transition: color var(--transition-fast), transform var(--transition-fast) var(--ease-spring);
+}
+.bottom-nav-item:active { transform: scale(0.88); }
+
+/* ─── 32. ABOUT PAGE STAT BOXES ──────────────────────────────── */
+#page-about [style*="background:var(--surface)"][style*="border-radius:12px"] {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base);
+}
+#page-about [style*="background:var(--surface)"][style*="border-radius:12px"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* ─── 33. SIGNAL CONNECTION BOX ──────────────────────────────── */
+.signal-conn-box {
+  transition: background var(--transition-base),
+              border-color var(--transition-base),
+              box-shadow var(--transition-base);
+}
+.signal-conn-box:hover {
+  border-color: rgba(200,71,42,0.25);
+  box-shadow: 0 0 16px rgba(200,71,42,0.06);
+}
+
+/* ─── 34. FAVOURITE BUTTON ───────────────────────────────────── */
+.np-ctrl-btn:first-child,
+.pb-btn:first-child {
+  transition: color var(--transition-fast) var(--ease-spring),
+              transform var(--transition-fast) var(--ease-spring) !important;
+}
+.np-ctrl-btn:first-child:hover,
+.pb-btn:first-child:hover {
+  color: var(--accent) !important;
+  transform: scale(1.2) !important;
+}
+.np-ctrl-btn.saved,
+.pb-btn.saved {
+  color: var(--accent) !important;
+}
+
+/* ─── 35. REDUCED MOTION: RESPECT PREFERS ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ticker-inner {
+    animation: none !important;
+  }
+}
