@@ -435,7 +435,7 @@ function renderTable(stations, tbodyId) {
   const tbody = document.getElementById(tbodyId);
   tbody.innerHTML = '';
   stations.forEach((s, i) => {
-    const tags = (s.tags||'').split(',').slice(0,2).filter(t=>t.trim()).map(t=>`<span class="st-tag">${t.trim()}</span>`).join('');
+    const tags = (s.tags||'').split(',').slice(0,2).filter(t=>t.trim()).map(t=>`<span class="st-tag">${escHtml(t.trim())}</span>`).join('');
     const emoji = getCountryEmoji(s.countrycode);
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -696,17 +696,19 @@ function toggleFavorite(btn) {
   btn.style.color = isNowActive ? '#e8753a' : '';
   // Persist to localStorage
   if(currentStation) {
-    const favs = JSON.parse(localStorage.getItem('wncore_favs')||'[]');
-    if(isNowActive) {
-      if(!favs.find(f=>f.url===currentStation.url)) {
-        favs.push({url:currentStation.url,name:currentStation.name,meta:currentStation.meta,emoji:currentStation.emoji||'📻'});
-        localStorage.setItem('wncore_favs', JSON.stringify(favs));
-        showToast && showToast('Station saved to Favourites', 'success');
+    try {
+      const favs = JSON.parse(localStorage.getItem('wncore_favs')||'[]');
+      if(isNowActive) {
+        if(!favs.find(f=>f.url===currentStation.url)) {
+          favs.push({url:currentStation.url,name:currentStation.name,meta:currentStation.meta,emoji:currentStation.emoji||'📻'});
+          localStorage.setItem('wncore_favs', JSON.stringify(favs));
+          showToast && showToast('Station saved to Favourites', 'success');
+        }
+      } else {
+        const idx = favs.findIndex(f=>f.url===currentStation.url);
+        if(idx>-1){ favs.splice(idx,1); localStorage.setItem('wncore_favs',JSON.stringify(favs)); }
       }
-    } else {
-      const idx = favs.findIndex(f=>f.url===currentStation.url);
-      if(idx>-1){ favs.splice(idx,1); localStorage.setItem('wncore_favs',JSON.stringify(favs)); }
-    }
+    } catch(e) { /* private browsing / storage quota — silent */ }
   }
 }
 function toggleSleepTimer(btn) {
@@ -842,7 +844,7 @@ async function doSearch(q) {
     stations.forEach(s => {
       const el = document.createElement('div'); el.className='search-result-item';
       const emoji = getCountryEmoji(s.countrycode);
-      el.innerHTML = `<div class="sr-icon">${emoji}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
+      el.innerHTML = `<div class="sr-icon">${emoji}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).map(t=>escHtml(t.trim())).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
       el.onclick = () => { playStation(s.url_resolved, s.name, s.country||'Unknown', emoji); closeSearch(); };
       results.appendChild(el);
     });
@@ -858,7 +860,7 @@ function showPage(id, linkEl) {
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('nav a, .mobile-nav a').forEach(a=>a.classList.remove('active'));
   if(linkEl) linkEl.classList.add('active');
-  if(!already) window.scrollTo({top:0,behavior:'smooth'});
+  if(!already) window.scrollTo({top:0,behavior:'instant'});
   if(id==='charts') loadChartsPage();
   if(id==='podcasts') loadPodcastsPage();
   if(id==='genres') loadGenrePage();
