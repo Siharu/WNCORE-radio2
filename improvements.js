@@ -2752,7 +2752,7 @@ if (document.readyState === 'loading') {
 // ─── MINI-PLAYER (docked on scroll) ──────────────────────────────────────
 (function initMiniPlayer() {
   const SCROLL_THRESHOLD = 320;
-  let _currentStation = null;
+  let _miniName = '— no signal —';
   let _isPlaying = false;
 
   // Create mini-player DOM
@@ -2772,23 +2772,52 @@ if (document.readyState === 'loading') {
   `;
   document.body.appendChild(mini);
 
-  // Scroll watcher
-  window.addEventListener('scroll', () => {
-    if (_currentStation && window.scrollY > SCROLL_THRESHOLD) {
+  // Update mini-player visibility based on scroll and station selection
+  function updateMiniVisibility() {
+    const hasStation = window._currentStationData && window._currentStationData.name;
+    const scrolledPast = window.scrollY > SCROLL_THRESHOLD;
+    if (hasStation && scrolledPast) {
       mini.classList.add('visible');
     } else {
       mini.classList.remove('visible');
     }
-  }, { passive: true });
+  }
 
-  // Sync with main player
-  const origPatch = window.patchPlayStationV2;
-  document.addEventListener('wncore-station-changed', (e) => {
-    _currentStation = e.detail?.name || '— receiving —';
-    document.getElementById('mini-name').textContent = _currentStation;
-    _isPlaying = true;
-    updateMiniIcons();
-  });
+  // Scroll watcher - show when station selected AND scrolled down
+  // Use non-passive listener and add periodic fallback check
+  let scrollTimeout;
+  const scrollCheck = () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(updateMiniVisibility, 10);
+  };
+  window.addEventListener('scroll', scrollCheck, false);
+  
+  // Fallback: also check on wheel and touch events since scroll may not fire reliably
+  window.addEventListener('wheel', scrollCheck, false);
+  window.addEventListener('touchmove', scrollCheck, { passive: true });
+  
+  // Periodic check as ultimate fallback
+  setInterval(updateMiniVisibility, 250);
+
+  // Direct patch of playStation if it exists
+  // Store reference to original and wrap it
+  const origPlayStation = window.playStation;
+  if (typeof origPlayStation === 'function') {
+    window.playStation = function(url, name, meta, emoji) {
+      // Call original
+      origPlayStation.call(this, url, name, meta, emoji);
+      
+      // Update mini-player
+      _miniName = name || '— receiving —';
+      const nameEl = document.getElementById('mini-name');
+      if (nameEl) nameEl.textContent = _miniName;
+      _isPlaying = true;
+      updateMiniIcons();
+      updateMiniVisibility();
+    };
+    // Mark as patched to avoid re-patching
+    window.playStation._miniPatched = true;
+  }
 
   window.__miniTogglePlay = function() {
     const audio = document.getElementById('radio-audio') || document.querySelector('audio');
@@ -2799,9 +2828,12 @@ if (document.readyState === 'loading') {
   };
 
   function updateMiniIcons() {
-    document.getElementById('mini-play-icon').style.display = _isPlaying ? 'none' : '';
-    document.getElementById('mini-pause-icon').style.display = _isPlaying ? '' : 'none';
-    document.getElementById('mini-wave').style.opacity = _isPlaying ? '1' : '0.3';
+    const playIcon = document.getElementById('mini-play-icon');
+    const pauseIcon = document.getElementById('mini-pause-icon');
+    if (playIcon) playIcon.style.display = _isPlaying ? 'none' : '';
+    if (pauseIcon) pauseIcon.style.display = _isPlaying ? '' : 'none';
+    const wave = document.getElementById('mini-wave');
+    if (wave) wave.style.opacity = _isPlaying ? '1' : '0.3';
   }
 })();
 
