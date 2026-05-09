@@ -4,7 +4,11 @@
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-const adminToken  = process.env.WNCORE_ADMIN_TOKEN || 'WNCORE_ADMIN';
+if (!process.env.WNCORE_ADMIN_TOKEN) {
+  module.exports = async (req, res) => res.status(503).json({ error: 'Admin token not configured' });
+  return;
+}
+const adminToken = process.env.WNCORE_ADMIN_TOKEN;
 
 // Vercel needs this to read raw body for multipart
 export const config = { api: { bodyParser: false } };
@@ -42,9 +46,16 @@ module.exports = async function handler(req, res) {
     const boundary = '--' + contentType.split('boundary=')[1];
     const parts = rawBody.toString('binary').split(boundary);
 
+    const ALLOWED_MIME = [
+      'image/jpeg','image/png','image/gif','image/webp','image/svg+xml',
+      'video/mp4','video/webm',
+      'audio/mpeg','audio/ogg','audio/wav','audio/aac',
+    ];
+    const MAX_SIZE = 25 * 1024 * 1024; // 25 MB
+
     let fileBuffer = null;
     let fileMime = 'application/octet-stream';
-    let destBucket = 'wncore-media';
+    const destBucket = 'wncore-media'; // never trust client — always hardcoded
     let destPath = null;
 
     for (const part of parts) {
@@ -62,9 +73,10 @@ module.exports = async function handler(req, res) {
         const rawValue = part.slice(bodyStart + 4, part.lastIndexOf('\r\n'));
 
         if (fieldName === 'bucket') {
-          destBucket = rawValue.trim();
+          // bucket is hardcoded — ignore client value
         } else if (fieldName === 'path') {
-          destPath = rawValue.trim();
+          // Sanitize: strip path traversal and leading slashes
+          destPath = rawValue.trim().replace(/\.\./g, '').replace(/^[\/]+/, '').slice(0, 256) || null;
         } else if (fieldName === 'file' && fileName) {
           if (mimeMatch) fileMime = mimeMatch[1].trim();
           if (!destPath) destPath = `uploads/${Date.now()}-${fileName}`;
@@ -74,6 +86,8 @@ module.exports = async function handler(req, res) {
     }
 
     if (!fileBuffer) return res.status(400).json({ error: 'No file found in request' });
+    if (!ALLOWED_MIME.includes(fileMime)) return res.status(400).json({ error: 'File type not allowed: ' + fileMime });
+    if (fileBuffer.length > MAX_SIZE) return res.status(400).json({ error: 'File too large (max 25 MB)' });
 
     // Upload to Supabase Storage
     const uploadUrl = `${supabaseUrl}/storage/v1/object/${destBucket}/${destPath}`;

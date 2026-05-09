@@ -4,7 +4,14 @@
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-const adminToken  = process.env.WNCORE_ADMIN_TOKEN || 'WNCORE_ADMIN';
+if (!process.env.WNCORE_ADMIN_TOKEN) {
+  module.exports = async (req, res) => {
+    if (req.method === 'GET') return res.status(200).json({});
+    return res.status(503).json({ error: 'Admin token not configured — set WNCORE_ADMIN_TOKEN in Vercel env vars' });
+  };
+  return;
+}
+const adminToken = process.env.WNCORE_ADMIN_TOKEN;
 
 const VALID_KEYS = new Set([
   'globe_bg_video',
