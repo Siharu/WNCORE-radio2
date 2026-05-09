@@ -46,7 +46,7 @@
 
   // Intercept action handlers
   try {
-    navigator.mediaSession.setActionHandler('play',  () => { audio.play(); });
+    navigator.mediaSession.setActionHandler('play',  () => { audio.play().catch(() => {}); });
     navigator.mediaSession.setActionHandler('pause', () => { audio.pause(); });
     navigator.mediaSession.setActionHandler('stop',  () => { audio.pause(); audio.src = ''; });
     navigator.mediaSession.setActionHandler('nexttrack', () => {
@@ -568,6 +568,7 @@
 
     addUserMsg(text);
     history.push({ role: 'user', content: text });
+    if (history.length > 40) history = history.slice(-40); // prevent unbounded growth
 
     const typing = addTyping();
 

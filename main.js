@@ -666,7 +666,7 @@ function togglePlay() {
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('playing')});
     stopProgressSync();
   } else {
-    audio.play(); isPlaying=true; setPlayIcon(true);
+    audio.play().catch(() => updateStatus('TAP TO PLAY')); isPlaying=true; setPlayIcon(true);
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('playing')});
     startProgressSync();
   }

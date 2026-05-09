@@ -2793,7 +2793,7 @@ if (document.readyState === 'loading') {
   window.__miniTogglePlay = function() {
     const audio = document.getElementById('radio-audio') || document.querySelector('audio');
     if (!audio) return;
-    if (audio.paused) { audio.play(); _isPlaying = true; }
+    if (audio.paused) { audio.play().catch(() => {}); _isPlaying = true; }
     else { audio.pause(); _isPlaying = false; }
     updateMiniIcons();
   };
