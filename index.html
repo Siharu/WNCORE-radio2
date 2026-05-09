@@ -226,7 +226,9 @@
 </nav>
 
 <!-- ══════════════ HOME PAGE ══════════════ -->
-<div id="page-home" class="page active">
+<div id="page-home" class="page active" style="position:relative;">
+<video id="home-hero-video" autoplay muted loop playsinline aria-hidden="true"
+  style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s;pointer-events:none;"></video>
 
 <div class="ticker-wrap" aria-label="Live broadcast ticker">
   <div class="ticker-label">LIVE</div>
@@ -477,8 +479,10 @@
 </div><!-- /page-home -->
 
 <!-- ══════════════ CHARTS PAGE ══════════════ -->
-<div id="page-charts" class="page">
-  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+<div id="page-charts" class="page" style="position:relative;">
+  <video id="charts-hero-video" autoplay muted loop playsinline aria-hidden="true"
+    style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1s;pointer-events:none;"></video>
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;">
     <div style="margin-bottom:28px;">
       <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Top Charts</div>
       <div style="font-size:0.8rem;color:var(--text3);">The most-listened stations on WNCORE right now, updated every hour.</div>
@@ -492,8 +496,10 @@
 </div>
 
 <!-- ══════════════ GENRES PAGE ══════════════ -->
-<div id="page-genres" class="page">
-  <div style="max-width:1100px;margin:0 auto;padding:40px 24px;">
+<div id="page-genres" class="page" style="position:relative;">
+  <video id="genre-hero-video" autoplay muted loop playsinline aria-hidden="true"
+    style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1s;pointer-events:none;"></video>
+  <div style="max-width:1100px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;">
     <div style="margin-bottom:28px;">
       <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Browse by Genre</div>
       <div style="font-size:0.8rem;color:var(--text3);">Every kind of sound, live from around the world.</div>
@@ -552,8 +558,10 @@
 </div>
 
 <!-- ══════════════ PODCASTS PAGE ══════════════ -->
-<div id="page-podcasts" class="page">
-  <div style="max-width:900px;margin:0 auto;padding:40px 24px;">
+<div id="page-podcasts" class="page" style="position:relative;">
+  <video id="podcasts-hero-video" autoplay muted loop playsinline aria-hidden="true"
+    style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1s;pointer-events:none;"></video>
+  <div style="max-width:900px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;">
     <div style="margin-bottom:28px;">
       <div style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;margin-bottom:5px;">Podcasts &amp; Talk Radio</div>
       <div style="font-size:0.8rem;color:var(--text3);">Curated talk radio and podcast streams from WNCORE's verified global network.</div>
@@ -636,7 +644,9 @@
   </div>
 </div>
 
-<div id="page-about" class="page">
+<div id="page-about" class="page" style="position:relative;">
+  <video id="about-bg-video" autoplay muted loop playsinline aria-hidden="true"
+    style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s;pointer-events:none;"></video>
   <div class="about-glitch-overlay" id="about-glitch-overlay"></div>
   <div id="about-eyes-container" style="display:none;position:fixed;width:200px;height:200px;z-index:100;pointer-events:none">
     <img src="images/eye-base.png" id="about-eye-base" alt="" loading="lazy" style="width:100%;height:100%;object-fit:contain">
@@ -1035,7 +1045,7 @@
 ">
   <video id="ghuul-video" autoplay muted playsinline
     style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;">
-    <source src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
+    <source id="ghuul-video-src" src="https://srxppxenkasomlrgyavr.supabase.co/storage/v1/object/public/notmytower/ghuul.mp4" type="video/mp4">
   </video>
   <div id="ghuul-static" style="
     position:absolute;inset:0;
@@ -1366,6 +1376,91 @@
             </div>
           </div>
 
+          <!-- GENRE PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">GENRE PAGE</div>
+            <div class="admin-preview-thumb" id="prev-genre_hero_video">
+              <div class="admin-preview-placeholder">🎵 GENRE PAGE BACKGROUND<br><span>Full-screen ambient behind genre cards</span></div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>GENRE PAGE BACKGROUND VIDEO</div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-genre-hero-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-genre-hero-url','genre_hero_video')">↑ UPLOAD</button>
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('genre_hero_video','admin-genre-hero-url')">SAVE</button>
+              </div>
+              <div class="admin-field-status" id="status-genre_hero_video"></div>
+            </div>
+          </div>
+
+          <!-- CHARTS PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">CHARTS PAGE</div>
+            <div class="admin-preview-thumb" id="prev-charts_hero_video">
+              <div class="admin-preview-placeholder">📊 CHARTS PAGE BACKGROUND<br><span>Full-screen ambient behind top charts table</span></div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>CHARTS PAGE BACKGROUND VIDEO</div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-charts-hero-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-charts-hero-url','charts_hero_video')">↑ UPLOAD</button>
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('charts_hero_video','admin-charts-hero-url')">SAVE</button>
+              </div>
+              <div class="admin-field-status" id="status-charts_hero_video"></div>
+            </div>
+          </div>
+
+          <!-- PODCASTS PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">PODCASTS PAGE</div>
+            <div class="admin-preview-thumb" id="prev-podcasts_hero_video">
+              <div class="admin-preview-placeholder">🎙 PODCASTS PAGE BACKGROUND<br><span>Full-screen ambient behind podcast list</span></div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>PODCASTS PAGE BACKGROUND VIDEO</div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-podcasts-hero-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-podcasts-hero-url','podcasts_hero_video')">↑ UPLOAD</button>
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('podcasts_hero_video','admin-podcasts-hero-url')">SAVE</button>
+              </div>
+              <div class="admin-field-status" id="status-podcasts_hero_video"></div>
+            </div>
+          </div>
+
+          <!-- ABOUT PAGE -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">ABOUT PAGE</div>
+            <div class="admin-preview-thumb" id="prev-about_bg_video">
+              <div class="admin-preview-placeholder">📡 ABOUT PAGE BACKGROUND<br><span>Ambient video behind the about section</span></div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>ABOUT PAGE BACKGROUND VIDEO</div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-about-bg-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-about-bg-url','about_bg_video')">↑ UPLOAD</button>
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('about_bg_video','admin-about-bg-url')">SAVE</button>
+              </div>
+              <div class="admin-field-status" id="status-about_bg_video"></div>
+            </div>
+          </div>
+
+          <!-- HOME HERO (optional extra) -->
+          <div class="admin-page-block">
+            <div class="admin-page-block-label">HOME PAGE — HERO SECTION</div>
+            <div class="admin-preview-thumb" id="prev-home_hero_video">
+              <div class="admin-preview-placeholder">🏠 HOME HERO VIDEO<br><span>Background behind the main player / hero area</span></div>
+            </div>
+            <div class="admin-card" style="margin:0">
+              <div class="admin-card-title"><div class="admin-card-title-dot"></div>HOME HERO BACKGROUND VIDEO</div>
+              <div class="admin-field-row" style="margin-top:10px">
+                <input type="url" id="admin-home-hero-url" class="admin-field-input admin-field-url" placeholder="https://...">
+                <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-home-hero-url','home_hero_video')">↑ UPLOAD</button>
+                <button class="admin-btn admin-btn-primary" onclick="adminSaveField('home_hero_video','admin-home-hero-url')">SAVE</button>
+              </div>
+              <div class="admin-field-status" id="status-home_hero_video"></div>
+            </div>
+          </div>
+
           <!-- hidden file input for uploads -->
           <input type="file" id="admin-upload-file-input" accept="video/*,image/*" style="display:none" onchange="adminHandleUpload(this)">
         </div>
@@ -1407,6 +1502,19 @@
               <button class="admin-btn admin-btn-primary" onclick="adminSaveField('eye_spooky_video','admin-eye-video-url')">SAVE</button>
             </div>
             <div class="admin-field-status" id="status-eye_spooky_video"></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-title"><div class="admin-card-title-dot"></div>GHUUL REVEAL VIDEO</div>
+            <div style="font-size:0.6rem;color:rgba(232,228,223,0.3);margin-top:6px;margin-bottom:10px">Fullscreen video that plays after the horror terminal sequence before redirect to siharu.vercel.app</div>
+            <div class="admin-preview-thumb" id="prev-ghuul_video_url" style="max-height:100px;margin-bottom:10px">
+              <div class="admin-preview-placeholder">💀 GHUUL VIDEO<br><span>Horror reveal after eye sequence</span></div>
+            </div>
+            <div class="admin-field-row">
+              <input type="url" id="admin-ghuul-video-url" class="admin-field-input admin-field-url" placeholder="https://...supabase.co/.../ghuul.mp4">
+              <button class="admin-btn admin-btn-ghost admin-upload-btn" onclick="adminTriggerUpload('admin-ghuul-video-url','ghuul_video_url')">↑ UPLOAD</button>
+              <button class="admin-btn admin-btn-primary" onclick="adminSaveField('ghuul_video_url','admin-ghuul-video-url')">SAVE</button>
+            </div>
+            <div class="admin-field-status" id="status-ghuul_video_url"></div>
           </div>
         </div>
 
@@ -1583,6 +1691,12 @@ async function adminPrefillFields() {
       'admin-spooky-text':            { key: 'eye_spooky_text',     isMedia: false },
       'admin-signal-text':            { key: 'signal_status_text',  isMedia: false },
       'admin-ticker-text':            { key: 'ticker_inject',       isMedia: false },
+      'admin-genre-hero-url':         { key: 'genre_hero_video',    isMedia: true  },
+      'admin-charts-hero-url':        { key: 'charts_hero_video',   isMedia: true  },
+      'admin-podcasts-hero-url':      { key: 'podcasts_hero_video', isMedia: true  },
+      'admin-about-bg-url':           { key: 'about_bg_video',      isMedia: true  },
+      'admin-ghuul-video-url':        { key: 'ghuul_video_url',     isMedia: true  },
+      'admin-home-hero-url':          { key: 'home_hero_video',     isMedia: true  },
     };
     Object.entries(MAP).forEach(([inputId, { key, isMedia }]) => {
       const val = cfg[key];
@@ -1850,6 +1964,71 @@ async function loadSiteConfig() {
     if (cfg.signal_status_text) {
       const el = document.getElementById('signal-conn-status');
       if (el) el.textContent = cfg.signal_status_text;
+    }
+
+    // Genre page background video
+    if (cfg.genre_hero_video) {
+      const vid = document.getElementById('genre-hero-video');
+      if (vid) {
+        vid.src = cfg.genre_hero_video;
+        vid.load();
+        vid.addEventListener('canplay', () => { vid.style.opacity = '0.18'; }, { once: true });
+        vid.play().catch(() => {});
+      }
+    }
+
+    // Charts page background video
+    if (cfg.charts_hero_video) {
+      const vid = document.getElementById('charts-hero-video');
+      if (vid) {
+        vid.src = cfg.charts_hero_video;
+        vid.load();
+        vid.addEventListener('canplay', () => { vid.style.opacity = '0.18'; }, { once: true });
+        vid.play().catch(() => {});
+      }
+    }
+
+    // Podcasts page background video
+    if (cfg.podcasts_hero_video) {
+      const vid = document.getElementById('podcasts-hero-video');
+      if (vid) {
+        vid.src = cfg.podcasts_hero_video;
+        vid.load();
+        vid.addEventListener('canplay', () => { vid.style.opacity = '0.18'; }, { once: true });
+        vid.play().catch(() => {});
+      }
+    }
+
+    // About page background video
+    if (cfg.about_bg_video) {
+      const vid = document.getElementById('about-bg-video');
+      if (vid) {
+        vid.src = cfg.about_bg_video;
+        vid.load();
+        vid.addEventListener('canplay', () => { vid.style.opacity = '0.12'; }, { once: true });
+        vid.play().catch(() => {});
+      }
+    }
+
+    // Home hero background video
+    if (cfg.home_hero_video) {
+      const vid = document.getElementById('home-hero-video');
+      if (vid) {
+        vid.src = cfg.home_hero_video;
+        vid.load();
+        vid.addEventListener('canplay', () => { vid.style.opacity = '0.18'; }, { once: true });
+        vid.play().catch(() => {});
+      }
+    }
+
+    // Ghuul reveal video — override the hardcoded source
+    if (cfg.ghuul_video_url) {
+      const src = document.getElementById('ghuul-video-src');
+      const vid = document.getElementById('ghuul-video');
+      if (src && vid) {
+        src.src = cfg.ghuul_video_url;
+        vid.load(); // preload so it's ready when horror triggers
+      }
     }
 
     // Ticker inject
