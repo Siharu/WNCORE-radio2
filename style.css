@@ -239,7 +239,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .genre-btn{flex-shrink:0;font-size:0.74rem;font-weight:500;padding:7px 14px;border-radius:18px;border:1px solid var(--border);background:var(--surface);color:var(--text2);cursor:pointer;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
 .genre-btn svg{width:12px;height:12px;opacity:0.7}
 .genre-btn:hover{border-color:rgba(0,0,0,0.2);color:var(--text)}
-.genre-btn.active{background:var(--text);color:#fff;border-color:var(--text)}
+.genre-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .genre-btn.active svg{opacity:1}
 
 /* ── SECTION HEADERS ── */
@@ -1294,6 +1294,14 @@ body.dark-mode .bsb-sep { color:rgba(240,237,232,0.2); }
   border:1px solid var(--border);background:var(--surface2);
   color:var(--text);font-family:'DM Sans',sans-serif;cursor:pointer;
   max-width:260px;min-width:0;flex:1; /* flex:1 so it fills remaining row width */
+  -webkit-appearance:none;appearance:none;
+  color-scheme: light;
+}
+body.dark-mode .country-filter-select {
+  color-scheme: dark;
+  background:var(--surface2) !important;
+  color:var(--text) !important;
+  border-color:var(--border) !important;
 }
 @media (max-width:480px) {
   .country-filter-wrap { padding:8px 14px; }
@@ -1743,7 +1751,7 @@ body.dark-mode .amb-opt.active { background:#f0ede8;color:#0e0d0b; }
 }
 .lang-btn:hover { color:var(--text); }
 .lang-btn.active { background:var(--text);color:var(--bg);border-color:var(--text); }
-body.dark-mode .lang-btn.active { background:#f0ede8;color:#0e0d0b; }
+body.dark-mode .lang-btn.active { background:var(--accent);color:#fff;border-color:var(--accent); }
 
 /* ── 47. PLAYER WAVEFORM ── */
 .pb-waveform-canvas {
