@@ -591,3 +591,113 @@
     height: 34px !important;
   }
 }
+
+/* ─── MINI PLAYER: hide until playing ───────────────────────────── */
+/* Both mini player variants start hidden. JS patch below controls
+   visibility. This ensures neither shows in "standby" state.       */
+.mini-player {
+  display: none !important;
+}
+.mini-player.playing-visible {
+  display: flex !important;
+}
+
+/* ─── BOTTOM NAV: always pinned like YouTube ────────────────────── */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    /* Sit above player bar */
+    bottom: var(--player-h, 72px) !important;
+    z-index: 481 !important;
+    /* Never hide, never transform away */
+    transform: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    /* Safe area for home-bar phones */
+    padding-bottom: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--bg) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body.dark-mode .mobile-bottom-nav {
+    background: rgba(14,12,10,0.97) !important;
+  }
+  .mbn-btn {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-height: 52px !important;
+    padding: 8px 4px !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.3px !important;
+    color: var(--text3) !important;
+    border: none !important;
+    background: none !important;
+    cursor: pointer !important;
+    transition: color 0.15s !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .mbn-btn.active {
+    color: var(--accent) !important;
+  }
+  .mbn-btn svg {
+    width: 22px !important;
+    height: 22px !important;
+    flex-shrink: 0 !important;
+  }
+  /* Playing dot indicator */
+  .mbn-playing-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: var(--accent) !important;
+    position: absolute !important;
+    top: 6px !important;
+    right: calc(50% - 16px) !important;
+  }
+}
+
+/* ─── MINI PLAYER: sits above bottom nav, below nothing ─────────── */
+@media (max-width: 768px) {
+  .mini-player {
+    position: fixed !important;
+    bottom: calc(var(--player-h, 72px) + 52px) !important; /* above bottom nav */
+    left: 0 !important;
+    right: 0 !important;
+    height: 56px !important;
+    z-index: 479 !important;
+    /* Hidden by default — JS adds .playing-visible */
+    display: none !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border) !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08) !important;
+  }
+  .mini-player.playing-visible,
+  .mini-player[data-visible="true"] {
+    display: flex !important;
+  }
+  .mini-player-close {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    color: var(--text3) !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+}

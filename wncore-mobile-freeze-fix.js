@@ -228,3 +228,126 @@
   console.log('%cWNCORE freeze fix loaded', 'color:#c8472a;font-family:monospace;font-size:11px');
 
 })();
+
+
+// ─── MINI PLAYER: only show when actually playing, X dismisses ───────────────
+(function fixMiniPlayer() {
+  'use strict';
+
+  var _dismissed = false;
+
+  function getMini() {
+    return document.getElementById('mini-player');
+  }
+
+  // Show ONLY when audio is actually playing, not just selected
+  function syncMiniVisibility() {
+    var mini = getMini();
+    if (!mini) return;
+    if (_dismissed) return;
+
+    var audio = document.getElementById('audio') ||
+                document.getElementById('radio-audio') ||
+                document.querySelector('audio');
+    var isPlaying = audio && !audio.paused && !audio.ended && audio.readyState > 2;
+
+    if (isPlaying) {
+      mini.classList.add('playing-visible');
+      // Also handle improvements.js .visible class
+      mini.classList.add('visible');
+      // Handle index.html data-visible attribute
+      mini.setAttribute('data-visible', 'true');
+    } else {
+      mini.classList.remove('playing-visible');
+      mini.classList.remove('visible');
+      mini.setAttribute('data-visible', 'false');
+    }
+  }
+
+  // Wire to audio events
+  function wireAudio() {
+    var audio = document.getElementById('audio') ||
+                document.getElementById('radio-audio') ||
+                document.querySelector('audio');
+    if (!audio) { setTimeout(wireAudio, 300); return; }
+
+    audio.addEventListener('playing', syncMiniVisibility);
+    audio.addEventListener('pause',   syncMiniVisibility);
+    audio.addEventListener('ended',   syncMiniVisibility);
+    audio.addEventListener('error',   syncMiniVisibility);
+    audio.addEventListener('waiting', syncMiniVisibility);
+    audio.addEventListener('stalled', syncMiniVisibility);
+  }
+
+  // Patch the close button to set _dismissed and fully hide
+  function wireCloseBtn() {
+    var mini = getMini();
+    if (!mini) { setTimeout(wireCloseBtn, 400); return; }
+
+    // Find or create close button
+    var closeBtn = mini.querySelector('.mini-player-close, [aria-label="Close mini-player"], [aria-label="close"]');
+    if (!closeBtn) {
+      // Add one if missing (the index.html version doesn't have one)
+      closeBtn = document.createElement('button');
+      closeBtn.setAttribute('aria-label', 'Close mini player');
+      closeBtn.style.cssText = [
+        'background:none;border:none;cursor:pointer',
+        'color:var(--text3);padding:8px;margin-left:auto',
+        'font-size:14px;line-height:1;flex-shrink:0',
+        'min-width:36px;min-height:36px;display:flex',
+        'align-items:center;justify-content:center;border-radius:8px',
+      ].join(';');
+      closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      mini.querySelector('.mini-player-content, div') && mini.querySelector('.mini-player-content, div').appendChild(closeBtn)
+        || mini.appendChild(closeBtn);
+    }
+
+    closeBtn.onclick = function(e) {
+      e.stopPropagation();
+      _dismissed = true;
+      var m = getMini();
+      if (m) {
+        m.classList.remove('playing-visible', 'visible');
+        m.setAttribute('data-visible', 'false');
+      }
+    };
+
+    // Reset dismiss when a new station starts playing
+    var audio = document.getElementById('audio') ||
+                document.getElementById('radio-audio') ||
+                document.querySelector('audio');
+    if (audio) {
+      audio.addEventListener('playing', function() {
+        // Only reset dismiss if a new src was loaded (new station)
+        _dismissed = false;
+        syncMiniVisibility();
+      });
+    }
+  }
+
+  // Override improvements.js updateMiniVisibility to use our logic
+  function patchImprovementsVisibility() {
+    // improvements.js sets window.updateMiniVisibility — override it
+    var origUpdate = window.updateMiniVisibility;
+    window.updateMiniVisibility = function() {
+      syncMiniVisibility();
+    };
+  }
+
+  // Boot
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+      wireAudio();
+      setTimeout(wireCloseBtn, 600);
+      setTimeout(patchImprovementsVisibility, 800);
+    });
+  } else {
+    wireAudio();
+    setTimeout(wireCloseBtn, 600);
+    setTimeout(patchImprovementsVisibility, 800);
+  }
+
+  // Periodic sync as fallback
+  setInterval(syncMiniVisibility, 500);
+
+})();
