@@ -366,3 +366,53 @@
   setInterval(syncMiniVisibility, 500);
 
 })();
+
+
+// ─── PLAYER BAR: hide until playing on mobile ────────────────────────────────
+(function playerBarReveal() {
+  if (window.innerWidth > 768) return;
+
+  var _revealed = false;
+
+  function revealPlayer() {
+    if (_revealed) return;
+    _revealed = true;
+    var bar = document.querySelector('.player-bar');
+    var nav = document.querySelector('.mobile-bottom-nav');
+    if (bar) bar.classList.add('pb-active');
+    if (nav) nav.classList.add('pb-active');
+  }
+
+  // Also re-check on resize in case orientation changes
+  window.addEventListener('resize', function() {
+    if (window.innerWidth > 768) {
+      // Desktop — always show player bar
+      var bar = document.querySelector('.player-bar');
+      var nav = document.querySelector('.mobile-bottom-nav');
+      if (bar) { bar.classList.add('pb-active'); bar.style.transform = ''; bar.style.visibility = ''; }
+      if (nav) { nav.classList.add('pb-active'); }
+    }
+  }, { passive: true });
+
+  function wireAudioForPlayer() {
+    var audio = document.getElementById('audio') ||
+                document.getElementById('radio-audio') ||
+                document.querySelector('audio');
+    if (!audio) { setTimeout(wireAudioForPlayer, 300); return; }
+
+    audio.addEventListener('playing', revealPlayer);
+
+    // Also reveal if smart-resume loads a station on page load
+    setTimeout(function() {
+      var pbName = document.getElementById('pb-name');
+      if (pbName && pbName.textContent &&
+          pbName.textContent !== 'Network Standby' &&
+          pbName.textContent !== 'Select a station' &&
+          pbName.textContent.trim() !== '') {
+        revealPlayer();
+      }
+    }, 1200);
+  }
+
+  wireAudioForPlayer();
+})();

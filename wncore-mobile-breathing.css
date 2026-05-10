@@ -708,3 +708,58 @@
     cursor: pointer !important;
   }
 }
+
+/* ─── HEADER: prevent backdrop-filter dark bleed in light mode ───── */
+/* lm-hero and other dark sections have background:#0a0a0c which
+   bleeds through the semi-transparent header backdrop-filter.
+   Force solid enough background on mobile so it never looks dark
+   in light mode regardless of what's scrolled behind it.           */
+@media (max-width: 768px) {
+  body:not(.dark-mode) header {
+    background: rgba(245, 243, 239, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body:not(.dark-mode) header.scrolled {
+    background: rgba(245, 243, 239, 0.99) !important;
+  }
+  /* Dark mode header — also ensure consistent */
+  body.dark-mode header {
+    background: rgba(14, 12, 10, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  /* Fix overflow hidden from wncore-mobile-fix.css clipping hamburger */
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+  }
+}
+
+/* ─── PLAYER BAR: hidden until playing on mobile ────────────────── */
+/* On mobile the player bar is hidden by default and slides up when
+   audio starts playing. Once shown it stays until page reload —
+   same pattern as Spotify/Apple Music mobile.
+   JS in wncore-mobile-freeze-fix.js handles the .pb-active class. */
+@media (max-width: 768px) {
+  .player-bar {
+    transform: translateY(100%) !important;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    /* Keep in DOM so bottom nav bottom value still works */
+    visibility: hidden;
+  }
+  .player-bar.pb-active {
+    transform: translateY(0) !important;
+    visibility: visible;
+  }
+  /* Bottom nav: sit at bottom when player hidden, above player when shown */
+  .mobile-bottom-nav {
+    bottom: 0 !important;
+    transition: bottom 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+  .mobile-bottom-nav.pb-active {
+    bottom: var(--player-h, 72px) !important;
+  }
+}
