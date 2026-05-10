@@ -520,3 +520,74 @@
     padding-bottom: env(safe-area-inset-bottom, 0px) !important;
   }
 }
+
+/* ─── HEADER: prevent hamburger clipping ────────────────────────── */
+/* header has fixed height + no overflow set, so flex children can
+   get clipped if header-right is too wide. Fix:
+   1. overflow:visible so nothing gets cut
+   2. hide space-hungry items that mobile.css might miss
+   3. tighten header-right gap                                      */
+@media (max-width: 768px) {
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+    /* Ensure inner content never exceeds header width */
+    min-width: 0;
+  }
+  .header-right {
+    gap: 6px !important;
+    flex-shrink: 0;
+    overflow: visible !important;
+    /* Prevent right side from being pushed off screen */
+    min-width: 0;
+  }
+  /* Hide sign-in button on mobile — it's in the mobile nav drawer */
+  .sign-in-btn {
+    display: none !important;
+  }
+  /* Hide theme toggle labels (they are display:none in mobile.css
+     but !important ensures nothing re-shows them)                 */
+  .theme-toggle-labels {
+    display: none !important;
+  }
+  /* Shrink theme toggle track slightly on mobile */
+  .theme-toggle-track {
+    width: 44px !important;
+    height: 24px !important;
+  }
+  .theme-toggle-thumb {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  body.dark-mode .theme-toggle-thumb {
+    transform: translateX(20px) !important;
+  }
+  /* Search button: ensure it's not hidden by any other rule */
+  .search-btn {
+    display: flex !important;
+    flex-shrink: 0;
+  }
+  /* Hamburger: always visible and never clipped */
+  .mobile-menu-btn {
+    display: flex !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 501 !important; /* above header z-index:500 */
+  }
+}
+
+/* Even tighter on very small phones */
+@media (max-width: 360px) {
+  .header-right {
+    gap: 4px !important;
+  }
+  .theme-toggle {
+    display: none !important;
+  }
+  .search-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}
