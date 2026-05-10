@@ -36,7 +36,6 @@
       ticking = true;
       requestAnimationFrame(() => {
         header.classList.toggle('scrolled', window.scrollY > 10);
-        header.classList.toggle('compact',  window.scrollY > 60);
         ticking = false;
       });
     }, { passive: true });

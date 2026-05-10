@@ -622,18 +622,9 @@ a:focus:not(:focus-visible) {
   border-color: rgba(200,71,42,0.15);
 }
 
-/* ─── 30. HEADER SCROLL SHRINK EFFECT ────────────────────────── */
-header {
-  transition: height var(--transition-base), box-shadow var(--transition-base);
-}
-header.compact {
-  height: 54px;
-}
-header.compact .logo-freq {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
-}
+/* ─── 30. HEADER SCROLL — no height shrink (causes clipping) ─── */
+/* compact class intentionally removed — height transition clips
+   the mobile menu at scroll position 0 before .compact fires    */
 
 /* ─── 31. BOTTOM MOBILE NAV ACTIVE INDICATOR ─────────────────── */
 /* Matches any mobile bottom nav that improvements.js might render */
