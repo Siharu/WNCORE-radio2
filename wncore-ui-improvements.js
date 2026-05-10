@@ -310,12 +310,14 @@
       .sr-hidden {
         opacity: 0;
         transform: translateY(16px);
+        pointer-events: none;
         transition: opacity 0.44s cubic-bezier(0.22,1,0.36,1),
                     transform 0.44s cubic-bezier(0.22,1,0.36,1);
       }
       .sr-visible {
         opacity: 1 !important;
         transform: none !important;
+        pointer-events: auto !important;
       }
     `;
     document.head.appendChild(revealStyle);
@@ -339,7 +341,7 @@
         }, Math.min(i * 45, 300));
         observer.unobserve(entry.target);
       });
-    }, { threshold: 0.06, rootMargin: '0px 0px -24px 0px' });
+    }, { threshold: 0.06, rootMargin: '0px 0px 0px 0px' });
 
     function wireReveal() {
       document.querySelectorAll(SELECTORS).forEach(el => {
