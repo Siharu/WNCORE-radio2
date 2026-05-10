@@ -101,6 +101,7 @@
 <link rel="stylesheet" href="wncore-mobile-fix.css">
 <link rel="stylesheet" href="wncore-bugfix.css">
 <link rel="stylesheet" href="wncore-ui-improvements.css">
+<link rel="stylesheet" href="wncore-mobile-breathing.css">
 </head>
 <body>
 
@@ -937,6 +938,9 @@
     </button>
     <button class="mini-player-btn mini-player-next" onclick="skipStation(1)" aria-label="Next station">
       <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+    </button>
+    <button class="mini-player-close" onclick="(function(){var m=document.getElementById('mini-player');m.classList.remove('playing-visible','visible');m.setAttribute('data-visible','false');window._miniDismissed=true;})()" aria-label="Close mini player" style="background:none;border:none;cursor:pointer;color:var(--text3);padding:8px;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px;flex-shrink:0;margin-left:auto;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
     </button>
   </div>
 </div>
@@ -2063,6 +2067,7 @@ document.addEventListener('DOMContentLoaded', loadSiteConfig);
 <script src="wncore-constellation.js" defer></script>
 <script src="wncore-bugfix.js" defer></script>
 <script src="rare-events.js" defer></script>
+<script src="wncore-mobile-freeze-fix.js" defer></script>
 <script src="wncore-ui-improvements.js" defer></script>
 
 <script>
