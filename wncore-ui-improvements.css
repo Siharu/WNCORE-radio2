@@ -53,12 +53,16 @@ nav a:hover svg {
 
 /* ─── 3. PLAYER BAR — HEAVILY IMPROVED ──────────────────────── */
 .player-bar {
-  background: rgba(14, 12, 10, 0.98) !important;
-  border-top: 1px solid rgba(255,255,255,0.08) !important;
-  backdrop-filter: blur(32px) saturate(1.5) !important;
-  -webkit-backdrop-filter: blur(32px) saturate(1.5) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
   transition: transform var(--transition-slow) var(--ease-out);
 }
+/* Dark mode: always dark */
+body.dark-mode .player-bar {
+  background: rgba(14, 12, 10, 0.98) !important;
+  border-top: 1px solid rgba(255,255,255,0.08) !important;
+}
+/* Light mode: always light */
 body:not(.dark-mode) .player-bar {
   background: rgba(248, 246, 242, 0.97) !important;
   border-top: 1px solid rgba(0,0,0,0.09) !important;
@@ -783,4 +787,33 @@ a:focus:not(:focus-visible) {
   body.dark-mode .logo-mark {
     color: var(--text) !important;
   }
+}
+
+/* ─── DARK MODE: explicit header + player bar backgrounds ───────────
+   Overrides any rule that tries to make these light in dark mode.
+   Uses body.dark-mode for high specificity — wins over style.css,
+   mobile.css, and any injected <style> tags.                       */
+body.dark-mode header {
+  background: rgba(14, 12, 10, 0.97) !important;
+  border-bottom-color: rgba(255,255,255,0.07) !important;
+  color: var(--text) !important;
+}
+body.dark-mode header.scrolled {
+  background: rgba(14, 13, 11, 0.99) !important;
+}
+body.dark-mode .logo-mark { color: #f0ede8 !important; }
+body.dark-mode .logo-freq { color: var(--accent) !important; }
+body.dark-mode .live-dot  { color: var(--green) !important; }
+body.dark-mode .minimal-btn { color: var(--text2) !important; }
+body.dark-mode .search-btn  { color: var(--text2) !important; }
+body.dark-mode .sign-in-btn { color: var(--text) !important; border-color: var(--border) !important; }
+body.dark-mode .mobile-menu-btn { color: var(--text) !important; }
+
+/* Light mode: explicit as well */
+body:not(.dark-mode) header {
+  background: rgba(245, 243, 239, 0.97) !important;
+  border-bottom-color: rgba(0,0,0,0.08) !important;
+}
+body:not(.dark-mode) header.scrolled {
+  background: rgba(245, 243, 239, 0.99) !important;
 }
