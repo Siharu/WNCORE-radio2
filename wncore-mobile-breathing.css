@@ -598,6 +598,13 @@
 .mini-player {
   display: none !important;
 }
+/* Block ALL show states unless .playing-visible is set by our JS */
+.mini-player.visible:not(.playing-visible) {
+  display: none !important;
+}
+.mini-player[data-visible="true"]:not(.playing-visible) {
+  display: none !important;
+}
 .mini-player.playing-visible {
   display: flex !important;
 }

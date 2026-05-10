@@ -236,6 +236,21 @@
 
   var _dismissed = false;
 
+  // Immediately hide both mini player variants on load —
+  // nothing should show until audio actually plays
+  (function hideOnLoad() {
+    function killMini() {
+      document.querySelectorAll('#mini-player, .mini-player').forEach(function(m) {
+        m.classList.remove('playing-visible', 'visible');
+        m.setAttribute('data-visible', 'false');
+      });
+    }
+    killMini();
+    // Also kill after improvements.js appends its own version (~800ms)
+    setTimeout(killMini, 900);
+    setTimeout(killMini, 1800);
+  })();
+
   function getMini() {
     return document.getElementById('mini-player');
   }
