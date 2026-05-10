@@ -15,8 +15,8 @@
 
 /* ─── 2. ENHANCED HEADER ────────────────────────────────────── */
 header {
-  backdrop-filter: blur(24px) saturate(1.4);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   transition: box-shadow var(--transition-base) var(--ease-out),
               background var(--transition-base);
 }
@@ -684,5 +684,103 @@ a:focus:not(:focus-visible) {
   }
   .ticker-inner {
     animation: none !important;
+  }
+}
+
+/* ─── DESKTOP HEADER: tighter, more refined ─────────────────────── */
+@media (min-width: 769px) {
+  /* Logo: slightly bolder presence */
+  .logo-mark {
+    font-size: 1.25rem !important;
+    letter-spacing: -0.3px !important;
+  }
+  .logo-freq {
+    font-size: 0.55rem !important;
+    padding: 2px 5px !important;
+  }
+
+  /* Nav: tighter gap, slightly smaller text */
+  #main-nav {
+    gap: 2px !important;
+  }
+  #main-nav a {
+    font-size: 0.78rem !important;
+    padding: 6px 10px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: var(--text2) !important;
+    text-decoration: none !important;
+    transition: color 0.15s, background 0.15s !important;
+    white-space: nowrap;
+  }
+  #main-nav a:hover {
+    color: var(--text) !important;
+    background: var(--surface2) !important;
+  }
+  #main-nav a.active {
+    color: var(--text) !important;
+    background: var(--surface2) !important;
+    font-weight: 500 !important;
+  }
+  #main-nav a svg {
+    width: 13px !important;
+    height: 13px !important;
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+  #main-nav a:hover svg,
+  #main-nav a.active svg {
+    opacity: 1;
+  }
+
+  /* Header-right: tighter */
+  .header-right {
+    gap: 8px !important;
+  }
+
+  /* Live dot: cleaner pill */
+  .live-dot {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.3px !important;
+    padding: 3px 8px !important;
+    border-radius: 20px !important;
+  }
+
+  /* MIN button: more refined */
+  .minimal-btn {
+    font-size: 0.6rem !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* Theme toggle: cleaner labels */
+  .theme-toggle-labels {
+    font-size: 0.55rem !important;
+    gap: 0 !important;
+    flex-direction: column !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Sign in: cleaner */
+  .sign-in-btn {
+    font-size: 0.75rem !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Dark mode: ensure logo and nav text are crisp */
+  body.dark-mode #main-nav a {
+    color: var(--text3) !important;
+  }
+  body.dark-mode #main-nav a:hover,
+  body.dark-mode #main-nav a.active {
+    color: var(--text) !important;
+    background: var(--surface2) !important;
+  }
+  body.dark-mode .logo-mark {
+    color: var(--text) !important;
   }
 }
