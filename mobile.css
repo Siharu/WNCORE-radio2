@@ -3003,3 +3003,1035 @@ html, body {
     bottom: var(--player-h, 72px) !important;
   }
 }
+/* ═══════════════════════════════════════════════════════ */
+/* MOBILE FIX — merged from wncore-mobile-fix.css          */
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   WNCORE — COMPREHENSIVE MOBILE FIX
+   File: wncore-mobile-fix.css
+   Load last (after p5-transitions.css)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── CONSTELLATION CANVAS ────────────────────────────────────────── */
+/* Default hidden; JS creates and shows it on mobile only */
+#wnc-constellation {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+@media (max-width: 768px) {
+  #wnc-constellation {
+    display: block;
+  }
+
+  /* Hide WebGL globe on mobile — replaced by constellation */
+  #globe-container {
+    display: none !important;
+  }
+
+  .globe-section {
+    height: 300px !important;
+  }
+
+  /* Full-width overlay: text gradient from bottom */
+  .globe-overlay-left {
+    width: 100% !important;
+    background: linear-gradient(
+      to top,
+      rgba(3, 7, 18, 0.97) 0%,
+      rgba(3, 7, 18, 0.6) 55%,
+      transparent 100%
+    ) !important;
+    justify-content: flex-end !important;
+    padding: 16px 16px 18px !important;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .globe-hint {
+    display: none !important;
+  }
+
+  /* Fixed: single display value — use -webkit-box for line clamping */
+  .globe-sub {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.7rem !important;
+    margin-bottom: 10px !important;
+  }
+}
+
+/* ── BODY: bottom clearance for player + bottom nav ─────────────── */
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ── HEADER: full-width, no overflow ────────────────────────────── */
+@media (max-width: 768px) {
+  header {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .header-inner {
+    padding: 0 14px;
+    gap: 10px;
+  }
+}
+
+/* ── GENRE STRIP: horizontal scroll, no wrapping ─────────────────── */
+@media (max-width: 768px) {
+  .genre-strip-wrap {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .genre-strip {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    gap: 6px !important;
+    padding: 8px 14px !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .genre-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .genre-btn {
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;
+    white-space: nowrap;
+    font-size: 0.72rem !important;
+    padding: 6px 12px !important;
+    min-height: 36px;
+  }
+}
+
+/* ── STATION TABLE ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .station-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .station-table .col-country,
+  .station-table .col-bitrate,
+  .station-table th:nth-child(4),
+  .station-table td:nth-child(4),
+  .station-table th:nth-child(5),
+  .station-table td:nth-child(5) {
+    display: none !important;
+  }
+
+  .station-table td {
+    padding: 10px 8px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .station-row {
+    min-height: 52px !important;
+  }
+
+  .play-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+
+/* ── PAGE CONTENT: no horizontal overflow ────────────────────────── */
+@media (max-width: 768px) {
+  .page-wrap {
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+}
+
+/* ── TOUCH TARGETS: 44px minimum ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .fav-btn,
+  .share-btn,
+  .play-btn,
+  .mobile-menu-btn,
+  .scroll-top-btn,
+  .mbn-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* ── MOBILE NAV DRAWER: safe-area aware ──────────────────────────── */
+@media (max-width: 768px) {
+  .mobile-nav {
+    bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── TICKER ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ticker-wrap {
+    max-width: 100vw;
+    overflow: hidden;
+  }
+}
+
+/* ── FEATURED CARDS: single column on small screens ─────────────── */
+@media (max-width: 600px) {
+  .featured-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .featured-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px !important;
+    min-height: 64px;
+  }
+}
+
+/* ── RECOMMENDATIONS GRID: 2-col ─────────────────────────────────── */
+@media (max-width: 480px) {
+  .rec-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+
+/* ── SEARCH MODAL ────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .search-modal {
+    padding: 12px !important;
+  }
+
+  .search-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+  }
+
+  .search-results {
+    max-height: 60vh !important;
+  }
+}
+
+/* ── PLAYER BAR: safe area ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .player-bar {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(var(--player-h) + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+/* ── LIVE MUSIC + FOOTER: clear bottom controls ──────────────────── */
+@media (max-width: 768px) {
+  .lm-wrap {
+    padding-bottom: calc(var(--player-h) + 56px + 24px) !important;
+  }
+
+  .wncore-footer {
+    padding-bottom: calc(var(--player-h) + 56px + 8px) !important;
+    margin-bottom: 0 !important;
+  }
+}
+
+/* ── TYPOGRAPHY ──────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .section-title,
+  .page-title {
+    font-size: 1.4rem !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* MOBILE BREATHING — merged from wncore-mobile-breathing.css */
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════
+   WNCORE — MOBILE BREATHING ROOM
+   Load LAST in <head>, after wncore-ui-improvements.css
+   Inspired by iOS/Android music player spatial conventions:
+   — generous thumb zones (min 48px)
+   — card-based layouts with clear gutters
+   — layered bottom sheet feel for the player
+   — content never touches screen edges
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── ROOT: more comfortable baseline on small screens ──────────── */
+@media (max-width: 768px) {
+  :root {
+    --mobile-gutter: 16px;
+    --mobile-card-gap: 12px;
+    --mobile-section-gap: 28px;
+  }
+}
+@media (max-width: 400px) {
+  :root {
+    --mobile-gutter: 14px;
+    --mobile-card-gap: 10px;
+    --mobile-section-gap: 24px;
+  }
+}
+
+/* ─── PAGE WRAP: more comfortable padding ────────────────────────── */
+@media (max-width: 768px) {
+  .page-wrap {
+    padding: 20px var(--mobile-gutter) !important;
+    gap: var(--mobile-section-gap) !important;
+  }
+}
+
+/* ─── SECTION HEADERS: more room above ──────────────────────────── */
+@media (max-width: 768px) {
+  .section-header {
+    margin-bottom: 14px !important;
+    padding: 0 2px;
+  }
+  .section-title {
+    font-size: 1rem !important;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* ─── FEATURED CARDS: proper card height + breathing ────────────── */
+@media (max-width: 768px) {
+  .featured-row {
+    gap: var(--mobile-card-gap) !important;
+    margin-bottom: 8px !important;
+  }
+  .featured-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+    min-height: 72px;
+  }
+  /* Single column: give the card horizontal room */
+  .featured-row:has(.featured-card:only-child) .featured-card,
+  .featured-row .featured-card:first-child:last-child {
+    padding: 18px !important;
+  }
+}
+
+/* ─── REC CARDS ──────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .rec-grid {
+    gap: var(--mobile-card-gap) !important;
+  }
+  .rec-card {
+    padding: 14px 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  .rc-name { font-size: 0.82rem !important; }
+  .rc-meta { font-size: 0.65rem !important; }
+}
+
+/* ─── STATION TABLE: roomier rows ───────────────────────────────── */
+@media (max-width: 768px) {
+  .station-table td {
+    padding: 13px 6px !important;
+  }
+  .station-table thead th {
+    padding: 8px 6px !important;
+    font-size: 0.6rem !important;
+    letter-spacing: 1.2px;
+  }
+  .st-name {
+    font-size: 0.84rem !important;
+    line-height: 1.35 !important;
+  }
+  .st-meta {
+    font-size: 0.65rem !important;
+    margin-top: 2px !important;
+  }
+  /* Play button: full 48px touch target */
+  .st-play-btn {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+
+/* ─── PLAYER BAR: iOS/Android inspired layered feel ─────────────── */
+@media (max-width: 768px) {
+  .player-bar {
+    /* Slightly taller for comfortable thumb reach */
+    --player-h: 72px;
+    padding: 0 16px !important;
+    border-radius: 20px 20px 0 0 !important;
+    /* Subtle top border arc effect */
+    border-top: 1.5px solid rgba(255,255,255,0.1) !important;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.25) !important;
+  }
+  body:not(.dark-mode) .player-bar {
+    border-top: 1.5px solid rgba(0,0,0,0.07) !important;
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.1) !important;
+  }
+
+  /* Drag handle pill — like iOS lock screen player */
+  .player-bar::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  body:not(.dark-mode) .player-bar::before {
+    background: rgba(0,0,0,0.12);
+  }
+
+  /* Art: slightly bigger on mobile */
+  .pb-art {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+  .pb-art img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 10px !important;
+  }
+
+  /* Station info: more room */
+  .pb-station {
+    max-width: calc(100vw - 200px) !important;
+    overflow: hidden;
+  }
+  .pb-name {
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+  }
+  .pb-meta {
+    font-size: 0.6rem !important;
+    margin-top: 2px !important;
+    opacity: 0.7;
+  }
+
+  /* Controls: comfortable spacing */
+  .pb-controls {
+    gap: 4px !important;
+  }
+  .pb-btn {
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+  }
+  .pb-play {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 50% !important;
+  }
+
+  /* Progress bar: bigger tap area with pseudo padding */
+  .pb-bar-wrap {
+    padding: 8px 0 !important;
+    cursor: pointer;
+  }
+  .pb-bar {
+    height: 3px !important;
+  }
+  .pb-bar:active { height: 5px !important; }
+}
+
+/* ─── MOBILE BOTTOM NAV: iOS home-bar safety ────────────────────── */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .mbn-btn {
+    min-height: 48px !important;
+    padding: 6px 12px !important;
+  }
+  /* Active state: cleaner pill indicator */
+  .mbn-btn.active {
+    color: var(--accent) !important;
+  }
+  .mbn-btn.active svg {
+    filter: drop-shadow(0 0 4px rgba(200,71,42,0.4));
+  }
+}
+
+/* ─── SIDEBAR ON MOBILE: card grid feel ─────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar {
+    gap: var(--mobile-card-gap) !important;
+  }
+  .sidebar-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+  /* NP card: horizontal layout like Spotify mini widget */
+  .sidebar-card.np-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+}
+
+/* ─── GENRE STRIP: bigger pills ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .genre-strip {
+    padding: 4px var(--mobile-gutter) 8px !important;
+    gap: 8px !important;
+    /* smooth horizontal scroll */
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .genre-strip::-webkit-scrollbar { display: none; }
+  .genre-btn {
+    padding: 8px 16px !important;
+    font-size: 0.72rem !important;
+    border-radius: 24px !important;
+    scroll-snap-align: start;
+    white-space: nowrap;
+    min-height: 36px;
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+
+/* ─── SEARCH MODAL: bottom-sheet feel ───────────────────────────── */
+@media (max-width: 600px) {
+  .search-modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .search-box {
+    border-radius: 20px 20px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 85dvh !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
+    /* drag handle */
+    padding-top: 20px !important;
+    position: relative;
+  }
+  .search-box::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 3px;
+  }
+  .search-input-wrap {
+    margin: 0 0 12px !important;
+  }
+  .search-results {
+    max-height: calc(85dvh - 120px) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .search-result-item {
+    padding: 14px 16px !important;
+    min-height: 56px;
+  }
+}
+
+/* ─── TRENDING ITEMS: more room ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .trending-item {
+    padding: 12px 10px !important;
+    border-radius: 10px;
+    min-height: 52px;
+  }
+  .tr-name { font-size: 0.82rem !important; }
+  .tr-meta { font-size: 0.65rem !important; }
+}
+
+/* ─── SECTION: consistent top spacing ───────────────────────────── */
+@media (max-width: 768px) {
+  .main-col > * + * {
+    margin-top: var(--mobile-section-gap);
+  }
+}
+
+/* ─── LIVE MUSIC HERO ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .lm-hero {
+    padding: 28px var(--mobile-gutter) 32px !important;
+  }
+  .lm-hero-title {
+    font-size: 1.8rem !important;
+    line-height: 1.15 !important;
+  }
+  .lm-ch-btn {
+    min-height: 44px !important;
+    padding: 10px 18px !important;
+    font-size: 0.75rem !important;
+  }
+  .lm-channels {
+    gap: 8px !important;
+    flex-wrap: wrap;
+  }
+}
+
+/* ─── ABOUT PAGE ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .about-wrap {
+    padding: 28px var(--mobile-gutter) 120px !important;
+  }
+  .about-title {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 12px !important;
+  }
+}
+
+/* ─── FAVORITES PAGE ─────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #page-favorites {
+    padding: 24px var(--mobile-gutter) 120px !important;
+  }
+  #fav-grid {
+    gap: var(--mobile-card-gap) !important;
+  }
+}
+
+/* ─── CHARTS / GENRES / PODCASTS ─────────────────────────────────── */
+@media (max-width: 768px) {
+  #page-charts > div,
+  #page-genres > div,
+  #page-podcasts > div {
+    padding: 24px var(--mobile-gutter) 120px !important;
+  }
+}
+
+/* ─── SIGN IN MODAL: full bottom sheet ──────────────────────────── */
+@media (max-width: 480px) {
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal-box {
+    border-radius: 24px 24px 0 0 !important;
+    padding: 28px var(--mobile-gutter) calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+  }
+  .modal-box::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 3px;
+  }
+  .modal-btn {
+    min-height: 52px !important;
+    border-radius: 14px !important;
+    font-size: 0.85rem !important;
+  }
+  .modal-input {
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    font-size: 0.9rem !important;
+    padding: 12px 16px !important;
+  }
+}
+
+/* ─── GLOBE SECTION: taller on mobile ───────────────────────────── */
+@media (max-width: 768px) {
+  .globe-section {
+    height: 300px !important;
+  }
+}
+
+/* ─── FOOTER: safe area bottom ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .wncore-footer {
+    padding-bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+  }
+}
+
+/* ─── TOAST: safe position on all phones ────────────────────────── */
+@media (max-width: 768px) {
+  .wncore-toast {
+    bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px) + 14px) !important;
+    font-size: 0.68rem !important;
+    padding: 10px 20px !important;
+    max-width: 85vw !important;
+  }
+  .toast-container {
+    bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px) + 18px) !important;
+  }
+}
+
+/* ─── SCROLLING: momentum + no tap delay ────────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+.page, .page-wrap, .search-results, .genre-strip, #fav-grid {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── PREVENT LAYOUT SHIFT DURING FONT LOAD ─────────────────────── */
+@media (max-width: 768px) {
+  body {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+
+/* ─── AI CHAT WIDGET: clear player bar + bottom nav ─────────────── */
+/* wncore-upgrades.js hardcodes bottom:100px (btn) and bottom:154px
+   (panel) via an injected <style> tag. On mobile those values put
+   both elements behind the player bar (72px) + bottom nav (56px).
+   This file loads last so !important wins over everything.         */
+@media (max-width: 768px) {
+  /* FAB button: sit above bottom nav */
+  #wnc-chat-btn {
+    bottom: calc(var(--player-h, 72px) + 56px + 14px) !important;
+    right: 14px !important;
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  /* Panel: full-width bottom-sheet when open */
+  #wnc-chat-panel {
+    bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 72px) - 56px - env(safe-area-inset-bottom, 0px)) !important;
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 72px) - 56px - env(safe-area-inset-bottom, 0px)) !important;
+    padding-top: 20px !important;
+    position: fixed !important;
+  }
+  /* Drag handle */
+  #wnc-chat-panel::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 32px !important;
+    height: 3px !important;
+    background: var(--border) !important;
+    border-radius: 3px !important;
+    pointer-events: none !important;
+  }
+
+  /* CLOSED: push fully below screen — not just opacity:0 */
+  #wnc-chat-panel:not(.open) {
+    transform: translateY(110%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: transform 0.28s cubic-bezier(0.4,0,1,1),
+                opacity 0.2s ease,
+                visibility 0s linear 0.28s !important;
+  }
+
+  /* OPEN: slide up smoothly */
+  #wnc-chat-panel.open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transition: transform 0.32s cubic-bezier(0.22,1,0.36,1),
+                opacity 0.22s ease,
+                visibility 0s linear 0s !important;
+  }
+
+  /* Input area: don't get obscured by iOS home bar */
+  #wnc-chat-form {
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+}
+
+/* ─── HEADER: prevent hamburger clipping ────────────────────────── */
+/* header has fixed height + no overflow set, so flex children can
+   get clipped if header-right is too wide. Fix:
+   1. overflow:visible so nothing gets cut
+   2. hide space-hungry items that mobile.css might miss
+   3. tighten header-right gap                                      */
+@media (max-width: 768px) {
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+    /* Ensure inner content never exceeds header width */
+    min-width: 0;
+  }
+  .header-right {
+    gap: 6px !important;
+    flex-shrink: 0;
+    overflow: visible !important;
+    /* Prevent right side from being pushed off screen */
+    min-width: 0;
+  }
+  /* Hide sign-in button on mobile — it's in the mobile nav drawer */
+  .sign-in-btn {
+    display: none !important;
+  }
+  /* Hide theme toggle labels (they are display:none in mobile.css
+     but !important ensures nothing re-shows them)                 */
+  .theme-toggle-labels {
+    display: none !important;
+  }
+  /* Shrink theme toggle track slightly on mobile */
+  .theme-toggle-track {
+    width: 44px !important;
+    height: 24px !important;
+  }
+  .theme-toggle-thumb {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  body.dark-mode .theme-toggle-thumb {
+    transform: translateX(20px) !important;
+  }
+  /* Search button: ensure it's not hidden by any other rule */
+  .search-btn {
+    display: flex !important;
+    flex-shrink: 0;
+  }
+  /* Hamburger: always visible and never clipped */
+  .mobile-menu-btn {
+    display: flex !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 501 !important; /* above header z-index:500 */
+  }
+}
+
+/* Even tighter on very small phones */
+@media (max-width: 360px) {
+  .header-right {
+    gap: 4px !important;
+  }
+  .theme-toggle {
+    display: none !important;
+  }
+  .search-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}
+
+/* ─── MINI PLAYER: hide until playing ───────────────────────────── */
+/* Both mini player variants start hidden. JS patch below controls
+   visibility. This ensures neither shows in "standby" state.       */
+.mini-player {
+  display: none !important;
+}
+/* Block ALL show states unless .playing-visible is set by our JS */
+.mini-player.visible:not(.playing-visible) {
+  display: none !important;
+}
+.mini-player[data-visible="true"]:not(.playing-visible) {
+  display: none !important;
+}
+.mini-player.playing-visible {
+  display: flex !important;
+}
+
+/* ─── BOTTOM NAV: always pinned like YouTube ────────────────────── */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    /* Sit above player bar */
+    bottom: var(--player-h, 72px) !important;
+    z-index: 481 !important;
+    /* Never hide, never transform away */
+    transform: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    /* Safe area for home-bar phones */
+    padding-bottom: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--bg) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body.dark-mode .mobile-bottom-nav {
+    background: rgba(14,12,10,0.97) !important;
+  }
+  .mbn-btn {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-height: 52px !important;
+    padding: 8px 4px !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.3px !important;
+    color: var(--text3) !important;
+    border: none !important;
+    background: none !important;
+    cursor: pointer !important;
+    transition: color 0.15s !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .mbn-btn.active {
+    color: var(--accent) !important;
+  }
+  .mbn-btn svg {
+    width: 22px !important;
+    height: 22px !important;
+    flex-shrink: 0 !important;
+  }
+  /* Playing dot indicator */
+  .mbn-playing-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: var(--accent) !important;
+    position: absolute !important;
+    top: 6px !important;
+    right: calc(50% - 16px) !important;
+  }
+}
+
+/* ─── MINI PLAYER: sits above bottom nav, below nothing ─────────── */
+@media (max-width: 768px) {
+  .mini-player {
+    position: fixed !important;
+    bottom: calc(var(--player-h, 72px) + 52px) !important; /* above bottom nav */
+    left: 0 !important;
+    right: 0 !important;
+    height: 56px !important;
+    z-index: 479 !important;
+    /* Hidden by default — JS adds .playing-visible */
+    display: none !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border) !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08) !important;
+  }
+  .mini-player.playing-visible,
+  .mini-player[data-visible="true"] {
+    display: flex !important;
+  }
+  .mini-player-close {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    color: var(--text3) !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+}
+
+/* ─── HEADER: prevent backdrop-filter dark bleed in light mode ───── */
+/* lm-hero and other dark sections have background:#0a0a0c which
+   bleeds through the semi-transparent header backdrop-filter.
+   Force solid enough background on mobile so it never looks dark
+   in light mode regardless of what's scrolled behind it.           */
+@media (max-width: 768px) {
+  body:not(.dark-mode) header {
+    background: rgba(245, 243, 239, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body:not(.dark-mode) header.scrolled {
+    background: rgba(245, 243, 239, 0.99) !important;
+  }
+  /* Dark mode header — also ensure consistent */
+  body.dark-mode header {
+    background: rgba(14, 12, 10, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  /* Fix overflow hidden from wncore-mobile-fix.css clipping hamburger */
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+  }
+}
+
+/* ─── PLAYER BAR: hidden until playing on mobile ────────────────── */
+/* On mobile the player bar is hidden by default and slides up when
+   audio starts playing. Once shown it stays until page reload —
+   same pattern as Spotify/Apple Music mobile.
+   JS in wncore-mobile-freeze-fix.js handles the .pb-active class. */
+@media (max-width: 768px) {
+  .player-bar {
+    transform: translateY(100%) !important;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    /* Keep in DOM so bottom nav bottom value still works */
+    visibility: hidden;
+  }
+  .player-bar.pb-active {
+    transform: translateY(0) !important;
+    visibility: visible;
+  }
+  /* Bottom nav: sit at bottom when player hidden, above player when shown */
+  .mobile-bottom-nav {
+    bottom: 0 !important;
+    transition: bottom 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+  .mobile-bottom-nav.pb-active {
+    bottom: var(--player-h, 72px) !important;
+  }
+}

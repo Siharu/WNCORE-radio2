@@ -4132,3 +4132,1966 @@ body:not(.dark-mode) header.scrolled {
 /* ── BUG 14: Theme panel clips on mobile ───────────────────────── */
 
 /* ── BUG 15: Scrobble panel clips on mobile ─────────────────────── */
+
+/* ═══════════════════════════════════════════════════════ */
+/* P5 TRANSITIONS — merged from p5-transitions.css         */
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   WNCORE — PERSONA 5 TRANSITION SYSTEM  v2
+   File: p5-transitions.css
+   Load after: horror_upgrade.css
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── WIPE OVERLAY ──────────────────────────────────────────────────────── */
+#p5-wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 9800;
+  pointer-events: none;
+  overflow: hidden;
+  /* Hidden at rest — only visible during active wipe */
+  visibility: hidden;
+}
+
+#p5-wipe.in,
+#p5-wipe.out {
+  visibility: visible;
+}
+
+#p5-wipe-a,
+#p5-wipe-b {
+  position: absolute;
+  top: -10%;
+  width: 70%;
+  height: 120%;
+  clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
+  transform: translateX(-115%);
+  will-change: transform;
+  transition: none;
+}
+
+#p5-wipe-a {
+  left: -5%;
+  background: #c8472a;
+}
+
+#p5-wipe-b {
+  left: 28%;
+  background: #1a1814;
+  opacity: 0.88;
+}
+
+/* IN: sweep from left to center */
+#p5-wipe.in #p5-wipe-a {
+  transition: transform 220ms cubic-bezier(0.86, 0, 0.07, 1);
+  transform: translateX(0%);
+}
+
+#p5-wipe.in #p5-wipe-b {
+  transition: transform 230ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition-delay: 20ms;
+  transform: translateX(0%);
+}
+
+/* OUT: sweep right off screen */
+#p5-wipe.out #p5-wipe-a {
+  transition: transform 200ms cubic-bezier(0.86, 0, 0.07, 1);
+  transform: translateX(115%);
+}
+
+#p5-wipe.out #p5-wipe-b {
+  transition: transform 210ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition-delay: 15ms;
+  transform: translateX(115%);
+}
+
+/* ── PAGE ENTER ANIMATION ──────────────────────────────────────────────── */
+.page.p5-enter {
+  animation: p5PageEnter 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
+
+@keyframes p5PageEnter {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* ── GENRE PILL — click stamp ripple ──────────────────────────────────── */
+.genre-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.genre-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #c8472a;
+  opacity: 0;
+  border-radius: inherit;
+  transform: scale(0.5);
+  pointer-events: none;
+}
+
+.genre-btn.p5-stamp::after {
+  animation: p5Stamp 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes p5Stamp {
+  0%   { opacity: 0.3;  transform: scale(0.5);  }
+  60%  { opacity: 0.1;  transform: scale(1.04); }
+  100% { opacity: 0;    transform: scale(1.04); }
+}
+
+.genre-btn.active {
+  background: var(--text, #1a1814);
+  color: #fff;
+  border-color: var(--text, #1a1814);
+  box-shadow: 2px 2px 0 #c8472a;
+  transform: translate(-1px, -1px);
+  transition: all 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── HEADER NAV — red slash on active link ─────────────────────────────── */
+header nav a {
+  position: relative;
+}
+
+header nav a.active::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%) skewX(-18deg);
+  width: 3px;
+  height: 60%;
+  background: #c8472a;
+  border-radius: 1px;
+  animation: p5NavSlash 160ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes p5NavSlash {
+  from { height: 0; opacity: 0; }
+  to   { height: 60%; opacity: 1; }
+}
+
+/* ── MOBILE ONLY — all bottom nav overrides inside media query ─────────── */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    border-top: 1px solid rgba(200, 71, 42, 0.3) !important;
+    box-shadow: 0 -1px 0 rgba(200, 71, 42, 0.08),
+                0 -8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .mbn-btn.active {
+    color: var(--text);
+  }
+
+  .mbn-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) skewX(-10deg);
+    width: 24px;
+    height: 2px;
+    background: #c8472a;
+    border-radius: 0 0 2px 2px;
+    animation: p5TabSlash 160ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes p5TabSlash {
+    from { width: 0; opacity: 0; }
+    to   { width: 24px; opacity: 1; }
+  }
+
+  .mbn-btn {
+    position: relative;
+  }
+
+  .mbn-btn::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 8px;
+    background: rgba(200, 71, 42, 0.15);
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+  }
+
+  .mbn-btn.p5-tap::after {
+    animation: p5BtnTap 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes p5BtnTap {
+    0%   { opacity: 1; transform: scale(0.4); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+
+  .genre-strip-wrap {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 200;
+    background: var(--bg);
+  }
+
+  body.dark-mode .genre-strip-wrap {
+    background: var(--bg);
+  }
+}
+
+/* ── SAFE-AREA (notched phones) ────────────────────────────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+      height: calc(56px + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* BUG FIXES — merged from wncore-bugfix.css               */
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════════════
+   WNCORE — BUG FIX PATCH
+   File: wncore-bugfix.css
+   Fixes visual bugs found in audit. Load after wncore-mobile-fix.css
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── BUG 1: Chat button hidden behind mobile bottom nav ─────────────
+   #wnc-chat-btn uses hardcoded bottom:100px which doesn't account for
+   the 56px mobile-bottom-nav sitting above the player bar.
+   On mobile it needs: player-h + 56px (bottom nav) + gap           */
+@media (max-width: 768px) {
+  #wnc-chat-btn {
+    bottom: calc(var(--player-h, 76px) + 56px + 12px) !important;
+    right: 14px !important;
+  }
+
+  #wnc-chat-panel {
+    bottom: calc(var(--player-h, 76px) + 56px + 66px) !important;
+    right: 14px !important;
+    /* Constrain height so it doesn't go above header */
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 80px) !important;
+  }
+}
+
+/* ── BUG 2: Background-play banner hidden behind mobile bottom nav ──
+   #bgplay-banner uses hardcoded bottom:80px                        */
+@media (max-width: 768px) {
+  #bgplay-banner {
+    bottom: calc(var(--player-h, 76px) + 56px + 10px) !important;
+  }
+}
+
+/* ── BUG 3: Swipe hint toast hidden behind bottom nav ───────────────
+   The inline swipe hint in playStation uses bottom:90px            */
+@media (max-width: 768px) {
+  /* The swipe hint is appended to body with inline style — override
+     via attribute selector on the style content isn't possible,
+     so we target it by its unique text positioning characteristics.
+     It has no class/id, so we patch it in JS (wncore-bugfix.js).  */
+}
+
+/* ── BUG 4: wncore-toast clips behind player on mobile ─────────────
+   horror_upgrade.css sets bottom: calc(var(--player-h, 76px) + 16px)
+   which doesn't account for the 56px mobile bottom nav             */
+@media (max-width: 768px) {
+  .wncore-toast {
+    bottom: calc(var(--player-h, 76px) + 56px + 12px) !important;
+  }
+}
+
+/* ── BUG 5: toast-container (improvements.js system) also clips ─────
+   .toast-container bottom: calc(var(--player-h,80px) + 32px)
+   on mobile needs bottom nav offset                                */
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: calc(var(--player-h, 76px) + 56px + 16px) !important;
+    left: 12px !important;
+  }
+}
+
+/* ── BUG: Globe container inline style overrides our display:none ───────
+   main.js sets globeContainer.style.cssText on mobile, which beats CSS.
+   We hide it by making it zero-size and invisible instead, which works
+   even against inline styles via visibility and pointer-events.          */
+@media (max-width: 768px) {
+  #globe-container {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    z-index: -1 !important;
+  }
+}
+
+/* ── BUG: Chat panel peeks above bottom nav when hidden on mobile ───────
+   The panel uses transform:translateY(100%) to hide, but its bottom
+   anchor (player-h + 56px) means 100% of panel height doesn't fully
+   clear the bottom nav. Use translateY(110%) + visibility:hidden.       */
+@media (max-width: 768px) {
+  #wnc-chat-panel:not(.open) {
+    transform: translateY(110%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  #wnc-chat-panel.open {
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+
+/* ── BUG 7: Scroll-top btn inside .skel block ───────────────────────
+   In style.css, .scroll-top-btn is nested INSIDE the .skel ruleset
+   which means it only applies when inside a skeleton. The standalone
+   mobile override at mobile.css:353 has the correct position.
+   No action needed — confirmed mobile.css rule is correct.        */
+
+/* ── BUG 8: page-wrap paddingBottom overridden by JS ───────────────
+   fixMobileHome() sets pageWrap.style.paddingBottom = '20px' via JS
+   which overrides our CSS. We cannot !important inline styles but
+   we can ensure our body padding-bottom handles scroll clearance.
+   The page-wrap paddingBottom of 20px from JS is fine since body
+   itself has the correct padding-bottom. No further action needed. */
+
+/* ── BUG 9: Mini-player z-index conflicts on mobile ────────────────
+   The draggable mini-widget can overlap the bottom nav.            */
+@media (max-width: 768px) {
+  #wncore-mini-widget {
+    bottom: calc(var(--player-h, 76px) + 56px + 8px) !important;
+    /* Prevent it from being dragged under the bottom nav */
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 16px);
+  }
+}
+
+/* ── BUG 10: Station modal on mobile needs bottom clearance ─────── */
+@media (max-width: 768px) {
+  .station-modal-panel,
+  #station-modal {
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px) !important;
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ── BUG 11: Similar stations panel clips on mobile ─────────────── */
+@media (max-width: 768px) {
+  #similar-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+    max-height: calc(60dvh) !important;
+  }
+}
+
+/* ── BUG 12: EQ panel clips on mobile ───────────────────────────── */
+@media (max-width: 768px) {
+  #eq-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ── BUG 13: Ambient panel clips on mobile ──────────────────────── */
+@media (max-width: 768px) {
+  #ambient-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ── BUG 14: Theme panel clips on mobile ───────────────────────── */
+@media (max-width: 768px) {
+  #theme-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ── BUG 15: Scrobble panel clips on mobile ─────────────────────── */
+@media (max-width: 768px) {
+  #scrobble-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* UI IMPROVEMENTS — merged from wncore-ui-improvements.css*/
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════════
+   WNCORE RADIO — UI/UX IMPROVEMENTS PATCH
+   Drop this into index.html AFTER all other stylesheets:
+   <link rel="stylesheet" href="wncore-ui-improvements.css">
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── 1. SMOOTHER TRANSITIONS THROUGHOUT ────────────────────── */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 120ms;
+  --transition-base: 200ms;
+  --transition-slow: 380ms;
+}
+
+/* ─── 2. ENHANCED HEADER ────────────────────────────────────── */
+header {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  transition: box-shadow var(--transition-base) var(--ease-out),
+              background var(--transition-base);
+}
+header.scrolled {
+  box-shadow: 0 1px 0 var(--border), 0 4px 20px rgba(0,0,0,0.06);
+}
+body.dark-mode header.scrolled {
+  box-shadow: 0 1px 0 rgba(255,255,255,0.06), 0 4px 24px rgba(0,0,0,0.35);
+}
+
+/* Nav links: smooth underline indicator */
+nav a {
+  position: relative;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+nav a.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+nav a svg {
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+nav a:hover svg {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ─── 3. PLAYER BAR — HEAVILY IMPROVED ──────────────────────── */
+.player-bar {
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  transition: transform var(--transition-slow) var(--ease-out);
+}
+/* Dark mode: always dark */
+body.dark-mode .player-bar {
+  background: rgba(14, 12, 10, 0.98) !important;
+  border-top: 1px solid rgba(255,255,255,0.08) !important;
+}
+/* Light mode: always light */
+body:not(.dark-mode) .player-bar {
+  background: rgba(248, 246, 242, 0.97) !important;
+  border-top: 1px solid rgba(0,0,0,0.09) !important;
+}
+body:not(.dark-mode) .pb-name { color: var(--text) !important; }
+body:not(.dark-mode) .pb-meta { color: var(--text2) !important; }
+body:not(.dark-mode) .pb-btn  { color: var(--text2) !important; }
+body:not(.dark-mode) .pb-btn:hover { color: var(--text) !important; }
+body:not(.dark-mode) .pb-play {
+  background: var(--text) !important;
+  color: var(--bg) !important;
+}
+body:not(.dark-mode) .pb-bar {
+  background: rgba(0,0,0,0.1) !important;
+}
+body:not(.dark-mode) .pb-bar-fill {
+  background: var(--text) !important;
+}
+body:not(.dark-mode) .pb-time {
+  color: var(--text3) !important;
+}
+body:not(.dark-mode) .pb-vol-icon svg {
+  color: var(--text2) !important;
+  stroke: var(--text2) !important;
+}
+
+/* Player art: pulsing ring when playing */
+.pb-art {
+  position: relative;
+  border-radius: 10px !important;
+  overflow: visible !important;
+  transition: transform var(--transition-base) var(--ease-spring);
+}
+.pb-art.playing::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 12px;
+  border: 1.5px solid var(--accent);
+  opacity: 0.5;
+  animation: pb-ring-pulse 2.4s ease-in-out infinite;
+}
+@keyframes pb-ring-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 0.15; transform: scale(1.06); }
+}
+
+/* Play button: springy scale */
+.pb-play {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              background var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+.pb-play:hover {
+  transform: scale(1.1) !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+}
+.pb-play:active { transform: scale(0.95) !important; }
+
+/* Progress bar: thicker + interactive hover */
+.pb-bar {
+  height: 4px !important;
+  border-radius: 4px !important;
+  position: relative;
+  transition: height var(--transition-fast);
+}
+.pb-bar:hover { height: 6px !important; }
+.pb-bar-fill {
+  height: 100% !important;
+  border-radius: 4px !important;
+  transition: width 0.3s linear;
+}
+
+/* Volume slider: custom track */
+.pb-vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.15);
+  outline: none;
+  cursor: pointer;
+  transition: height var(--transition-fast);
+}
+body:not(.dark-mode) .pb-vol-slider {
+  background: rgba(0,0,0,0.12);
+}
+.pb-vol-slider:hover { height: 5px; }
+.pb-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  transition: transform var(--transition-fast) var(--ease-spring);
+}
+body:not(.dark-mode) .pb-vol-slider::-webkit-slider-thumb {
+  background: var(--text);
+}
+.pb-vol-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.3);
+}
+
+/* pb-btn hover: subtle background */
+.pb-btn {
+  border-radius: 8px !important;
+  padding: 7px !important;
+  transition: color var(--transition-fast), background var(--transition-fast),
+              transform var(--transition-fast) var(--ease-spring) !important;
+}
+.pb-btn:hover {
+  background: rgba(255,255,255,0.08) !important;
+  transform: scale(1.08) !important;
+}
+body:not(.dark-mode) .pb-btn:hover {
+  background: rgba(0,0,0,0.06) !important;
+}
+.pb-btn:active { transform: scale(0.92) !important; }
+
+/* ─── 4. FEATURED CARDS — PREMIUM FEEL ──────────────────────── */
+.featured-card {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base) var(--ease-out),
+              border-color var(--transition-base) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+}
+.featured-card:hover {
+  transform: translateY(-5px) !important;
+  box-shadow: 0 20px 48px rgba(0,0,0,0.12) !important;
+  border-color: rgba(200,71,42,0.2) !important;
+}
+body.dark-mode .featured-card:hover {
+  box-shadow: 0 20px 48px rgba(0,0,0,0.5) !important;
+  border-color: rgba(200,71,42,0.25) !important;
+}
+.featured-card:active { transform: translateY(-2px) scale(0.99) !important; }
+
+/* ARG card variant: subtle red glow */
+.featured-card--arg {
+  background: rgba(200,71,42,0.03) !important;
+}
+.featured-card--arg:hover {
+  border-color: rgba(200,71,42,0.35) !important;
+  box-shadow: 0 20px 48px rgba(200,71,42,0.1), 0 0 0 1px rgba(200,71,42,0.15) !important;
+}
+
+/* ─── 5. STATION TABLE ROWS ──────────────────────────────────── */
+.station-table tr {
+  transition: background var(--transition-fast) !important;
+  border-radius: 8px;
+}
+.station-table tr:hover .st-name {
+  color: var(--accent);
+}
+.station-table tr:hover .st-play-btn {
+  background: var(--text) !important;
+  color: #fff !important;
+  border-color: var(--text) !important;
+  transform: scale(1.1);
+}
+.st-play-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+
+/* ─── 6. GENRE STRIP PILLS ───────────────────────────────────── */
+.genre-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+  font-weight: 500;
+}
+.genre-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.genre-btn.active {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+.genre-btn:active { transform: scale(0.97); }
+
+/* ─── 7. SIDEBAR CARDS ───────────────────────────────────────── */
+.sidebar-card {
+  transition: box-shadow var(--transition-base) var(--ease-out) !important;
+}
+.sidebar-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+body.dark-mode .sidebar-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* Now Playing art: smoother wave animation */
+.np-wave span {
+  animation: wave 1.4s ease-in-out infinite !important;
+  min-height: 3px;
+}
+.np-wave span:nth-child(2) { animation-delay: .15s !important; }
+.np-wave span:nth-child(3) { animation-delay: .28s !important; }
+.np-wave span:nth-child(4) { animation-delay: .42s !important; }
+.np-wave span:nth-child(5) { animation-delay: .55s !important; }
+.np-wave span:nth-child(6) { animation-delay: .68s !important; }
+.np-wave span:nth-child(7) { animation-delay: .8s !important; }
+.np-wave span:nth-child(8) { animation-delay: .92s !important; }
+@keyframes wave {
+  0%, 100% { height: 3px; opacity: 0.4; }
+  50%       { height: 18px; opacity: 1; }
+}
+
+/* Play button in sidebar: spring */
+.np-play-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              opacity var(--transition-fast) !important;
+}
+.np-play-btn:hover { transform: scale(1.1) !important; }
+.np-play-btn:active { transform: scale(0.93) !important; }
+
+/* Trending items */
+.trending-item {
+  border-radius: 8px;
+  padding: 9px 8px !important;
+  margin: 0 -8px;
+  transition: background var(--transition-fast), padding-left var(--transition-fast) var(--ease-out) !important;
+}
+.trending-item:hover {
+  background: var(--surface2);
+  padding-left: 14px !important;
+}
+.tr-rank {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text3);
+  width: 18px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.tr-listeners {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text3);
+  white-space: nowrap;
+  padding: 2px 6px;
+  background: var(--surface2);
+  border-radius: 8px;
+}
+
+/* ─── 8. SEARCH MODAL ────────────────────────────────────────── */
+.search-modal-backdrop {
+  transition: opacity var(--transition-base) !important;
+}
+.search-modal-backdrop.open {
+  animation: modal-fade-in var(--transition-base) var(--ease-out);
+}
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.search-box {
+  animation: search-slide-in var(--transition-slow) var(--ease-out);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.2) !important;
+}
+@keyframes search-slide-in {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.search-result-item {
+  transition: background var(--transition-fast),
+              padding-left var(--transition-fast) var(--ease-out) !important;
+}
+.search-result-item:hover { padding-left: 24px !important; }
+.search-filter-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.search-filter-btn:hover { transform: translateY(-1px); }
+.search-filter-btn.active { transform: none; }
+
+/* ─── 9. REC CARDS ───────────────────────────────────────────── */
+.rec-card {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base) var(--ease-out),
+              border-color var(--transition-base) !important;
+}
+.rec-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.09) !important;
+  border-color: rgba(200,71,42,0.18) !important;
+}
+.rec-card:active { transform: scale(0.98) !important; }
+
+/* ─── 10. SIGN-IN MODAL ──────────────────────────────────────── */
+.modal-box {
+  animation: modal-slide-in var(--transition-slow) var(--ease-out) !important;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.18) !important;
+}
+@keyframes modal-slide-in {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              opacity var(--transition-fast) !important;
+}
+.modal-btn:hover {
+  opacity: 0.88 !important;
+  transform: translateY(-1px);
+}
+.modal-btn:active { transform: scale(0.97); }
+.modal-input {
+  transition: border-color var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+}
+.modal-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(200,71,42,0.1);
+}
+.oauth-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              box-shadow var(--transition-fast) !important;
+}
+.oauth-btn:hover { transform: translateY(-2px) !important; }
+.oauth-btn:active { transform: scale(0.96) !important; }
+
+/* ─── 11. TICKER: SMOOTHER GRADIENT FADE-EDGES ───────────────── */
+.ticker-track {
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, black 4%, black 96%, transparent 100%);
+}
+
+/* ─── 12. GLOBE SECTION ──────────────────────────────────────── */
+.globe-section {
+  transition: opacity var(--transition-slow);
+}
+.globe-overlay-left {
+  background: linear-gradient(to right,
+    rgba(3,7,18,0.97) 55%,
+    rgba(3,7,18,0.7) 80%,
+    transparent 100%) !important;
+}
+.globe-stat-num {
+  transition: color var(--transition-fast);
+}
+.globe-stat:hover .globe-stat-num { color: var(--accent2); }
+
+/* ─── 13. SECTION HEADERS ────────────────────────────────────── */
+.section-more {
+  transition: color var(--transition-fast), transform var(--transition-fast) !important;
+  display: inline-block;
+}
+.section-more:hover {
+  color: var(--accent) !important;
+  transform: translateX(3px);
+}
+
+/* ─── 14. MOBILE MINI PLAYER ─────────────────────────────────── */
+.mini-player {
+  transition: transform var(--transition-slow) var(--ease-out) !important;
+}
+.mini-player-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              color var(--transition-fast) !important;
+}
+.mini-player-btn:hover { transform: scale(1.12) !important; }
+.mini-player-btn:active { transform: scale(0.9) !important; }
+
+/* ─── 15. MOBILE NAV ─────────────────────────────────────────── */
+.mobile-nav a {
+  transition: background var(--transition-fast),
+              color var(--transition-fast),
+              transform var(--transition-fast) var(--ease-out),
+              padding-left var(--transition-fast) var(--ease-out) !important;
+}
+.mobile-nav a:active { transform: scale(0.98) !important; }
+
+/* ─── 16. THEME TOGGLE ───────────────────────────────────────── */
+.theme-toggle-track {
+  transition: background var(--transition-base), border-color var(--transition-base) !important;
+}
+.theme-toggle-thumb {
+  transition: transform 0.32s var(--ease-spring),
+              background var(--transition-base) !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.2) !important;
+}
+.theme-toggle:hover .theme-toggle-track {
+  border-color: var(--accent);
+}
+
+/* ─── 17. SIGN IN BUTTON ─────────────────────────────────────── */
+.sign-in-btn {
+  transition: transform var(--transition-fast) var(--ease-spring),
+              opacity var(--transition-fast),
+              box-shadow var(--transition-fast) !important;
+}
+.sign-in-btn:hover {
+  opacity: 0.88 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+.sign-in-btn:active { transform: scale(0.96) !important; }
+
+/* ─── 18. LIVE DOT: SMOOTHER PULSE ──────────────────────────── */
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(22,163,74,0.2); }
+  50%       { box-shadow: 0 0 0 6px rgba(22,163,74,0.08); }
+}
+
+/* ─── 19. PAGE TRANSITIONS ───────────────────────────────────── */
+.page.active {
+  animation: page-enter 0.28s var(--ease-out) both;
+}
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── 20. ARG CARD ───────────────────────────────────────────── */
+.arg-card {
+  transition: box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.arg-card:hover {
+  box-shadow: 0 0 24px rgba(200,71,42,0.12), inset 0 0 24px rgba(200,71,42,0.04);
+  border-color: rgba(200,71,42,0.3);
+}
+
+/* ─── 21. LIVE MUSIC PAGE ────────────────────────────────────── */
+.lm-ch-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.lm-ch-btn:hover { transform: translateY(-1px); }
+.lm-ch-btn:active { transform: scale(0.96); }
+.lm-ctrl-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.lm-ctrl-btn:hover { transform: scale(1.12) !important; }
+.lm-ctrl-btn:active { transform: scale(0.9) !important; }
+.lm-grid .lm-channel-card {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.lm-grid .lm-channel-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.12);
+}
+
+/* ─── 22. ADMIN PANEL: IMPROVED ──────────────────────────────── */
+.adm-submit-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.adm-submit-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 16px rgba(200,71,42,0.2) !important;
+}
+.adm-submit-btn:active { transform: scale(0.97) !important; }
+.adm-action-btn {
+  transition: all var(--transition-fast) var(--ease-spring) !important;
+}
+.adm-action-btn:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(200,71,42,0.15) !important;
+}
+.adm-danger-btn {
+  transition: all var(--transition-fast) !important;
+}
+.adm-input:focus {
+  box-shadow: 0 0 0 3px rgba(200,71,42,0.12) !important;
+}
+
+/* ─── 23. TOAST NOTIFICATIONS ───────────────────────────────── */
+/* Used by improvements.js for save/copy confirmations */
+.wncore-toast {
+  position: fixed;
+  bottom: calc(var(--player-h) + 18px);
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: var(--text);
+  color: var(--bg);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.5px;
+  padding: 10px 18px;
+  border-radius: 22px;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.2);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  white-space: nowrap;
+  transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+}
+.wncore-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.wncore-toast.success { background: #16a34a; color: #fff; }
+.wncore-toast.error   { background: var(--accent); color: #fff; }
+.wncore-toast.warn    { background: #b45309; color: #fff; }
+
+/* ─── 24. LOADING SKELETON SHIMMER ──────────────────────────── */
+.skeleton-row td {
+  background: linear-gradient(
+    90deg,
+    var(--surface2) 25%,
+    var(--surface) 50%,
+    var(--surface2) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: 4px;
+  height: 48px;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── 25. FOCUS VISIBLE: KEYBOARD ACCESSIBILITY ─────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ─── 26. SCROLLBAR: REFINED ─────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text3);
+}
+
+/* ─── 27. SELECTION COLOUR ───────────────────────────────────── */
+::selection {
+  background: rgba(200,71,42,0.2);
+  color: var(--text);
+}
+
+/* ─── 28. GENRE CARDS (GENRES PAGE) ─────────────────────────── */
+#genre-cards-grid > * {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base), opacity var(--transition-base);
+}
+#genre-cards-grid > *:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.1);
+}
+
+/* ─── 29. PODCAST GRID ───────────────────────────────────────── */
+#podcast-grid > * {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base), border-color var(--transition-base);
+}
+#podcast-grid > *:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.08);
+  border-color: rgba(200,71,42,0.15);
+}
+
+/* ─── 30. HEADER SCROLL — no height shrink (causes clipping) ─── */
+/* compact class intentionally removed — height transition clips
+   the mobile menu at scroll position 0 before .compact fires    */
+
+/* ─── 31. BOTTOM MOBILE NAV ACTIVE INDICATOR ─────────────────── */
+/* Matches any mobile bottom nav that improvements.js might render */
+.bottom-nav-item.active svg {
+  color: var(--accent);
+}
+.bottom-nav-item {
+  transition: color var(--transition-fast), transform var(--transition-fast) var(--ease-spring);
+}
+.bottom-nav-item:active { transform: scale(0.88); }
+
+/* ─── 32. ABOUT PAGE STAT BOXES ──────────────────────────────── */
+#page-about [style*="background:var(--surface)"][style*="border-radius:12px"] {
+  transition: transform var(--transition-base) var(--ease-out),
+              box-shadow var(--transition-base);
+}
+#page-about [style*="background:var(--surface)"][style*="border-radius:12px"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+/* ─── 33. SIGNAL CONNECTION BOX ──────────────────────────────── */
+.signal-conn-box {
+  transition: background var(--transition-base),
+              border-color var(--transition-base),
+              box-shadow var(--transition-base);
+}
+.signal-conn-box:hover {
+  border-color: rgba(200,71,42,0.25);
+  box-shadow: 0 0 16px rgba(200,71,42,0.06);
+}
+
+/* ─── 34. FAVOURITE BUTTON ───────────────────────────────────── */
+.np-ctrl-btn:first-child,
+.pb-btn:first-child {
+  transition: color var(--transition-fast) var(--ease-spring),
+              transform var(--transition-fast) var(--ease-spring) !important;
+}
+.np-ctrl-btn:first-child:hover,
+.pb-btn:first-child:hover {
+  color: var(--accent) !important;
+  transform: scale(1.2) !important;
+}
+.np-ctrl-btn.saved,
+.pb-btn.saved {
+  color: var(--accent) !important;
+}
+
+/* ─── 35. REDUCED MOTION: RESPECT PREFERS ────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ticker-inner {
+    animation: none !important;
+  }
+}
+
+/* ─── DESKTOP HEADER: tighter, more refined ─────────────────────── */
+@media (min-width: 769px) {
+  /* Logo: slightly bolder presence */
+  .logo-mark {
+    font-size: 1.25rem !important;
+    letter-spacing: -0.3px !important;
+  }
+  .logo-freq {
+    font-size: 0.55rem !important;
+    padding: 2px 5px !important;
+  }
+
+  /* Nav: tighter gap, slightly smaller text */
+  #main-nav {
+    gap: 2px !important;
+  }
+  #main-nav a {
+    font-size: 0.78rem !important;
+    padding: 6px 10px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 5px !important;
+    color: var(--text2) !important;
+    text-decoration: none !important;
+    transition: color 0.15s, background 0.15s !important;
+    white-space: nowrap;
+  }
+  #main-nav a:hover {
+    color: var(--text) !important;
+    background: var(--surface2) !important;
+  }
+  #main-nav a.active {
+    color: var(--text) !important;
+    background: var(--surface2) !important;
+    font-weight: 500 !important;
+  }
+  #main-nav a svg {
+    width: 13px !important;
+    height: 13px !important;
+    opacity: 0.6;
+    flex-shrink: 0;
+  }
+  #main-nav a:hover svg,
+  #main-nav a.active svg {
+    opacity: 1;
+  }
+
+  /* Header-right: tighter */
+  .header-right {
+    gap: 8px !important;
+  }
+
+  /* Live dot: cleaner pill */
+  .live-dot {
+    font-size: 0.62rem !important;
+    letter-spacing: 0.3px !important;
+    padding: 3px 8px !important;
+    border-radius: 20px !important;
+  }
+
+  /* MIN button: more refined */
+  .minimal-btn {
+    font-size: 0.6rem !important;
+    padding: 4px 8px !important;
+    border-radius: 6px !important;
+    letter-spacing: 1px !important;
+  }
+
+  /* Theme toggle: cleaner labels */
+  .theme-toggle-labels {
+    font-size: 0.55rem !important;
+    gap: 0 !important;
+    flex-direction: column !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Sign in: cleaner */
+  .sign-in-btn {
+    font-size: 0.75rem !important;
+    padding: 6px 14px !important;
+    border-radius: 8px !important;
+  }
+
+  /* Dark mode: ensure logo and nav text are crisp */
+  body.dark-mode #main-nav a {
+    color: var(--text3) !important;
+  }
+  body.dark-mode #main-nav a:hover,
+  body.dark-mode #main-nav a.active {
+    color: var(--text) !important;
+    background: var(--surface2) !important;
+  }
+  body.dark-mode .logo-mark {
+    color: var(--text) !important;
+  }
+}
+
+/* ─── DARK MODE: explicit header + player bar backgrounds ───────────
+   Overrides any rule that tries to make these light in dark mode.
+   Uses body.dark-mode for high specificity — wins over style.css,
+   mobile.css, and any injected <style> tags.                       */
+body.dark-mode header {
+  background: rgba(14, 12, 10, 0.97) !important;
+  border-bottom-color: rgba(255,255,255,0.07) !important;
+  color: var(--text) !important;
+}
+body.dark-mode header.scrolled {
+  background: rgba(14, 13, 11, 0.99) !important;
+}
+body.dark-mode .logo-mark { color: #f0ede8 !important; }
+body.dark-mode .logo-freq { color: var(--accent) !important; }
+body.dark-mode .live-dot  { color: var(--green) !important; }
+body.dark-mode .minimal-btn { color: var(--text2) !important; }
+body.dark-mode .search-btn  { color: var(--text2) !important; }
+body.dark-mode .sign-in-btn { color: var(--text) !important; border-color: var(--border) !important; }
+body.dark-mode .mobile-menu-btn { color: var(--text) !important; }
+
+/* Light mode: explicit as well */
+body:not(.dark-mode) header {
+  background: rgba(245, 243, 239, 0.97) !important;
+  border-bottom-color: rgba(0,0,0,0.08) !important;
+}
+body:not(.dark-mode) header.scrolled {
+  background: rgba(245, 243, 239, 0.99) !important;
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* HORROR UPGRADES — merged from horror_upgrade.css        */
+/* ═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════
+   WNCORE RADIO — Horror Terminal Upgrade
+   Professional, cinematic, broadcast-facility aesthetic
+═══════════════════════════════════════════════════════ */
+
+/* ─── UPGRADED HORROR OVERLAY ─────────────────────────── */
+#horror-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  background: #000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+#horror-overlay.show {
+  display: flex;
+  animation: horror-fade-in 0.6s ease forwards;
+}
+@keyframes horror-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+/* CRT Screen effect behind terminal */
+#horror-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, rgba(180, 10, 30, 0.06) 0%, transparent 70%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(0, 0, 0, 0.15) 2px,
+      rgba(0, 0, 0, 0.15) 4px
+    );
+  pointer-events: none;
+  z-index: 0;
+  animation: crt-roll 12s linear infinite;
+}
+@keyframes crt-roll {
+  0% { background-position: 0 0; }
+  100% { background-position: 0 100px; }
+}
+
+/* ─── THE TERMINAL BOX ────────────────────────────────── */
+.horror-terminal {
+  position: relative;
+  z-index: 2;
+  font-family: 'DM Mono', 'Courier New', monospace;
+  font-size: 0.82rem;
+  line-height: 1.8;
+  letter-spacing: 0.06em;
+  text-align: left;
+  width: min(720px, 94vw);
+  padding: 0;
+  background: #020304;
+  border: 1px solid rgba(30, 100, 60, 0.25);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 0 80px rgba(20, 80, 40, 0.08),
+    0 40px 100px rgba(0,0,0,0.95);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+/* Facility header bar — strict, minimal */
+.horror-terminal-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: #030405;
+  border-bottom: 1px solid rgba(30, 100, 60, 0.2);
+}
+.horror-chrome-dots {
+  display: flex;
+  gap: 0;
+  align-items: center;
+}
+/* Replace colorful dots with classified badge */
+.horror-chrome-dot {
+  display: none;
+}
+.horror-chrome-dots::before {
+  content: '▮ RESTRICTED';
+  font-family: 'DM Mono', monospace;
+  font-size: 0.48rem;
+  letter-spacing: 3px;
+  color: rgba(200, 50, 40, 0.55);
+  border: 1px solid rgba(200, 50, 40, 0.2);
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+.horror-chrome-title {
+  font-size: 0.52rem;
+  letter-spacing: 2.5px;
+  color: rgba(140, 200, 160, 0.2);
+  font-family: 'DM Mono', monospace;
+  text-transform: uppercase;
+}
+.horror-chrome-badge {
+  font-size: 0.46rem;
+  letter-spacing: 2px;
+  padding: 2px 6px;
+  border: 1px solid rgba(200, 50, 40, 0.35);
+  border-radius: 2px;
+  color: rgba(200, 50, 40, 0.65);
+  font-family: 'DM Mono', monospace;
+  animation: badge-blink 2s step-end infinite;
+}
+@keyframes badge-blink {
+  0%, 80%, 100% { opacity: 1; }
+  82%, 86%, 90% { opacity: 0.2; }
+}
+
+/* Terminal body */
+.horror-terminal-body {
+  padding: 20px 24px 24px;
+  background: #020304;
+  min-height: 300px;
+  position: relative;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+/* Phosphor green glow — authentic CRT monitor feel */
+.horror-terminal-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 60% 40% at 50% 20%, rgba(20, 80, 40, 0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Scanline overlay */
+.horror-terminal-body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.06) 3px,
+    rgba(0, 0, 0, 0.06) 4px
+  );
+  pointer-events: none;
+  animation: scanline-drift 20s linear infinite;
+}
+@keyframes scanline-drift {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(40px); }
+}
+
+/* Individual terminal lines */
+.horror-terminal-body div {
+  position: relative;
+  z-index: 2;
+  font-size: 0.78rem;
+  color: rgba(120, 160, 130, 0.55);
+  letter-spacing: 0.05em;
+  padding: 0;
+  line-height: 1.75;
+}
+
+/* Status bar at bottom of terminal */
+.horror-status-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(30, 80, 50, 0.15);
+  font-size: 0.52rem;
+  color: rgba(80, 130, 90, 0.3);
+  letter-spacing: 2.5px;
+}
+.horror-status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(200, 50, 40, 0.6);
+  flex-shrink: 0;
+  animation: status-pulse 2s ease-in-out infinite;
+}
+@keyframes status-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; box-shadow: 0 0 6px rgba(200, 50, 40, 0.5); }
+}
+
+/* ─── TERMINAL LINE COLORS — cold, military phosphor palette ── */
+.ht-dim   { color: rgba(80, 120, 90, 0.35) !important; }
+.ht-norm  { color: rgba(120, 160, 130, 0.55) !important; }
+.ht-white { color: rgba(160, 200, 170, 0.85) !important; letter-spacing: 0.08em; }
+.ht-warn  { color: rgba(200, 160, 60, 0.75) !important; }
+.ht-red   { color: rgba(210, 60, 50, 0.9) !important; font-weight: 500; }
+.ht-alert {
+  color: rgba(220, 70, 50, 1) !important;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+.ht-ok    { color: rgba(60, 180, 90, 0.8) !important; }
+.ht-ps1   { color: rgba(60, 180, 90, 0.65) !important; font-weight: 500; }
+.ht-cmd   { color: rgba(140, 180, 200, 0.7) !important; }
+.ht-cursor {
+  display: inline-block;
+  width: 7px; height: 0.9em;
+  background: rgba(120, 180, 140, 0.8);
+  vertical-align: text-bottom;
+  animation: term-cursor-blink 0.9s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes term-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ─── UPGRADED DATA CORRUPT OVERLAY ──────────────────── */
+#data-corrupt-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #01020a;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+#data-corrupt-overlay.show { display: flex; }
+#data-corrupt-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(180, 0, 30, 0.025) 2px,
+    rgba(180, 0, 30, 0.025) 4px
+  );
+  pointer-events: none;
+  animation: corrupt-scan 6s linear infinite;
+}
+@keyframes corrupt-scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(8px); }
+}
+
+.corrupt-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(180, 0, 30, 0.03) 2px,
+    rgba(180, 0, 30, 0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+.corrupt-flicker {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 1;
+  animation: corrupt-flicker-anim 8s step-end infinite;
+}
+@keyframes corrupt-flicker-anim {
+  0%, 95%, 100% { opacity: 0; }
+  96% { opacity: 0.4; }
+  97% { opacity: 0; }
+  98% { opacity: 0.6; }
+  99% { opacity: 0; }
+}
+
+.corrupt-header {
+  position: relative;
+  z-index: 2;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.46rem;
+  color: rgba(180, 50, 40, 0.45);
+  letter-spacing: 5px;
+  text-align: center;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.corrupt-terminal-box {
+  position: relative;
+  z-index: 2;
+  background: #01020a;
+  border: 1px solid rgba(30, 90, 50, 0.2);
+  border-radius: 2px;
+  width: min(680px, 94vw);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.9),
+    0 0 60px rgba(20, 70, 40, 0.06),
+    0 40px 100px rgba(0,0,0,0.95);
+}
+
+.corrupt-title-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 7px 14px;
+  border-bottom: 1px solid rgba(30, 90, 50, 0.18);
+  background: #020308;
+  justify-content: space-between;
+}
+/* Hide colorful dots — replace with classified marker */
+.corrupt-dot {
+  display: none;
+}
+.corrupt-title-bar::before {
+  content: '⬛ WNCORE//SIGINT';
+  font-family: 'DM Mono', monospace;
+  font-size: 0.46rem;
+  letter-spacing: 3px;
+  color: rgba(180, 50, 40, 0.5);
+  border: 1px solid rgba(180, 50, 40, 0.2);
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+
+.corrupt-terminal-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  line-height: 1.85;
+  padding: 18px 22px;
+  min-height: 220px;
+  max-height: 65vh;
+  overflow-y: auto;
+  color: rgba(100, 150, 115, 0.6);
+  letter-spacing: 0.05em;
+  background: transparent;
+}
+.corrupt-terminal-text::-webkit-scrollbar { width: 3px; }
+.corrupt-terminal-text::-webkit-scrollbar-track { background: transparent; }
+.corrupt-terminal-text::-webkit-scrollbar-thumb { background: rgba(30, 90, 50, 0.2); }
+
+/* ─── UPGRADED EMAIL HORROR TERMINAL ──────────────────── */
+#email-horror-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9997;
+  background: #000;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+#email-horror-overlay.show { display: flex; animation: horror-fade-in 0.4s ease forwards; }
+.email-horror-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 180, 60, 0.02) 2px,
+    rgba(0, 180, 60, 0.02) 4px
+  );
+  pointer-events: none;
+}
+.email-terminal {
+  position: relative;
+  z-index: 2;
+  width: min(640px, 92vw);
+  background: #040604;
+  border: 1px solid rgba(20, 80, 20, 0.3);
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 180, 60, 0.04), 0 30px 80px rgba(0, 0, 0, 0.9);
+}
+.email-terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  background: #020806;
+  border-bottom: 1px solid rgba(20, 80, 20, 0.18);
+}
+.email-terminal-bar-dot { display: none; }
+.email-terminal-text {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: rgba(0, 180, 60, 0.75);
+  padding: 22px 24px;
+  min-height: 260px;
+  max-height: 340px;
+  overflow-y: auto;
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+  text-shadow: none;
+}
+.et-dim   { color: rgba(0, 120, 40, 0.4) !important; }
+.et-err   { color: rgba(200, 80, 40, 0.85) !important; }
+.et-white { color: rgba(0, 200, 80, 0.7) !important; }
+.et-cursor { animation: term-cursor-blink 0.9s step-end infinite; }
+
+/* ─── SHARE MODAL ──────────────────────────────────────── */
+.share-modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  background: rgba(0, 0, 0, 0.7);
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.share-modal-backdrop.open { display: flex; animation: modal-fade-in 0.2s ease; }
+@keyframes modal-fade-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
+
+.share-modal-box {
+  position: relative;
+  background: var(--surface, #f5f3ef);
+  border: 1px solid var(--border, rgba(0,0,0,0.08));
+  border-radius: 16px;
+  padding: 28px 28px 24px;
+  width: min(380px, 90vw);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+}
+.share-modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--text, #1a1714);
+}
+.share-modal-station {
+  font-size: 0.8rem;
+  color: var(--text3, rgba(26,23,20,0.4));
+  margin-bottom: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.share-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.share-option-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  background: var(--surface2, rgba(0,0,0,0.04));
+  border: 1px solid var(--border, rgba(0,0,0,0.06));
+  border-radius: 10px;
+  color: var(--text, #1a1714);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.share-option-btn:hover { background: var(--surface, #ede9e3); border-color: var(--border, rgba(0,0,0,0.1)); transform: translateX(2px); }
+.share-option-x { color: var(--text, #1a1714) !important; }
+.share-option-reddit { color: #ff4500 !important; }
+.share-modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--text3, rgba(26,23,20,0.3));
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.15s;
+}
+.share-modal-close:hover { color: var(--text, #1a1714); }
+
+/* ─── TOAST NOTIFICATION ──────────────────────────────── */
+.wncore-toast {
+  position: fixed;
+  bottom: calc(var(--player-h, 76px) + 16px);
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--text, #1a1714);
+  color: var(--bg, #f5f3ef);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.5px;
+  padding: 9px 20px;
+  border-radius: 100px;
+  z-index: 7999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  white-space: nowrap;
+  max-width: 90vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+}
+.wncore-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ─── SEARCH RESULT IMPROVEMENTS ─────────────────────── */
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.12s;
+  margin-bottom: 2px;
+}
+.search-result-item:hover {
+  background: var(--surface2, rgba(0,0,0,0.04));
+}
+.search-result-item:hover .sr-play-btn {
+  opacity: 1;
+}
+.sr-body { flex: 1; min-width: 0; }
+.sr-play-btn {
+  background: var(--accent, #c8472a);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 0.65rem;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 2px;
+}
+
+/* ─── KEYBOARD HELP MODAL ─────────────────────────────── */
+.kb-help-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 8500;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.kb-help-modal.open { display: flex; }
+.kb-help-box {
+  background: var(--surface, #f5f3ef);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px;
+  width: min(360px, 90vw);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+}
+.kb-help-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+  color: var(--text);
+}
+.kb-shortcuts { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.kb-row { display: flex; align-items: center; gap: 14px; font-size: 0.8rem; color: var(--text2); }
+.kb-key {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 3px 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--text);
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 72px;
+  text-align: center;
+}
+.kb-help-close {
+  width: 100%;
+  padding: 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  color: var(--text2);
+  transition: all 0.15s;
+}
+.kb-help-close:hover { background: var(--surface); color: var(--text); }
+
+/* ─── PLAYER BAR SHARE BUTTON ─────────────────────────── */
+.pb-share-btn {
+  color: var(--text2) !important;
+}
+.pb-share-btn:hover {
+  color: var(--accent) !important;
+}
+
+/* ─── MOBILE HOME PAGE FIXES ──────────────────────────── */
+@media (max-width: 768px) {
+  .globe-section {
+    position: relative;
+    overflow: hidden;
+    min-height: 260px !important;
+    max-height: 340px;
+  }
+  
+  .globe-overlay-left {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px !important;
+    background: linear-gradient(to top, rgba(3,7,18,0.92) 40%, rgba(3,7,18,0.5) 70%, transparent) !important;
+    width: 100% !important;
+  }
+  
+  .globe-title {
+    font-size: 1.6rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .globe-sub {
+    font-size: 0.7rem !important;
+    max-width: 100% !important;
+    margin-bottom: 12px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .globe-stats {
+    gap: 16px !important;
+    flex-wrap: wrap;
+    margin-bottom: 0 !important;
+  }
+  
+  .globe-stat-num { font-size: 1.15rem !important; }
+  .globe-stat-lbl { font-size: 0.58rem !important; }
+  
+  .globe-kicker {
+    display: none;
+  }
+
+  /* Featured cards fix on mobile */
+  .featured-card {
+    padding: 16px !important;
+  }
+  .fc-now {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  
+  /* Main col padding */
+  .main-col {
+    padding: 0 !important;
+  }
+
+  /* Sidebar comes before main content on mobile — style it better */
+  .sidebar {
+    order: 2 !important;
+  }
+  .main-col {
+    order: 1 !important;
+  }
+  
+  /* Rec grid 2 columns on mobile */
+  .rec-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Section hd font size */
+  .section-title {
+    font-size: 1.1rem !important;
+  }
+
+  /* Hide genre strip scrollbar on mobile */
+  .genre-strip-wrap {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .genre-strip-wrap::-webkit-scrollbar { display: none; }
+  
+  /* Horror terminal on mobile */
+  .horror-terminal {
+    font-size: 0.72rem !important;
+  }
+  .horror-terminal-body {
+    padding: 16px 18px 20px !important;
+  }
+  
+  /* Share button visible on mobile player */
+  .pb-share-btn {
+    display: flex !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .globe-title { font-size: 1.3rem !important; }
+  .globe-sub { display: none; }
+  
+  /* Rec grid single col on small phones */
+  .rec-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Player bar name truncation */
+  .pb-name {
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .horror-terminal-chrome {
+    padding: 8px 12px;
+  }
+  .horror-chrome-title {
+    display: none;
+  }
+}
+
+/* ─── DARK MODE ADJUSTMENTS ────────────────────────────── */
+.dark .share-option-btn:hover,
+html.dark .share-option-btn:hover {
+  background: rgba(255,255,255,0.05);
+}
+

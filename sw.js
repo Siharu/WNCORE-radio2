@@ -1,26 +1,13 @@
-// WNCORE Radio — Service Worker v9
-// Enables iOS background audio entitlements + static asset caching
-const CACHE = 'wncore-v9';
+// WNCORE Radio — Service Worker v10
+// Updated for merged bundle — bundle.js replaces 14 separate JS files
+const CACHE = 'wncore-v10';
 const PRECACHE = [
   '/',
   '/index.html',
   '/style.css',
   '/mobile.css',
-  '/horror_upgrade.css',
-  '/main.js',
-  '/improvements.js',
-  '/improvements_patch.js',
-  '/wncore-upgrades.js',
-  '/v5-fixes.js',
-  '/wrongness.js',
-  '/admin.js',
-  '/manifest.json',
-  '/p5-transitions.css',
-  '/p5-transitions.js',
-  '/wncore-bugfix.css',
-  '/wncore-bugfix.js',
-  '/wncore-mobile-fix.css',
-  '/wncore-constellation.js'
+  '/bundle.js',
+  '/manifest.json'
 ];
 
 self.addEventListener('install', e => {
@@ -61,7 +48,6 @@ self.addEventListener('fetch', e => {
   // Network-first, fall back to cache for same-origin static assets only
   e.respondWith(
     fetch(e.request).then(r => {
-      // Only cache successful GET responses for same-origin assets
       if (r && r.status === 200 && e.request.method === 'GET' && r.type !== 'opaque') {
         const clone = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {});
