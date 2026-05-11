@@ -229,14 +229,27 @@
       clearInterval(waitForPS);
 
       var _origPS = window.playStation;
+      // Timestamp-based debounce: blocks rapid repeat calls (< 400ms apart) that cause
+      // AbortError cascades, but auto-expires so it can never permanently lock clicks.
+      var _lastPlayTs = 0;
       window.playStation = function() {
         var args = arguments;
+        var now = Date.now();
+        if (now - _lastPlayTs < 400) return; // rapid-fire guard — self-expiring, never perma-locks
+        _lastPlayTs = now;
         if (_inClick) {
           setTimeout(function() { _origPS.apply(window, args); }, 0);
         } else {
           _origPS.apply(window, args);
         }
       };
+      // Preserve ALL patch flags from the wrapped function so downstream guards
+      // (wncore-bugfix2 _abortFixed, improvements _patched/_v2patched, etc.)
+      // don't re-wrap this and create a double-debounce that permanently locks clicks.
+      var _flagsToCopy = ['_abortFixed','_v2patched','_patched','_wnPatched','_p5Patched','_nullSafe','_swipeFixed','_cardFixed','_exitFixed','_mbnSynced'];
+      _flagsToCopy.forEach(function(f) { if (_origPS[f]) window.playStation[f] = _origPS[f]; });
+      // Mark this wrapper so it's never double-applied
+      window.playStation._deferWrapped = true;
 
       // Also wrap playRec (delegates to playStation but is called from card onclicks)
       if (typeof window.playRec === 'function') {

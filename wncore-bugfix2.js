@@ -110,7 +110,7 @@
     }
 
     waitForPlayStation(function() {
-      if (window.playStation._abortFixed) return;
+      if (window.playStation._abortFixed || window.playStation._deferWrapped) return;
       var orig = window.playStation;
 
       window.playStation = function(url, name, meta, emoji) {
