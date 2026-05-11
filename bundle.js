@@ -545,6 +545,7 @@ function playStation(url, name, meta, emoji) {
       updateUI(name, meta, emoji||'📻');
       updateMiniPlayerVisibility();
       applyStationSecondaryEffects(name, meta);
+      exposure += 8 + (window._corruptionBoost || 0); // FIX1: only on successful play
       // I2: One-time swipe hint on mobile after first successful play
       if (/Mobi|Android/i.test(navigator.userAgent) && !localStorage.getItem('wncore-swipe-hint')) {
         setTimeout(() => {
@@ -573,7 +574,6 @@ function playStation(url, name, meta, emoji) {
       }
     });
   }
-  exposure += 8 + (window._corruptionBoost || 0);
 }
 
 function applyStationSecondaryEffects(name, meta) {
@@ -1439,8 +1439,8 @@ function restoreAboutText() {
 
 // ─── HORROR ENGINE ────────────────────────────────────────────────────────
 const HORROR = {stage:0, adCorrupted:false};
-setInterval(()=>{ if(isPlaying){exposure+=1; checkHorrorStage()} },5000);
-setInterval(()=>{ exposure+=0.5; checkHorrorStage(); },12000);
+setInterval(()=>{ if(isPlaying && !document.hidden){exposure+=1; checkHorrorStage()} },5000); // FIX2
+setInterval(()=>{ if(!document.hidden){exposure+=0.5; checkHorrorStage();} },12000); // FIX2
 
 function checkHorrorStage() {
   // Stages 1 & 2 only activate after the user has clicked 88.7 FM.
@@ -1460,7 +1460,7 @@ function startStage1() {
     } catch(e) {}
   }
   
-  setInterval(()=>{ if(HORROR.stage>=1&&Math.random()<(isDarkMode?0.12:0.28)) triggerMicroGlitch(); },8000);
+  setInterval(()=>{ if(!document.hidden && HORROR.stage>=1&&Math.random()<(isDarkMode?0.12:0.28)) triggerMicroGlitch(); },8000); // FIX2
   setTimeout(()=>{ if(HORROR.stage>=1) insertTickerAnomaly('SIGNAL ANOMALY DETECTED ON 88.7'); },22000);
 }
 
@@ -4525,7 +4525,7 @@ function buildNetworkMap() {
 
 function renderNetworkMap() {
   const canvas = document.getElementById('network-map-canvas');
-  if (!canvas || !canvas.offsetParent) return;
+  if (!canvas || !canvas.offsetParent || document.hidden) return; // FIX3
   const W = canvas.offsetWidth;
   canvas.width = W; canvas.height = W * 0.5;
   const H = canvas.height;
@@ -5186,8 +5186,7 @@ if (document.readyState === 'loading') {
   window.addEventListener('wheel', scrollCheck, false);
   window.addEventListener('touchmove', scrollCheck, { passive: true });
   
-  // Periodic check as ultimate fallback
-  setInterval(updateMiniVisibility, 250);
+  // FIX4: Removed setInterval(updateMiniVisibility, 250) — scroll/touch listeners above handle this
 
   // [NEUTRALIZED: mini-player wrapper — handled by unified hook in bundle.js]
   // Features: _miniName update, updateMiniIcons, updateMiniVisibility
@@ -5381,7 +5380,7 @@ if (document.readyState === 'loading') {
     setInterval(notificationGhost,    83000);
     setInterval(focusStealer,         91000);
 
-    document.addEventListener('mousemove', trackMouse);
+    document.addEventListener('mousemove', trackMouse, { passive: true }); // FIX5
     document.addEventListener('click', logClick);
     document.addEventListener('scroll', () => { W.scrollPos = window.scrollY; }, {passive:true});
     document.addEventListener('visibilitychange', onVisibilityChange);
@@ -5392,8 +5391,12 @@ if (document.readyState === 'loading') {
   // ─── PHANTOM CURSOR ─────────────────────────────────────────────────────
   let ghostEl = null;
   let mouseX = -200, mouseY = -200;
+  let _lastMouseMove = 0; // FIX5: throttle
 
   function trackMouse(e) {
+    const now = Date.now();
+    if (now - _lastMouseMove < 100) return; // FIX5: max ~10fps
+    _lastMouseMove = now;
     mouseX = e.clientX; mouseY = e.clientY;
   }
 
