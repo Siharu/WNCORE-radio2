@@ -3,7 +3,37 @@
    ARG / Radio hybrid frontend
 ═══════════════════════════════════════════════════════ */
 
-const _a = "https://all.api.radio-browser.info/json";
+// ─── RADIO BROWSER API — MIRROR RESOLVER ─────────────────────────────────
+// all.api.radio-browser.info is a round-robin that can fail or CORS-block.
+// We race 5 mirrors and cache the first one that responds.
+const _API_MIRRORS = [
+  'https://de1.api.radio-browser.info/json',
+  'https://de2.api.radio-browser.info/json',
+  'https://nl1.api.radio-browser.info/json',
+  'https://all.api.radio-browser.info/json',
+  'https://fr1.api.radio-browser.info/json',
+];
+let _a = _API_MIRRORS[0];
+let _apiResolved = false;
+
+async function _resolveApi() {
+  if (_apiResolved) return _a;
+  for (const mirror of _API_MIRRORS) {
+    try {
+      const r = await Promise.race([
+        fetch(mirror + '/stats', { method: 'GET', cache: 'no-store' }),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
+      ]);
+      if (r.ok) {
+        _a = mirror; _apiResolved = true;
+        console.debug('[WNCORE] API mirror resolved:', mirror);
+        return _a;
+      }
+    } catch(e) { /* try next */ }
+  }
+  _apiResolved = true; // stop retrying
+  return _a;
+}
 const _d = (function(){const p=['s','i','h','a','r','u','.','v','e','r','c','e','l','.','a','p','p'];return 'https://'+p.join('')})();
 
 const audio = document.getElementById('audio');
@@ -385,13 +415,32 @@ let chartsData = null;
 
 async function loadStations(genre='') {
   const tbody = document.getElementById('station-tbody');
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Loading stations...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Loading stations…</td></tr>`;
   try {
-    const offset = Math.floor(Math.random()*30); // randomise slightly for variety
+    const api = await _resolveApi();
+    const offset = Math.floor(Math.random()*30);
     const tag = genre ? `&tag=${encodeURIComponent(genre)}` : '';
-    const r = await fetch(`${_a}/stations/search?limit=20&https=true&order=clickcount&reverse=true${tag}&offset=${genre?0:offset}`);
-    const d = await r.json();
-    renderTable(d, 'station-tbody');
+    const fetchWithTimeout = url => Promise.race([
+      fetch(url),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000))
+    ]);
+    let d;
+    try {
+      const r = await fetchWithTimeout(`${api}/stations/search?limit=20&https=true&order=clickcount&reverse=true${tag}&offset=${genre?0:offset}`);
+      if (!r.ok) throw new Error('status ' + r.status);
+      d = await r.json();
+    } catch(innerErr) {
+      // Try one more mirror
+      const fallback = _API_MIRRORS.find(m => m !== api);
+      if (fallback) {
+        const r2 = await fetchWithTimeout(`${fallback}/stations/search?limit=20&https=true&order=clickcount&reverse=true${tag}&offset=${genre?0:offset}`);
+        d = await r2.json();
+        _a = fallback;
+      } else throw innerErr;
+    }
+    // Filter stations with no valid playable URL before rendering
+    const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('http'));
+    renderTable(playable.length ? playable : d, 'station-tbody');
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Signal degraded. <span style="cursor:pointer;color:var(--accent)" onclick="loadStations('')">Retry</span></td></tr>`;
   }
@@ -460,7 +509,12 @@ function getCountryEmoji(code){
 
 // ─── PLAYBACK ─────────────────────────────────────────────────────────────
 function playStation(url, name, meta, emoji) {
-  if(!url) { play887Static(); return; }
+  if (!url || !url.startsWith('http')) {
+    updateStatus('NO SIGNAL');
+    const npTrack = document.getElementById('np-track');
+    if (npTrack) npTrack.textContent = '— station offline —';
+    return;
+  }
   currentStation = {url, name, meta, emoji: emoji||'📻'};
   // Pause Live Music player if running to avoid dual audio
   if(typeof lmAudio !== 'undefined' && !lmAudio.paused) {
@@ -1426,10 +1480,19 @@ function startStage2() {
 }
 
 function triggerMicroGlitch() {
+  // Guard: if another body-transform effect is running (rare-events screenCorruption),
+  // skip this micro-glitch to avoid cleanup race that leaves body stuck transformed.
+  if (window._bodyTransformLocked) return;
+  window._bodyTransformLocked = true;
   const i = isDarkMode?1:2;
   document.body.style.transform=`translate(${(Math.random()-0.5)*i*4}px,${(Math.random()-0.5)*i}px)`;
   document.body.style.filter=`hue-rotate(${Math.random()*8}deg) contrast(${100+Math.random()*10}%)`;
-  setTimeout(()=>{document.body.style.transform='';document.body.style.filter=''},80+Math.random()*60);
+  const duration = 80 + Math.random()*60;
+  setTimeout(()=>{
+    document.body.style.transform='';
+    document.body.style.filter='';
+    window._bodyTransformLocked = false;
+  }, duration);
 }
 
 function insertTickerAnomaly(text) {
@@ -1768,8 +1831,9 @@ function initAnimeVideo() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
+// Pre-resolve best API mirror in background before first user click
+_resolveApi().then(() => loadStations()).catch(() => loadStations());
 buildGenreStrip();
-loadStations();
 // Populate home page Top Charts mini-table on first load
 // loadChartsPage() only fires when navigating to page-charts, so we prime it here
 // to populate station-tbody using the same data + cache

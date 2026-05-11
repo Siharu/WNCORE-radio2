@@ -371,7 +371,7 @@ function showAdminDashboard(){
 
   setTimeout(()=>{
     updateAdmClock();
-    setInterval(updateAdmClock, 1000);
+    /* clock already started above */;
     // Live update stats
     setInterval(()=>{
       const ev = document.getElementById('adm-exposure-val');

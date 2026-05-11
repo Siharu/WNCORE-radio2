@@ -270,7 +270,7 @@ async function feelingLucky() {
   try {
     const offset = Math.floor(Math.random() * 8000);
     const r = await fetch(
-      `https://all.api.radio-browser.info/json/stations/search?limit=1&https=true&offset=${offset}&order=random`
+      `${(typeof _a !== "undefined" ? _a : "https://de1.api.radio-browser.info/json")}/stations/search?limit=1&https=true&offset=${offset}&order=random`
     );
     const stations = await r.json();
     if (stations.length && typeof playStation === 'function') {
@@ -2739,7 +2739,7 @@ function bootV2() {
 
   // Listener count animation on first load
   setTimeout(() => {
-    window._listenerAnimInterval = setInterval(animateListenerCounts, 3000);
+    /* listener animation already started above — skip duplicate */;
   }, 2000);
 }
 

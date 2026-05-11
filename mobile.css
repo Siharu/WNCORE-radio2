@@ -1,3 +1,342 @@
+/* ═══════════════════════════════════════════════════════════════════════
+   WNCORE RADIO — mobile.css  (MERGED — only @media blocks live here)
+   Loaded after style.css so mobile rules always override desktop.
+   
+   FORMULA for bottom spacing on mobile:
+     bottom: calc(var(--player-h, 68px) + 56px + Xpx)
+     56px = mobile-bottom-nav height
+   
+   Merge sources (in cascade priority order):
+     1. style.css mobile @media blocks
+     2. mobile.css (all rules)
+     3. horror_upgrade.css mobile @media blocks
+     4. p5-transitions.css mobile @media blocks
+     5. wncore-bugfix.css mobile @media blocks
+     6. wncore-mobile-fix.css (all rules — targeted fixes)
+     7. wncore-mobile-breathing.css (all rules — spacing/breathing)
+     8. wncore-ui-improvements.css mobile @media (minimal)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── ROOT VARS: mobile overrides ──────────────────────────────────────────── */
+:root {
+  --header-h: 56px;
+  --player-h: 68px;
+}
+
+@media (min-width: 769px) {
+  :root {
+    --header-h: 64px;
+    --player-h: 76px;
+  }
+}
+
+
+/* ── FROM style.css ──────────────────────────────────────────────────── */
+@media(max-width:768px) and (pointer:coarse){
+  * { -webkit-tap-highlight-color:transparent; }
+  /* Disable backdrop-filter on mobile — extremely expensive on most Android GPUs */
+  header { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; background:var(--bg)!important; }
+  .player-bar { backdrop-filter:none!important; -webkit-backdrop-filter:none!important; }
+  body.dark-mode .player-bar { background:rgba(26,24,20,0.99)!important; }
+  body:not(.dark-mode) .player-bar { background:rgba(245,243,239,0.99)!important; }
+  /* Disable grain overlay SVG filter on mobile */
+  .grain-overlay { display:none!important; }
+  /* Reduce ticker animation to CSS only, no JS reflow triggers */
+  .ticker-inner { will-change:transform; }
+}
+@media(max-width:1100px){
+  .page-wrap{grid-template-columns:1fr 280px;gap:24px}
+  .featured-row{grid-template-columns:1fr 1fr;gap:9px}
+  .featured-card:last-child{grid-column:1/-1}
+  .anime-stations-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:900px){
+  :root{--header-h:56px}
+  .page-wrap{grid-template-columns:1fr;gap:0;padding:28px 16px}
+  .sidebar{display:none}
+  .featured-row{grid-template-columns:1fr 1fr;gap:8px}
+  .featured-card:last-child{grid-column:1/-1}
+  .globe-section{height:340px}
+  .globe-overlay-left{width:280px;padding:24px 24px 24px 20px}
+  .globe-title{font-size:1.8rem}
+  .anime-stations-grid{grid-template-columns:1fr 1fr}
+  nav{display:none}
+  .mobile-menu-btn{display:flex}
+  .live-dot{display:none}
+  .minimal-btn{display:none}
+  .pb-right{display:none}
+  .pb-station{width:160px}
+  .header-inner{padding:0 16px;gap:12px}
+  .genre-strip{padding:0 16px}
+}
+@media(max-width:600px){
+  :root{--player-h:68px}
+  .featured-row{grid-template-columns:1fr}
+  .featured-card:last-child{grid-column:auto}
+  .rec-grid{grid-template-columns:1fr}
+  .anime-stations-grid{grid-template-columns:1fr}
+  /* Globe section smaller on mobile — JS skips WebGL entirely */
+  .globe-section{height:240px}
+  .globe-overlay-left{width:100%;padding:20px 20px 16px}
+  .globe-title{font-size:1.5rem}
+  .globe-sub{display:none}
+  .globe-stats{gap:14px}
+  .page-wrap{padding:20px 14px}
+  .section-hd{margin-bottom:14px}
+  /* Player bar — larger touch targets */
+  .player-bar{padding:0 12px;gap:10px}
+  .pb-station{width:120px;gap:8px}
+  .pb-btn{width:38px;height:38px;min-width:38px}
+  .pb-play{width:42px;height:42px;min-width:42px}
+  .modal-box{padding:24px 18px}
+  .anime-banner{height:160px}
+  .anime-banner-title{font-size:1.5rem}
+  .st-country,.st-bitrate{display:none}
+  .corrupt-terminal-text{font-size:0.62rem}
+  /* Hide globe hint on mobile since there's no interactive globe */
+  .globe-hint { display:none!important; }
+  /* Globe section on mobile — signal visualization on right, text on left */
+  .globe-section { height:240px!important; }
+  .globe-overlay-left {
+    position:absolute;
+    width:55%;
+    padding:20px 16px 16px 20px;
+    z-index:2;
+  }
+  #globe-container {
+    position:absolute;
+    right:0; top:0; bottom:0;
+    width:45%;
+    z-index:1;
+  }
+  .genre-strip{padding:0 12px}
+  /* Ensure tables don't overflow */
+  .station-table{font-size:0.75rem}
+  .st-num{width:24px}
+  /* Touch-friendly rec cards */
+  .rec-card{min-height:60px}
+  /* Reduce animation count on mobile for performance */
+  .grain-overlay{display:none}
+}
+@media (max-width:768px) {
+  .lm-hero { flex-direction:column;padding:40px 20px;min-height:auto;overflow:visible;height:auto; }
+  .lm-waveform-art { display:none; }
+  .lm-hero-stats { gap:20px; }
+  .lm-now-playing-card { flex-direction:column;text-align:center;padding:20px; }
+  .lm-np-info { display:flex;flex-direction:column;align-items:center; }
+  .lm-grid { grid-template-columns:1fr 1fr;padding:0 12px 24px; }
+  .wncore-footer-inner { grid-template-columns:1fr 1fr;gap:24px; }
+  .footer-bottom { flex-direction:column;gap:8px;text-align:center; }
+  .broadcast-status-bar { display:none; }
+}
+@media (max-width:480px) {
+  .lm-grid { grid-template-columns:1fr; }
+}
+@media(max-width:768px) { .genre-az-sidebar { display:none; } }
+
+@media (max-width:480px) {
+  .country-filter-wrap { padding:8px 14px; }
+  .country-filter-select { max-width:100%;width:100%; }
+}
+@media(max-width:600px) { .sf-row { grid-template-columns:1fr; } }
+
+@media(max-width:768px) { .mobile-bottom-nav { display:flex; } }
+.mbn-btn {
+  flex:1;height:100%;border:none;background:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--text3);cursor:pointer;font-size:0.58rem;font-family:'DM Sans',sans-serif;
+  transition:color 0.15s;position:relative;
+}
+@media(max-width:768px) and (pointer:coarse) {
+  .anime-banner-video,
+  .globe-ambient-video { display:none!important; }
+}
+@media (max-width: 768px) {
+  .header-inner { padding: 0 14px; gap: 12px; }
+  nav#main-nav { display: none !important; }
+  .theme-toggle-labels { display: none; }
+  .live-dot { display: none; }
+  .minimal-btn { display: none; }
+  .sign-in-btn { display: none; }
+  .mobile-menu-btn { display: flex !important; }
+  header { height: var(--header-h); }
+  .logo-mark { font-size: 1.15rem; }
+}
+@media (max-width: 480px) {
+  .ticker-label { display: none; }
+  .ticker-wrap { height: 24px; }
+  .ticker-inner { font-size: 0.54rem; }
+}
+@media (max-width: 768px) {
+  .globe-section { height: 260px; }
+  .globe-overlay-left {
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(3,7,18,0.9) 60%, transparent);
+    padding: 20px 16px;
+    justify-content: flex-end;
+  }
+  .globe-title { font-size: 1.5rem; }
+  .globe-sub { font-size: 0.72rem; }
+  .globe-stats { gap: 14px; }
+  .globe-stat-num { font-size: 1.1rem; }
+}
+@media (max-width: 768px) {
+  .page-wrap {
+    grid-template-columns: 1fr;
+    padding: 16px 12px;
+    gap: 20px;
+  }
+  .sidebar { order: -1; }
+}
+@media (max-width: 768px) {
+  .featured-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+}
+@media (min-width: 480px) and (max-width: 768px) {
+  .featured-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .rec-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .st-country, .st-bitrate, .st-num { display: none; }
+  .station-table td { padding: 10px 4px; }
+  .st-name { font-size: 0.82rem; }
+}
+@media (max-width: 768px) {
+  .player-bar { height: var(--player-h); padding: 0 12px; }
+  .pb-right { display: none; }
+  .pb-center { flex: 1; }
+  .pb-station { max-width: 120px; }
+  .pb-name { font-size: 0.72rem; }
+  .pb-meta { font-size: 0.58rem; }
+  .pb-controls { gap: 8px; }
+  .pb-btn { width: 28px; height: 28px; }
+  .pb-play { width: 36px; height: 36px; }
+}
+@media (max-width: 600px) {
+  .search-modal-backdrop { padding: 60px 10px 10px; align-items: flex-start; }
+  .search-box { border-radius: 12px; }
+  .search-results { max-height: 280px; }
+}
+@media (max-width: 480px) {
+  .modal-box { padding: 24px 18px; border-radius: 16px 16px 0 0; }
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal-oauth { flex-direction: column; gap: 8px; }
+  .oauth-btn { width: 100%; }
+}
+@media (max-width: 768px) {
+  .genre-strip { padding: 0 12px; }
+  .genre-btn { padding: 6px 12px; font-size: 0.7rem; }
+}
+@media (max-width: 768px) {
+  .about-wrap { padding: 32px 16px 100px; }
+  .about-title { font-size: 1.7rem; }
+}
+@media (max-width: 768px) {
+  .anime-stations-grid { grid-template-columns: repeat(2,1fr); }
+  .anime-banner { height: 160px; }
+  .anime-banner-title { font-size: 1.4rem; }
+}
+@media (max-width: 480px) {
+  .anime-stations-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .lm-grid { grid-template-columns: 1fr !important; }
+  .lm-hero { padding: 32px 16px; }
+  .lm-hero-title { font-size: 2rem; }
+  .lm-hero-stats { gap: 12px; }
+  .lm-now-playing-card { flex-direction: column; align-items: flex-start; }
+  .lm-np-vinyl { width: 70px; height: 70px; }
+}
+@media (max-width: 768px) {
+  #page-charts > div, #page-genres > div, #page-podcasts > div { padding: 24px 12px 100px; }
+}
+@media (max-width: 768px) {
+  .wncore-footer { padding-bottom: calc(var(--player-h) + 56px + 8px); }
+  .wncore-footer-inner { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
+  .wncore-footer-brand { grid-column: 1 / -1; }
+  .footer-tagline { font-size: 0.72rem; }
+}
+@media (max-width: 400px) {
+  .wncore-footer-inner { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 768px) {
+  .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .sidebar-card { flex: 1 1 280px; }
+  .arg-card { flex: 1 1 100%; }
+}
+@media (max-width: 768px) {
+  body { padding-bottom: calc(var(--player-h) + 56px); }
+  .mobile-bottom-nav {
+    bottom: var(--player-h);
+    border-top: 1px solid var(--border);
+    z-index: 481;
+  }
+}
+@media (max-width: 600px) {
+  .legal-wrap { padding: 48px 14px 100px; }
+  .legal-title { font-size: 1.5rem; }
+  .legal-nav { gap: 6px; }
+  .legal-nav-btn { padding: 5px 10px; font-size: 0.7rem; }
+  .legal-table { font-size: 0.72rem; }
+}
+@media (max-width: 768px) {
+  .broadcast-status-bar {
+    display: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: calc(var(--player-h) + 56px + 12px);
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+}
+@media (max-width: 480px) {
+  #genre-cards-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
+}
+@media (max-width: 900px) {
+  .lm-grid { grid-template-columns: repeat(2,1fr) !important; }
+}
+@media (max-width: 480px) {
+  .lm-grid { grid-template-columns: 1fr !important; }
+  .lm-channel-bar { padding: 10px 12px; gap: 6px; }
+  .lm-ch-btn { padding: 5px 10px; font-size: 0.7rem; }
+}
+@media (max-width: 600px) {
+  #podcast-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 480px) {
+  .horror-terminal { font-size: 0.72rem; }
+}
+@media (max-width: 480px) {
+  .section-hd { margin-bottom: 12px; }
+  .section-title { font-size: 1.1rem; }
+}
+@media (max-width: 768px) {
+  button, a, [role="button"] {
+    min-height: 36px;
+  }
+  .genre-btn, .search-filter-btn, .lm-ch-btn {
+    min-height: 32px;
+  }
+}
+@media (max-width: 768px) {
+  .station-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+@media (max-width: 600px) {
+  .anime-img-real { width: 110px; height: 70px; }
+}
+@media (max-width: 768px) {
+  .np-wave { gap: 2px; }
+  .np-wave span { width: 2px; }
+}
+/* ── FROM mobile.css ─────────────────────────────────────────────────── */
 /* ═══════════════════════════════════════════════════════
    WNCORE RADIO — MOBILE.css
    Mobile-first overrides, signal connection box,
@@ -56,180 +395,43 @@
 }
 
 /* ── MOBILE FIRST CORE ── */
-:root {
-  --header-h: 56px;
-  --player-h: 68px;
-}
 
-@media (min-width: 769px) {
-  :root {
-    --header-h: 64px;
-    --player-h: 76px;
-  }
-}
+
+
 
 /* ── HEADER MOBILE ── */
-@media (max-width: 768px) {
-  .header-inner { padding: 0 14px; gap: 12px; }
-  nav#main-nav { display: none !important; }
-  .theme-toggle-labels { display: none; }
-  .live-dot { display: none; }
-  .minimal-btn { display: none; }
-  .sign-in-btn { display: none; }
-  .mobile-menu-btn { display: flex !important; }
-  header { height: var(--header-h); }
-  .logo-mark { font-size: 1.15rem; }
-}
 
 /* ── TICKER MOBILE ── */
-@media (max-width: 480px) {
-  .ticker-label { display: none; }
-  .ticker-wrap { height: 24px; }
-  .ticker-inner { font-size: 0.54rem; }
-}
 
 /* ── GLOBE SECTION MOBILE ── */
-@media (max-width: 768px) {
-  .globe-section { height: 260px; }
-  .globe-overlay-left {
-    width: 100%;
-    background: linear-gradient(to bottom, rgba(3,7,18,0.9) 60%, transparent);
-    padding: 20px 16px;
-    justify-content: flex-end;
-  }
-  .globe-title { font-size: 1.5rem; }
-  .globe-sub { font-size: 0.72rem; }
-  .globe-stats { gap: 14px; }
-  .globe-stat-num { font-size: 1.1rem; }
-}
 
 /* ── PAGE WRAP MOBILE ── */
-@media (max-width: 768px) {
-  .page-wrap {
-    grid-template-columns: 1fr;
-    padding: 16px 12px;
-    gap: 20px;
-  }
-  .sidebar { order: -1; }
-}
 
 /* ── FEATURED CARDS MOBILE ── */
-@media (max-width: 768px) {
-  .featured-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    margin-bottom: 24px;
-  }
-}
-@media (min-width: 480px) and (max-width: 768px) {
-  .featured-row { grid-template-columns: repeat(2, 1fr); }
-}
 
 /* ── REC GRID MOBILE ── */
-@media (max-width: 480px) {
-  .rec-grid { grid-template-columns: 1fr; }
-}
 
 /* ── STATION TABLE MOBILE ── */
-@media (max-width: 768px) {
-  .st-country, .st-bitrate, .st-num { display: none; }
-  .station-table td { padding: 10px 4px; }
-  .st-name { font-size: 0.82rem; }
-}
 
 /* ── PLAYER BAR MOBILE ── */
-@media (max-width: 768px) {
-  .player-bar { height: var(--player-h); padding: 0 12px; }
-  .pb-right { display: none; }
-  .pb-center { flex: 1; }
-  .pb-station { max-width: 120px; }
-  .pb-name { font-size: 0.72rem; }
-  .pb-meta { font-size: 0.58rem; }
-  .pb-controls { gap: 8px; }
-  .pb-btn { width: 28px; height: 28px; min-height: 48px; min-width: 48px; }
-  .pb-play { width: 48px; height: 48px; min-height: 48px; min-width: 48px; }
-}
 
 /* ── SEARCH MODAL MOBILE ── */
-@media (max-width: 600px) {
-  .search-modal-backdrop { padding: 60px 10px 10px; align-items: flex-start; }
-  .search-box { border-radius: 12px; }
-  .search-results { max-height: 280px; }
-}
 
 /* ── SIGN IN MODAL MOBILE ── */
-@media (max-width: 480px) {
-  .modal-box { padding: 24px 18px; border-radius: 16px 16px 0 0; }
-  .modal-backdrop { align-items: flex-end; padding: 0; }
-  .modal-oauth { flex-direction: column; gap: 8px; }
-  .oauth-btn { width: 100%; }
-}
 
 /* ── GENRE STRIP MOBILE ── */
-@media (max-width: 768px) {
-  .genre-strip { padding: 0 12px; }
-  .genre-btn { padding: 6px 12px; font-size: 0.7rem; }
-}
 
 /* ── ABOUT PAGE MOBILE ── */
-@media (max-width: 768px) {
-  .about-wrap { padding: 32px 16px 100px; }
-  .about-title { font-size: 1.7rem; }
-}
 
 /* ── ANIME PAGE MOBILE ── */
-@media (max-width: 768px) {
-  .anime-stations-grid { grid-template-columns: repeat(2,1fr); }
-  .anime-banner { height: 160px; }
-  .anime-banner-title { font-size: 1.4rem; }
-}
-@media (max-width: 480px) {
-  .anime-stations-grid { grid-template-columns: 1fr; }
-}
 
 /* ── LIVE MUSIC PAGE MOBILE ── */
-@media (max-width: 768px) {
-  .lm-grid { grid-template-columns: 1fr !important; }
-  .lm-hero {
-    padding: 32px 16px;
-    /* FIX: Remove overflow:hidden on mobile so stacked hero content isn't clipped.
-       The decorative bg/video are position:absolute with pointer-events:none so
-       they don't cause layout issues without overflow:hidden. */
-    overflow: visible;
-    /* Let height grow naturally to fit all stacked content */
-    min-height: unset;
-    height: auto;
-  }
-  .lm-hero-title { font-size: 2rem; }
-  .lm-hero-stats { gap: 12px; }
-  .lm-now-playing-card { flex-direction: column; align-items: flex-start; }
-  .lm-np-vinyl { width: 70px; height: 70px; }
-  /* FIX: Ensure content is not hidden behind the fixed player bar + mobile bottom nav */
-  .lm-wrap { padding-bottom: calc(var(--player-h) + 56px + 24px); }
-}
 
 /* ── CHARTS PAGE MOBILE ── */
-@media (max-width: 768px) {
-  #page-charts > div, #page-genres > div, #page-podcasts > div { padding: 24px 12px 100px; }
-}
 
 /* ── FOOTER MOBILE ── */
-@media (max-width: 768px) {
-  .wncore-footer { padding-bottom: calc(var(--player-h) + 56px + 8px); }
-  .wncore-footer-inner { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
-  .wncore-footer-brand { grid-column: 1 / -1; }
-  .footer-tagline { font-size: 0.72rem; }
-}
-@media (max-width: 400px) {
-  .wncore-footer-inner { grid-template-columns: 1fr !important; }
-}
 
 /* ── SIDEBAR MOBILE ── */
-@media (max-width: 768px) {
-  .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; }
-  .sidebar-card { flex: 1 1 280px; }
-  .arg-card { flex: 1 1 100%; }
-}
 
 /* ── NP PROGRESS BAR ── */
 .np-progress { height: 3px; background: var(--surface2); border-radius: 2px; margin: 8px 0; overflow: hidden; }
@@ -245,23 +447,8 @@
 }
 
 /* ── MOBILE BOTTOM NAV ADJUSTMENTS ── */
-@media (max-width: 768px) {
-  body {  }
-  .mobile-bottom-nav {
-    bottom: var(--player-h);
-    border-top: 1px solid var(--border);
-    z-index: 481;
-  }
-}
 
 /* ── LEGAL PAGE MOBILE ── */
-@media (max-width: 600px) {
-  .legal-wrap { padding: 48px 14px 100px; }
-  .legal-title { font-size: 1.5rem; }
-  .legal-nav { gap: 6px; }
-  .legal-nav-btn { padding: 5px 10px; font-size: 0.7rem; }
-  .legal-table { font-size: 0.72rem; }
-}
 
 /* ── ARG CARD RESPONSIVE ── */
 .arg-card {
@@ -342,26 +529,10 @@
 }
 
 /* ── BROADCAST STATUS BAR MOBILE ── */
-@media (max-width: 768px) {
-  .broadcast-status-bar {
-    display: none !important;
-  }
-}
 
 /* ── SCROLL TOP BUTTON MOBILE ── */
-@media (max-width: 768px) {
-  .scroll-top-btn {
-    bottom: calc(var(--player-h) + 56px + 12px);
-    right: 12px;
-    width: 36px;
-    height: 36px;
-  }
-}
 
 /* ── GENRE CARDS GRID MOBILE ── */
-@media (max-width: 480px) {
-  #genre-cards-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
-}
 
 /* ── FEATURED CARD ARG VARIANT ── */
 .featured-card--arg {
@@ -388,6 +559,266 @@
 }
 
 /* ── LIVEMUSIC GRID MOBILE ── */
+
+/* ── PODCAST GRID MOBILE ── */
+
+/* ── HORROR OVERLAYS MOBILE ── */
+
+/* ── SECTION HEADER MOBILE ── */
+
+/* ── GLOBAL TOUCH TARGETS ── */
+
+/* ── STATION TABLE SWIPE SCROLL ── */
+
+/* ── ANIME IMAGE STRIP MOBILE ── */
+
+/* ── NP WAVE MOBILE ── */
+
+/* ── MINI-PLAYER (P2.1 — STICKY MOBILE PLAYER) ── */
+
+/* ─── Touch target minimum sizes (48px per WCAG 2.5.5) ─────────────────── */
+
+/* ─── CRITICAL: Prevent horizontal overflow on mobile ──────────────────── */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+
+/* Fix terminal overlays on mobile */
+
+/* ═══════════════════════════════════════════════════════
+   WNCORE MOBILE — COMPREHENSIVE FIX PASS
+   Addresses layout, readability, spacing, player UX
+   on all mobile screens (≤768px primary, ≤480px secondary)
+═══════════════════════════════════════════════════════ */
+
+/* ── 1. PLAYER BAR — mobile layout overhaul ── */
+
+/* ── 2. GLOBE SECTION — better mobile hero ── */
+
+/* ── 3. FEATURED CARDS — better proportions on mobile ── */
+
+/* ── 4. SECTION HEADERS — tighten spacing ── */
+
+/* ── 5. REC CARDS — properly sized on small screens ── */
+
+/* ── 6. TRENDING ITEMS — more breathing room ── */
+
+/* ── 7. STATION TABLE — better mobile reading ── */
+
+/* ── 8. LIVE MUSIC PAGE — hero and channel strip ── */
+
+
+/* ── 9. ANIME PAGE — hero banner and station grid ── */
+
+/* ── 10. GENRE STRIP — horizontal scroll, no wrapping ── */
+
+/* ── 11. SEARCH MODAL — full-screen on mobile ── */
+
+/* ── 12. MODALS — slide up from bottom on mobile ── */
+
+/* ── 13. FOOTER — tighter and padded for player+nav ── */
+
+/* ── 14. BOTTOM NAV — ensure it's always above player ── */
+
+/* ── 15. HEADER MOBILE — logo + hamburger only ── */
+
+/* ── 16. PAGE WRAP — consistent safe area padding ── */
+
+/* ── 17. SIDEBAR CARDS — horizontal scroll when shown ── */
+
+/* ── 18. PODCAST GRID ── */
+
+/* ── 19. ABOUT PAGE ── */
+
+/* ── 20. TICKER — more legible on small screens ── */
+
+/* ── 21. PREVENT ALL HORIZONTAL OVERFLOW ── */
+
+/* ── 22. MOBILE MENU DRAWER — ensure full-width proper ── */
+
+/* ── 23. SAFE AREA INSETS (notch/home indicator support) ── */
+
+/* ═══════════════════════════════════════════════════════
+   WNCORE MOBILE — UX OVERHAUL PASS
+   Fixes: menu cutoff, chat widget position, overall
+   breathing room / open feel (TuneIn/iHeart reference)
+═══════════════════════════════════════════════════════ */
+
+/* ── FIX: Header must never clip the hamburger button ── */
+
+/* ── FIX: Chat widget — proper mobile positioning ── */
+/* On mobile the stack from bottom is:
+   safe-area → player bar (68px) → bottom nav (54px)
+   Chat button should sit just above that stack        */
+
+/* ── BREATHING ROOM: Open, spacious mobile layout ── */
+
+/* ── Small phones (≤480px): tighter but still open ── */
+
+/* ── Mobile nav drawer: breathe ── */
+
+@media (max-width: 768px) {
+  .header-inner { padding: 0 14px; gap: 12px; }
+  nav#main-nav { display: none !important; }
+  .theme-toggle-labels { display: none; }
+  .live-dot { display: none; }
+  .minimal-btn { display: none; }
+  .sign-in-btn { display: none; }
+  .mobile-menu-btn { display: flex !important; }
+  header { height: var(--header-h); }
+  .logo-mark { font-size: 1.15rem; }
+}
+@media (max-width: 480px) {
+  .ticker-label { display: none; }
+  .ticker-wrap { height: 24px; }
+  .ticker-inner { font-size: 0.54rem; }
+}
+@media (max-width: 768px) {
+  .globe-section { height: 260px; }
+  .globe-overlay-left {
+    width: 100%;
+    background: linear-gradient(to bottom, rgba(3,7,18,0.9) 60%, transparent);
+    padding: 20px 16px;
+    justify-content: flex-end;
+  }
+  .globe-title { font-size: 1.5rem; }
+  .globe-sub { font-size: 0.72rem; }
+  .globe-stats { gap: 14px; }
+  .globe-stat-num { font-size: 1.1rem; }
+}
+@media (max-width: 768px) {
+  .page-wrap {
+    grid-template-columns: 1fr;
+    padding: 16px 12px;
+    gap: 20px;
+  }
+  .sidebar { order: -1; }
+}
+@media (max-width: 768px) {
+  .featured-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+}
+@media (min-width: 480px) and (max-width: 768px) {
+  .featured-row { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .rec-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .st-country, .st-bitrate, .st-num { display: none; }
+  .station-table td { padding: 10px 4px; }
+  .st-name { font-size: 0.82rem; }
+}
+@media (max-width: 768px) {
+  .player-bar { height: var(--player-h); padding: 0 12px; }
+  .pb-right { display: none; }
+  .pb-center { flex: 1; }
+  .pb-station { max-width: 120px; }
+  .pb-name { font-size: 0.72rem; }
+  .pb-meta { font-size: 0.58rem; }
+  .pb-controls { gap: 8px; }
+  .pb-btn { width: 28px; height: 28px; min-height: 48px; min-width: 48px; }
+  .pb-play { width: 48px; height: 48px; min-height: 48px; min-width: 48px; }
+}
+@media (max-width: 600px) {
+  .search-modal-backdrop { padding: 60px 10px 10px; align-items: flex-start; }
+  .search-box { border-radius: 12px; }
+  .search-results { max-height: 280px; }
+}
+@media (max-width: 480px) {
+  .modal-box { padding: 24px 18px; border-radius: 16px 16px 0 0; }
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal-oauth { flex-direction: column; gap: 8px; }
+  .oauth-btn { width: 100%; }
+}
+@media (max-width: 768px) {
+  .genre-strip { padding: 0 12px; }
+  .genre-btn { padding: 6px 12px; font-size: 0.7rem; }
+}
+@media (max-width: 768px) {
+  .about-wrap { padding: 32px 16px 100px; }
+  .about-title { font-size: 1.7rem; }
+}
+@media (max-width: 768px) {
+  .anime-stations-grid { grid-template-columns: repeat(2,1fr); }
+  .anime-banner { height: 160px; }
+  .anime-banner-title { font-size: 1.4rem; }
+}
+@media (max-width: 480px) {
+  .anime-stations-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .lm-grid { grid-template-columns: 1fr !important; }
+  .lm-hero {
+    padding: 32px 16px;
+    /* FIX: Remove overflow:hidden on mobile so stacked hero content isn't clipped.
+       The decorative bg/video are position:absolute with pointer-events:none so
+       they don't cause layout issues without overflow:hidden. */
+    overflow: visible;
+    /* Let height grow naturally to fit all stacked content */
+    min-height: unset;
+    height: auto;
+  }
+  .lm-hero-title { font-size: 2rem; }
+  .lm-hero-stats { gap: 12px; }
+  .lm-now-playing-card { flex-direction: column; align-items: flex-start; }
+  .lm-np-vinyl { width: 70px; height: 70px; }
+  /* FIX: Ensure content is not hidden behind the fixed player bar + mobile bottom nav */
+  .lm-wrap { padding-bottom: calc(var(--player-h) + 56px + 24px); }
+}
+@media (max-width: 768px) {
+  #page-charts > div, #page-genres > div, #page-podcasts > div { padding: 24px 12px 100px; }
+}
+@media (max-width: 768px) {
+  .wncore-footer { padding-bottom: calc(var(--player-h) + 56px + 8px); }
+  .wncore-footer-inner { grid-template-columns: 1fr 1fr !important; gap: 20px !important; }
+  .wncore-footer-brand { grid-column: 1 / -1; }
+  .footer-tagline { font-size: 0.72rem; }
+}
+@media (max-width: 400px) {
+  .wncore-footer-inner { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 768px) {
+  .sidebar { flex-direction: row; flex-wrap: wrap; gap: 12px; }
+  .sidebar-card { flex: 1 1 280px; }
+  .arg-card { flex: 1 1 100%; }
+}
+@media (max-width: 768px) {
+  body {  }
+  .mobile-bottom-nav {
+    bottom: var(--player-h);
+    border-top: 1px solid var(--border);
+    z-index: 481;
+  }
+}
+@media (max-width: 600px) {
+  .legal-wrap { padding: 48px 14px 100px; }
+  .legal-title { font-size: 1.5rem; }
+  .legal-nav { gap: 6px; }
+  .legal-nav-btn { padding: 5px 10px; font-size: 0.7rem; }
+  .legal-table { font-size: 0.72rem; }
+}
+@media (max-width: 768px) {
+  .broadcast-status-bar {
+    display: none !important;
+  }
+}
+@media (max-width: 768px) {
+  .scroll-top-btn {
+    bottom: calc(var(--player-h) + 56px + 12px);
+    right: 12px;
+    width: 36px;
+    height: 36px;
+  }
+}
+@media (max-width: 480px) {
+  #genre-cards-grid { grid-template-columns: repeat(2,1fr) !important; gap: 8px !important; }
+}
 @media (max-width: 900px) {
   .lm-grid { grid-template-columns: repeat(2,1fr) !important; }
 }
@@ -396,25 +827,17 @@
   .lm-channel-bar { padding: 10px 12px; gap: 6px; }
   .lm-ch-btn { padding: 5px 10px; font-size: 0.7rem; }
 }
-
-/* ── PODCAST GRID MOBILE ── */
 @media (max-width: 600px) {
   #podcast-grid { grid-template-columns: 1fr !important; }
 }
-
-/* ── HORROR OVERLAYS MOBILE ── */
 @media (max-width: 480px) {
   .horror-terminal { font-size: 0.72rem; }
   .eye-wrapper { width: 280px; height: 200px; }
 }
-
-/* ── SECTION HEADER MOBILE ── */
 @media (max-width: 480px) {
   .section-hd { margin-bottom: 12px; }
   .section-title { font-size: 1.1rem; }
 }
-
-/* ── GLOBAL TOUCH TARGETS ── */
 @media (max-width: 768px) {
   .pb-btn, .pb-play, .mbn-btn, .fav-btn, .share-btn, .eq-btn, .scroll-top-btn, .mobile-menu-btn, .search-btn, .sign-in-btn { min-height: 44px; min-width: 44px; }
   .station-row { min-height: 48px; }
@@ -422,24 +845,16 @@
     min-height: 48px;
   }
 }
-
-/* ── STATION TABLE SWIPE SCROLL ── */
 @media (max-width: 768px) {
   .station-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
-
-/* ── ANIME IMAGE STRIP MOBILE ── */
 @media (max-width: 600px) {
   .anime-img-real { width: 110px; height: 70px; }
 }
-
-/* ── NP WAVE MOBILE ── */
 @media (max-width: 768px) {
   .np-wave { gap: 2px; }
   .np-wave span { width: 2px; }
 }
-
-/* ── MINI-PLAYER (P2.1 — STICKY MOBILE PLAYER) ── */
 @media (max-width: 768px) {
   .mini-player {
     position: fixed;
@@ -560,21 +975,12 @@
     display: none !important;
   }
 }
-
-/* ─── Touch target minimum sizes (48px per WCAG 2.5.5) ─────────────────── */
 @media (max-width: 768px) {
   .nav-btn { min-height: 48px; min-width: 48px; }
   .fav-btn, .share-btn, .eq-btn { min-height: 48px; min-width: 48px; display: inline-flex; align-items: center; justify-content: center; }
   .station-row { min-height: 48px; }
   .genre-chip { min-height: 44px; padding: 0 14px; display: inline-flex; align-items: center; }
 }
-
-/* ─── CRITICAL: Prevent horizontal overflow on mobile ──────────────────── */
-html, body {
-  max-width: 100vw;
-  overflow-x: hidden;
-}
-
 @media (max-width: 768px) {
   /* Lock all major containers to viewport width */
   .page-wrap,
@@ -643,8 +1049,6 @@ html, body {
     box-sizing: border-box;
   }
 }
-
-/* Fix terminal overlays on mobile */
 @media (max-width: 600px) {
   .horror-terminal {
     width: 96vw !important;
@@ -671,14 +1075,6 @@ html, body {
     padding: 8px 20px !important;
   }
 }
-
-/* ═══════════════════════════════════════════════════════
-   WNCORE MOBILE — COMPREHENSIVE FIX PASS
-   Addresses layout, readability, spacing, player UX
-   on all mobile screens (≤768px primary, ≤480px secondary)
-═══════════════════════════════════════════════════════ */
-
-/* ── 1. PLAYER BAR — mobile layout overhaul ── */
 @media (max-width: 768px) {
   .player-bar {
     padding: 0 10px;
@@ -744,8 +1140,6 @@ html, body {
     display: none;
   }
 }
-
-/* ── 2. GLOBE SECTION — better mobile hero ── */
 @media (max-width: 480px) {
   .globe-section {
     height: 200px !important;
@@ -773,8 +1167,6 @@ html, body {
     font-size: 0.58rem;
   }
 }
-
-/* ── 3. FEATURED CARDS — better proportions on mobile ── */
 @media (max-width: 600px) {
   .featured-row {
     grid-template-columns: 1fr !important;
@@ -794,8 +1186,6 @@ html, body {
     gap: 12px;
   }
 }
-
-/* ── 4. SECTION HEADERS — tighten spacing ── */
 @media (max-width: 480px) {
   .section-hd {
     margin-bottom: 10px;
@@ -807,8 +1197,6 @@ html, body {
     font-size: 1.05rem !important;
   }
 }
-
-/* ── 5. REC CARDS — properly sized on small screens ── */
 @media (max-width: 480px) {
   .rec-grid {
     grid-template-columns: 1fr 1fr !important;
@@ -828,8 +1216,6 @@ html, body {
     height: 32px;
   }
 }
-
-/* ── 6. TRENDING ITEMS — more breathing room ── */
 @media (max-width: 480px) {
   .trending-item {
     padding: 10px 0;
@@ -853,8 +1239,6 @@ html, body {
     font-size: 0.62rem;
   }
 }
-
-/* ── 7. STATION TABLE — better mobile reading ── */
 @media (max-width: 480px) {
   .station-table {
     font-size: 0.72rem;
@@ -877,8 +1261,6 @@ html, body {
     justify-content: center;
   }
 }
-
-/* ── 8. LIVE MUSIC PAGE — hero and channel strip ── */
 @media (max-width: 768px) {
   .lm-hero {
     padding: 28px 16px 24px !important;
@@ -933,7 +1315,6 @@ html, body {
     gap: 8px;
   }
 }
-
 @media (max-width: 480px) {
   .lm-hero-title {
     font-size: 1.6rem !important;
@@ -947,8 +1328,6 @@ html, body {
     font-size: 0.65rem;
   }
 }
-
-/* ── 9. ANIME PAGE — hero banner and station grid ── */
 @media (max-width: 480px) {
   .anime-banner {
     height: 140px !important;
@@ -963,8 +1342,6 @@ html, body {
     gap: 7px;
   }
 }
-
-/* ── 10. GENRE STRIP — horizontal scroll, no wrapping ── */
 @media (max-width: 768px) {
   .genre-strip {
     display: flex !important;
@@ -986,8 +1363,6 @@ html, body {
     font-size: 0.72rem;
   }
 }
-
-/* ── 11. SEARCH MODAL — full-screen on mobile ── */
 @media (max-width: 480px) {
   .search-modal-backdrop {
     padding: 0 !important;
@@ -1010,8 +1385,6 @@ html, body {
     max-height: 60vh !important;
   }
 }
-
-/* ── 12. MODALS — slide up from bottom on mobile ── */
 @media (max-width: 480px) {
   .modal-backdrop {
     align-items: flex-end !important;
@@ -1025,8 +1398,6 @@ html, body {
     padding: 20px 18px 32px !important;
   }
 }
-
-/* ── 13. FOOTER — tighter and padded for player+nav ── */
 @media (max-width: 480px) {
   .wncore-footer {
     padding-bottom: calc(var(--player-h) + 56px + 12px) !important;
@@ -1041,8 +1412,6 @@ html, body {
     font-size: 0.68rem;
   }
 }
-
-/* ── 14. BOTTOM NAV — ensure it's always above player ── */
 @media (max-width: 768px) {
   .mobile-bottom-nav {
     bottom: var(--player-h) !important;
@@ -1059,8 +1428,6 @@ html, body {
     height: 20px;
   }
 }
-
-/* ── 15. HEADER MOBILE — logo + hamburger only ── */
 @media (max-width: 480px) {
   .header-inner {
     padding: 0 12px;
@@ -1074,16 +1441,12 @@ html, body {
     height: 52px;
   }
 }
-
-/* ── 16. PAGE WRAP — consistent safe area padding ── */
 @media (max-width: 480px) {
   .page-wrap {
     padding: 16px 12px !important;
     gap: 18px !important;
   }
 }
-
-/* ── 17. SIDEBAR CARDS — horizontal scroll when shown ── */
 @media (max-width: 768px) {
   /* ARG card shown in main flow */
   .arg-card {
@@ -1099,16 +1462,12 @@ html, body {
     font-size: 0.6rem;
   }
 }
-
-/* ── 18. PODCAST GRID ── */
 @media (max-width: 480px) {
   #podcast-grid {
     grid-template-columns: 1fr !important;
     gap: 8px !important;
   }
 }
-
-/* ── 19. ABOUT PAGE ── */
 @media (max-width: 480px) {
   .about-wrap {
     padding: 24px 14px 100px !important;
@@ -1118,8 +1477,6 @@ html, body {
     font-size: 1.5rem !important;
   }
 }
-
-/* ── 20. TICKER — more legible on small screens ── */
 @media (max-width: 360px) {
   .ticker-inner {
     font-size: 0.5rem;
@@ -1129,8 +1486,6 @@ html, body {
     height: 22px;
   }
 }
-
-/* ── 21. PREVENT ALL HORIZONTAL OVERFLOW ── */
 @media (max-width: 768px) {
   * {
     max-width: 100%;
@@ -1141,8 +1496,6 @@ html, body {
     height: auto;
   }
 }
-
-/* ── 22. MOBILE MENU DRAWER — ensure full-width proper ── */
 @media (max-width: 768px) {
   .mobile-nav-drawer {
     position: fixed;
@@ -1159,8 +1512,6 @@ html, body {
     padding: 16px 16px calc(var(--player-h) + 56px + 16px);
   }
 }
-
-/* ── 23. SAFE AREA INSETS (notch/home indicator support) ── */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   .player-bar {
     padding-bottom: calc(env(safe-area-inset-bottom));
@@ -1175,14 +1526,6 @@ html, body {
     padding-bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom) + 8px) !important;
   }
 }
-
-/* ═══════════════════════════════════════════════════════
-   WNCORE MOBILE — UX OVERHAUL PASS
-   Fixes: menu cutoff, chat widget position, overall
-   breathing room / open feel (TuneIn/iHeart reference)
-═══════════════════════════════════════════════════════ */
-
-/* ── FIX: Header must never clip the hamburger button ── */
 @media (max-width: 768px) {
   header {
     overflow: visible !important;
@@ -1201,11 +1544,6 @@ html, body {
     z-index: 501;
   }
 }
-
-/* ── FIX: Chat widget — proper mobile positioning ── */
-/* On mobile the stack from bottom is:
-   safe-area → player bar (68px) → bottom nav (54px)
-   Chat button should sit just above that stack        */
 @media (max-width: 768px) {
   #wnc-chat-btn {
     bottom: calc(var(--player-h, 68px) + 54px + 14px) !important;
@@ -1222,8 +1560,6 @@ html, body {
     border-radius: 16px !important;
   }
 }
-
-/* ── BREATHING ROOM: Open, spacious mobile layout ── */
 @media (max-width: 768px) {
   /* Hero globe: taller, less cramped */
   .globe-section {
@@ -1276,8 +1612,6 @@ html, body {
     padding-bottom: 8px !important;
   }
 }
-
-/* ── Small phones (≤480px): tighter but still open ── */
 @media (max-width: 480px) {
   .globe-section {
     height: 240px !important;
@@ -1327,8 +1661,6 @@ html, body {
     padding: 12px 6px !important;
   }
 }
-
-/* ── Mobile nav drawer: breathe ── */
 @media (max-width: 768px) {
   .mobile-nav {
     padding: 28px 20px !important;
@@ -1342,5 +1674,1332 @@ html, body {
     display: flex;
     align-items: center;
     min-height: 52px;
+  }
+}
+/* ── FROM horror_upgrade.css (mobile) ────────────────────────────────── */
+@media (max-width: 768px) {
+  .globe-section {
+    position: relative;
+    overflow: hidden;
+    min-height: 260px !important;
+    max-height: 340px;
+  }
+  
+  .globe-overlay-left {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px !important;
+    background: linear-gradient(to top, rgba(3,7,18,0.92) 40%, rgba(3,7,18,0.5) 70%, transparent) !important;
+    width: 100% !important;
+  }
+  
+  .globe-title {
+    font-size: 1.6rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 6px !important;
+  }
+  
+  .globe-sub {
+    font-size: 0.7rem !important;
+    max-width: 100% !important;
+    margin-bottom: 12px !important;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .globe-stats {
+    gap: 16px !important;
+    flex-wrap: wrap;
+    margin-bottom: 0 !important;
+  }
+  
+  .globe-stat-num { font-size: 1.15rem !important; }
+  .globe-stat-lbl { font-size: 0.58rem !important; }
+  
+  .globe-kicker {
+    display: none;
+  }
+
+  /* Featured cards fix on mobile */
+  .featured-card {
+    padding: 16px !important;
+  }
+  .fc-now {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+  
+  /* Main col padding */
+  .main-col {
+    padding: 0 !important;
+  }
+
+  /* Sidebar comes before main content on mobile — style it better */
+  .sidebar {
+    order: 2 !important;
+  }
+  .main-col {
+    order: 1 !important;
+  }
+  
+  /* Rec grid 2 columns on mobile */
+  .rec-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Section hd font size */
+  .section-title {
+    font-size: 1.1rem !important;
+  }
+
+  /* Hide genre strip scrollbar on mobile */
+  .genre-strip-wrap {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .genre-strip-wrap::-webkit-scrollbar { display: none; }
+  
+  /* Horror terminal on mobile */
+  .horror-terminal {
+    font-size: 0.72rem !important;
+  }
+  .horror-terminal-body {
+    padding: 16px 18px 20px !important;
+  }
+  
+  /* Share button visible on mobile player */
+  .pb-share-btn {
+    display: flex !important;
+  }
+}
+@media (max-width: 480px) {
+  .globe-title { font-size: 1.3rem !important; }
+  .globe-sub { display: none; }
+  
+  /* Rec grid single col on small phones */
+  .rec-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Player bar name truncation */
+  .pb-name {
+    max-width: 110px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .horror-terminal-chrome {
+    padding: 8px 12px;
+  }
+  .horror-chrome-title {
+    display: none;
+  }
+}
+/* ── FROM p5-transitions.css (mobile) ────────────────────────────────── */
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    border-top: 1px solid rgba(200, 71, 42, 0.3) !important;
+    box-shadow: 0 -1px 0 rgba(200, 71, 42, 0.08),
+                0 -8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  .mbn-btn.active {
+    color: var(--text);
+  }
+
+  .mbn-btn.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) skewX(-10deg);
+    width: 24px;
+    height: 2px;
+    background: #c8472a;
+    border-radius: 0 0 2px 2px;
+    animation: p5TabSlash 160ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes p5TabSlash {
+    from { width: 0; opacity: 0; }
+    to   { width: 24px; opacity: 1; }
+  }
+
+  .mbn-btn {
+    position: relative;
+  }
+
+  .mbn-btn::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 8px;
+    background: rgba(200, 71, 42, 0.15);
+    opacity: 0;
+    transform: scale(0.4);
+    pointer-events: none;
+  }
+
+  .mbn-btn.p5-tap::after {
+    animation: p5BtnTap 260ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  @keyframes p5BtnTap {
+    0%   { opacity: 1; transform: scale(0.4); }
+    100% { opacity: 0; transform: scale(1.3); }
+  }
+
+  .genre-strip-wrap {
+    position: sticky;
+    top: var(--header-h);
+    z-index: 200;
+    background: var(--bg);
+  }
+
+  body.dark-mode .genre-strip-wrap {
+    background: var(--bg);
+  }
+}
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  @media (max-width: 768px) {
+    .mobile-bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom);
+      height: calc(56px + env(safe-area-inset-bottom));
+    }
+  }
+}
+/* ── FROM wncore-bugfix.css (mobile fixes) ───────────────────────────── */
+@media (max-width: 768px) {
+  #wnc-chat-btn {
+    bottom: calc(var(--player-h, 76px) + 56px + 12px) !important;
+    right: 14px !important;
+  }
+
+  #wnc-chat-panel {
+    bottom: calc(var(--player-h, 76px) + 56px + 66px) !important;
+    right: 14px !important;
+    /* Constrain height so it doesn't go above header */
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 80px) !important;
+  }
+}
+@media (max-width: 768px) {
+  #bgplay-banner {
+    bottom: calc(var(--player-h, 76px) + 56px + 10px) !important;
+  }
+}
+@media (max-width: 768px) {
+  /* The swipe hint is appended to body with inline style — override
+     via attribute selector on the style content isn't possible,
+     so we target it by its unique text positioning characteristics.
+     It has no class/id, so we patch it in JS (wncore-bugfix.js).  */
+}
+@media (max-width: 768px) {
+  .wncore-toast {
+    bottom: calc(var(--player-h, 76px) + 56px + 12px) !important;
+  }
+}
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: calc(var(--player-h, 76px) + 56px + 16px) !important;
+    left: 12px !important;
+  }
+}
+@media (max-width: 768px) {
+  #globe-container {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    z-index: -1 !important;
+  }
+}
+@media (max-width: 768px) {
+  #wnc-chat-panel:not(.open) {
+    transform: translateY(110%) !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  #wnc-chat-panel.open {
+    transform: translateY(0) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+@media (max-width: 768px) {
+  #wncore-mini-widget {
+    bottom: calc(var(--player-h, 76px) + 56px + 8px) !important;
+    /* Prevent it from being dragged under the bottom nav */
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 16px);
+  }
+}
+@media (max-width: 768px) {
+  .station-modal-panel,
+  #station-modal {
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px) !important;
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (max-width: 768px) {
+  #similar-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+    max-height: calc(60dvh) !important;
+  }
+}
+@media (max-width: 768px) {
+  #eq-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+@media (max-width: 768px) {
+  #ambient-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+@media (max-width: 768px) {
+  #theme-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+@media (max-width: 768px) {
+  #scrobble-panel {
+    bottom: calc(var(--player-h, 76px) + 56px) !important;
+  }
+}
+/* ── FROM wncore-mobile-fix.css ──────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════════
+   WNCORE — COMPREHENSIVE MOBILE FIX
+   File: wncore-mobile-fix.css
+   Load last (after p5-transitions.css)
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── CONSTELLATION CANVAS ────────────────────────────────────────── */
+/* Default hidden; JS creates and shows it on mobile only */
+#wnc-constellation {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+
+/* ── BODY: bottom clearance for player + bottom nav ─────────────── */
+
+/* ── HEADER: full-width, no overflow ────────────────────────────── */
+
+/* ── GENRE STRIP: horizontal scroll, no wrapping ─────────────────── */
+
+/* ── STATION TABLE ───────────────────────────────────────────────── */
+
+/* ── PAGE CONTENT: no horizontal overflow ────────────────────────── */
+
+/* ── TOUCH TARGETS: 44px minimum ─────────────────────────────────── */
+
+/* ── MOBILE NAV DRAWER: safe-area aware ──────────────────────────── */
+
+/* ── TICKER ──────────────────────────────────────────────────────── */
+
+/* ── FEATURED CARDS: single column on small screens ─────────────── */
+
+/* ── RECOMMENDATIONS GRID: 2-col ─────────────────────────────────── */
+
+/* ── SEARCH MODAL ────────────────────────────────────────────────── */
+
+/* ── PLAYER BAR: safe area ───────────────────────────────────────── */
+
+/* ── LIVE MUSIC + FOOTER: clear bottom controls ──────────────────── */
+
+/* ── TYPOGRAPHY ──────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  #wnc-constellation {
+    display: block;
+  }
+
+  /* Hide WebGL globe on mobile — replaced by constellation */
+  #globe-container {
+    display: none !important;
+  }
+
+  .globe-section {
+    height: 300px !important;
+  }
+
+  /* Full-width overlay: text gradient from bottom */
+  .globe-overlay-left {
+    width: 100% !important;
+    background: linear-gradient(
+      to top,
+      rgba(3, 7, 18, 0.97) 0%,
+      rgba(3, 7, 18, 0.6) 55%,
+      transparent 100%
+    ) !important;
+    justify-content: flex-end !important;
+    padding: 16px 16px 18px !important;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  .globe-hint {
+    display: none !important;
+  }
+
+  /* Fixed: single display value — use -webkit-box for line clamping */
+  .globe-sub {
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.7rem !important;
+    margin-bottom: 10px !important;
+  }
+}
+@media (max-width: 768px) {
+  body {
+    padding-bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+@media (max-width: 768px) {
+  header {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .header-inner {
+    padding: 0 14px;
+    gap: 10px;
+  }
+}
+@media (max-width: 768px) {
+  .genre-strip-wrap {
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow: hidden;
+  }
+
+  .genre-strip {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    gap: 6px !important;
+    padding: 8px 14px !important;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .genre-strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .genre-btn {
+    flex-shrink: 0 !important;
+    scroll-snap-align: start;
+    white-space: nowrap;
+    font-size: 0.72rem !important;
+    padding: 6px 12px !important;
+    min-height: 36px;
+  }
+}
+@media (max-width: 768px) {
+  .station-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  .station-table .col-country,
+  .station-table .col-bitrate,
+  .station-table th:nth-child(4),
+  .station-table td:nth-child(4),
+  .station-table th:nth-child(5),
+  .station-table td:nth-child(5) {
+    display: none !important;
+  }
+
+  .station-table td {
+    padding: 10px 8px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .station-row {
+    min-height: 52px !important;
+  }
+
+  .play-btn {
+    min-width: 36px;
+    min-height: 36px;
+  }
+}
+@media (max-width: 768px) {
+  .page-wrap {
+    max-width: 100vw;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+}
+@media (max-width: 768px) {
+  .fav-btn,
+  .share-btn,
+  .play-btn,
+  .mobile-menu-btn,
+  .scroll-top-btn,
+  .mbn-btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+@media (max-width: 768px) {
+  .mobile-nav {
+    bottom: calc(var(--player-h) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+@media (max-width: 768px) {
+  .ticker-wrap {
+    max-width: 100vw;
+    overflow: hidden;
+  }
+}
+@media (max-width: 600px) {
+  .featured-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .featured-card {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 14px !important;
+    min-height: 64px;
+  }
+}
+@media (max-width: 480px) {
+  .rec-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+}
+@media (max-width: 768px) {
+  .search-modal {
+    padding: 12px !important;
+  }
+
+  .search-box {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 12px !important;
+  }
+
+  .search-results {
+    max-height: 60vh !important;
+  }
+}
+@media (max-width: 768px) {
+  .player-bar {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(var(--player-h) + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+@media (max-width: 768px) {
+  .lm-wrap {
+    padding-bottom: calc(var(--player-h) + 56px + 24px) !important;
+  }
+
+  .wncore-footer {
+    padding-bottom: calc(var(--player-h) + 56px + 8px) !important;
+    margin-bottom: 0 !important;
+  }
+}
+@media (max-width: 480px) {
+  .section-title,
+  .page-title {
+    font-size: 1.4rem !important;
+  }
+}
+/* ── FROM wncore-mobile-breathing.css ────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════════════════
+   WNCORE — MOBILE BREATHING ROOM
+   Load LAST in <head>, after wncore-ui-improvements.css
+   Inspired by iOS/Android music player spatial conventions:
+   — generous thumb zones (min 48px)
+   — card-based layouts with clear gutters
+   — layered bottom sheet feel for the player
+   — content never touches screen edges
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── ROOT: more comfortable baseline on small screens ──────────── */
+
+/* ─── PAGE WRAP: more comfortable padding ────────────────────────── */
+
+/* ─── SECTION HEADERS: more room above ──────────────────────────── */
+
+/* ─── FEATURED CARDS: proper card height + breathing ────────────── */
+
+/* ─── REC CARDS ──────────────────────────────────────────────────── */
+
+/* ─── STATION TABLE: roomier rows ───────────────────────────────── */
+
+/* ─── PLAYER BAR: iOS/Android inspired layered feel ─────────────── */
+
+/* ─── MOBILE BOTTOM NAV: iOS home-bar safety ────────────────────── */
+
+/* ─── SIDEBAR ON MOBILE: card grid feel ─────────────────────────── */
+
+/* ─── GENRE STRIP: bigger pills ─────────────────────────────────── */
+
+/* ─── SEARCH MODAL: bottom-sheet feel ───────────────────────────── */
+
+/* ─── TRENDING ITEMS: more room ─────────────────────────────────── */
+
+/* ─── SECTION: consistent top spacing ───────────────────────────── */
+
+/* ─── LIVE MUSIC HERO ────────────────────────────────────────────── */
+
+/* ─── ABOUT PAGE ─────────────────────────────────────────────────── */
+
+/* ─── FAVORITES PAGE ─────────────────────────────────────────────── */
+
+/* ─── CHARTS / GENRES / PODCASTS ─────────────────────────────────── */
+
+/* ─── SIGN IN MODAL: full bottom sheet ──────────────────────────── */
+
+/* ─── GLOBE SECTION: taller on mobile ───────────────────────────── */
+
+/* ─── FOOTER: safe area bottom ──────────────────────────────────── */
+
+/* ─── TOAST: safe position on all phones ────────────────────────── */
+
+/* ─── SCROLLING: momentum + no tap delay ────────────────────────── */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+.page, .page-wrap, .search-results, .genre-strip, #fav-grid {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ─── PREVENT LAYOUT SHIFT DURING FONT LOAD ─────────────────────── */
+
+/* ─── AI CHAT WIDGET: clear player bar + bottom nav ─────────────── */
+/* wncore-upgrades.js hardcodes bottom:100px (btn) and bottom:154px
+   (panel) via an injected <style> tag. On mobile those values put
+   both elements behind the player bar (72px) + bottom nav (56px).
+   This file loads last so !important wins over everything.         */
+
+/* ─── HEADER: prevent hamburger clipping ────────────────────────── */
+/* header has fixed height + no overflow set, so flex children can
+   get clipped if header-right is too wide. Fix:
+   1. overflow:visible so nothing gets cut
+   2. hide space-hungry items that mobile.css might miss
+   3. tighten header-right gap                                      */
+
+/* Even tighter on very small phones */
+
+/* ─── MINI PLAYER: hide until playing ───────────────────────────── */
+/* Both mini player variants start hidden. JS patch below controls
+   visibility. This ensures neither shows in "standby" state.       */
+.mini-player {
+  display: none !important;
+}
+/* Block ALL show states unless .playing-visible is set by our JS */
+.mini-player.visible:not(.playing-visible) {
+  display: none !important;
+}
+.mini-player[data-visible="true"]:not(.playing-visible) {
+  display: none !important;
+}
+.mini-player.playing-visible {
+  display: flex !important;
+}
+
+/* ─── BOTTOM NAV: always pinned like YouTube ────────────────────── */
+
+/* ─── MINI PLAYER: sits above bottom nav, below nothing ─────────── */
+
+/* ─── HEADER: prevent backdrop-filter dark bleed in light mode ───── */
+/* lm-hero and other dark sections have background:#0a0a0c which
+   bleeds through the semi-transparent header backdrop-filter.
+   Force solid enough background on mobile so it never looks dark
+   in light mode regardless of what's scrolled behind it.           */
+
+/* ─── PLAYER BAR: hidden until playing on mobile ────────────────── */
+/* On mobile the player bar is hidden by default and slides up when
+   audio starts playing. Once shown it stays until page reload —
+   same pattern as Spotify/Apple Music mobile.
+   JS in wncore-mobile-freeze-fix.js handles the .pb-active class. */
+
+@media (max-width: 768px) {
+  
+}
+@media (max-width: 400px) {
+  
+}
+@media (max-width: 768px) {
+  .page-wrap {
+    padding: 20px var(--mobile-gutter) !important;
+    gap: var(--mobile-section-gap) !important;
+  }
+}
+@media (max-width: 768px) {
+  .section-header {
+    margin-bottom: 14px !important;
+    padding: 0 2px;
+  }
+  .section-title {
+    font-size: 1rem !important;
+    letter-spacing: 0.02em;
+  }
+}
+@media (max-width: 768px) {
+  .featured-row {
+    gap: var(--mobile-card-gap) !important;
+    margin-bottom: 8px !important;
+  }
+  .featured-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+    min-height: 72px;
+  }
+  /* Single column: give the card horizontal room */
+  .featured-row:has(.featured-card:only-child) .featured-card,
+  .featured-row .featured-card:first-child:last-child {
+    padding: 18px !important;
+  }
+}
+@media (max-width: 768px) {
+  .rec-grid {
+    gap: var(--mobile-card-gap) !important;
+  }
+  .rec-card {
+    padding: 14px 14px 16px !important;
+    border-radius: 12px !important;
+  }
+  .rc-name { font-size: 0.82rem !important; }
+  .rc-meta { font-size: 0.65rem !important; }
+}
+@media (max-width: 768px) {
+  .station-table td {
+    padding: 13px 6px !important;
+  }
+  .station-table thead th {
+    padding: 8px 6px !important;
+    font-size: 0.6rem !important;
+    letter-spacing: 1.2px;
+  }
+  .st-name {
+    font-size: 0.84rem !important;
+    line-height: 1.35 !important;
+  }
+  .st-meta {
+    font-size: 0.65rem !important;
+    margin-top: 2px !important;
+  }
+  /* Play button: full 48px touch target */
+  .st-play-btn {
+    min-width: 48px !important;
+    min-height: 48px !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+}
+@media (max-width: 768px) {
+  .player-bar {
+    /* Slightly taller for comfortable thumb reach */
+    --player-h: 72px;
+    padding: 0 16px !important;
+    border-radius: 20px 20px 0 0 !important;
+    /* Subtle top border arc effect */
+    border-top: 1.5px solid rgba(255,255,255,0.1) !important;
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.25) !important;
+  }
+  body:not(.dark-mode) .player-bar {
+    border-top: 1.5px solid rgba(0,0,0,0.07) !important;
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.1) !important;
+  }
+
+  /* Drag handle pill — like iOS lock screen player */
+  .player-bar::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  body:not(.dark-mode) .player-bar::before {
+    background: rgba(0,0,0,0.12);
+  }
+
+  /* Art: slightly bigger on mobile */
+  .pb-art {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 10px !important;
+    flex-shrink: 0 !important;
+  }
+  .pb-art img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 10px !important;
+  }
+
+  /* Station info: more room */
+  .pb-station {
+    max-width: calc(100vw - 200px) !important;
+    overflow: hidden;
+  }
+  .pb-name {
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    line-height: 1.2 !important;
+  }
+  .pb-meta {
+    font-size: 0.6rem !important;
+    margin-top: 2px !important;
+    opacity: 0.7;
+  }
+
+  /* Controls: comfortable spacing */
+  .pb-controls {
+    gap: 4px !important;
+  }
+  .pb-btn {
+    padding: 0 !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 12px !important;
+  }
+  .pb-play {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+    border-radius: 50% !important;
+  }
+
+  /* Progress bar: bigger tap area with pseudo padding */
+  .pb-bar-wrap {
+    padding: 8px 0 !important;
+    cursor: pointer;
+  }
+  .pb-bar {
+    height: 3px !important;
+  }
+  .pb-bar:active { height: 5px !important; }
+}
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    height: calc(56px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  .mbn-btn {
+    min-height: 48px !important;
+    padding: 6px 12px !important;
+  }
+  /* Active state: cleaner pill indicator */
+  .mbn-btn.active {
+    color: var(--accent) !important;
+  }
+  .mbn-btn.active svg {
+    filter: drop-shadow(0 0 4px rgba(200,71,42,0.4));
+  }
+}
+@media (max-width: 768px) {
+  .sidebar {
+    gap: var(--mobile-card-gap) !important;
+  }
+  .sidebar-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+  /* NP card: horizontal layout like Spotify mini widget */
+  .sidebar-card.np-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+}
+@media (max-width: 768px) {
+  .genre-strip {
+    padding: 4px var(--mobile-gutter) 8px !important;
+    gap: 8px !important;
+    /* smooth horizontal scroll */
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .genre-strip::-webkit-scrollbar { display: none; }
+  .genre-btn {
+    padding: 8px 16px !important;
+    font-size: 0.72rem !important;
+    border-radius: 24px !important;
+    scroll-snap-align: start;
+    white-space: nowrap;
+    min-height: 36px;
+    display: flex !important;
+    align-items: center !important;
+  }
+}
+@media (max-width: 600px) {
+  .search-modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .search-box {
+    border-radius: 20px 20px 0 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 85dvh !important;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px) !important;
+    /* drag handle */
+    padding-top: 20px !important;
+    position: relative;
+  }
+  .search-box::before {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 3px;
+  }
+  .search-input-wrap {
+    margin: 0 0 12px !important;
+  }
+  .search-results {
+    max-height: calc(85dvh - 120px) !important;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .search-result-item {
+    padding: 14px 16px !important;
+    min-height: 56px;
+  }
+}
+@media (max-width: 768px) {
+  .trending-item {
+    padding: 12px 10px !important;
+    border-radius: 10px;
+    min-height: 52px;
+  }
+  .tr-name { font-size: 0.82rem !important; }
+  .tr-meta { font-size: 0.65rem !important; }
+}
+@media (max-width: 768px) {
+  .main-col > * + * {
+    margin-top: var(--mobile-section-gap);
+  }
+}
+@media (max-width: 768px) {
+  .lm-hero {
+    padding: 28px var(--mobile-gutter) 32px !important;
+  }
+  .lm-hero-title {
+    font-size: 1.8rem !important;
+    line-height: 1.15 !important;
+  }
+  .lm-ch-btn {
+    min-height: 44px !important;
+    padding: 10px 18px !important;
+    font-size: 0.75rem !important;
+  }
+  .lm-channels {
+    gap: 8px !important;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 768px) {
+  .about-wrap {
+    padding: 28px var(--mobile-gutter) 120px !important;
+  }
+  .about-title {
+    font-size: 1.6rem !important;
+    line-height: 1.2 !important;
+    margin-bottom: 12px !important;
+  }
+}
+@media (max-width: 768px) {
+  #page-favorites {
+    padding: 24px var(--mobile-gutter) 120px !important;
+  }
+  #fav-grid {
+    gap: var(--mobile-card-gap) !important;
+  }
+}
+@media (max-width: 768px) {
+  #page-charts > div,
+  #page-genres > div,
+  #page-podcasts > div {
+    padding: 24px var(--mobile-gutter) 120px !important;
+  }
+}
+@media (max-width: 480px) {
+  .modal-backdrop {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+  .modal-box {
+    border-radius: 24px 24px 0 0 !important;
+    padding: 28px var(--mobile-gutter) calc(28px + env(safe-area-inset-bottom, 0px)) !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+  }
+  .modal-box::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 32px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 3px;
+  }
+  .modal-btn {
+    min-height: 52px !important;
+    border-radius: 14px !important;
+    font-size: 0.85rem !important;
+  }
+  .modal-input {
+    min-height: 48px !important;
+    border-radius: 12px !important;
+    font-size: 0.9rem !important;
+    padding: 12px 16px !important;
+  }
+}
+@media (max-width: 768px) {
+  .globe-section {
+    height: 300px !important;
+  }
+}
+@media (max-width: 768px) {
+  .wncore-footer {
+    padding-bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px) + 16px) !important;
+  }
+}
+@media (max-width: 768px) {
+  .wncore-toast {
+    bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px) + 14px) !important;
+    font-size: 0.68rem !important;
+    padding: 10px 20px !important;
+    max-width: 85vw !important;
+  }
+  .toast-container {
+    bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px) + 18px) !important;
+  }
+}
+@media (max-width: 768px) {
+  body {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+}
+@media (max-width: 768px) {
+  /* FAB button: sit above bottom nav */
+  #wnc-chat-btn {
+    bottom: calc(var(--player-h, 72px) + 56px + 14px) !important;
+    right: 14px !important;
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  /* Panel: full-width bottom-sheet when open */
+  #wnc-chat-panel {
+    bottom: calc(var(--player-h, 72px) + 56px + env(safe-area-inset-bottom, 0px)) !important;
+    right: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 20px 20px 0 0 !important;
+    height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 72px) - 56px - env(safe-area-inset-bottom, 0px)) !important;
+    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 72px) - 56px - env(safe-area-inset-bottom, 0px)) !important;
+    padding-top: 20px !important;
+    position: fixed !important;
+  }
+  /* Drag handle */
+  #wnc-chat-panel::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 8px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 32px !important;
+    height: 3px !important;
+    background: var(--border) !important;
+    border-radius: 3px !important;
+    pointer-events: none !important;
+  }
+
+  /* CLOSED: push fully below screen — not just opacity:0 */
+  #wnc-chat-panel:not(.open) {
+    transform: translateY(110%) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: transform 0.28s cubic-bezier(0.4,0,1,1),
+                opacity 0.2s ease,
+                visibility 0s linear 0.28s !important;
+  }
+
+  /* OPEN: slide up smoothly */
+  #wnc-chat-panel.open {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transition: transform 0.32s cubic-bezier(0.22,1,0.36,1),
+                opacity 0.22s ease,
+                visibility 0s linear 0s !important;
+  }
+
+  /* Input area: don't get obscured by iOS home bar */
+  #wnc-chat-form {
+    padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  }
+}
+@media (max-width: 768px) {
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+    /* Ensure inner content never exceeds header width */
+    min-width: 0;
+  }
+  .header-right {
+    gap: 6px !important;
+    flex-shrink: 0;
+    overflow: visible !important;
+    /* Prevent right side from being pushed off screen */
+    min-width: 0;
+  }
+  /* Hide sign-in button on mobile — it's in the mobile nav drawer */
+  .sign-in-btn {
+    display: none !important;
+  }
+  /* Hide theme toggle labels (they are display:none in mobile.css
+     but !important ensures nothing re-shows them)                 */
+  .theme-toggle-labels {
+    display: none !important;
+  }
+  /* Shrink theme toggle track slightly on mobile */
+  .theme-toggle-track {
+    width: 44px !important;
+    height: 24px !important;
+  }
+  .theme-toggle-thumb {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  body.dark-mode .theme-toggle-thumb {
+    transform: translateX(20px) !important;
+  }
+  /* Search button: ensure it's not hidden by any other rule */
+  .search-btn {
+    display: flex !important;
+    flex-shrink: 0;
+  }
+  /* Hamburger: always visible and never clipped */
+  .mobile-menu-btn {
+    display: flex !important;
+    flex-shrink: 0 !important;
+    position: relative !important;
+    z-index: 501 !important; /* above header z-index:500 */
+  }
+}
+@media (max-width: 360px) {
+  .header-right {
+    gap: 4px !important;
+  }
+  .theme-toggle {
+    display: none !important;
+  }
+  .search-btn {
+    width: 34px !important;
+    height: 34px !important;
+  }
+}
+@media (max-width: 768px) {
+  .mobile-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    /* Sit above player bar */
+    bottom: var(--player-h, 72px) !important;
+    z-index: 481 !important;
+    /* Never hide, never transform away */
+    transform: none !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    /* Safe area for home-bar phones */
+    padding-bottom: 0 !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--bg) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body.dark-mode .mobile-bottom-nav {
+    background: rgba(14,12,10,0.97) !important;
+  }
+  .mbn-btn {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 3px !important;
+    min-height: 52px !important;
+    padding: 8px 4px !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.3px !important;
+    color: var(--text3) !important;
+    border: none !important;
+    background: none !important;
+    cursor: pointer !important;
+    transition: color 0.15s !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  .mbn-btn.active {
+    color: var(--accent) !important;
+  }
+  .mbn-btn svg {
+    width: 22px !important;
+    height: 22px !important;
+    flex-shrink: 0 !important;
+  }
+  /* Playing dot indicator */
+  .mbn-playing-dot {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: var(--accent) !important;
+    position: absolute !important;
+    top: 6px !important;
+    right: calc(50% - 16px) !important;
+  }
+}
+@media (max-width: 768px) {
+  .mini-player {
+    position: fixed !important;
+    bottom: calc(var(--player-h, 72px) + 52px) !important; /* above bottom nav */
+    left: 0 !important;
+    right: 0 !important;
+    height: 56px !important;
+    z-index: 479 !important;
+    /* Hidden by default — JS adds .playing-visible */
+    display: none !important;
+    align-items: center !important;
+    padding: 0 16px !important;
+    background: var(--surface) !important;
+    border-top: 1px solid var(--border) !important;
+    box-shadow: 0 -2px 12px rgba(0,0,0,0.08) !important;
+  }
+  .mini-player.playing-visible,
+  .mini-player[data-visible="true"] {
+    display: flex !important;
+  }
+  .mini-player-close {
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    color: var(--text3) !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 8px !important;
+    background: none !important;
+    border: none !important;
+    cursor: pointer !important;
+  }
+}
+@media (max-width: 768px) {
+  body:not(.dark-mode) header {
+    background: rgba(245, 243, 239, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  body:not(.dark-mode) header.scrolled {
+    background: rgba(245, 243, 239, 0.99) !important;
+  }
+  /* Dark mode header — also ensure consistent */
+  body.dark-mode header {
+    background: rgba(14, 12, 10, 0.97) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+  /* Fix overflow hidden from wncore-mobile-fix.css clipping hamburger */
+  header {
+    overflow: visible !important;
+  }
+  .header-inner {
+    overflow: visible !important;
+  }
+}
+@media (max-width: 768px) {
+  .player-bar {
+    transform: translateY(100%) !important;
+    transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+    /* Keep in DOM so bottom nav bottom value still works */
+    visibility: hidden;
+  }
+  .player-bar.pb-active {
+    transform: translateY(0) !important;
+    visibility: visible;
+  }
+  /* Bottom nav: sit at bottom when player hidden, above player when shown */
+  .mobile-bottom-nav {
+    bottom: 0 !important;
+    transition: bottom 0.38s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  }
+  .mobile-bottom-nav.pb-active {
+    bottom: var(--player-h, 72px) !important;
   }
 }

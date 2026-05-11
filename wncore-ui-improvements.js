@@ -160,26 +160,9 @@
     });
   })();
 
-  // ─── VOLUME SCROLL WHEEL ──────────────────────────────────────────────────────
-  // improvements.js already handles vol-slider input + wncore-vol storage.
-  // We ONLY add scroll-wheel on the volume area — no duplicate listeners.
-  (function initVolScrollWheel() {
-    const slider = document.getElementById('vol-slider');
-    if (!slider) return;
-    const volArea = slider.closest('.pb-vol');
-    if (!volArea) return;
-    const audio = document.getElementById('audio');
-    if (!audio) return;
-
-    volArea.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const delta = e.deltaY < 0 ? 0.05 : -0.05;
-      const newVol = Math.max(0, Math.min(1, audio.volume + delta));
-      audio.volume = newVol;
-      slider.value = newVol;
-      try { localStorage.setItem('wncore-vol', String(newVol)); } catch(_) {}
-    }, { passive: false });
-  })();
+  // ─── VOLUME SCROLL WHEEL ──────────────────────────────────────────────────
+  // REMOVED: main.js already adds wheel on .pb-vol which contains vol-slider.
+  // Two handlers = volume jumps 2x per scroll. Main.js handles storage too.);
 
   // ─── COPY STATION URL (right-click row) ──────────────────────────────────────
   // Only intercepts rows that actually have data-url set. Most rows won't have

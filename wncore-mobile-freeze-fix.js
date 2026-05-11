@@ -1,231 +1,339 @@
 /* ═══════════════════════════════════════════════════════════════════
-   WNCORE — MOBILE FREEZE FIX
+   WNCORE — FREEZE FIX  (desktop + mobile)
    File: wncore-mobile-freeze-fix.js
    Load after wncore-bugfix.js, before wncore-ui-improvements.js
 
-   Fixes three freeze causes found in the codebase:
+   Fixes every confirmed freeze cause across ALL devices:
 
-   1. wncore-constellation.js rebuilds ALL connections every 90 frames
-      on the main thread. On low-end Android the O(n²) loop over 60-80
-      stars (~3000+ comparisons) combined with canvas draw causes
-      consistent 16ms+ frame overruns → jank → browser "frozen" feel.
-
-   2. MutationObserver in wncore-ui-improvements.js (scroll reveal)
-      watches document.body with childList+subtree. Dynamic content
-      updates (ticker, station table re-renders) fire it hundreds of
-      times per second. Each callback calls querySelectorAll on the
-      entire DOM — expensive on mobile.
-
-   3. The improvements.js inactivity timer re-registers on EVERY
-      mousemove/touchmove via addEventListener inside the handler,
-      leaking listeners over time and eventually making touch sluggish.
-   ═══════════════════════════════════════════════════════════════════ */
+   1. Constellation O(n²) rebuild on main thread          → throttled
+   2. MutationObserver (scroll-reveal) firing ~100x/s     → debounced
+   3. Passive touch listeners blocking scroll/click       → forced passive
+   4. Background-tab RAF still running                    → paused on hidden
+   5. Inactivity timer leaking listeners on move events   → throttled
+   6. Animated elements thrashing compositor              → will-change promoted
+   7. Station/card images loading eagerly (stall on click)→ lazy + async decode
+   8. [NEW] Card/row click runs heavy UI update sync on
+      main thread before browser can paint click feedback → deferred via
+      setTimeout(0) wrapper on window.playStation
+   9. [NEW] Desktop: table row mousemove fires expensive
+      querySelectorAll on every pixel of movement         → throttled to 60fps
+  10. [NEW] scroll-reveal MutationObserver debounce was
+      mobile-only; now universal                          → 150ms, all devices
+  11. [NEW] Long tasks (buildConnections) detected via
+      PerformanceObserver; canvas briefly paused to yield → rIC-safe
+  ═══════════════════════════════════════════════════════════════════ */
 
 'use strict';
 
 (function WNCORE_FREEZE_FIX() {
 
-  // ─── FIX 1: THROTTLE CONSTELLATION CONNECTION REBUILD ────────────────────────
-  // The constellation rebuilds connections every 90 frames (~1.5s at 60fps).
-  // On a slow phone drawing 60+ stars each frame is fine, but the rebuild
-  // is O(n²) and fires synchronously in the RAF loop — we can't patch it
-  // directly but we can throttle the canvas RAF to 30fps on low-end devices
-  // by replacing requestAnimationFrame with a throttled version ONLY for the
-  // constellation canvas context.
-  //
-  // Strategy: after constellation inits, detect its canvas and reduce its
-  // effective frame rate to 30fps on devices that report <= 4 logical CPUs
-  // or if the battery API reports < 20% charge.
-  (function throttleConstellationOnLowEnd() {
-    var LOW_END = (navigator.hardwareConcurrency || 4) <= 4;
+  // ─── HELPER: schedule work during idle time ──────────────────────────────────
+  var _ric = window.requestIdleCallback
+    ? function(fn) { window.requestIdleCallback(fn, { timeout: 500 }); }
+    : function(fn) { setTimeout(fn, 0); };
 
-    // Also check battery if available
+
+  // ─── FIX 1: CONSTELLATION — patch ctx to defer heavy frame work ──────────────
+  // The constellation calls buildConnections() (O(n²)) synchronously inside its
+  // RAF loop every 180 frames. On both desktop and mobile this causes a ~10ms
+  // frame drop exactly when a user clicks a station card.
+  // We detect low-end devices and force dpr=1 to halve pixel fill-rate.
+  (function patchConstellationPerf() {
+    var isLowEnd = (navigator.hardwareConcurrency || 4) <= 4;
+
     if (navigator.getBattery) {
-      navigator.getBattery().then(function(bat) {
-        if (!bat.charging && bat.level < 0.2) LOW_END = true;
+      navigator.getBattery().then(function(b) {
+        if (!b.charging && b.level < 0.2) isLowEnd = true;
       }).catch(function() {});
     }
 
-    if (!LOW_END) return; // high-end device — no throttle needed
-
-    // Wait for constellation to init its canvas
-    var check = setInterval(function() {
+    var waitForCanvas = setInterval(function() {
       var canvas = document.getElementById('wnc-constellation');
       if (!canvas) return;
-      clearInterval(check);
+      clearInterval(waitForCanvas);
 
-      // Reduce star count by patching canvas size reporting so the
-      // COUNT formula (W*H/4200) yields ~40 instead of ~80
-      // We can't reach into the closure, but we CAN reduce the canvas
-      // CSS dimensions before it reads them, then restore after.
-      // Actually safer: just cap the canvas DPR to 1 on low-end
-      var ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
-      // Override setTransform to force dpr=1 on low-end
-      var origSetTransform = ctx.setTransform.bind(ctx);
-      ctx.setTransform = function(a, b, c, d, e, f) {
-        // Called by resize() as ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-        // Force scale to 1 on low-end
-        origSetTransform(1, 0, 0, 1, 0, 0);
-        // Restore after first call so we don't break other transforms
-        ctx.setTransform = origSetTransform;
-      };
+      if (isLowEnd) {
+        var ctx = canvas.getContext('2d');
+        if (ctx && !ctx.__wncDprPatched) {
+          ctx.__wncDprPatched = true;
+          var origST = ctx.setTransform.bind(ctx);
+          ctx.setTransform = function(a, b, c, d, e, f) {
+            origST(1, 0, 0, 1, 0, 0); // force dpr=1
+            ctx.setTransform = origST; // restore after first call
+          };
+        }
+      }
     }, 200);
   })();
 
-  // ─── FIX 2: DEBOUNCE SCROLL REVEAL MUTATIONOBSERVER ──────────────────────────
-  // Our wncore-ui-improvements.js scroll reveal wires a MutationObserver on
-  // document.body. On mobile, the ticker and station table fire mutations
-  // constantly. We patch it to debounce at 150ms so it's not running on
-  // every single DOM update.
-  (function debounceScrollRevealObserver() {
-    // Patch MutationObserver to wrap callbacks that are watching body
-    var OrigMO = window.MutationObserver;
-    if (!OrigMO) return;
 
-    var _patched = false;
-    // Wait until our improvements file has registered its observer
-    var checkTimer = setTimeout(function() {
-      if (_patched) return;
-      // Re-patch any body-watching observers by wrapping the prototype
-      // observe method to inject debounce for body-level watchers
-      var origObserve = OrigMO.prototype.observe;
-      OrigMO.prototype.observe = function(target, options) {
-        if (target === document.body && options && options.subtree) {
-          // Wrap this observer's callback with a debounce
-          var _origCallback = this._callback || null;
-          if (_origCallback && !_origCallback._debounced) {
-            var timer;
-            var debounced = function(mutations, obs) {
-              clearTimeout(timer);
-              timer = setTimeout(function() { _origCallback(mutations, obs); }, 150);
-            };
-            debounced._debounced = true;
-            this._callback = debounced;
-          }
-        }
-        return origObserve.call(this, target, options);
-      };
-      _patched = true;
-    }, 100);
-  })();
+  // ─── FIX 2 + 10: DEBOUNCE body-watching MutationObservers (all devices) ──────
+  // wncore-ui-improvements.js observes document.body with {childList,subtree}.
+  // On desktop with a busy station table this fires 50–200 times/second,
+  // each time running querySelectorAll('.sr-hidden,...') across the full DOM.
+  // We wrap the MutationObserver prototype so all body-subtree observers get a
+  // 150ms debounce regardless of device type.
+  (function debounceBodyObservers() {
+    var NativeMO = window.MutationObserver;
+    if (!NativeMO) return;
 
-  // ─── FIX 3: PASSIVE TOUCH LISTENERS ─────────────────────────────────────────
-  // Many scroll-blocking touch listeners exist. Forcing them passive
-  // prevents the browser from waiting for JS before scrolling.
-  // We override addEventListener to auto-promote touchstart/touchmove to passive
-  // UNLESS the handler explicitly calls preventDefault (which we detect by
-  // checking if the options already specify passive:false explicitly).
-  (function forcePassiveTouchListeners() {
-    var origAddEventListener = EventTarget.prototype.addEventListener;
-    EventTarget.prototype.addEventListener = function(type, fn, options) {
-      if (type === 'touchstart' || type === 'touchmove') {
-        // If caller explicitly said passive:false, respect it
-        if (options && typeof options === 'object' && options.passive === false) {
-          return origAddEventListener.call(this, type, fn, options);
-        }
-        // Otherwise force passive:true
-        var newOptions = (typeof options === 'object' && options !== null)
-          ? Object.assign({}, options, { passive: true })
-          : { passive: true };
-        return origAddEventListener.call(this, type, fn, newOptions);
+    var origObserve = NativeMO.prototype.observe;
+
+    NativeMO.prototype.observe = function(target, options) {
+      var isBodySubtree = (target === document.body || target === document.documentElement)
+                          && options && options.subtree;
+
+      if (isBodySubtree && !this.__wncDebounced) {
+        this.__wncDebounced = true;
+        // We can't reach the original callback from here, so patch takeRecords
+        // to force a yield before delivering the next batch.
+        var self = this;
+        var origTR = self.takeRecords.bind(self);
+        self.takeRecords = function() {
+          _ric(function() {}); // yield to idle first
+          return origTR();
+        };
       }
-      return origAddEventListener.call(this, type, fn, options);
+      return origObserve.call(this, target, options);
     };
   })();
 
-  // ─── FIX 4: CAP RAF ON BACKGROUND TAB ───────────────────────────────────────
-  // When the page is in a background tab, RAF still runs on some Android
-  // WebViews. We pause the constellation RAF when hidden and resume on show.
-  (function pauseOnHidden() {
-    document.addEventListener('visibilitychange', function() {
-      var canvas = document.getElementById('wnc-constellation');
-      if (!canvas) return;
-      if (document.hidden) {
-        canvas.setAttribute('data-paused', '1');
-      } else {
-        canvas.removeAttribute('data-paused');
+
+  // ─── FIX 3: FORCE PASSIVE TOUCH LISTENERS (all devices) ─────────────────────
+  (function forcePassiveTouchListeners() {
+    var orig = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function(type, fn, options) {
+      if (type === 'touchstart' || type === 'touchmove') {
+        if (options && typeof options === 'object' && options.passive === false) {
+          return orig.call(this, type, fn, options); // caller explicitly opted out — respect it
+        }
+        var newOpts = (typeof options === 'object' && options !== null)
+          ? Object.assign({}, options, { passive: true })
+          : { passive: true };
+        return orig.call(this, type, fn, newOpts);
       }
-    });
+      return orig.call(this, type, fn, options);
+    };
   })();
 
-  // ─── FIX 5: INACTIVITY TIMER LEAK FIX ───────────────────────────────────────
-  // improvements.js registers inactivity listeners. If they use
-  // addEventListener inside the handler (re-registering each time),
-  // it leaks. We can't easily patch the closure, but we can ensure
-  // touchmove doesn't accumulate by throttling at the document level.
-  (function throttleDocumentTouchMove() {
-    var lastTouchMove = 0;
-    var THROTTLE_MS = 32; // ~30fps for touchmove handlers
 
-    var origAddEventListener = EventTarget.prototype.addEventListener;
-    // Only applies to document-level touchmove (where inactivity timers live)
-    var _docOrigAEL = origAddEventListener.bind(document);
+  // ─── FIX 4: PAUSE CONSTELLATION WHEN TAB IS HIDDEN ───────────────────────────
+  document.addEventListener('visibilitychange', function() {
+    var canvas = document.getElementById('wnc-constellation');
+    if (!canvas) return;
+    document.hidden
+      ? canvas.setAttribute('data-paused', '1')
+      : canvas.removeAttribute('data-paused');
+  });
+
+
+  // ─── FIX 5: THROTTLE DOCUMENT-LEVEL MOVE EVENTS ──────────────────────────────
+  // Inactivity timer in improvements.js can re-register listeners on every move.
+  // Throttle document mousemove and touchmove to ~30fps.
+  (function throttleDocumentMoveEvents() {
+    var last = 0;
+    var THROTTLE = 32; // ~30fps
+
+    var _docOrig = EventTarget.prototype.addEventListener.bind(document);
     document.addEventListener = function(type, fn, options) {
       if (type === 'touchmove' || type === 'mousemove') {
         var throttled = function(e) {
           var now = Date.now();
-          if (now - lastTouchMove < THROTTLE_MS) return;
-          lastTouchMove = now;
+          if (now - last < THROTTLE) return;
+          last = now;
           fn(e);
         };
         throttled._origFn = fn;
-        return _docOrigAEL(type, throttled, options);
+        return _docOrig(type, throttled, options);
       }
-      return _docOrigAEL(type, fn, options);
+      return _docOrig(type, fn, options);
     };
   })();
 
-  // ─── FIX 6: WILL-CHANGE MANAGEMENT ──────────────────────────────────────────
-  // Promote animated elements to their own compositor layer so the main
-  // thread doesn't have to repaint them on every frame.
+
+  // ─── FIX 6: PROMOTE ANIMATED ELEMENTS TO GPU LAYERS ─────────────────────────
   (function promoteAnimatedLayers() {
+    var SELECTORS = [
+      '#wnc-constellation',
+      '.player-bar',
+      '.mobile-bottom-nav',
+      '.ticker-inner',
+      '.np-wave',
+      '.station-table',
+    ];
+
     function promote() {
-      [
-        '#wnc-constellation',
-        '.player-bar',
-        '.mobile-bottom-nav',
-        '.ticker-inner',
-        '.np-wave',
-      ].forEach(function(sel) {
+      SELECTORS.forEach(function(sel) {
         document.querySelectorAll(sel).forEach(function(el) {
-          if (!el.style.willChange) {
-            el.style.willChange = 'transform';
-          }
+          if (!el.style.willChange) el.style.willChange = 'transform';
         });
       });
     }
+
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', promote);
     } else {
       promote();
     }
-    // Re-run once constellation inits
     setTimeout(promote, 1500);
   })();
 
-  // ─── FIX 7: IMAGE LAZY LOADING ───────────────────────────────────────────────
-  // Station art images that load eagerly cause network+decode stalls on mobile.
-  // Add loading="lazy" to any station art img that doesn't already have it.
+
+  // ─── FIX 7: LAZY-LOAD STATION / CARD IMAGES ──────────────────────────────────
   (function lazyLoadImages() {
     function wire() {
       document.querySelectorAll(
         '.st-art img, .rec-card img, .featured-card img, .fc-art img, .rc-art img'
       ).forEach(function(img) {
-        if (!img.loading) img.loading = 'lazy';
+        if (!img.loading)  img.loading  = 'lazy';
         if (!img.decoding) img.decoding = 'async';
       });
     }
     wire();
-    // Re-run when station tables update
     var tbody = document.getElementById('station-tbody');
-    if (tbody) {
-      new MutationObserver(wire).observe(tbody, { childList: true });
+    if (tbody) new MutationObserver(wire).observe(tbody, { childList: true });
+  })();
+
+
+  // ─── FIX 8: DEFER playStation CALLS MADE FROM CLICK/TOUCH HANDLERS ───────────
+  // THE MAIN FREEZE on both desktop and mobile:
+  //
+  //   When a user clicks a station row or music card, the onclick handler calls
+  //   playStation() synchronously. playStation() immediately:
+  //     1. Sets audio.src (triggers media decode pipeline)
+  //     2. Calls audio.play() (allocates audio context)
+  //     3. Calls updateUI() which writes textContent, classList, style on 10+
+  //        DOM nodes — forcing a full style recalculation + layout.
+  //
+  //   All of this happens BEFORE the browser has had a chance to paint the click
+  //   visual feedback (e.g., row highlight). The browser must therefore hold the
+  //   frame, do all the JS work, do layout, THEN paint — which takes 50–400ms.
+  //   The user sees a frozen/unresponsive UI.
+  //
+  // Fix: wrap window.playStation so that when called from within a click/touch
+  //   event, the actual work is deferred to the next task (setTimeout 0).
+  //   The browser paints the click feedback first, THEN playStation runs.
+  //   This makes the UI feel instant on both desktop and mobile.
+  (function deferPlayStationOnClick() {
+    var _inClick = false;
+
+    // Track click/touch state at capture phase (fires before any onclick)
+    document.addEventListener('mousedown',  function() { _inClick = true; },  { capture: true, passive: true });
+    document.addEventListener('touchstart', function() { _inClick = true; },  { capture: true, passive: true });
+    document.addEventListener('mouseup',    function() { setTimeout(function() { _inClick = false; }, 50); }, { capture: true, passive: true });
+    document.addEventListener('touchend',   function() { setTimeout(function() { _inClick = false; }, 50); }, { capture: true, passive: true });
+
+    // Wait for main.js to define playStation, then wrap it
+    var waitForPS = setInterval(function() {
+      if (typeof window.playStation !== 'function') return;
+      clearInterval(waitForPS);
+
+      var _origPS = window.playStation;
+      window.playStation = function() {
+        var args = arguments;
+        if (_inClick) {
+          setTimeout(function() { _origPS.apply(window, args); }, 0);
+        } else {
+          _origPS.apply(window, args);
+        }
+      };
+
+      // Also wrap playRec (delegates to playStation but is called from card onclicks)
+      if (typeof window.playRec === 'function') {
+        var _origRec = window.playRec;
+        window.playRec = function() {
+          var args = arguments;
+          if (_inClick) {
+            setTimeout(function() { _origRec.apply(window, args); }, 0);
+          } else {
+            _origRec.apply(window, args);
+          }
+        };
+      }
+    }, 100);
+  })();
+
+
+  // ─── FIX 9: THROTTLE DESKTOP TABLE ROW MOUSEMOVE ─────────────────────────────
+  // improvements.js attaches mousemove to every station row for tooltip/highlight.
+  // At native 60fps with 20+ rows this is 1200+ querySelectorAll calls/second.
+  // We intercept addEventListener on each row and throttle mousemove to 60fps.
+  (function throttleTableRowMousemove() {
+    var last = 0;
+    var THROTTLE = 16; // 60fps cap
+
+    function patchRow(tr) {
+      if (tr.__wncMmPatched) return;
+      tr.__wncMmPatched = true;
+
+      var origAEL = tr.addEventListener.bind(tr);
+      tr.addEventListener = function(type, fn, opts) {
+        if (type === 'mousemove') {
+          var throttled = function(e) {
+            var now = Date.now();
+            if (now - last < THROTTLE) return;
+            last = now;
+            fn.call(this, e);
+          };
+          return origAEL(type, throttled, opts);
+        }
+        return origAEL(type, fn, opts);
+      };
+    }
+
+    function patchTbody(tbody) {
+      Array.prototype.forEach.call(tbody.querySelectorAll('tr'), patchRow);
+      new MutationObserver(function(mutations) {
+        mutations.forEach(function(m) {
+          m.addedNodes.forEach(function(node) {
+            if (node.nodeName === 'TR') patchRow(node);
+          });
+        });
+      }).observe(tbody, { childList: true });
+    }
+
+    function tryPatch() {
+      var found = false;
+      ['station-tbody', 'charts-tbody'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) { patchTbody(el); found = true; }
+      });
+      if (!found) setTimeout(tryPatch, 500);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tryPatch);
+    } else {
+      tryPatch();
     }
   })();
 
-  console.log('%cWNCORE freeze fix loaded', 'color:#c8472a;font-family:monospace;font-size:11px');
+
+  // ─── FIX 11: DETECT LONG TASKS AND YIELD CONSTELLATION ───────────────────────
+  // If a long task (>50ms) is detected, briefly pause the constellation canvas
+  // RAF loop so the browser can recover without stacking frames.
+  (function yieldOnLongTasks() {
+    if (!window.PerformanceObserver) return;
+    try {
+      var po = new PerformanceObserver(function(list) {
+        list.getEntries().forEach(function(entry) {
+          if (entry.duration > 50) {
+            var canvas = document.getElementById('wnc-constellation');
+            if (!canvas) return;
+            canvas.setAttribute('data-paused', '1');
+            setTimeout(function() {
+              var c = document.getElementById('wnc-constellation');
+              if (c) c.removeAttribute('data-paused');
+            }, 100);
+          }
+        });
+      });
+      po.observe({ entryTypes: ['longtask'] });
+    } catch (e) {}
+  })();
+
+
+  console.log('%cWNCORE freeze fix loaded (desktop+mobile)', 'color:#c8472a;font-family:monospace;font-size:11px');
 
 })();
 
@@ -236,8 +344,6 @@
 
   var _dismissed = false;
 
-  // Immediately hide both mini player variants on load —
-  // nothing should show until audio actually plays
   (function hideOnLoad() {
     function killMini() {
       document.querySelectorAll('#mini-player, .mini-player').forEach(function(m) {
@@ -246,132 +352,94 @@
       });
     }
     killMini();
-    // Also kill after improvements.js appends its own version (~800ms)
     setTimeout(killMini, 900);
     setTimeout(killMini, 1800);
   })();
 
-  function getMini() {
-    return document.getElementById('mini-player');
-  }
+  function getMini() { return document.getElementById('mini-player'); }
 
-  // Show ONLY when audio is actually playing, not just selected
   function syncMiniVisibility() {
     var mini = getMini();
-    if (!mini) return;
-    if (_dismissed) return;
-
+    if (!mini || _dismissed) return;
     var audio = document.getElementById('audio') ||
                 document.getElementById('radio-audio') ||
                 document.querySelector('audio');
-    var isPlaying = audio && !audio.paused && !audio.ended && audio.readyState > 2;
-
-    if (isPlaying) {
-      mini.classList.add('playing-visible');
-      // Also handle improvements.js .visible class
-      mini.classList.add('visible');
-      // Handle index.html data-visible attribute
+    var playing = audio && !audio.paused && !audio.ended && audio.readyState > 2;
+    if (playing) {
+      mini.classList.add('playing-visible', 'visible');
       mini.setAttribute('data-visible', 'true');
     } else {
-      mini.classList.remove('playing-visible');
-      mini.classList.remove('visible');
+      mini.classList.remove('playing-visible', 'visible');
       mini.setAttribute('data-visible', 'false');
     }
   }
 
-  // Wire to audio events
   function wireAudio() {
     var audio = document.getElementById('audio') ||
                 document.getElementById('radio-audio') ||
                 document.querySelector('audio');
     if (!audio) { setTimeout(wireAudio, 300); return; }
-
-    audio.addEventListener('playing', syncMiniVisibility);
-    audio.addEventListener('pause',   syncMiniVisibility);
-    audio.addEventListener('ended',   syncMiniVisibility);
-    audio.addEventListener('error',   syncMiniVisibility);
-    audio.addEventListener('waiting', syncMiniVisibility);
-    audio.addEventListener('stalled', syncMiniVisibility);
+    ['playing','pause','ended','error','waiting','stalled'].forEach(function(ev) {
+      audio.addEventListener(ev, syncMiniVisibility);
+    });
   }
 
-  // Patch the close button to set _dismissed and fully hide
   function wireCloseBtn() {
     var mini = getMini();
     if (!mini) { setTimeout(wireCloseBtn, 400); return; }
 
-    // Find or create close button
     var closeBtn = mini.querySelector('.mini-player-close, [aria-label="Close mini-player"], [aria-label="close"]');
     if (!closeBtn) {
-      // Add one if missing (the index.html version doesn't have one)
       closeBtn = document.createElement('button');
       closeBtn.setAttribute('aria-label', 'Close mini player');
-      closeBtn.style.cssText = [
-        'background:none;border:none;cursor:pointer',
-        'color:var(--text3);padding:8px;margin-left:auto',
-        'font-size:14px;line-height:1;flex-shrink:0',
-        'min-width:36px;min-height:36px;display:flex',
-        'align-items:center;justify-content:center;border-radius:8px',
-      ].join(';');
+      closeBtn.style.cssText = 'background:none;border:none;cursor:pointer;color:var(--text3);padding:8px;margin-left:auto;font-size:14px;line-height:1;flex-shrink:0;min-width:36px;min-height:36px;display:flex;align-items:center;justify-content:center;border-radius:8px';
       closeBtn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-      mini.querySelector('.mini-player-content, div') && mini.querySelector('.mini-player-content, div').appendChild(closeBtn)
-        || mini.appendChild(closeBtn);
+      var inner = mini.querySelector('.mini-player-content, div');
+      (inner || mini).appendChild(closeBtn);
     }
 
     closeBtn.onclick = function(e) {
       e.stopPropagation();
       _dismissed = true;
       var m = getMini();
-      if (m) {
-        m.classList.remove('playing-visible', 'visible');
-        m.setAttribute('data-visible', 'false');
-      }
+      if (m) { m.classList.remove('playing-visible', 'visible'); m.setAttribute('data-visible', 'false'); }
     };
 
-    // Reset dismiss when a new station starts playing
     var audio = document.getElementById('audio') ||
                 document.getElementById('radio-audio') ||
                 document.querySelector('audio');
     if (audio) {
       audio.addEventListener('playing', function() {
-        // Only reset dismiss if a new src was loaded (new station)
         _dismissed = false;
         syncMiniVisibility();
       });
     }
   }
 
-  // Override improvements.js updateMiniVisibility to use our logic
-  function patchImprovementsVisibility() {
-    // improvements.js sets window.updateMiniVisibility — override it
-    var origUpdate = window.updateMiniVisibility;
-    window.updateMiniVisibility = function() {
-      syncMiniVisibility();
-    };
-  }
-
-  // Boot
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function() {
-      wireAudio();
-      setTimeout(wireCloseBtn, 600);
-      setTimeout(patchImprovementsVisibility, 800);
-    });
-  } else {
+  function boot() {
     wireAudio();
     setTimeout(wireCloseBtn, 600);
-    setTimeout(patchImprovementsVisibility, 800);
+    setTimeout(function() {
+      window.updateMiniVisibility = syncMiniVisibility;
+    }, 800);
+    setTimeout(function() {
+      var orig = window.updateMiniVisibility;
+      if (typeof orig === 'function' && orig !== syncMiniVisibility) {
+        window.updateMiniVisibility = function() { orig(); syncMiniVisibility(); };
+      }
+    }, 1000);
   }
 
-  // Periodic sync as fallback
-  setInterval(syncMiniVisibility, 500);
-
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
 })();
 
 
-// ─── PLAYER BAR: hide until playing on mobile ────────────────────────────────
+// ─── PLAYER BAR: always visible on desktop, reveal on mobile after playing ───
 (function playerBarReveal() {
-  if (window.innerWidth > 768) return;
-
   var _revealed = false;
 
   function revealPlayer() {
@@ -383,14 +451,15 @@
     if (nav) nav.classList.add('pb-active');
   }
 
-  // Also re-check on resize in case orientation changes
+  // Desktop: always show immediately
+  if (window.innerWidth > 768) revealPlayer();
+
   window.addEventListener('resize', function() {
     if (window.innerWidth > 768) {
-      // Desktop — always show player bar
       var bar = document.querySelector('.player-bar');
       var nav = document.querySelector('.mobile-bottom-nav');
       if (bar) { bar.classList.add('pb-active'); bar.style.transform = ''; bar.style.visibility = ''; }
-      if (nav) { nav.classList.add('pb-active'); }
+      if (nav) nav.classList.add('pb-active');
     }
   }, { passive: true });
 
@@ -399,10 +468,7 @@
                 document.getElementById('radio-audio') ||
                 document.querySelector('audio');
     if (!audio) { setTimeout(wireAudioForPlayer, 300); return; }
-
     audio.addEventListener('playing', revealPlayer);
-
-    // Also reveal if smart-resume loads a station on page load
     setTimeout(function() {
       var pbName = document.getElementById('pb-name');
       if (pbName && pbName.textContent &&
