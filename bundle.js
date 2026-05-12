@@ -524,6 +524,13 @@ function playStation(url, name, meta, emoji) {
     return;
   }
   currentStation = {url, name, meta, emoji: emoji||'📻'};
+
+  // FIX: Always stop the current stream cleanly before switching.
+  // Setting audio.src while playing causes an AbortError on the old
+  // play() promise, which previously triggered a retry loop that froze the page.
+  audio.pause();
+  audio.src = '';
+
   // Pause Live Music player if running to avoid dual audio
   if(typeof lmAudio !== 'undefined' && !lmAudio.paused) {
     lmAudio.pause();
@@ -533,47 +540,54 @@ function playStation(url, name, meta, emoji) {
     const npCard = document.getElementById('lm-np-card');
     if(npCard) npCard.classList.remove('playing');
   }
-  // Show loading state immediately
+
   updateStatus('CONNECTING…');
   document.getElementById('np-track').textContent = '— buffering —';
-  audio.src = url;
-  audio.volume = document.getElementById('vol-slider').value;
-  const playPromise = audio.play();
-  if (playPromise !== undefined) {
-    playPromise.then(() => {
-      isPlaying = true;
-      updateUI(name, meta, emoji||'📻');
-      updateMiniPlayerVisibility();
-      applyStationSecondaryEffects(name, meta);
-      exposure += 8 + (window._corruptionBoost || 0); // FIX1: only on successful play
-      // I2: One-time swipe hint on mobile after first successful play
-      if (/Mobi|Android/i.test(navigator.userAgent) && !localStorage.getItem('wncore-swipe-hint')) {
-        setTimeout(() => {
-          localStorage.setItem('wncore-swipe-hint', '1');
-          const t = document.createElement('div');
-          t.textContent = 'Swipe left / right to change station';
-          t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 18px;border-radius:8px;font-size:0.82rem;z-index:9999;pointer-events:none;white-space:nowrap;';
-          document.body.appendChild(t);
-          setTimeout(() => t.remove(), 3500);
-        }, 1200);
-      }
-    }).catch(err => {
-      // Auto-retry once on AbortError (common on mobile)
-      if (err && err.name === 'AbortError') {
-        setTimeout(() => {
-          audio.play().then(() => {
-            isPlaying = true;
-            updateUI(name, meta, emoji||'📻');
-            updateMiniPlayerVisibility();
+
+  // Small defer lets the browser fully release the old stream before loading new one
+  setTimeout(() => {
+    audio.src = url;
+    audio.volume = parseFloat(document.getElementById('vol-slider')?.value ?? 0.8);
+
+    const playPromise = audio.play();
+    if (playPromise !== undefined) {
+      playPromise.then(() => {
+        isPlaying = true;
+        window.isPlaying = true; // FIX: sync window.isPlaying so PWA prompt works
+        updateUI(name, meta, emoji||'📻');
+        updateMiniPlayerVisibility();
+        // NOTE: applyStationSecondaryEffects removed from here — it called initAudioFX()
+        // unconditionally which broke CORS-restricted streams. Now only called for horror stations.
+        if (name && meta) {
+          const combined = (name + meta).toLowerCase();
+          if (combined.includes('horror') || combined.includes('paranormal') || combined.includes('creepy')) {
             applyStationSecondaryEffects(name, meta);
-          }).catch(() => updateStatus('STREAM UNAVAILABLE'));
-        }, 800);
-      } else {
+          }
+        }
+        exposure += 8 + (window._corruptionBoost || 0);
+        // One-time swipe hint on mobile after first successful play
+        if (/Mobi|Android/i.test(navigator.userAgent) && !localStorage.getItem('wncore-swipe-hint')) {
+          setTimeout(() => {
+            localStorage.setItem('wncore-swipe-hint', '1');
+            const t = document.createElement('div');
+            t.textContent = 'Swipe left / right to change station';
+            t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:10px 18px;border-radius:8px;font-size:0.82rem;z-index:9999;pointer-events:none;white-space:nowrap;';
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3500);
+          }, 1200);
+        }
+      }).catch(err => {
+        // FIX: AbortError means our own pause() cancelled the old play — not an error.
+        // Do NOT retry on AbortError; that created an infinite retry loop before.
+        if (err && err.name === 'AbortError') return;
+        isPlaying = false;
+        window.isPlaying = false;
         updateStatus('STREAM UNAVAILABLE');
-        document.getElementById('np-track').textContent = '— signal lost —';
-      }
-    });
-  }
+        const npTrack = document.getElementById('np-track');
+        if (npTrack) npTrack.textContent = '— signal lost —';
+      });
+    }
+  }, 50);
 }
 
 function applyStationSecondaryEffects(name, meta) {
@@ -750,9 +764,9 @@ function updateMiniPlayerVisibility() {
 
 // Attach audio play/pause listeners to keep UI in sync when playback state changes externally
 if (audio) {
-  audio.addEventListener('play', () => { isPlaying = true; setPlayIcon(true); startProgressSync(); });
-  audio.addEventListener('pause', () => { isPlaying = false; setPlayIcon(false); stopProgressSync(); });
-  audio.addEventListener('ended', () => { isPlaying = false; setPlayIcon(false); stopProgressSync(); });
+  audio.addEventListener('play', () => { isPlaying = true; window.isPlaying = true; setPlayIcon(true); startProgressSync(); });
+  audio.addEventListener('pause', () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync(); });
+  audio.addEventListener('ended', () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync(); });
 }
 
 function toggleFavorite(btn) {
@@ -1675,40 +1689,57 @@ function animateEye(){
 
 let audioCtx,sourceNode,waveshaper,lowpass,gainNode;
 function initAudioFX(){
-  if(!audioCtx){
-    try{
-      // SHARED CONTEXT: If improvements.js EQ init ran first, reuse its context.
-      // Otherwise create one and expose it so improvements.js can reuse it.
-      if(window._sharedAudioCtx && window._sharedSourceNode){
-        audioCtx=window._sharedAudioCtx;
-        sourceNode=window._sharedSourceNode;
-        // Re-connect: insert waveshaper+lowpass+gain after the EQ distortion node
-        // or directly from source if EQ isn't connected yet
-        waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
-        lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
-        // Connect at end of chain: if EQ distortion node exists, plug into it
-        // Otherwise plug directly from source
-        const eqOut=window._eqDistortionNode||sourceNode;
-        try{ eqOut.disconnect(); }catch(e){}
-        eqOut.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
-      } else {
-        audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx){
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    return;
+  }
+  try{
+    // SHARED CONTEXT: If improvements.js EQ init ran first, reuse its context.
+    // Otherwise create one and expose it so improvements.js can reuse it.
+    if(window._sharedAudioCtx && window._sharedSourceNode){
+      audioCtx=window._sharedAudioCtx;
+      sourceNode=window._sharedSourceNode;
+      waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
+      lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
+      const eqOut=window._eqDistortionNode||sourceNode;
+      try{ eqOut.disconnect(); }catch(e){}
+      eqOut.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
+    } else {
+      audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+      // FIX: createMediaElementSource requires CORS headers from the stream server.
+      // Most radio streams don't have them. Wrap in try/catch so CORS failure
+      // degrades gracefully — audio keeps playing natively without Web Audio FX.
+      try {
         sourceNode=audioCtx.createMediaElementSource(audio);
-        waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
-        lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
-        sourceNode.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
-        // Expose for improvements.js to reuse
-        window._sharedAudioCtx=audioCtx;
-        window._sharedSourceNode=sourceNode;
-        window._sharedGainNode=gainNode;
+      } catch(corsErr) {
+        console.warn('[WNCORE] Web Audio FX unavailable (CORS restriction) — audio plays natively:', corsErr.message);
+        audioCtx=null;
+        return;
       }
-    }catch(e){}
+      waveshaper=audioCtx.createWaveShaper();lowpass=audioCtx.createBiquadFilter();gainNode=audioCtx.createGain();
+      lowpass.type='lowpass';lowpass.frequency.value=20000;waveshaper.curve=makeDistortionCurve(0);waveshaper.oversample='4x';
+      sourceNode.connect(waveshaper);waveshaper.connect(lowpass);lowpass.connect(gainNode);gainNode.connect(audioCtx.destination);
+      window._sharedAudioCtx=audioCtx;
+      window._sharedSourceNode=sourceNode;
+      window._sharedGainNode=gainNode;
+    }
+  }catch(e){
+    console.warn('[WNCORE] initAudioFX failed:', e.message);
+    audioCtx=null;
   }
   if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();
 }
+// FIX: Cache distortion curves — previously allocated a new 344KB Float32Array on every call,
+// including inside 100ms setInterval loops, causing GC pressure and jank.
+const _distCurveCache = new Map();
 function makeDistortionCurve(amount){
-  let k=typeof amount==='number'?amount:50,n=44100,c=new Float32Array(n),deg=Math.PI/180;
-  for(let i=0;i<n;++i){let x=i*2/n-1;c[i]=(3+k)*x*20*deg/(Math.PI+k*Math.abs(x))}return c;
+  const key = Math.round(amount || 0);
+  if(_distCurveCache.has(key)) return _distCurveCache.get(key);
+  let k=key,n=44100,c=new Float32Array(n),deg=Math.PI/180;
+  for(let i=0;i<n;++i){let x=i*2/n-1;c[i]=(3+k)*x*20*deg/(Math.PI+k*Math.abs(x))}
+  if(_distCurveCache.size>30) _distCurveCache.clear(); // cap memory
+  _distCurveCache.set(key,c);
+  return c;
 }
 
 exitBtn.addEventListener('click',()=>{
@@ -3086,7 +3117,16 @@ function initEQ() {
     } else {
       // main.js hasn't run initAudioFX yet — create context here and mark it as shared
       _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const src = _audioCtx.createMediaElementSource(au);
+      let src;
+      // FIX: createMediaElementSource requires CORS headers from the stream.
+      // Most radio streams don't have them — catch and degrade gracefully.
+      try {
+        src = _audioCtx.createMediaElementSource(au);
+      } catch(corsErr) {
+        console.warn('[WNCORE] EQ unavailable (CORS restriction):', corsErr.message);
+        _audioCtx = null;
+        return;
+      }
       window._sharedAudioCtx = _audioCtx;
       window._sharedSourceNode = src;
       _bassFilter   = _audioCtx.createBiquadFilter(); _bassFilter.type = 'lowshelf';  _bassFilter.frequency.value = 200;
@@ -3329,6 +3369,7 @@ function statsStartTracking() {
   statsSave(st);
   if (_statsInterval) clearInterval(_statsInterval);
   _statsInterval = setInterval(() => {
+    if (document.hidden) return; // FIX: don't write to localStorage while tab is hidden
     const au = document.getElementById('audio');
     if (au && !au.paused) {
       const s = statsLoad();
@@ -4538,7 +4579,12 @@ function buildNetworkMap() {
   section.prepend(wrap);
 
   renderNetworkMap();
-  setInterval(renderNetworkMap, 2000);
+  let _nmInterval = setInterval(renderNetworkMap, 2000);
+  // FIX: pause expensive canvas redraws when tab is not visible
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { clearInterval(_nmInterval); _nmInterval = null; }
+    else if (!_nmInterval) { _nmInterval = setInterval(renderNetworkMap, 2000); renderNetworkMap(); }
+  });
   window.addEventListener('resize', renderNetworkMap);
 }
 
