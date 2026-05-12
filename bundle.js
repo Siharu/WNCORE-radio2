@@ -617,6 +617,10 @@ function playFeatured(idx) {
 }
 function playRec(url, name, meta) { playStation(url, name, meta, '📻'); }
 
+// Expose on window immediately so unified hook and any window.playStation callers work
+window.playStation = playStation;
+window.playRec = playRec;
+
 function play887Static() {
   exposure += 20;
   updateUI('88.7 FM', 'Signal Lost', '📻');
@@ -1858,6 +1862,13 @@ buildGenreStrip();
 //   Pulls copyright/royalty-free music streams
 // ═══════════════════════════════════════════════════════
 
+// SomaFM mirror helper — spreads across ice1/ice3/ice5 so if one server is full the next plays
+const _SF = (slug, name) => [
+  {url:`https://ice1.somafm.com/${slug}`, name, src:'SomaFM'},
+  {url:`https://ice3.somafm.com/${slug}`, name, src:'SomaFM'},
+  {url:`https://ice5.somafm.com/${slug}`, name, src:'SomaFM'},
+];
+
 const LM_CHANNELS = [
   {
     id:'jazz',
@@ -1869,25 +1880,27 @@ const LM_CHANNELS = [
     fgColor:'#c8822a',
     icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
     stations:[
-      {url:'https://ice6.somafm.com/groovesalad-256-mp3',          name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://ice6.somafm.com/groovesalad-128-mp3',             name:'SomaFM Groove Salad',  src:'SomaFM'},
-      {url:'https://live.jazz24.org/jazz24.mp3',                    name:'Jazz24',               src:'Jazz24'},
-      {url:'https://ice6.somafm.com/bootliquor-128-mp3',           name:'SomaFM Boot Liquor',   src:'SomaFM'},
+      ..._SF('groovesalad-256-mp3', 'SomaFM Groove Salad 256'),
+      ..._SF('groovesalad-128-mp3', 'SomaFM Groove Salad'),
+      ..._SF('bootliquor-128-mp3',  'SomaFM Boot Liquor'),
+      ..._SF('jazz24-128-mp3',      'Jazz24'),
     ]
   },
   {
     id:'classical',
     name:'WNCORE Classical',
     genre:'Classical',
-    desc:'Classical streams — orchestral, chamber, opera.',
-    license:'Public service',
+    desc:'Radio Swiss Classic, SomaFM — orchestral, chamber, cinematic.',
+    license:'Public service / CC',
     color:'rgba(37,99,235,0.08)',
     fgColor:'#2563eb',
     icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/>',
     stations:[
-      {url:'https://ice6.somafm.com/thetrip-128-mp3',              name:'SomaFM The Trip',      src:'SomaFM'},
-      {url:'https://ice6.somafm.com/deepspaceone-128-mp3',            name:'SomaFM Deep Space One',src:'SomaFM'},
-      {url:'https://ice6.somafm.com/sonicuniverse-128-mp3',        name:'SomaFM Sonic Universe', src:'SomaFM'},
+      {url:'https://stream.srg-ssr.ch/m/rsc_de/mp3_128', name:'Radio Swiss Classic',    src:'SRG SSR'},
+      {url:'https://stream.srg-ssr.ch/m/rsc_fr/mp3_128', name:'Radio Swiss Classic FR', src:'SRG SSR'},
+      ..._SF('sonicuniverse-128-mp3', 'SomaFM Sonic Universe'),
+      ..._SF('deepspaceone-128-mp3',  'SomaFM Deep Space One'),
+      ..._SF('thetrip-128-mp3',       'SomaFM The Trip'),
     ]
   },
   {
@@ -1900,10 +1913,10 @@ const LM_CHANNELS = [
     fgColor:'#7c3aed',
     icon:'<circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/>',
     stations:[
-      {url:'https://ice6.somafm.com/spacestation-128-mp3', name:'SomaFM Space Station', src:'SomaFM'},
-      {url:'https://ice6.somafm.com/dronezone-128-mp3',    name:'SomaFM Drone Zone',    src:'SomaFM'},
-      {url:'https://ice6.somafm.com/thetrip-128-mp3',      name:'SomaFM The Trip',      src:'SomaFM'},
-      {url:'https://ice6.somafm.com/deepspaceone-128-mp3',    name:'SomaFM Deep Space One',src:'SomaFM'},
+      ..._SF('spacestation-128-mp3', 'SomaFM Space Station'),
+      ..._SF('dronezone-128-mp3',    'SomaFM Drone Zone'),
+      ..._SF('deepspaceone-128-mp3', 'SomaFM Deep Space One'),
+      ..._SF('thetrip-128-mp3',      'SomaFM The Trip'),
     ]
   },
   {
@@ -1916,10 +1929,10 @@ const LM_CHANNELS = [
     fgColor:'#0891b2',
     icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/>',
     stations:[
-      {url:'https://ice6.somafm.com/beatblender-128-mp3',    name:'SomaFM Beat Blender',   src:'SomaFM'},
-      {url:'https://ice6.somafm.com/u80s-128-mp3',           name:'SomaFM Underground 80s', src:'SomaFM'},
-      {url:'https://ice6.somafm.com/defcon-128-mp3',         name:'SomaFM DEF CON Radio',   src:'SomaFM'},
-      {url:'https://ice6.somafm.com/illstreet-128-mp3',      name:'SomaFM Illinois Street', src:'SomaFM'},
+      ..._SF('beatblender-128-mp3', 'SomaFM Beat Blender'),
+      ..._SF('defcon-128-mp3',      'SomaFM DEF CON Radio'),
+      ..._SF('u80s-128-mp3',        'SomaFM Underground 80s'),
+      ..._SF('illstreet-128-mp3',   'SomaFM Illinois Street'),
     ]
   },
   {
@@ -1932,9 +1945,9 @@ const LM_CHANNELS = [
     fgColor:'#65a30d',
     icon:'<path d="M9 18V5l12-2v13"/>',
     stations:[
-      {url:'https://ice6.somafm.com/folkfwd-128-mp3',    name:'SomaFM Folk Forward',    src:'SomaFM'},
-      {url:'https://ice6.somafm.com/covers-128-mp3',     name:'SomaFM Covers',          src:'SomaFM'},
-      {url:'https://ice6.somafm.com/reggae-128-mp3',     name:'SomaFM Reggae',          src:'SomaFM'},
+      ..._SF('folkfwd-128-mp3', 'SomaFM Folk Forward'),
+      ..._SF('covers-128-mp3',  'SomaFM Covers'),
+      ..._SF('reggae-128-mp3',  'SomaFM Reggae'),
     ]
   },
   {
@@ -1947,26 +1960,27 @@ const LM_CHANNELS = [
     fgColor:'#c026d3',
     icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>',
     stations:[
-      {url:'https://radio.plaza.one/mp3',                        name:'Nightwave Plaza',  src:'Nightwave'},
-      {url:'https://ice6.somafm.com/lush-128-mp3',                 name:'SomaFM Lush',      src:'SomaFM'},
-      {url:'https://ice6.somafm.com/fluid-128-mp3',                name:'SomaFM Fluid',     src:'SomaFM'},
-      {url:'https://ice6.somafm.com/cliqhop-128-mp3',              name:'SomaFM cliqhop',   src:'SomaFM'},
+      {url:'https://radio.plaza.one/mp3', name:'Nightwave Plaza', src:'Nightwave'},
+      {url:'https://radio.plaza.one/ogg', name:'Nightwave Plaza', src:'Nightwave'},
+      ..._SF('lush-128-mp3',    'SomaFM Lush'),
+      ..._SF('fluid-128-mp3',   'SomaFM Fluid'),
+      ..._SF('cliqhop-128-mp3', 'SomaFM cliqhop'),
     ]
   },
   {
     id:'chillout',
     name:'WNCORE Chillout',
     genre:'Chill · Downtempo · Relax',
-    desc:'SomaFM Secret Agent, Illinois Street — smooth downtempo and chill-out.',
-    license:'CC by-nc-nd',
+    desc:'SomaFM Secret Agent, Radio Swiss Jazz — smooth downtempo and chill-out.',
+    license:'CC by-nc-nd / Public service',
     color:'rgba(20,150,120,0.08)',
     fgColor:'#0d9488',
     icon:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
     stations:[
-      {url:'https://ice6.somafm.com/secretagent-128-mp3',  name:'SomaFM Secret Agent',   src:'SomaFM'},
-      {url:'https://ice6.somafm.com/missioncontrol-128-mp3',  name:'SomaFM Mission Control', src:'SomaFM'},
-      {url:'https://ice6.somafm.com/cliqhop-128-mp3',      name:'SomaFM cliqhop idm',    src:'SomaFM'},
-      {url:'https://ice6.somafm.com/dubstep-128-mp3',      name:'SomaFM Dubstep',         src:'SomaFM'},
+      ..._SF('secretagent-128-mp3',    'SomaFM Secret Agent'),
+      {url:'https://stream.srg-ssr.ch/m/rsj/mp3_128', name:'Radio Swiss Jazz', src:'SRG SSR'},
+      ..._SF('missioncontrol-128-mp3', 'SomaFM Mission Control'),
+      ..._SF('dubstep-128-mp3',        'SomaFM Dubstep'),
     ]
   },
   {
@@ -2099,9 +2113,8 @@ let _lmRetries = 0;
 function lmStartStation() {
   if(!lmCurrentChannel) return;
   const station = lmCurrentChannel.stations[lmCurrentStationIdx];
-  // Update title to loading state
   const titleEl = document.getElementById('lm-np-title');
-  if(titleEl) titleEl.textContent = 'Connecting...';
+  if(titleEl) titleEl.textContent = `Connecting… (${station.name})`;
   lmAudio.src = station.url;
   lmAudio.load();
   const p = lmAudio.play();
@@ -2113,17 +2126,23 @@ function lmStartStation() {
       lmSetWaveformState(true);
       if(window.WRONGNESS) window.WRONGNESS.spike(5);
     }).catch(()=>{
-      // Try next station with retry limit
       _lmRetries++;
-      if(_lmRetries < lmCurrentChannel.stations.length) {
+      // Cap at 5 attempts — don't silently loop through all 30+ fallbacks
+      if(_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
         lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
-        setTimeout(lmStartStation, 600);
+        if(titleEl) titleEl.textContent = `Trying next stream…`;
+        setTimeout(lmStartStation, 300);
       } else {
         _lmRetries = 0;
         if(titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
         lmSetWaveformState(false);
       }
     });
+  } else {
+    // play() returned undefined (very old browser) — assume playing
+    lmIsPlaying = true;
+    lmUpdateUI(station);
+    lmSetWaveformState(true);
   }
 }
 
