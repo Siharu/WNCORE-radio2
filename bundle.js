@@ -11469,8 +11469,14 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // ── POST-PLAY SIDE EFFECTS (all formerly separate wrappers) ───────
+      // FIX: Defer ALL side effects to the next task so the browser can
+      // paint click feedback before any heavy DOM work runs. Previously,
+      // deferWrap (FIX 8) deferred _basePlayStation but the side effects
+      // below still ran synchronously in the same click-handler task,
+      // causing the "unresponsive page" dialog on station click.
       var station = { url: url, name: name, meta: meta, emoji: emoji || '📻' };
 
+      setTimeout(function() {
       // From improvements.js patchExistingFunctions (v1)
       if (typeof historyPush === 'function') { try { historyPush(station); } catch(e) {} }
       if (typeof statsOnPlay === 'function') { try { statsOnPlay(); } catch(e) {} }
@@ -11506,6 +11512,7 @@ document.addEventListener('DOMContentLoaded', () => {
       _sessionTimer = setTimeout(function() {
         if (typeof updateSession === 'function') { try { updateSession(name, meta); } catch(e) {} }
       }, 300);
+      }, 0); // end deferred side effects
 
       // Swipe hint bottom position fix (from wncore-bugfix.js)
       setTimeout(function() {
