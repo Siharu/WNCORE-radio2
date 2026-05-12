@@ -381,13 +381,29 @@ function initGlobeWhenReady() {
         .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
         .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
         .atmosphereColor('#1e40af').atmosphereAltitude(0.18)
-        .onGlobeClick(async () => {
-          updateStatus('SCANNING FREQUENCIES...');exposure+=5;
+        .onGlobeClick(async ({ lat, lng }) => {
+          updateStatus('SCANNING FREQUENCIES...');
+          exposure += 5;
           try {
-            const r=await fetch(`${_a}/stations/search?limit=1&https=true&order=clickcount&reverse=true&offset=${Math.floor(Math.random()*200)}`);
-            const d=await r.json();
-            if(d[0]) playStation(d[0].url_resolved, d[0].name, d[0].country||'Unknown', '📡');
-          } catch(e) { updateStatus('LOCK FAILED — SIGNAL DEGRADED') }
+            // Reverse-geocode the lat/lng to a country using a free public API
+            const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat.toFixed(4)}&lon=${lng.toFixed(4)}&format=json`, {
+              headers: { 'Accept-Language': 'en' }
+            });
+            const geo = await geoRes.json();
+            const countryCode = geo?.address?.country_code?.toUpperCase();
+            let r, d;
+            if (countryCode) {
+              r = await fetch(`${_a}/stations/search?limit=10&https=true&order=clickcount&reverse=true&countrycode=${countryCode}`);
+              d = await r.json();
+            }
+            // Fallback to global random if no country stations found
+            if (!d || !d.length) {
+              r = await fetch(`${_a}/stations/search?limit=1&https=true&order=clickcount&reverse=true&offset=${Math.floor(Math.random()*200)}`);
+              d = await r.json();
+            }
+            const station = d[Math.floor(Math.random() * Math.min(d.length, 5))];
+            if (station) playStation(station.url_resolved, station.name, station.country || 'Unknown', getCountryEmoji(countryCode || station.countrycode));
+          } catch(e) { updateStatus('LOCK FAILED — SIGNAL DEGRADED'); }
         });
       globe.controls().autoRotate = true;
       globe.controls().autoRotateSpeed = 0.35;
@@ -770,31 +786,17 @@ if (audio) {
 }
 
 function toggleFavorite(btn) {
-  btn.classList.toggle('active');
-  const isNowActive = btn.classList.contains('active');
-  btn.innerHTML = isNowActive ? SVG.heartFill : SVG.heart;
-  btn.style.color = isNowActive ? '#e8753a' : '';
-  // Persist to localStorage
-  if(currentStation) {
-    try {
-      const favs = JSON.parse(localStorage.getItem('wncore_favs')||'[]');
-      if(isNowActive) {
-        if(!favs.find(f=>f.url===currentStation.url)) {
-          favs.push({url:currentStation.url,name:currentStation.name,meta:currentStation.meta,emoji:currentStation.emoji||'📻'});
-          localStorage.setItem('wncore_favs', JSON.stringify(favs));
-          showToast && showToast('Station saved to Favourites', 'success');
-        }
-      } else {
-        const idx = favs.findIndex(f=>f.url===currentStation.url);
-        if(idx>-1){ favs.splice(idx,1); localStorage.setItem('wncore_favs',JSON.stringify(favs)); }
-      }
-    } catch(e) { /* private browsing / storage quota — silent */ }
+  // Delegate to the unified favCurrentStation() so both hearts use the same FAV_KEY store.
+  // favCurrentStation() handles add/remove, toast, and updateFavButton() UI sync.
+  if (typeof favCurrentStation === 'function') {
+    favCurrentStation();
   }
 }
 function toggleSleepTimer(btn) {
-  btn.classList.toggle('active');
-  if(btn.classList.contains('active')) updateStatus('TIMER: 30M');
-  else if(currentStation) updateStatus(currentStation.name);
+  // Delegate to cycleSleepTimer() which has the real countdown display and audio fade.
+  if (typeof cycleSleepTimer === 'function') {
+    cycleSleepTimer();
+  }
 }
 
 document.getElementById('vol-slider').addEventListener('input', e => { audio.volume = e.target.value; });
@@ -832,16 +834,32 @@ document.documentElement.classList.remove('dark-pre');
 
 // ─── SKIP STATION ─────────────────────────────────────────────────────────
 let _lastStations = [];
+let _historyIdx = -1; // pointer into historyLoad() for back navigation
+
 async function skipStation(dir) {
-  if(_lastStations.length < 2) {
+  if (dir === -1) {
+    // Previous: walk back through real play history
+    const h = (typeof historyLoad === 'function') ? historyLoad() : [];
+    // h[0] is current, h[1] is previous, etc.
+    if (h.length > 1) {
+      const prev = h[1]; // skip h[0] which is what's playing now
+      if (prev && typeof playStation === 'function') {
+        playStation(prev.url, prev.name, prev.meta, prev.emoji || '📻');
+      }
+    }
+    return;
+  }
+  // Next: pick from pool, avoid repeating current
+  if (_lastStations.length < 2) {
     try {
       const r = await fetch(`${_a}/stations/search?limit=20&https=true&order=clickcount&reverse=true`);
       _lastStations = await r.json();
     } catch(e) { return; }
   }
-  const idx = Math.floor(Math.random() * _lastStations.length);
-  const s = _lastStations[idx];
-  if(s) playStation(s.url_resolved, s.name, s.country||'Unknown', getCountryEmoji(s.countrycode));
+  // Filter out the currently playing station
+  const pool = _lastStations.filter(s => !currentStation || s.url_resolved !== currentStation.url);
+  const s = pool[Math.floor(Math.random() * pool.length)] || _lastStations[0];
+  if (s) playStation(s.url_resolved, s.name, s.country || 'Unknown', getCountryEmoji(s.countrycode));
 }
 
 function toggleMinimal() {
@@ -9059,4 +9077,207 @@ document.addEventListener('DOMContentLoaded', () => {
   } else {
     install();
   }
+})();
+
+/* ━━━ QUICK WINS PATCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function quickWins() {
+  'use strict';
+
+  // ── 1. MUTE TOGGLE ────────────────────────────────────────────────────
+  var _preMuteVol = 0.8;
+  var _muted = false;
+
+  window.toggleMute = function() {
+    var au = document.getElementById('audio');
+    var slider = document.getElementById('vol-slider');
+    var wave = document.getElementById('pb-vol-wave');
+    var btn = document.getElementById('pb-mute-btn');
+    if (!au) return;
+
+    _muted = !_muted;
+    if (_muted) {
+      _preMuteVol = parseFloat(slider ? slider.value : au.volume) || 0.8;
+      au.volume = 0;
+      if (slider) slider.value = 0;
+      // Replace wave path with muted X lines
+      if (wave) wave.setAttribute('d', 'M23 9l-6 6M17 9l6 6');
+      if (btn) btn.style.opacity = '0.35';
+    } else {
+      au.volume = _preMuteVol;
+      if (slider) slider.value = _preMuteVol;
+      if (wave) wave.setAttribute('d', 'M15.54 8.46a5 5 0 010 7.07');
+      if (btn) btn.style.opacity = '0.7';
+    }
+  };
+
+  // M key = mute
+  document.addEventListener('keydown', function(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (e.key === 'm' || e.key === 'M') window.toggleMute();
+  });
+
+
+  // ── 2. STREAM ERROR: show retry button in player bar ──────────────────
+  (function wireStreamError() {
+    function getAudio() { return document.getElementById('audio'); }
+
+    function showRetry() {
+      var nameEl = document.getElementById('pb-name');
+      if (!nameEl || nameEl.dataset.retryWired) return;
+      nameEl.dataset.retryWired = '1';
+      // Insert a small inline retry span after the status text
+      var btn = document.createElement('span');
+      btn.id = 'pb-retry-btn';
+      btn.textContent = ' ↺ Retry';
+      btn.style.cssText = 'cursor:pointer;color:var(--accent,#c8472a);font-size:0.75em;margin-left:6px;';
+      btn.title = 'Retry stream';
+      btn.onclick = function() {
+        var cs = window.currentStation;
+        if (cs && typeof window.playStation === 'function') {
+          btn.remove();
+          delete nameEl.dataset.retryWired;
+          window.playStation(cs.url, cs.name, cs.meta, cs.emoji);
+        }
+      };
+      nameEl.parentNode.appendChild(btn);
+    }
+
+    function removeRetry() {
+      var btn = document.getElementById('pb-retry-btn');
+      if (btn) btn.remove();
+      var nameEl = document.getElementById('pb-name');
+      if (nameEl) delete nameEl.dataset.retryWired;
+    }
+
+    function wireAudio() {
+      var au = getAudio();
+      if (!au) { setTimeout(wireAudio, 300); return; }
+      au.addEventListener('error', function() {
+        if (window.currentStation) showRetry();
+      });
+      au.addEventListener('playing', removeRetry);
+      au.addEventListener('waiting', removeRetry);
+    }
+    wireAudio();
+  })();
+
+
+  // ── 3. SEARCH HISTORY — show recent + genre suggestions ───────────────
+  (function wireSearchHistory() {
+    var SEARCH_HIST_KEY = 'wncore-searches-v1';
+    var SEARCH_HIST_MAX = 8;
+
+    function loadSearchHist() {
+      try { return JSON.parse(localStorage.getItem(SEARCH_HIST_KEY) || '[]'); } catch { return []; }
+    }
+    function saveSearchHist(term) {
+      if (!term || term.length < 2) return;
+      var h = loadSearchHist().filter(function(t) { return t !== term; });
+      h.unshift(term);
+      try { localStorage.setItem(SEARCH_HIST_KEY, JSON.stringify(h.slice(0, SEARCH_HIST_MAX))); } catch {}
+    }
+
+    var GENRE_SUGGESTIONS = ['jazz', 'classical', 'hip-hop', 'rock', 'ambient', 'news', 'electronic', 'country', 'lofi', 'anime', 'reggae', 'metal'];
+
+    function renderSearchSuggestions() {
+      var modal = document.getElementById('search-modal');
+      var input = document.getElementById('search-input');
+      if (!modal || !input || input.value.trim()) {
+        var el = document.getElementById('wnc-search-suggestions');
+        if (el) el.style.display = 'none';
+        return;
+      }
+      var container = document.getElementById('wnc-search-suggestions');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'wnc-search-suggestions';
+        container.style.cssText = 'padding:0 0 10px;';
+        input.parentNode.insertBefore(container, input.nextSibling);
+      }
+      container.style.display = '';
+      var hist = loadSearchHist();
+      var html = '';
+      if (hist.length) {
+        html += '<div style="font-size:0.62rem;letter-spacing:2px;color:var(--text3);padding:10px 0 6px;text-transform:uppercase">Recent</div>';
+        html += '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">';
+        hist.forEach(function(t) {
+          html += '<span onclick="document.getElementById(\'search-input\').value=\'' + t.replace(/'/g, '') + '\';if(typeof doSearch===\'function\')doSearch(\'' + t.replace(/'/g, '') + '\')" style="cursor:pointer;font-size:0.72rem;padding:4px 10px;border:1px solid var(--border);border-radius:20px;color:var(--text2);transition:background 0.15s" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'\'">↺ ' + t + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '<div style="font-size:0.62rem;letter-spacing:2px;color:var(--text3);padding:4px 0 6px;text-transform:uppercase">Browse genres</div>';
+      html += '<div style="display:flex;flex-wrap:wrap;gap:6px">';
+      GENRE_SUGGESTIONS.forEach(function(g) {
+        html += '<span onclick="document.getElementById(\'search-input\').value=\'' + g + '\';if(typeof doSearch===\'function\')doSearch(\'' + g + '\')" style="cursor:pointer;font-size:0.72rem;padding:4px 10px;border:1px solid var(--border);border-radius:20px;color:var(--text2);transition:background 0.15s" onmouseover="this.style.background=\'var(--surface2)\'" onmouseout="this.style.background=\'\'">♪ ' + g + '</span>';
+      });
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // Hook into openSearch to render suggestions
+    var _origOpenSearch = window.openSearch;
+    window.openSearch = function() {
+      if (typeof _origOpenSearch === 'function') _origOpenSearch();
+      setTimeout(renderSearchSuggestions, 80);
+    };
+
+    // Patch doSearch to save history and hide suggestions on search
+    var _origDoSearch = window.doSearch;
+    window.doSearch = async function(q) {
+      if (q && q.trim()) {
+        saveSearchHist(q.trim());
+        var sug = document.getElementById('wnc-search-suggestions');
+        if (sug) sug.style.display = 'none';
+      }
+      if (typeof _origDoSearch === 'function') return _origDoSearch(q);
+    };
+
+    // Hide suggestions when user starts typing, show when cleared
+    document.addEventListener('input', function(e) {
+      if (e.target && e.target.id === 'search-input') {
+        if (e.target.value.trim()) {
+          var sug = document.getElementById('wnc-search-suggestions');
+          if (sug) sug.style.display = 'none';
+        } else {
+          renderSearchSuggestions();
+        }
+      }
+    });
+  })();
+
+
+  // ── 4. DEEP-LINK AUTO-PLAY (?station=&src=) ───────────────────────────
+  // checkAutoPlayFromURL already exists in improvements.js — just make sure
+  // it's called after the clean hook installs (it needs window.playStation ready)
+  (function ensureAutoPlay() {
+    if (typeof checkAutoPlayFromURL === 'function') {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() { setTimeout(checkAutoPlayFromURL, 800); });
+      } else {
+        setTimeout(checkAutoPlayFromURL, 800);
+      }
+    }
+  })();
+
+
+  // ── 5. MEDIA SESSION: wire previoustrack/nexttrack to skipStation ──────
+  (function wireMediaSessionSkip() {
+    if (!('mediaSession' in navigator)) return;
+    function tryWire() {
+      try {
+        navigator.mediaSession.setActionHandler('previoustrack', function() {
+          if (typeof skipStation === 'function') skipStation(-1);
+        });
+        navigator.mediaSession.setActionHandler('nexttrack', function() {
+          if (typeof skipStation === 'function') skipStation(1);
+        });
+      } catch(e) {}
+    }
+    // Wire immediately and also after first play (some browsers require audio context)
+    tryWire();
+    var au = document.getElementById('audio');
+    if (au) au.addEventListener('playing', tryWire, { once: true });
+  })();
+
 })();
