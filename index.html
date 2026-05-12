@@ -1611,11 +1611,19 @@ async function adminSubmitLogin() {
   input.value = '';
 
   try {
-    const res = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-admin-token': val },
-      body: JSON.stringify({ key: '_auth_check', value: '' })
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    let res;
+    try {
+      res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': val },
+        body: JSON.stringify({ key: '_auth_check', value: '' }),
+        signal: controller.signal
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     // 400 = bad key but authenticated (token valid); 401 = wrong token
     if (res.status === 400 || res.ok) {
       sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(val));
@@ -1677,8 +1685,15 @@ function adminSetStatus(key, state, msg) {
 // ── Prefill all fields from saved config ──
 async function adminPrefillFields() {
   try {
-    const r = await fetch('/api/config');
-    if (!r.ok) return;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    let r;
+    try {
+      r = await fetch('/api/config', { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!r || !r.ok) return;
     const cfg = await r.json();
     const MAP = {
       'admin-globe-bg-url':          { key: 'globe_bg_video',      isMedia: true  },
@@ -1903,8 +1918,16 @@ window._updateTickerCount = function(count) {
 // Load saved config from Supabase and apply to page
 async function loadSiteConfig() {
   try {
-    const r = await fetch('/api/config');
-    if (!r.ok) return;
+    // FIX: Timeout so a dead/slow Supabase connection can't hang the whole page boot.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    let r;
+    try {
+      r = await fetch('/api/config', { signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
+    }
+    if (!r || !r.ok) return;
     const cfg = await r.json();
 
     // Eye pupil video
