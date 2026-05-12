@@ -10390,24 +10390,39 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('mouseup',    function() { setTimeout(function() { _inClick = false; }, 50); }, { capture: true, passive: true });
     document.addEventListener('touchend',   function() { setTimeout(function() { _inClick = false; }, 50); }, { capture: true, passive: true });
 
-    // [NEUTRALIZED: mobile-freeze-fix setInterval wrapper — debounce handled by unified hook]
-    // The unified hook in bundle.js provides a 400ms debounce directly.
-    var waitForPS = null; // was setInterval — removed
-    (function() {
-      // Keep playRec wrapper only (not playStation)
-      // playRec deferred wrap below is kept as-is since it handles _inClick timing
-      if (typeof window.playRec === 'function') {
-        var _origRec = window.playRec;
-        window.playRec = function() {
+    // FIX: Wrap BOTH playStation and playRec with setTimeout(0) when called from
+    // a click/touch event. The unified hook's 400ms debounce rate-limits calls but
+    // does NOT yield the main thread — the browser still can't paint click feedback
+    // before playStation's heavy DOM work runs. setTimeout(0) defers to the next task,
+    // letting the browser paint first so the UI feels instant.
+    (function wrapForDefer() {
+      function deferWrap(name) {
+        var orig = window[name];
+        if (typeof orig !== 'function' || orig._clickDeferred) return;
+        window[name] = function() {
           var args = arguments;
           if (_inClick) {
-            setTimeout(function() { _origRec.apply(window, args); }, 0);
+            setTimeout(function() { orig.apply(window, args); }, 0);
           } else {
-            _origRec.apply(window, args);
+            orig.apply(window, args);
           }
         };
+        window[name]._clickDeferred = true;
       }
-    }, 100);
+      if (typeof window.playStation === 'function') {
+        deferWrap('playStation');
+        deferWrap('playRec');
+      } else {
+        var _t = 0;
+        var _poll = setInterval(function() {
+          if (typeof window.playStation === 'function' || ++_t > 30) {
+            clearInterval(_poll);
+            deferWrap('playStation');
+            deferWrap('playRec');
+          }
+        }, 100);
+      }
+    })();
   })();
 
 
@@ -11254,7 +11269,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     wireReveal();
-    new MutationObserver(wireReveal).observe(document.body, { childList: true, subtree: true });
+    // FIX: debounce the MutationObserver callback — without this, every DOM write
+    // from playStation (textContent, classList, style) fires wireReveal synchronously,
+    // which runs querySelectorAll across the whole body and writes more classes,
+    // which fires the observer again — creating a feedback loop that locks the main thread.
+    var _wireRevealTimer = null;
+    new MutationObserver(function() {
+      if (_wireRevealTimer) return;
+      _wireRevealTimer = setTimeout(function() { _wireRevealTimer = null; wireReveal(); }, 200);
+    }).observe(document.body, { childList: true, subtree: true });
   })();
 
   // ─── COPY SHARE LINK (Shift+C) ────────────────────────────────────────────────
