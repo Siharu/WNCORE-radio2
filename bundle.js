@@ -953,6 +953,7 @@ async function doSearch(q) {
 function showPage(id, linkEl) {
   // Load page-specific data
   if(id==='favorites') loadFavoritesPage();
+  if(id==='profile') loadProfilePage();
   const already = document.getElementById('page-'+id)?.classList.contains('active');
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
@@ -1166,16 +1167,88 @@ function _authUpdateNav(user) {
 
 function _authUpdateModal(user) {
   if (user) {
-    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '—';
-    const el = document.getElementById('auth-display-name');
-    const em = document.getElementById('auth-display-email');
+    const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '—';
+    const initial = (name[0] || '?').toUpperCase();
+    const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+    const provider = (user.app_metadata?.provider || 'email').replace('email','Email').replace('google','Google').replace('discord','Discord');
+    const since = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—';
+    const favCount = (JSON.parse(localStorage.getItem('wncore_favs_v2')||'[]')).length;
+
+    const avatarHtml = avatarUrl
+      ? `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`
+      : initial;
+
+    // Modal mini-card
     const av = document.getElementById('auth-avatar');
-    if (el) el.textContent = name;
-    if (em) em.textContent = user.email || '';
-    if (av) av.textContent = name[0].toUpperCase();
+    if (av) av.innerHTML = avatarHtml;
+    const el = document.getElementById('auth-display-name'); if (el) el.textContent = name;
+    const em = document.getElementById('auth-display-email'); if (em) em.textContent = user.email || '';
+    const badge = document.getElementById('auth-provider-badge'); if (badge) badge.textContent = 'via ' + provider;
+    const fc = document.getElementById('auth-fav-count'); if (fc) fc.textContent = favCount;
+    const ms = document.getElementById('auth-member-since'); if (ms) ms.textContent = since;
+
     _authShowView('auth-signedin-view');
   } else {
     _authShowView('auth-signedout-view');
+  }
+}
+
+function loadProfilePage() {
+  const user = _authUser;
+  const profileCard = document.getElementById('profile-avatar-lg');
+  const signedOut = document.getElementById('profile-signed-out');
+  const sections = document.querySelectorAll('#page-profile > div > div:not(#profile-signed-out):not([style*="margin-bottom:32px"])');
+
+  if (!user) {
+    sections.forEach(s => s.style.display = 'none');
+    if (signedOut) signedOut.style.display = 'block';
+    return;
+  }
+  if (signedOut) signedOut.style.display = 'none';
+  sections.forEach(s => s.style.display = '');
+
+  const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '—';
+  const initial = (name[0] || '?').toUpperCase();
+  const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+  const provider = (user.app_metadata?.provider || 'email').replace('email','Email').replace('google','Google').replace('discord','Discord');
+  const since = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '—';
+  const favs = JSON.parse(localStorage.getItem('wncore_favs_v2') || '[]');
+
+  // Large avatar
+  if (profileCard) {
+    profileCard.innerHTML = avatarUrl
+      ? `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`
+      : initial;
+  }
+  const dn = document.getElementById('profile-display-name'); if (dn) dn.textContent = name;
+  const de = document.getElementById('profile-display-email'); if (de) de.textContent = user.email || '';
+  const pb = document.getElementById('profile-provider-badge'); if (pb) pb.textContent = 'via ' + provider;
+  const mb = document.getElementById('profile-member-badge'); if (mb) mb.textContent = 'Since ' + new Date(user.created_at||Date.now()).toLocaleDateString('en-US',{month:'short',year:'numeric'});
+  const fc = document.getElementById('profile-fav-count'); if (fc) fc.textContent = favs.length;
+  const ps = document.getElementById('profile-since'); if (ps) ps.textContent = since;
+
+  // Last played
+  const lp = document.getElementById('profile-last-played');
+  if (lp) {
+    const last = currentStation?.name || localStorage.getItem('wncore_last_station') || '—';
+    lp.textContent = last;
+  }
+
+  // Favourites preview (up to 6)
+  const preview = document.getElementById('profile-fav-preview');
+  if (preview) {
+    if (!favs.length) {
+      preview.innerHTML = `<div style="color:var(--text3);font-size:0.8rem;padding:12px 0;grid-column:1/-1">No saved stations yet. Click ♡ on any station to save it.</div>`;
+    } else {
+      preview.innerHTML = favs.slice(0, 6).map(s => `
+        <div onclick="playStation(${JSON.stringify(s).replace(/"/g,'&quot;')})" style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-size:1.4rem;flex-shrink:0">${s.emoji||'📻'}</div>
+          <div style="min-width:0">
+            <div style="font-size:0.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.name||'Unknown'}</div>
+            <div style="font-size:0.65rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.country||''} ${s.tags||''}</div>
+          </div>
+        </div>`).join('');
+    }
   }
 }
 
@@ -1186,6 +1259,12 @@ async function _authInit() {
   _authUser = session?.user || null;
   _authUpdateNav(_authUser);
   if (_authUser) { migrateFavsToV2(); setTimeout(authSyncFavsDown, 1000); }
+
+  // Auto-open profile modal after OAuth redirect (URL contains #access_token)
+  if (_authUser && window.location.hash.includes('access_token')) {
+    history.replaceState(null, '', window.location.pathname);
+    setTimeout(() => { _authUpdateModal(_authUser); openSignIn(); }, 600);
+  }
 
   sb.auth.onAuthStateChange((_event, session) => {
     _authUser = session?.user || null;
