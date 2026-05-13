@@ -128,6 +128,12 @@ function validateGenreTags(raw) {
   return { ok: true, value: tags };
 }
 
+function validateSiharuVisits(raw) {
+  const v = parseInt(raw, 10);
+  if (isNaN(v) || v < 0) return { ok: false, error: 'siharu_visits must be a non-negative integer.' };
+  return { ok: true, value: v };
+}
+
 function validateAvatarUrl(raw) {
   if (typeof raw !== 'string') return { ok: false, error: 'avatar_url must be a string.' };
   const url = raw.trim();
@@ -251,6 +257,7 @@ module.exports = async function handler(req, res) {
         field('default_volume', validateVolume);
         field('avatar_url',     validateAvatarUrl);
         field('genre_tags',     validateGenreTags);
+        field('siharu_visits',  validateSiharuVisits);
         if ('hide_email' in body) updates.hide_email = !!body.hide_email;
 
         if (Object.keys(errors).length > 0) {
