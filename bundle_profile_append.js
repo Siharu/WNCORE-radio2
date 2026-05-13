@@ -571,6 +571,8 @@
     const hideEmail   = profile?.hide_email     || false;
     const clearance   = profile?.clearance_level|| 0;
     const savedAvatar = profile?.avatar_url     || '';
+    // Expose siharu_visits for corruption system
+    window.__WNCORE_SIHARU_VISITS_FROM_PROFILE = parseInt(profile?.siharu_visits || 0, 10);
 
     const clMap = {0:'',1:'lvl1',2:'lvl2',3:'lvl3'};
     const clLabel= {0:'UNVERIFIED',1:'OPERATOR LVL 1',2:'OPERATOR LVL 2',3:'OPERATOR LVL 3'};
@@ -851,6 +853,7 @@
 
   // ── Inject into #page-profile ─────────────────────────────────────────────
   const INJECTED_IDS = [
+    'prof-signal-integrity',
     'prof-avatar-section','prof-identity-section','prof-node-section',
     'prof-prefs-section','prof-danger-section','prof-delete-overlay'
   ];
