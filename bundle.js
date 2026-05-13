@@ -10707,7 +10707,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (m) _avatarSelectedStyle = m[1];
     }
 
-    const acctSection = wrapper.querySelector('div:last-child');
+    const acctSection = wrapper.querySelector(':scope > div:last-child');
     const tmp = document.createElement('div');
     tmp.innerHTML = _buildSections(profile);
     while (tmp.firstChild) wrapper.insertBefore(tmp.firstChild, acctSection);
@@ -10725,12 +10725,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const _origLoadProfilePage = window.loadProfilePage || function(){};
   window.loadProfilePage = async function() {
     _origLoadProfilePage();
-    if (!_authUser) return;
+    if (!_authUser) { console.warn('[WNCORE profile] no _authUser at profile load'); return; }
     _injectCSS();
     INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
 
-    const profile = await fetchProfile(true);
-    await _injectSections(profile);
+    // Inject immediately with null so sections appear right away (no waiting on API)
+    await _injectSections(null);
+
+    // Then fetch real data and re-inject
+    const profile = await fetchProfile(true).catch(e => { console.warn('[WNCORE profile] fetchProfile error', e); return null; });
+    if (profile) {
+      INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
+      await _injectSections(profile);
+    }
 
     if (profile?.display_name) {
       const dn = document.getElementById('profile-display-name');
