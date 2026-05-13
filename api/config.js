@@ -120,15 +120,15 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ [key]: rows.length ? rows[0].config_value : null });
       }
 
-      // All keys
+      // All keys — also include public Supabase credentials for frontend auth client
       const allRes = await fetch(
         sbUrl('wncore_config?select=config_key,config_value'),
         { headers: sbHeaders({ 'Accept': 'application/json' }) }
       );
-      if (!allRes.ok) return res.status(200).json({}); // fail open on read
+      if (!allRes.ok) return res.status(200).json({ supabaseUrl, supabaseAnonKey: process.env.SUPABASE_ANON_KEY }); // fail open on read
 
       const rows = await allRes.json();
-      const config = {};
+      const config = { supabaseUrl, supabaseAnonKey: process.env.SUPABASE_ANON_KEY };
       (rows || []).forEach(item => { config[item.config_key] = item.config_value; });
       res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
       return res.status(200).json(config);

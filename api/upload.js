@@ -10,8 +10,7 @@ if (!process.env.WNCORE_ADMIN_TOKEN) {
 }
 const adminToken = process.env.WNCORE_ADMIN_TOKEN;
 
-// Vercel needs this to read raw body for multipart
-export const config = { api: { bodyParser: false } };
+// Vercel reads raw body via the for-await loop below — no config export needed for plain serverless functions
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
