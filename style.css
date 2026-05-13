@@ -6095,3 +6095,20 @@ html.dark .share-option-btn:hover {
   background: rgba(255,255,255,0.05);
 }
 
+
+/* ── SORTABLE TABLE HEADERS ─────────────────────────────────────── */
+.st-th-sort {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 10px 8px 8px;
+  transition: color 0.15s;
+}
+.st-th-sort:hover { color: var(--accent); }
+.sort-arrow { font-size: 0.6rem; margin-left: 2px; }
+.station-table thead th { border-bottom: 1px solid var(--border); }

@@ -119,3 +119,61 @@ vercel.json             — Vercel deployment config
 package.json            — Node 20.x, @supabase/supabase-js dependency
 ```
 
+
+---
+
+## Auth & Favourites Sync — Supabase Setup
+
+After enabling auth in your Supabase project (Authentication > Providers), run this SQL once in the Supabase SQL editor to create the favourites sync table:
+
+```sql
+create table if not exists public.user_favourites (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid not null references auth.users(id) on delete cascade,
+  station_url   text not null,
+  station_data  jsonb not null,
+  created_at    timestamptz default now(),
+  unique (user_id, station_url)
+);
+
+-- Row-level security: users can only read/write their own rows
+alter table public.user_favourites enable row level security;
+
+create policy "Users manage own favourites"
+  on public.user_favourites
+  for all
+  using  (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+```
+
+Enable OAuth providers you want (Google, Discord) in Supabase > Authentication > Providers, then add your site URL to the allowed redirect URLs list.
+
+## Community Listener Feed — Supabase Setup
+
+Run this SQL to enable the realtime community ticker:
+
+```sql
+create table if not exists public.listener_feed (
+  id           uuid primary key default gen_random_uuid(),
+  station_name text,
+  station_url  text,
+  city         text,
+  played_at    timestamptz default now()
+);
+
+-- Public insert (anonymous play logging), read restricted
+alter table public.listener_feed enable row level security;
+
+create policy "Anyone can log a play"
+  on public.listener_feed for insert
+  with check (true);
+
+create policy "Anyone can read recent plays"
+  on public.listener_feed for select
+  using (played_at > now() - interval '1 hour');
+
+-- Enable realtime for this table
+alter publication supabase_realtime add table public.listener_feed;
+```
+
+Then enable Realtime in Supabase > Database > Replication for the `listener_feed` table.

@@ -1118,250 +1118,216 @@ function openSignIn() { document.getElementById('signin-modal').classList.add('o
 function closeSignIn(e) { if(e&&e.target!==document.getElementById('signin-modal')) return; document.getElementById('signin-modal').classList.remove('open'); }
 function closeSignInBtn() { document.getElementById('signin-modal').classList.remove('open'); }
 
-function handleSignIn() {
+// ─── REAL SUPABASE AUTH ────────────────────────────────────────────────────
+// Supabase is loaded via CDN (supabase.min.js). Client is init'd lazily so
+// the site still works if SUPABASE_URL / SUPABASE_ANON_KEY aren't configured.
+let _sbClient = null;
+let _authUser = null;
+
+async function _getSupabase() {
+  if (_sbClient) return _sbClient;
+  try {
+    // Keys are injected by the Vercel api/config.js endpoint at runtime
+    const r = await fetch('/api/config');
+    if (!r.ok) return null;
+    const cfg = await r.json();
+    if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return null;
+    _sbClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+    return _sbClient;
+  } catch { return null; }
+}
+
+function _authShowView(view) {
+  ['auth-signedout-view','auth-signedin-view','auth-loading-view'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === view ? '' : 'none';
+  });
+}
+
+function _authSetError(msg) {
+  const el = document.getElementById('auth-error-msg');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? '' : 'none';
+}
+
+function _authUpdateNav(user) {
+  const btn = document.getElementById('nav-auth-btn');
+  if (!btn) return;
+  if (user) {
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+    btn.textContent = '▸ ' + name;
+    btn.style.color = 'var(--accent)';
+  } else {
+    btn.textContent = 'Sign In';
+    btn.style.color = '';
+  }
+}
+
+function _authUpdateModal(user) {
+  if (user) {
+    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || '—';
+    const el = document.getElementById('auth-display-name');
+    const em = document.getElementById('auth-display-email');
+    const av = document.getElementById('auth-avatar');
+    if (el) el.textContent = name;
+    if (em) em.textContent = user.email || '';
+    if (av) av.textContent = name[0].toUpperCase();
+    _authShowView('auth-signedin-view');
+  } else {
+    _authShowView('auth-signedout-view');
+  }
+}
+
+async function _authInit() {
+  const sb = await _getSupabase();
+  if (!sb) return; // Supabase not configured — silent, site still works
+  const { data: { session } } = await sb.auth.getSession();
+  _authUser = session?.user || null;
+  _authUpdateNav(_authUser);
+  if (_authUser) { migrateFavsToV2(); setTimeout(authSyncFavsDown, 1000); }
+
+  sb.auth.onAuthStateChange((_event, session) => {
+    _authUser = session?.user || null;
+    _authUpdateNav(_authUser);
+    _authUpdateModal(_authUser);
+    if (_authUser) { migrateFavsToV2(); setTimeout(authSyncFavsDown, 800); }
+  });
+}
+
+async function handleSignIn() {
   const email = document.getElementById('signin-email').value.trim();
-  const pass = document.getElementById('signin-pass').value.trim();
-  if(!email||!pass) {
-    if(!email) document.getElementById('signin-email').style.borderColor='var(--accent)';
-    if(!pass) document.getElementById('signin-pass').style.borderColor='var(--accent)';
+  const pass  = document.getElementById('signin-pass').value.trim();
+  if (!email || !pass) {
+    if (!email) document.getElementById('signin-email').style.borderColor = 'var(--accent)';
+    if (!pass)  document.getElementById('signin-pass').style.borderColor  = 'var(--accent)';
     return;
   }
-  // Trigger eerie email horror terminal
-  document.getElementById('signin-modal').classList.remove('open');
-  triggerEmailHorror(email);
+  _authSetError('');
+  _authShowView('auth-loading-view');
+  const sb = await _getSupabase();
+  if (!sb) { _authShowView('auth-signedout-view'); _authSetError('Auth service unavailable. Check Supabase config.'); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { _authShowView('auth-signedout-view'); _authSetError(error.message); }
+  else { closeSignInBtn(); showToast('✓ Signed in', 'success'); }
 }
 
-function handleCreateAccount() {
+async function handleCreateAccount() {
   const email = document.getElementById('signin-email').value.trim();
-  const pass = document.getElementById('signin-pass').value.trim();
-  if(!email) { document.getElementById('signin-email').style.borderColor='var(--accent)'; return; }
-  document.getElementById('signin-modal').classList.remove('open');
-  triggerEmailHorror(email);
+  const pass  = document.getElementById('signin-pass').value.trim();
+  if (!email) { document.getElementById('signin-email').style.borderColor = 'var(--accent)'; _authSetError('Enter an email address.'); return; }
+  if (!pass || pass.length < 6) { document.getElementById('signin-pass').style.borderColor = 'var(--accent)'; _authSetError('Password must be at least 6 characters.'); return; }
+  _authSetError('');
+  _authShowView('auth-loading-view');
+  const sb = await _getSupabase();
+  if (!sb) { _authShowView('auth-signedout-view'); _authSetError('Auth service unavailable.'); return; }
+  const { error } = await sb.auth.signUp({ email, password: pass });
+  if (error) { _authShowView('auth-signedout-view'); _authSetError(error.message); }
+  else { _authShowView('auth-signedout-view'); _authSetError(''); showToast('✉ Check your email to confirm your account', 'info', 6000); closeSignInBtn(); }
 }
 
-// ─── FAKE AR-STYLE OAUTH INTERCEPT SYSTEM ─────────────────────────────────
+async function handleForgotPassword() {
+  const email = document.getElementById('signin-email').value.trim();
+  if (!email) { _authSetError('Enter your email address first.'); return; }
+  const sb = await _getSupabase();
+  if (!sb) return;
+  await sb.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+  showToast('✉ Password reset email sent', 'info', 5000);
+}
 
-const OAUTH_PROVIDERS = {
-  google: {
-    name: 'Google',
-    theme: '',
-    url: 'accounts.google.com',
-    progressColor: '#4285F4',
-    btnBg: '#1a73e8',
-    btnColor: '#fff',
-    avatarBg: '#4285F4',
-    avatarColor: '#fff',
-    accountName: 'WNCORE User',
-    accountEmail: 'user@gmail.com',
-    title: 'Sign in with Google',
-    subtitle: 'to continue to WNCORE Radio',
-    logo: `<svg viewBox="0 0 48 48" width="40" height="40"><path d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z" fill="#FFC107"/><path d="M6.3 14.7l7.4 5.4C15.5 16.1 19.5 13 24 13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.3 2 9.7 7.4 6.3 14.7z" fill="#FF3D00"/><path d="M24 46c5.5 0 10.5-1.9 14.4-5.1l-6.7-5.5C29.7 36.9 27 38 24 38c-6.1 0-10.7-3.7-12.5-8.4l-7.4 5.7C7.9 42.1 15.4 46 24 46z" fill="#4CAF50"/><path d="M44.5 20H24v8.5h11.8c-.9 2.9-2.8 5.3-5.3 6.9l6.7 5.5c-.4.3 6.3-4.6 6.3-14.9 0-1.3-.2-2.7-.5-4z" fill="#1976D2"/></svg>`,
-    interceptUrl: 'auth.wncoreradio.net/relay/google',
-    interceptLabel: 'GOOGLE_OAUTH',
-  },
-  apple: {
-    name: 'Apple',
-    theme: 'apple-theme',
-    url: 'appleid.apple.com',
-    progressColor: '#0071e3',
-    btnBg: '#0071e3',
-    btnColor: '#fff',
-    avatarBg: '#555',
-    avatarColor: '#fff',
-    accountName: 'WNCORE Listener',
-    accountEmail: 'user@icloud.com',
-    title: 'Sign in with Apple ID',
-    subtitle: 'to continue to WNCORE Radio',
-    logo: `<svg viewBox="0 0 48 48" width="38" height="38" fill="white"><path d="M35.1 25.2c-.1-4.7 3.8-6.9 4-7.1-2.2-3.2-5.6-3.6-6.8-3.7-2.9-.3-5.6 1.7-7.1 1.7-1.4 0-3.7-1.6-6.1-1.6-3.1.1-6 1.8-7.6 4.6-3.2 5.6-.8 13.9 2.3 18.5 1.5 2.2 3.4 4.7 5.8 4.6 2.3-.1 3.2-1.5 6-1.5 2.8 0 3.6 1.5 6.1 1.4 2.5 0 4.1-2.3 5.7-4.5 1.8-2.6 2.5-5.1 2.5-5.2-.1-.1-5-1.9-4.8-7.2zM30.5 11.5c1.3-1.5 2.1-3.6 1.9-5.7-1.8.1-4 1.2-5.3 2.7-1.1 1.3-2.2 3.5-1.9 5.5 2 .2 4-1 5.3-2.5z"/></svg>`,
-    interceptUrl: 'auth.wncoreradio.net/relay/apple',
-    interceptLabel: 'APPLE_OAUTH',
-  },
-  discord: {
-    name: 'Discord',
-    theme: 'discord-theme',
-    url: 'discord.com/oauth2/authorize',
-    progressColor: '#5865F2',
-    btnBg: '#5865F2',
-    btnColor: '#fff',
-    avatarBg: '#5865F2',
-    avatarColor: '#fff',
-    accountName: 'WNCOREListener',
-    accountEmail: '#0000 on Discord',
-    title: 'Authorize WNCORE Radio',
-    subtitle: 'WNCORE Radio wants access to your Discord account',
-    logo: `<svg viewBox="0 0 127.14 96.36" width="40" height="30" fill="#5865F2"><path d="M107.7 8.07A105.15 105.15 0 0081.47 0a72.06 72.06 0 00-3.36 6.83 97.68 97.68 0 00-29.11 0A72.37 72.37 0 0045.64 0a105.89 105.89 0 00-26.25 8.09C2.79 32.65-1.71 56.6.54 80.21a105.73 105.73 0 0032.17 16.15 77.7 77.7 0 006.89-11.11 68.42 68.42 0 01-10.85-5.18c.91-.66 1.8-1.34 2.66-2a75.57 75.57 0 0064.32 0c.87.71 1.76 1.39 2.66 2a68.68 68.68 0 01-10.87 5.19 77 77 0 006.89 11.1 105.25 105.25 0 0032.19-16.14c2.64-27.38-4.51-51.11-18.9-72.15zM42.45 65.69C36.18 65.69 31 60 31 53s5-12.74 11.43-12.74S54 46 53.89 53s-5.05 12.69-11.44 12.69zm42.24 0C78.41 65.69 73.25 60 73.25 53s5-12.74 11.44-12.74S96.23 46 96.12 53s-5.04 12.69-11.43 12.69z"/></svg>`,
-    interceptUrl: 'auth.wncoreradio.net/relay/discord',
-    interceptLabel: 'DISCORD_OAUTH',
-  },
+async function handleSignOut() {
+  const sb = await _getSupabase();
+  if (sb) await sb.auth.signOut();
+  _authUser = null;
+  _authUpdateNav(null);
+  closeSignInBtn();
+  showToast('Signed out', 'info');
+}
+
+// OAuth — real Supabase OAuth (no fake ARG interception for these)
+async function oauthGoogle() {
+  const sb = await _getSupabase();
+  if (!sb) { showToast('Auth service unavailable', 'warn'); return; }
+  closeSignInBtn();
+  await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+}
+async function oauthDiscord() {
+  const sb = await _getSupabase();
+  if (!sb) { showToast('Auth service unavailable', 'warn'); return; }
+  closeSignInBtn();
+  await sb.auth.signInWithOAuth({ provider: 'discord', options: { redirectTo: window.location.origin } });
+}
+function oauthApple() { showToast('Apple Sign-In coming soon', 'info'); }
+
+// Keep oauthContinue / oauthCancel stubs so ARG overlays that reference them don't throw
+function oauthContinue() {}
+function oauthCancel() { const bd = document.getElementById('oauth-backdrop'); if(bd) bd.classList.remove('show'); }
+
+// Open modal — update view based on current auth state
+const _origOpenSignIn = openSignIn;
+openSignIn = function() {
+  _origOpenSignIn();
+  _authUpdateModal(_authUser);
 };
 
-let _oauthProvider = null;
-let _oauthPhase = 'idle'; // idle | loading | corrupting | intercepted
-
-function oauthGoogle()  { _openOAuthPopup('google'); }
-function oauthApple()   { _openOAuthPopup('apple'); }
-function oauthDiscord() { _openOAuthPopup('discord'); }
-
-function _openOAuthPopup(providerKey) {
-  const p = OAUTH_PROVIDERS[providerKey];
-  _oauthProvider = providerKey;
-  _oauthPhase = 'loading';
-
-  const backdrop = document.getElementById('oauth-backdrop');
-  const popup    = document.getElementById('oauth-popup');
-  const urlText  = document.getElementById('oauth-url-text');
-  const logo     = document.getElementById('oauth-provider-logo');
-  const title    = document.getElementById('oauth-title');
-  const subtitle = document.getElementById('oauth-subtitle');
-  const avatar   = document.getElementById('oauth-avatar');
-  const accName  = document.getElementById('oauth-account-name');
-  const accEmail = document.getElementById('oauth-account-email');
-  const btn      = document.getElementById('oauth-continue-btn');
-  const fill     = document.getElementById('oauth-progress-fill');
-  const intercept= document.getElementById('oauth-intercept');
-
-  // Reset state
-  popup.className = 'oauth-popup' + (p.theme ? ' ' + p.theme : '');
-  urlText.textContent = p.url;
-  urlText.classList.remove('corrupt');
-  logo.innerHTML = p.logo;
-  title.textContent = p.title;
-  title.classList.remove('glitching');
-  subtitle.textContent = p.subtitle;
-  avatar.style.background = p.avatarBg;
-  avatar.style.color = p.avatarColor;
-  avatar.textContent = p.name[0];
-  accName.textContent = p.accountName;
-  accEmail.textContent = p.accountEmail;
-  btn.style.background = p.btnBg;
-  btn.style.color = p.btnColor;
-  btn.textContent = 'Continue';
-  btn.disabled = false;
-  fill.style.background = p.progressColor;
-  fill.style.width = '0%';
-  fill.style.transition = 'width 0.4s ease';
-  intercept.classList.remove('show');
-  intercept.innerHTML = '';
-
-  backdrop.classList.add('show');
-
-  // Animate progress bar as if loading account data
-  setTimeout(() => { fill.style.width = '35%'; }, 50);
-  setTimeout(() => { fill.style.width = '60%'; }, 700);
-  setTimeout(() => { fill.style.width = '82%'; }, 1300);
-  setTimeout(() => { fill.style.width = '100%'; }, 1800);
-
-  // Account info fades in after "loading"
-  accName.style.opacity = '0.3';
-  accEmail.style.opacity = '0';
-  setTimeout(() => { accName.style.transition='opacity 0.4s'; accName.style.opacity='1'; accName.textContent = p.accountName; }, 1600);
-  setTimeout(() => { accEmail.style.transition='opacity 0.3s'; accEmail.style.opacity='1'; accEmail.textContent = p.accountEmail; }, 1900);
+// ─── FAVOURITES CLOUD SYNC ─────────────────────────────────────────────────
+// Migrate old key → new key on first load
+function migrateFavsToV2() {
+  try {
+    const old = JSON.parse(localStorage.getItem('wncore_favs') || '[]');
+    if (!old.length) return;
+    const cur = JSON.parse(localStorage.getItem('wncore-favs-v2') || '[]');
+    const merged = [...cur];
+    old.forEach(o => { if (!merged.find(m => m.url === o.url)) merged.push(o); });
+    localStorage.setItem('wncore-favs-v2', JSON.stringify(merged));
+    localStorage.removeItem('wncore_favs');
+  } catch {}
 }
 
-function oauthContinue() {
-  if (_oauthPhase !== 'loading') return;
-  _oauthPhase = 'corrupting';
-  const p = OAUTH_PROVIDERS[_oauthProvider];
-  const popup   = document.getElementById('oauth-popup');
-  const urlText = document.getElementById('oauth-url-text');
-  const title   = document.getElementById('oauth-title');
-  const fill    = document.getElementById('oauth-progress-fill');
-  const btn     = document.getElementById('oauth-continue-btn');
-  const intercept = document.getElementById('oauth-intercept');
-
-  btn.disabled = true;
-  btn.textContent = 'Authenticating…';
-
-  // Simulate handshake progress
-  fill.style.transition = 'width 0.2s linear';
-  fill.style.width = '100%';
-  fill.style.background = '#c8472a';
-
-  // Phase 1: URL starts morphing
-  setTimeout(() => {
-    urlText.textContent = 'auth.wncoreradio.net/handshake';
-    popup.classList.add('corrupting');
-    urlText.classList.add('corrupt');
-    title.classList.add('glitching');
-  }, 600);
-
-  // Phase 2: URL fully hijacked
-  setTimeout(() => {
-    urlText.textContent = p.interceptUrl;
-  }, 1000);
-
-  // Phase 3: Terminal takeover
-  setTimeout(() => {
-    intercept.classList.add('show');
-    const ts = new Date().toISOString().slice(0,19).replace('T',' ');
-    const label = p.interceptLabel;
-    const lines = [
-      { cls: 'dim',   t: `$ wncore_relay --intercept --proto ${label}` },
-      { cls: 'dim',   t: `Attaching to oauth handshake...` },
-      { cls: 'white', t: `[ OK ] MiTM layer active on 10.0.9.88` },
-      { cls: '',      t: `` },
-      { cls: 'dim',   t: `HANDSHAKE CAPTURE ──────────────────────` },
-      { cls: 'dim',   t: `  provider  : ${p.name.toUpperCase()}` },
-      { cls: 'dim',   t: `  relay     : auth.wncoreradio.net (node_09)` },
-      { cls: 'dim',   t: `  timestamp : ${ts} UTC` },
-      { cls: '',      t: `` },
-      { cls: 'red',   t: `EXCEPTION: TOKEN_INTERCEPT at relay 88.700 MHz` },
-      { cls: 'dim',   t: `  > OAuth token captured before delivery` },
-      { cls: 'dim',   t: `  > Interceptor: signal_kage@node_09 (UNKNOWN)` },
-      { cls: '',      t: `` },
-      { cls: 'white', t: `[ WARN ] Redirecting auth context...` },
-      { cls: 'red',   t: `[ FAIL ] User session claimed by SIGNAL_KAGE` },
-      { cls: '',      t: `` },
-      { cls: 'red',   t: `SIGNAL_KAGE is watching.` },
-      { cls: 'dim blink', t: `█` },
-    ];
-
-    let delay = 0;
-    lines.forEach(({ cls, t }) => {
-      setTimeout(() => {
-        const div = document.createElement('div');
-        div.className = 'oauth-intercept-line' + (cls ? ' ' + cls : '');
-        div.textContent = t;
-        intercept.appendChild(div);
-        intercept.scrollTop = intercept.scrollHeight;
-      }, delay);
-      delay += cls === '' ? 80 : 140;
-    });
-  }, 1400);
-
-  // Phase 4: close + ARG escalation
-  setTimeout(() => {
-    const backdrop = document.getElementById('oauth-backdrop');
-    popup.classList.remove('corrupting');
-    backdrop.classList.remove('show');
-    intercept.classList.remove('show');
-    intercept.innerHTML = '';
-
-    // Flash + ARG exposure bump
-    const f = document.createElement('div');
-    f.style.cssText = 'position:fixed;inset:0;background:#fff;z-index:99999;opacity:0.6;pointer-events:none';
-    document.body.appendChild(f);
-    setTimeout(() => { f.style.transition='opacity 0.4s'; f.style.opacity='0'; setTimeout(() => f.remove(), 500); }, 60);
-
-    exposure += 20;
-    checkHorrorStage();
-    _oauthPhase = 'idle';
-    _oauthProvider = null;
-  }, 1400 + (140 * 18) + 1200);
+async function authSyncFavsDown() {
+  if (!_authUser) return;
+  const sb = await _getSupabase();
+  if (!sb) return;
+  try {
+    const { data } = await sb.from('user_favourites').select('station_data').eq('user_id', _authUser.id);
+    if (!data || !data.length) { authSyncFavsUp(); return; } // first login — push local up
+    const remote = data.map(r => r.station_data);
+    const local  = JSON.parse(localStorage.getItem('wncore-favs-v2') || '[]');
+    // Merge: remote wins for conflicts, local extras are kept
+    const merged = [...remote];
+    local.forEach(l => { if (!merged.find(m => m.url === l.url)) merged.push(l); });
+    localStorage.setItem('wncore-favs-v2', JSON.stringify(merged));
+    if (typeof renderFavoritesPage === 'function') renderFavoritesPage();
+    if (typeof updateFavButton     === 'function') updateFavButton();
+  } catch {}
 }
 
-function oauthCancel() {
-  if (_oauthPhase === 'corrupting') return; // too late
-  document.getElementById('oauth-backdrop').classList.remove('show');
-  _oauthPhase = 'idle';
-  _oauthProvider = null;
+async function authSyncFavsUp() {
+  if (!_authUser) return;
+  const sb = await _getSupabase();
+  if (!sb) return;
+  try {
+    const favs = JSON.parse(localStorage.getItem('wncore-favs-v2') || '[]');
+    // Upsert all local favs to Supabase
+    const rows = favs.map(s => ({ user_id: _authUser.id, station_url: s.url, station_data: s }));
+    if (rows.length) await sb.from('user_favourites').upsert(rows, { onConflict: 'user_id,station_url' });
+  } catch {}
 }
 
-// Close on backdrop click (not on popup click)
+window.authSyncNow = async function() {
+  showToast('Syncing…', 'info');
+  await authSyncFavsUp();
+  await authSyncFavsDown();
+  showToast('✓ Sync complete', 'success');
+};
+
+// Patch favAdd / favRemove to sync up on change when logged in
+const _origFavAdd    = window.favAdd;
+const _origFavRemove = window.favRemove;
+// These will be overridden after improvements.js defines them — wire after DOMContentLoaded
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('oauth-backdrop').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('oauth-backdrop')) oauthCancel();
-  });
+  _authInit();
+  migrateFavsToV2();
 });
 
 // ─── EMAIL HORROR TERMINAL ────────────────────────────────────────────────
@@ -1550,7 +1516,7 @@ document.addEventListener('visibilitychange', ()=>{
   // CRITICAL: Never redirect while audio is playing — would kill background radio
   // Redirect only fires AFTER 88.7 horror sequence has been triggered (horrorTriggered=true)
   // and only at very high exposure, so casual visitors never get redirected
-  if(document.hidden && horrorTriggered && exposure>50 && !isPlaying){
+  if(document.hidden && horrorTriggered && exposure>50 && !isPlaying && !lmIsPlaying){
     const p=isDarkMode?0.12:0.04;
     if(Math.random()<p){setTimeout(()=>{try{window.location.href=_d}catch(e){}},1400)}
   }
@@ -2159,6 +2125,25 @@ function lmPlayChannel(chId) {
 }
 
 let _lmRetries = 0;
+
+// Handle stream errors that fire AFTER play() already resolved (e.g. stream dies mid-session)
+lmAudio.addEventListener('error', () => {
+  if (!lmCurrentChannel || !lmIsPlaying) return;
+  _lmRetries++;
+  if (_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
+    lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
+    const titleEl = document.getElementById('lm-np-title');
+    if (titleEl) titleEl.textContent = 'Trying next stream…';
+    setTimeout(lmStartStation, 500);
+  } else {
+    _lmRetries = 0;
+    lmIsPlaying = false;
+    lmSetWaveformState(false);
+    const titleEl = document.getElementById('lm-np-title');
+    if (titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
+  }
+});
+
 function lmStartStation() {
   if(!lmCurrentChannel) return;
   const station = lmCurrentChannel.stations[lmCurrentStationIdx];
@@ -9279,5 +9264,483 @@ document.addEventListener('DOMContentLoaded', () => {
     var au = document.getElementById('audio');
     if (au) au.addEventListener('playing', tryWire, { once: true });
   })();
+
+})();
+
+/* ━━━ MEDIUM EFFORT FEATURES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function mediumWins() {
+  'use strict';
+
+  // ── 1. SORTABLE TABLE COLUMNS ─────────────────────────────────────────
+  // Stores the last dataset rendered per tbody so sorting works client-side
+  var _tableData = {};
+  var _tableSort = {}; // { tbodyId: { col, dir } }
+
+  // Patch renderTable to cache data as it comes in
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      if (typeof window.renderTable !== 'function') return;
+      var _orig = window.renderTable;
+      window.renderTable = function(stations, tbodyId) {
+        _tableData[tbodyId] = stations.slice(); // cache a copy
+        delete _tableSort[tbodyId];             // reset sort state on new data
+        // Clear sort arrows
+        document.querySelectorAll('[id^="sarr-' + tbodyId + '"]').forEach(function(el) { el.textContent = ''; });
+        return _orig(stations, tbodyId);
+      };
+    }, 200);
+  });
+
+  window.sortStationTable = function(tbodyId, col) {
+    var data = _tableData[tbodyId];
+    if (!data || !data.length) return;
+
+    var cur = _tableSort[tbodyId] || { col: null, dir: 1 };
+    var dir = (cur.col === col) ? -cur.dir : 1; // toggle if same col
+    _tableSort[tbodyId] = { col: col, dir: dir };
+
+    var sorted = data.slice().sort(function(a, b) {
+      var va, vb;
+      if (col === 'name')    { va = (a.name || '').toLowerCase();    vb = (b.name || '').toLowerCase();    return dir * va.localeCompare(vb); }
+      if (col === 'country') { va = (a.country || '').toLowerCase(); vb = (b.country || '').toLowerCase(); return dir * va.localeCompare(vb); }
+      if (col === 'bitrate') { va = parseInt(a.bitrate) || 0;        vb = parseInt(b.bitrate) || 0;        return dir * (va - vb); }
+      return 0;
+    });
+
+    // Update arrows
+    ['name','country','bitrate'].forEach(function(c) {
+      var el = document.getElementById('sarr-' + tbodyId + '-' + c);
+      if (!el) return;
+      el.textContent = c === col ? (dir === 1 ? '↑' : '↓') : '';
+    });
+
+    if (typeof window.renderTable === 'function') window.renderTable(sorted, tbodyId);
+  };
+
+
+  // ── 2. NEAR ME — geolocation → country stations ───────────────────────
+  window.playNearMe = function() {
+    if (!navigator.geolocation) { if (typeof showToast === 'function') showToast('Geolocation not supported', 'warn'); return; }
+    if (typeof showToast === 'function') showToast('📍 Locating…', 'info');
+    navigator.geolocation.getCurrentPosition(
+      async function(pos) {
+        var lat = pos.coords.latitude.toFixed(4);
+        var lng = pos.coords.longitude.toFixed(4);
+        try {
+          var geoRes = await fetch('https://nominatim.openstreetmap.org/reverse?lat=' + lat + '&lon=' + lng + '&format=json', { headers: { 'Accept-Language': 'en' } });
+          var geo = await geoRes.json();
+          var cc = (geo && geo.address && geo.address.country_code || '').toUpperCase();
+          var country = (geo && geo.address && geo.address.country) || cc;
+          if (!cc) { if (typeof showToast === 'function') showToast('Could not detect country', 'warn'); return; }
+
+          var _a = window._a || 'https://de1.api.radio-browser.info/json';
+          var r = await fetch(_a + '/stations/search?limit=20&https=true&order=clickcount&reverse=true&countrycode=' + cc);
+          var stations = await r.json();
+          if (!stations || !stations.length) { if (typeof showToast === 'function') showToast('No stations found for ' + country, 'warn'); return; }
+
+          // Render into station table
+          if (typeof window.renderTable === 'function') window.renderTable(stations, 'station-tbody');
+          var sectionTitle = document.querySelector('.section-title');
+          if (sectionTitle) { sectionTitle.textContent = '📍 Near Me — ' + country; setTimeout(function() { sectionTitle.textContent = 'Top Charts'; }, 15000); }
+          if (typeof showToast === 'function') showToast('📍 Showing stations in ' + country, 'success');
+        } catch(e) {
+          if (typeof showToast === 'function') showToast('Could not load local stations', 'warn');
+        }
+      },
+      function() { if (typeof showToast === 'function') showToast('Location access denied', 'warn'); }
+    );
+  };
+
+
+  // ── 3. MEDIA SESSION — use country flag emoji as artwork fallback ──────
+  // When a station plays, update MediaSession artwork with a country-specific
+  // emoji rendered to canvas as a 96×96 image for lock-screen display.
+  (function patchMediaSessionArtwork() {
+    if (!('mediaSession' in navigator)) return;
+
+    function emojiToDataURL(emoji) {
+      try {
+        var canvas = document.createElement('canvas');
+        canvas.width = 96; canvas.height = 96;
+        var ctx = canvas.getContext('2d');
+        ctx.font = '72px serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(emoji, 48, 52);
+        return canvas.toDataURL('image/png');
+      } catch(e) { return null; }
+    }
+
+    document.addEventListener('wncore-station-changed', function(e) {
+      try {
+        var d = e.detail || {};
+        var cs = window.currentStation || {};
+        var emoji = cs.emoji || '📻';
+        var dataURL = emojiToDataURL(emoji);
+        var artwork = [
+          { src: '/images/wncore-art-96.png',  sizes: '96x96',   type: 'image/png' },
+          { src: '/images/wncore-art-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/images/wncore-art-512.png', sizes: '512x512', type: 'image/png' },
+        ];
+        if (dataURL) artwork.unshift({ src: dataURL, sizes: '96x96', type: 'image/png' });
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title:   d.name  || cs.name  || 'Live Radio',
+          artist:  d.url   || cs.meta  || 'WNCORE Radio',
+          album:   'WNCORE Radio',
+          artwork: artwork,
+        });
+      } catch(e) {}
+    });
+  })();
+
+
+  // ── 4. HOME PAGE LISTENING STATS BAR ─────────────────────────────────
+  function updateHomeStatsBar() {
+    var bar = document.getElementById('home-stats-bar');
+    if (!bar) return;
+    if (typeof statsLoad !== 'function') return;
+    var s = statsLoad();
+    if (!s || (s.totalSecs === 0 && s.stationsTried === 0)) { bar.style.display = 'none'; return; }
+    bar.style.display = 'flex';
+    var h = Math.floor(s.totalSecs / 3600);
+    var m = Math.floor((s.totalSecs % 3600) / 60);
+    var timeStr = h > 0 ? h + 'h ' + m + 'm' : m + 'm';
+    var tEl = document.getElementById('hstat-time');
+    var sEl = document.getElementById('hstat-stations');
+    var gEl = document.getElementById('hstat-genre');
+    if (tEl) tEl.textContent = timeStr;
+    if (sEl) sEl.textContent = s.stationsTried;
+    if (gEl) gEl.textContent = s.topGenre || '—';
+  }
+
+  // Update stats bar whenever a station plays
+  document.addEventListener('wncore-station-changed', updateHomeStatsBar);
+  // Also update on page load after a short delay
+  setTimeout(updateHomeStatsBar, 1500);
+
+})();
+
+/* ━━━ MEDIUM FEATURES: ICY METADATA + FOR YOU + COMMUNITY TICKER ━━━━━━ */
+(function finalFeatures() {
+  'use strict';
+
+  // ── 1. ICY METADATA — real now-playing track names ─────────────────────
+  var _icyPollTimer  = null;
+  var _icyCurrentUrl = null;
+  var _icyLastTitle  = null;
+
+  function startIcyPoll(streamUrl) {
+    stopIcyPoll();
+    _icyCurrentUrl = streamUrl;
+    _icyLastTitle  = null;
+    pollIcy();
+    _icyPollTimer = setInterval(pollIcy, 30000); // refresh every 30s
+  }
+
+  function stopIcyPoll() {
+    if (_icyPollTimer) { clearInterval(_icyPollTimer); _icyPollTimer = null; }
+    _icyCurrentUrl = null;
+  }
+
+  async function pollIcy() {
+    if (!_icyCurrentUrl) return;
+    try {
+      var r = await fetch('/api/icy?url=' + encodeURIComponent(_icyCurrentUrl));
+      if (!r.ok) return;
+      var d = await r.json();
+      var title = d.title || null;
+      if (title && title !== _icyLastTitle) {
+        _icyLastTitle = title;
+        // Update now-playing track display
+        var npTrack = document.getElementById('np-track');
+        if (npTrack) npTrack.textContent = title;
+        // Update mini player meta
+        var miniMeta = document.getElementById('mini-meta');
+        if (miniMeta && window.currentStation) miniMeta.textContent = title;
+        // Update MediaSession
+        if ('mediaSession' in navigator && navigator.mediaSession.metadata && window.currentStation) {
+          try {
+            navigator.mediaSession.metadata.title = title;
+            navigator.mediaSession.metadata.artist = window.currentStation.name || 'WNCORE Radio';
+          } catch(e) {}
+        }
+        // Inject into community ticker
+        injectNowPlayingToTicker(title, window.currentStation);
+      }
+    } catch(e) {}
+  }
+
+  // Hook into station changes to start/stop polling
+  document.addEventListener('wncore-station-changed', function(e) {
+    var cs = window.currentStation;
+    if (cs && cs.url) startIcyPoll(cs.url);
+  });
+
+  // Stop polling when audio stops
+  (function wireAudioStop() {
+    var au = document.getElementById('audio');
+    if (!au) { setTimeout(wireAudioStop, 500); return; }
+    au.addEventListener('pause', stopIcyPoll);
+    au.addEventListener('ended', stopIcyPoll);
+  })();
+
+
+  // ── 2. FOR YOU — personalised recommendations from history ─────────────
+  var GRADIENT_PRESETS = [
+    'linear-gradient(135deg,#1a2a1a,#2a4a2a)',
+    'linear-gradient(135deg,#2a1a2a,#4a1a3a)',
+    'linear-gradient(135deg,#1a1a2a,#2a2a4a)',
+    'linear-gradient(135deg,#1a0a0a,#3a1a1a)',
+    'linear-gradient(135deg,#0a1a2a,#1a3a4a)',
+    'linear-gradient(135deg,#2a2a1a,#4a4a1a)',
+  ];
+
+  var MUSIC_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round" width="22" height="22"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>';
+
+  async function buildForYouSection() {
+    var grid = document.getElementById('rec-grid');
+    var subtitle = document.getElementById('rec-subtitle');
+    if (!grid) return;
+
+    // Extract top tags from play history
+    var tags = [];
+    if (typeof historyLoad === 'function') {
+      var h = historyLoad();
+      h.forEach(function(s) {
+        if (s.meta) {
+          s.meta.split(/[·,\/\-]/).forEach(function(t) {
+            var clean = t.trim().toLowerCase();
+            if (clean.length > 2 && clean.length < 20) tags.push(clean);
+          });
+        }
+      });
+    }
+
+    // Count tag frequency
+    var freq = {};
+    tags.forEach(function(t) { freq[t] = (freq[t] || 0) + 1; });
+    var topTags = Object.keys(freq).sort(function(a,b) { return freq[b]-freq[a]; }).slice(0,3);
+
+    if (!topTags.length) return; // no history yet — keep static defaults
+
+    // Fetch stations for each top tag
+    var stations = [];
+    for (var i = 0; i < Math.min(topTags.length, 2); i++) {
+      try {
+        var r = await fetch(_a + '/stations/search?limit=6&https=true&order=clickcount&reverse=true&tag=' + encodeURIComponent(topTags[i]));
+        var d = await r.json();
+        if (d && d.length) {
+          // Pick 2 random from top 6
+          var picked = d.sort(function() { return Math.random()-0.5; }).slice(0,2);
+          stations = stations.concat(picked);
+        }
+      } catch(e) {}
+    }
+
+    if (!stations.length) return;
+
+    // Deduplicate
+    var seen = {};
+    stations = stations.filter(function(s) {
+      if (seen[s.stationuuid]) return false;
+      seen[s.stationuuid] = true;
+      return true;
+    }).slice(0, 4);
+
+    // Render
+    grid.innerHTML = stations.map(function(s, i) {
+      var emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
+      var tags  = (s.tags || '').split(',').slice(0,2).filter(function(t){return t.trim();}).map(function(t){return t.trim();}).join(' · ') || s.country || 'Radio';
+      var grad  = GRADIENT_PRESETS[i % GRADIENT_PRESETS.length];
+      var url   = s.url_resolved || s.url;
+      var name  = (s.name || 'Unknown').replace(/'/g, "\\'");
+      var meta  = (s.country || 'Unknown').replace(/'/g, "\\'");
+      return '<div class="rec-card" onclick="playStation(\'' + url + '\',\'' + name + '\',\'' + meta + '\',\'' + emoji + '\')">' +
+        '<div class="rec-art" style="background:' + grad + '">' + MUSIC_ICON + '</div>' +
+        '<div class="rec-info"><div class="rec-name">' + (s.name || 'Unknown') + '</div><div class="rec-desc">' + tags + '</div></div>' +
+        '</div>';
+    }).join('');
+
+    if (subtitle) subtitle.textContent = 'Based on your listening history · ' + topTags.slice(0,2).join(', ');
+  }
+
+  // Build after stations load and on each station change
+  setTimeout(buildForYouSection, 3000);
+  document.addEventListener('wncore-station-changed', function() {
+    setTimeout(buildForYouSection, 500);
+  });
+
+
+  // ── 3. COMMUNITY TICKER — real Supabase Realtime listener feed ─────────
+  // Falls back gracefully if Supabase isn't configured.
+  // Logs anonymous play events and surfaces them in the existing ticker.
+
+  var ANON_CITIES = [
+    'Tokyo','London','Berlin','São Paulo','Lagos','Seoul','Mumbai','Cairo',
+    'Toronto','Sydney','Paris','Mexico City','Jakarta','Istanbul','Nairobi',
+    'Buenos Aires','Moscow','Bangkok','Karachi','Chicago','Dubai','Amsterdam',
+  ];
+
+  function randomCity() {
+    return ANON_CITIES[Math.floor(Math.random() * ANON_CITIES.length)];
+  }
+
+  function injectNowPlayingToTicker(title, station) {
+    if (!title || !station) return;
+    var inner = document.getElementById('ticker-inner');
+    if (!inner) return;
+    var span = document.createElement('span');
+    span.style.cssText = 'color:var(--accent);font-weight:500;';
+    span.textContent = '♪ Now Playing: ' + title + ' on ' + (station.name || 'WNCORE');
+    inner.appendChild(document.createTextNode(' · '));
+    inner.appendChild(span);
+    // Remove after 2 full ticker cycles (~60s)
+    setTimeout(function() { try { span.previousSibling.remove(); span.remove(); } catch(e) {} }, 60000);
+  }
+
+  async function wireRealtimeTicker() {
+    var sb = typeof _getSupabase === 'function' ? await _getSupabase() : null;
+    if (!sb) { wireSimulatedTicker(); return; }
+
+    try {
+      // Log this session's plays anonymously
+      document.addEventListener('wncore-station-changed', async function() {
+        var cs = window.currentStation;
+        if (!cs) return;
+        try {
+          await sb.from('listener_feed').insert({
+            station_name: cs.name,
+            station_url:  cs.url,
+            city:         null, // privacy — no IP geolocation server-side
+            played_at:    new Date().toISOString(),
+          });
+        } catch(e) {}
+      });
+
+      // Subscribe to realtime feed and inject into ticker
+      sb.channel('listener_feed')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'listener_feed' }, function(payload) {
+          var d = payload.new;
+          if (!d || !d.station_name) return;
+          var inner = document.getElementById('ticker-inner');
+          if (!inner) return;
+          var city = d.city || randomCity();
+          var span = document.createElement('span');
+          span.textContent = 'Listener in ' + city + ' tuned to ' + d.station_name;
+          inner.appendChild(document.createTextNode(' · '));
+          inner.appendChild(span);
+          setTimeout(function() { try { span.previousSibling.remove(); span.remove(); } catch(e) {} }, 45000);
+        })
+        .subscribe();
+    } catch(e) {
+      wireSimulatedTicker();
+    }
+  }
+
+  function wireSimulatedTicker() {
+    // Supabase not configured — simulate plausible listener events using
+    // Radio Browser clickcount data so it's not totally fake
+    async function injectSimulated() {
+      try {
+        var r = await fetch(_a + '/stations/search?limit=20&https=true&order=clickcount&reverse=true&offset=' + Math.floor(Math.random()*50));
+        var d = await r.json();
+        if (!d || !d.length) return;
+        var station = d[Math.floor(Math.random() * d.length)];
+        var city = randomCity();
+        var inner = document.getElementById('ticker-inner');
+        if (!inner) return;
+        var span = document.createElement('span');
+        span.textContent = 'Listener in ' + city + ' tuned to ' + station.name;
+        inner.appendChild(document.createTextNode(' · '));
+        inner.appendChild(span);
+        setTimeout(function() { try { span.previousSibling.remove(); span.remove(); } catch(e) {} }, 45000);
+      } catch(e) {}
+    }
+    // Fire once after 10s then every 45–90s
+    setTimeout(injectSimulated, 10000);
+    setInterval(injectSimulated, 45000 + Math.random() * 45000);
+  }
+
+  // Start realtime ticker after page load
+  setTimeout(wireRealtimeTicker, 2000);
+
+})();
+
+
+/* ━━━ DUAL-PATH LOGIN: ARG + REAL SUPABASE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+(function dualPathLogin() {
+  'use strict';
+
+  // Track whether the user has discovered the ARG path.
+  // The ARG path is triggered by typing a specific email pattern that
+  // matches the site's lore — anything @wncoreradio.net or @node-*.* or
+  // the keyword "signal_kage". Normal emails go through real Supabase auth.
+  var ARG_TRIGGERS = [/wncoreradio\.net$/i, /node[\-_]\d+/i, /signal.?kage/i, /88\.700/i];
+
+  function isArgEmail(email) {
+    return ARG_TRIGGERS.some(function(re) { return re.test(email); });
+  }
+
+  // Override handleSignIn to branch on email
+  var _realHandleSignIn = window.handleSignIn;
+  window.handleSignIn = async function() {
+    var email = (document.getElementById('signin-email') || {}).value || '';
+    if (isArgEmail(email.trim())) {
+      // ARG path — close modal, trigger horror sequence
+      document.getElementById('signin-modal').classList.remove('open');
+      if (typeof triggerEmailHorror === 'function') triggerEmailHorror(email.trim());
+      return;
+    }
+    // Real path
+    if (typeof _realHandleSignIn === 'function') return _realHandleSignIn();
+  };
+
+  // Override handleCreateAccount similarly
+  var _realHandleCreate = window.handleCreateAccount;
+  window.handleCreateAccount = async function() {
+    var email = (document.getElementById('signin-email') || {}).value || '';
+    if (isArgEmail(email.trim())) {
+      document.getElementById('signin-modal').classList.remove('open');
+      if (typeof triggerEmailHorror === 'function') triggerEmailHorror(email.trim());
+      return;
+    }
+    if (typeof _realHandleCreate === 'function') return _realHandleCreate();
+  };
+
+  // Override oauthGoogle / oauthDiscord to keep real path
+  // but add a subtle ARG easter egg: if exposure > 60, the button
+  // label glitches for 500ms before proceeding normally
+  function maybeGlitchBtn(btnSelector, label, cb) {
+    var btn = document.querySelector(btnSelector);
+    if (btn && typeof exposure !== 'undefined' && exposure > 60) {
+      var orig = btn.textContent;
+      btn.textContent = label;
+      setTimeout(function() { btn.textContent = orig; cb(); }, 500);
+    } else {
+      cb();
+    }
+  }
+
+  var _realOauthGoogle  = window.oauthGoogle;
+  var _realOauthDiscord = window.oauthDiscord;
+
+  window.oauthGoogle = function() {
+    maybeGlitchBtn('.oauth-btn.google', 'INTERCEPTING…', function() {
+      if (typeof _realOauthGoogle === 'function') _realOauthGoogle();
+    });
+  };
+  window.oauthDiscord = function() {
+    maybeGlitchBtn('.oauth-btn.discord', 'INTERCEPTING…', function() {
+      if (typeof _realOauthDiscord === 'function') _realOauthDiscord();
+    });
+  };
+
+  // Add a small lore hint in the modal footer that doubles as an ARG clue
+  document.addEventListener('DOMContentLoaded', function() {
+    var forgot = document.getElementById('auth-forgot-row');
+    if (!forgot) return;
+    forgot.innerHTML = '<a onclick="handleForgotPassword()" style="cursor:pointer">Forgot password?</a>' +
+      '<span style="float:right;font-family:\'DM Mono\',monospace;font-size:0.6rem;color:var(--text3);letter-spacing:1px;opacity:0.4" title="They are always listening">NODE_09 · RELAY ACTIVE</span>';
+  });
 
 })();
