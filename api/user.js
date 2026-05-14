@@ -1,16 +1,38 @@
 // WNCORE Radio — /api/user.js
-// Unified user profile API. Three modes in one route, zero external dependencies.
+// Unified user profile + Siharu ARG badge API.
+// Zero external dependencies. Runs as a Vercel serverless function.
 //
-//   GET  /api/user                        → fetch own profile row
-//   POST /api/user  mode=save_profile     → upsert all editable profile fields
-//   POST /api/user  mode=claim_node       → validate + reserve a permanent Node ID
-//   POST /api/user  mode=delete_account   → permanently delete account + cascade
+//   GET  /api/user                         → fetch own profile row
+//   POST /api/user  mode=save_profile      → upsert all editable profile fields
+//   POST /api/user  mode=claim_node        → validate + reserve a permanent Node ID
+//   POST /api/user  mode=delete_account    → permanently delete account + cascade
+//   POST /api/user  mode=siharu_visit      → log a Siharu ARG visit, award cred XP
+//                                            (IP-rate-limited: once per 3–4 days)
+//   GET  /api/user  mode=listeners         → public listener list (no auth needed)
 //
-// Auth pattern (all modes):
+// Auth pattern (all modes except listeners):
 //   Authorization: Bearer <supabase_access_token>
-//   The token is the session access_token from sb.auth.getSession() on the client.
-//   We verify it server-side with auth.getUser() using the service key.
-//   No admin token involved — fully user-scoped.
+//   We verify server-side with auth.getUser() using the service key.
+//
+// ─── Siharu Cred / Badge System ──────────────────────────────────────────────
+//
+//   Each visit to siharu.vercel.app that resolves back to WNCORE awards XP.
+//   XP is stored in `siharu_xp` (int, cumulative). `clearance_level` is derived
+//   server-side so it cannot be spoofed by the client:
+//
+//     Level 0 — UNVERIFIED     (0 xp)
+//     Level 1 — OPERATOR       (≥ 1 confirmed visits)
+//     Level 2 — RELAY NODE     (≥ 5 confirmed visits)
+//     Level 3 — SIGNAL BREACH  (≥ 12 confirmed visits)
+//     Level 4 — GHOST PROTOCOL (≥ 25 confirmed visits — rarest badge)
+//
+//   Badge pixel art is served as a DiceBear pixel-art SVG with a deterministic
+//   seed built from the user's node_id + clearance_level, so each user gets a
+//   unique-looking badge that upgrades visually with their level.
+//
+//   Rate limit: one XP award per IP per 3–4 day window (stored in Supabase).
+//   The cooldown scales: first visit = 3 days, subsequent = 4 days.
+//   This prevents abuse while letting dedicated ARG explorers level up.
 
 'use strict';
 
@@ -18,41 +40,61 @@ const SUPABASE_URL         = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY    = process.env.SUPABASE_ANON_KEY;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || SUPABASE_ANON_KEY;
 
+// ─── CRED LEVEL THRESHOLDS ────────────────────────────────────────────────────
+
+const CRED_LEVELS = [
+  { level: 4, visits: 25, label: 'GHOST PROTOCOL',  badge: 'GHOST'  },
+  { level: 3, visits: 12, label: 'SIGNAL BREACH',   badge: 'BREACH' },
+  { level: 2, visits:  5, label: 'RELAY NODE',      badge: 'RELAY'  },
+  { level: 1, visits:  1, label: 'OPERATOR',        badge: 'OP'     },
+  { level: 0, visits:  0, label: 'UNVERIFIED',      badge: null     },
+];
+
+// Cooldown windows per visit number (ms)
+// First visit → 3 days, subsequent → 4 days
+const COOLDOWN_FIRST_MS     = 3 * 24 * 60 * 60 * 1000; // 72 h
+const COOLDOWN_STANDARD_MS  = 4 * 24 * 60 * 60 * 1000; // 96 h
+
+function computeClearance(siharuVisits) {
+  const v = parseInt(siharuVisits || 0, 10);
+  for (const tier of CRED_LEVELS) {
+    if (v >= tier.visits) return tier.level;
+  }
+  return 0;
+}
+
+// Pixel badge URL — deterministic per user so it's visually unique and upgrades
+// visually as the user's level increases.
+function badgeUrl(nodeId, clearanceLevel) {
+  if (!clearanceLevel) return null;
+  // Seed = node_id (or a fallback) combined with level so avatar changes on level-up
+  const seed = encodeURIComponent((nodeId || 'NODE_WNCORE') + '_L' + clearanceLevel);
+  // pixel-art style for lore badge, shields overlay style for plain badges
+  const style = clearanceLevel >= 3 ? 'pixel-art' : 'pixel-art-neutral';
+  const bg = clearanceLevel >= 3 ? '&backgroundColor=111827' : '&backgroundColor=1a1a1a';
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${seed}&size=64${bg}`;
+}
+
 // ─── RESERVED / BLOCKED NAMES ────────────────────────────────────────────────
-// Covers: lore-significant node numbers, canonical character identifiers,
-// faction names, ARG-critical signals, world lore terms from both
-// WNCORE Radio and the Siharu Archive (siharu.vercel.app/characters.html).
 
 const RESERVED_NODE_IDS = new Set([
-  // Canon two-digit node numbers — lore reserved
   'NODE_09','NODE_10','NODE_11','NODE_12','NODE_13','NODE_14','NODE_15',
   'NODE_16','NODE_17','NODE_18','NODE_19','NODE_20','NODE_21',
-  // Survivor node derivations (Lars_09, Amara_21, Dmitri_15)
   'NODE_LA09','NODE_AM21','NODE_DM15',
-  // System sentinel values
   'NODE_000000','NODE_111111','NODE_FFFFFF',
   'NODE_ADMIN','NODE_WNCORE','NODE_SIHARU',
 ]);
 
-// Blocked callsigns and display names — character names, faction names,
-// lore signals, world terms. Users cannot impersonate any of these.
 const RESERVED_NAMES = new Set([
-  // Canon signal identifiers
   'SIGNAL_KAGE','KAGE','NODE09',
-  // Canonical survivor characters (Siharu Archive)
   'LARS','LARS_09','AMARA','AMARA_21','DMITRI','DMITRI_15',
-  // Faction / world lore
   'OBSEDIA','GHUUL','GHUULS','BLANK_ZONE','BLANKZONE',
   'MOON_DOME','MOONDOME','WNCORE','SIHARU',
-  // ARG keywords that appear verbatim in horror text / ticker
   'FREQUENCY','UNKNOWN','REDACTED','EXPUNGED','SIGNAL',
-  // Admin / impersonation vectors
   'ADMIN','OPERATOR','SYSTEM','ROOT','NULL',
   'MODERATOR','MOD','STAFF','SUPPORT','OFFICIAL',
 ]);
 
-// Regex patterns always blocked regardless of exact match
-// (catches variants like SIGKAGE, LARSNODE, GHUUL99, OBSEDIA_X, etc.)
 const BLOCKED_PATTERNS = [
   /^SIGNAL/i, /GHUUL/i, /OBSEDIA/i, /BLANKZONE/i,
   /MOONDOME/i, /^ADMIN/i, /^MOD$/i, /^STAFF/i,
@@ -61,7 +103,6 @@ const BLOCKED_PATTERNS = [
 
 // ─── VALIDATION ───────────────────────────────────────────────────────────────
 
-// Node ID: NODE_ + exactly 6 uppercase alphanumeric chars
 function validateNodeId(raw) {
   if (typeof raw !== 'string') return { ok: false, error: 'Node ID must be a string.' };
   const id = raw.trim().toUpperCase();
@@ -72,11 +113,10 @@ function validateNodeId(raw) {
   return { ok: true, value: id };
 }
 
-// Callsign: 3–12 chars, uppercase alphanum + underscore
 function validateCallsign(raw) {
   if (typeof raw !== 'string') return { ok: false, error: 'Callsign must be a string.' };
   const cs = raw.trim().toUpperCase();
-  if (cs.length === 0) return { ok: true, value: '' }; // allow clearing
+  if (cs.length === 0) return { ok: true, value: '' };
   if (cs.length < 3 || cs.length > 12) return { ok: false, error: 'Callsign must be 3–12 characters.' };
   if (!/^[A-Z0-9_]+$/.test(cs)) {
     return { ok: false, error: 'Callsign may only contain letters, numbers, and underscores.' };
@@ -88,7 +128,6 @@ function validateCallsign(raw) {
   return { ok: true, value: cs };
 }
 
-// Display name: 1–32 chars, no HTML, no lore impersonation
 function validateDisplayName(raw) {
   if (typeof raw !== 'string') return { ok: false, error: 'Display name must be a string.' };
   const name = raw.trim();
@@ -108,7 +147,7 @@ function validateBio(raw) {
 }
 
 function validateTheme(raw) {
-  if (!['dark', 'light'].includes(raw)) return { ok: false, error: 'Theme must be "dark" or "light".' };
+  if (!['dark', 'light', 'minimal'].includes(raw)) return { ok: false, error: 'Theme must be "dark", "light", or "minimal".' };
   return { ok: true, value: raw };
 }
 
@@ -126,12 +165,6 @@ function validateGenreTags(raw) {
   ]);
   const tags = raw.filter(t => typeof t === 'string' && allowed.has(t)).slice(0, 10);
   return { ok: true, value: tags };
-}
-
-function validateSiharuVisits(raw) {
-  const v = parseInt(raw, 10);
-  if (isNaN(v) || v < 0) return { ok: false, error: 'siharu_visits must be a non-negative integer.' };
-  return { ok: true, value: v };
 }
 
 function validateAvatarUrl(raw) {
@@ -158,7 +191,6 @@ function sbHeaders(key, extra = {}) {
   };
 }
 
-// Verify the client's Supabase access token and return the user object.
 async function verifyUser(accessToken) {
   if (!accessToken) return null;
   try {
@@ -171,7 +203,6 @@ async function verifyUser(accessToken) {
   } catch { return null; }
 }
 
-// Fetch the user_profiles row for this user (returns null if not yet created)
 async function fetchProfile(userId) {
   try {
     const res = await fetch(
@@ -184,6 +215,112 @@ async function fetchProfile(userId) {
   } catch { return null; }
 }
 
+// ─── IP HELPERS ───────────────────────────────────────────────────────────────
+
+function getClientIp(req) {
+  // Vercel sets x-forwarded-for; take only the first (real client IP)
+  const fwd = req.headers['x-forwarded-for'];
+  if (fwd) return fwd.split(',')[0].trim();
+  return req.socket?.remoteAddress || 'unknown';
+}
+
+// Sanitise IP for use as a Supabase record key (strip IPv6 brackets, colons → dashes)
+function sanitiseIp(ip) {
+  return ip.replace(/[\[\]:]/g, '-').replace(/[^a-zA-Z0-9.\-_]/g, '_').slice(0, 64);
+}
+
+// ─── SIHARU VISIT RATE LIMITER ────────────────────────────────────────────────
+// Uses a Supabase table `siharu_ip_log` (see SQL below) to track IP+user pairs.
+//
+// Required SQL (run once in Supabase SQL editor):
+// ─────────────────────────────────────────────
+// CREATE TABLE IF NOT EXISTS public.siharu_ip_log (
+//   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//   user_id      uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+//   ip_hash      text NOT NULL,
+//   visit_count  int  NOT NULL DEFAULT 1,
+//   last_visit   timestamptz NOT NULL DEFAULT now(),
+//   next_allowed timestamptz NOT NULL DEFAULT now(),
+//   UNIQUE (user_id, ip_hash)
+// );
+// ALTER TABLE public.siharu_ip_log ENABLE ROW LEVEL SECURITY;
+// -- Service key only — no public access
+// CREATE POLICY "service_only" ON public.siharu_ip_log FOR ALL USING (false);
+// ─────────────────────────────────────────────
+
+async function checkAndLogSiharuVisit(userId, rawIp) {
+  const ip = sanitiseIp(rawIp);
+  const now = new Date();
+
+  // Fetch existing log for this user+ip
+  const logRes = await fetch(
+    sbRest(`siharu_ip_log?user_id=eq.${userId}&ip_hash=eq.${encodeURIComponent(ip)}&limit=1`),
+    { headers: sbHeaders(SUPABASE_SERVICE_KEY, { 'Accept': 'application/json' }) }
+  );
+  if (!logRes.ok) throw new Error('DB read failed');
+  const rows = await logRes.json();
+
+  if (rows.length > 0) {
+    const row = rows[0];
+    const nextAllowed = new Date(row.next_allowed);
+
+    if (now < nextAllowed) {
+      // Still in cooldown
+      const msLeft = nextAllowed - now;
+      const hoursLeft = Math.ceil(msLeft / (1000 * 60 * 60));
+      const daysLeft  = (msLeft / (1000 * 60 * 60 * 24)).toFixed(1);
+      return {
+        allowed: false,
+        reason: 'RATE_LIMITED',
+        cooldown_hours: hoursLeft,
+        cooldown_days: daysLeft,
+        next_allowed: nextAllowed.toISOString(),
+        visit_count: row.visit_count,
+      };
+    }
+
+    // Cooldown passed — allow, update record
+    // Each subsequent visit costs 4-day cooldown
+    const newCount   = row.visit_count + 1;
+    const cooldownMs = COOLDOWN_STANDARD_MS;
+    const nextDate   = new Date(now.getTime() + cooldownMs);
+
+    await fetch(
+      sbRest(`siharu_ip_log?user_id=eq.${userId}&ip_hash=eq.${encodeURIComponent(ip)}`),
+      {
+        method: 'PATCH',
+        headers: sbHeaders(SUPABASE_SERVICE_KEY),
+        body: JSON.stringify({
+          visit_count:  newCount,
+          last_visit:   now.toISOString(),
+          next_allowed: nextDate.toISOString(),
+        }),
+      }
+    );
+
+    return { allowed: true, visit_count: newCount, next_allowed: nextDate.toISOString() };
+  }
+
+  // First-ever visit from this IP — insert log row (3-day first cooldown)
+  const nextDate = new Date(now.getTime() + COOLDOWN_FIRST_MS);
+  await fetch(
+    sbRest('siharu_ip_log'),
+    {
+      method: 'POST',
+      headers: sbHeaders(SUPABASE_SERVICE_KEY, { 'Prefer': 'return=minimal' }),
+      body: JSON.stringify({
+        user_id:      userId,
+        ip_hash:      ip,
+        visit_count:  1,
+        last_visit:   now.toISOString(),
+        next_allowed: nextDate.toISOString(),
+      }),
+    }
+  );
+
+  return { allowed: true, visit_count: 1, next_allowed: nextDate.toISOString() };
+}
+
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 
 function setCors(res) {
@@ -192,11 +329,54 @@ function setCors(res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 }
 
+// ─── LISTENERS (public, no auth) ─────────────────────────────────────────────
+// Returns a combined list of real users (public-safe fields only) for the
+// "Who's Listening" panel. Fake users are injected on the client side.
+
+async function handleListeners(res) {
+  res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=60');
+
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return res.status(200).json({ users: [], total: 0 });
+  }
+
+  try {
+    const r = await fetch(
+      sbRest('user_profiles?select=display_name,avatar_url,node_id,clearance_level,siharu_visits&display_name=not.is.null&order=updated_at.desc&limit=20'),
+      { headers: sbHeaders(SUPABASE_SERVICE_KEY, { 'Accept': 'application/json' }) }
+    );
+    if (!r.ok) return res.status(200).json({ users: [], total: 0 });
+
+    const rows = await r.json();
+    const users = rows.map(row => {
+      const cl = computeClearance(row.siharu_visits);
+      return {
+        display_name:    row.display_name,
+        avatar_url:      row.avatar_url || null,
+        node_id:         row.node_id    || null,
+        clearance_level: cl,
+        tainted:         (row.siharu_visits || 0) > 0,
+        // Send pixel badge URL for ARG cred holders
+        badge_url:       cl > 0 ? badgeUrl(row.node_id, cl) : null,
+      };
+    });
+
+    return res.status(200).json({ users, total: users.length });
+  } catch {
+    return res.status(200).json({ users: [], total: 0 });
+  }
+}
+
 // ─── MAIN HANDLER ─────────────────────────────────────────────────────────────
 
 module.exports = async function handler(req, res) {
   setCors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── Public: listeners list (no auth) ──────────────────────────────────────
+  if (req.method === 'GET' && req.query?.mode === 'listeners') {
+    return handleListeners(res);
+  }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return res.status(503).json({ error: 'Supabase not configured.' });
@@ -206,7 +386,7 @@ module.exports = async function handler(req, res) {
   const authHeader  = req.headers['authorization'] || '';
   const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
 
-  // Verify user for all methods
+  // Verify user for all authenticated methods
   const user = await verifyUser(accessToken);
   if (!user) {
     return res.status(401).json({ error: 'Unauthorized. Provide a valid Supabase session token.' });
@@ -219,6 +399,11 @@ module.exports = async function handler(req, res) {
     // ══════════════════════════════════════════════════════════
     if (req.method === 'GET') {
       const profile = await fetchProfile(user.id);
+      if (profile) {
+        // Always recompute clearance server-side from siharu_visits
+        profile.clearance_level = computeClearance(profile.siharu_visits);
+        profile.badge_url = badgeUrl(profile.node_id, profile.clearance_level);
+      }
       return res.status(200).json({ profile: profile || null, user_id: user.id });
     }
 
@@ -232,7 +417,7 @@ module.exports = async function handler(req, res) {
       if (!mode) {
         return res.status(400).json({
           error: 'Missing mode.',
-          valid_modes: ['save_profile', 'claim_node', 'delete_account'],
+          valid_modes: ['save_profile', 'claim_node', 'delete_account', 'siharu_visit'],
         });
       }
 
@@ -257,14 +442,13 @@ module.exports = async function handler(req, res) {
         field('default_volume', validateVolume);
         field('avatar_url',     validateAvatarUrl);
         field('genre_tags',     validateGenreTags);
-        field('siharu_visits',  validateSiharuVisits);
+        // NOTE: siharu_visits/clearance_level are NOT settable here — only via siharu_visit mode
         if ('hide_email' in body) updates.hide_email = !!body.hide_email;
 
         if (Object.keys(errors).length > 0) {
           return res.status(422).json({ error: 'Validation failed', fields: errors });
         }
 
-        // Store genre_tags as JSON string for TEXT[] compatibility
         if ('genre_tags' in updates && Array.isArray(updates.genre_tags)) {
           updates.genre_tags = JSON.stringify(updates.genre_tags);
         }
@@ -287,7 +471,78 @@ module.exports = async function handler(req, res) {
         }
 
         const saved = await upsertRes.json().catch(() => [{}]);
-        return res.status(200).json({ ok: true, profile: saved[0] || updates });
+        const savedProfile = saved[0] || updates;
+        // Always recompute clearance
+        savedProfile.clearance_level = computeClearance(savedProfile.siharu_visits);
+        savedProfile.badge_url = badgeUrl(savedProfile.node_id, savedProfile.clearance_level);
+        return res.status(200).json({ ok: true, profile: savedProfile });
+      }
+
+      // ── siharu_visit — award cred XP for visiting Siharu ARG ─────────────
+      if (mode === 'siharu_visit') {
+        const clientIp = getClientIp(req);
+
+        let limitResult;
+        try {
+          limitResult = await checkAndLogSiharuVisit(user.id, clientIp);
+        } catch (e) {
+          console.error('[user.js] siharu_visit rate-limit check failed:', e);
+          return res.status(500).json({ error: 'Rate-limit check failed. Try again shortly.' });
+        }
+
+        if (!limitResult.allowed) {
+          return res.status(429).json({
+            error:         'RATE_LIMITED',
+            message:       `Signal already logged. Next visit allowed in ${limitResult.cooldown_days} days.`,
+            cooldown_hours: limitResult.cooldown_hours,
+            next_allowed:  limitResult.next_allowed,
+            visit_count:   limitResult.visit_count,
+          });
+        }
+
+        // Increment siharu_visits in user_profiles
+        const profile = await fetchProfile(user.id);
+        const currentVisits = parseInt(profile?.siharu_visits || 0, 10);
+        const newVisits = currentVisits + 1;
+        const newClearance = computeClearance(newVisits);
+        const oldClearance = computeClearance(currentVisits);
+        const leveledUp = newClearance > oldClearance;
+
+        const upsertRes = await fetch(
+          sbRest('user_profiles?on_conflict=user_id'),
+          {
+            method: 'POST',
+            headers: sbHeaders(SUPABASE_SERVICE_KEY, {
+              'Prefer': 'resolution=merge-duplicates,return=representation',
+            }),
+            body: JSON.stringify({
+              user_id:         user.id,
+              siharu_visits:   newVisits,
+              clearance_level: newClearance,
+              updated_at:      new Date().toISOString(),
+            }),
+          }
+        );
+
+        if (!upsertRes.ok) {
+          const detail = await upsertRes.text().catch(() => '');
+          return res.status(500).json({ error: 'Failed to record visit.', detail });
+        }
+
+        const saved = (await upsertRes.json().catch(() => [{}]))[0] || {};
+        const levelInfo = CRED_LEVELS.find(l => l.level === newClearance);
+
+        return res.status(200).json({
+          ok:             true,
+          visit_count:    newVisits,
+          clearance_level: newClearance,
+          clearance_label: levelInfo?.label || 'UNVERIFIED',
+          leveled_up:     leveledUp,
+          badge_url:      newClearance > 0 ? badgeUrl(saved.node_id || profile?.node_id, newClearance) : null,
+          next_allowed:   limitResult.next_allowed,
+          // ARG lore hint for the client to display if they leveled up
+          lore_signal:    leveledUp ? _loreSignal(newClearance) : null,
+        });
       }
 
       // ── claim_node ────────────────────────────────────────
@@ -303,7 +558,6 @@ module.exports = async function handler(req, res) {
 
         const nodeId = validation.value;
 
-        // Pre-check — cleaner error than letting the unique constraint fire
         const checkRes = await fetch(
           sbRest(`user_profiles?node_id=eq.${encodeURIComponent(nodeId)}&select=user_id&limit=1`),
           { headers: sbHeaders(SUPABASE_SERVICE_KEY, { 'Accept': 'application/json' }) }
@@ -315,7 +569,6 @@ module.exports = async function handler(req, res) {
           }
         }
 
-        // Upsert with node_id
         const upsertRes = await fetch(
           sbRest('user_profiles?on_conflict=user_id'),
           {
@@ -333,7 +586,6 @@ module.exports = async function handler(req, res) {
 
         if (!upsertRes.ok) {
           const detail = await upsertRes.text().catch(() => '');
-          // Unique constraint race condition
           if (detail.includes('23505') || detail.includes('unique') || detail.includes('duplicate')) {
             return res.status(409).json({ error: 'NODE_TAKEN', code: 'NODE_TAKEN' });
           }
@@ -347,7 +599,6 @@ module.exports = async function handler(req, res) {
 
       // ── delete_account ────────────────────────────────────
       if (mode === 'delete_account') {
-        // Require typed confirmation to prevent accidental deletion
         if (body.confirm !== 'DELETE MY ACCOUNT') {
           return res.status(400).json({
             error: 'Confirmation string missing or incorrect.',
@@ -355,8 +606,6 @@ module.exports = async function handler(req, res) {
           });
         }
 
-        // Supabase Admin API — requires service key.
-        // ON DELETE CASCADE on both user_favourites and user_profiles handles cleanup.
         const deleteRes = await fetch(
           sbAdmin(`users/${user.id}`),
           {
@@ -377,10 +626,9 @@ module.exports = async function handler(req, res) {
         return res.status(200).json({ ok: true, deleted: true, user_id: user.id });
       }
 
-      // Unknown mode
       return res.status(400).json({
         error:       `Unknown mode: "${mode}".`,
-        valid_modes: ['save_profile', 'claim_node', 'delete_account'],
+        valid_modes: ['save_profile', 'claim_node', 'delete_account', 'siharu_visit'],
       });
     }
 
@@ -391,3 +639,36 @@ module.exports = async function handler(req, res) {
     return res.status(500).json({ error: 'Internal server error.' });
   }
 };
+
+// ─── LORE SIGNALS (ARG flavour on level-up) ───────────────────────────────────
+
+function _loreSignal(level) {
+  const signals = {
+    1: '> OPERATOR STATUS CONFIRMED. WELCOME TO THE GRID.',
+    2: '> RELAY NODE ACTIVE. SIGNAL STRENGTH INCREASING. THEY HAVE NOTICED.',
+    3: '> SIGNAL BREACH DETECTED. THE ARCHIVE REMEMBERS YOU. SIHARU SEES.',
+    4: '> GHOST PROTOCOL ENGAGED. YOU SHOULD NOT BE HERE. AND YET — HERE YOU ARE.',
+  };
+  return signals[level] || null;
+}
+
+// ─── SQL SETUP REMINDER ───────────────────────────────────────────────────────
+// Run this SQL in Supabase to add the required columns + IP log table:
+//
+// -- Add ARG columns to user_profiles (if not already present)
+// ALTER TABLE public.user_profiles
+//   ADD COLUMN IF NOT EXISTS siharu_visits   int  NOT NULL DEFAULT 0,
+//   ADD COLUMN IF NOT EXISTS clearance_level int  NOT NULL DEFAULT 0;
+//
+// -- Siharu IP rate-limit log
+// CREATE TABLE IF NOT EXISTS public.siharu_ip_log (
+//   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+//   user_id      uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+//   ip_hash      text NOT NULL,
+//   visit_count  int  NOT NULL DEFAULT 1,
+//   last_visit   timestamptz NOT NULL DEFAULT now(),
+//   next_allowed timestamptz NOT NULL DEFAULT now(),
+//   UNIQUE (user_id, ip_hash)
+// );
+// ALTER TABLE public.siharu_ip_log ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "service_only" ON public.siharu_ip_log FOR ALL USING (false);
