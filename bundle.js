@@ -1157,15 +1157,22 @@ function _authUpdateNav(user) {
   if (!btn) return;
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
-    btn.textContent = '▸ ' + name;
-    btn.style.color = 'var(--accent)';
-    btn.style.background = 'transparent';
-    btn.style.border = '1px solid var(--accent)';
+    // If bundle_append already injected a DiceBear avatar img, don't overwrite it —
+    // just keep styles consistent and let _applyAvatarToNav own the button contents.
+    const hasAvatarImg = btn.querySelector('img') !== null;
+    if (!hasAvatarImg) {
+      btn.textContent = '▸ ' + name;
+      btn.style.color = 'var(--accent)';
+      btn.style.background = 'transparent';
+      btn.style.border = '1px solid var(--accent)';
+    }
+    btn.title = name;
   } else {
     btn.textContent = 'Sign In';
     btn.style.color = '';
     btn.style.background = '';
     btn.style.border = '';
+    btn.title = '';
   }
 }
 
