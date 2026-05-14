@@ -1157,7 +1157,7 @@ function _authUpdateNav(user) {
   if (!btn) return;
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
-    const dicebearUrl = window.__WNCORE_PROFILE?.avatar_url || null;
+    const dicebearUrl = window.__WNCORE_PROFILE?.avatar_url || localStorage.getItem('wncore_avatar_url') || null;
     if (dicebearUrl) {
       // Profile already cached — render avatar circle immediately
       const initial = name[0].toUpperCase();

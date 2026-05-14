@@ -88,9 +88,8 @@
         window.__WNCORE_PROFILE = d.profile;
         if (d.profile.node_id) window.__WNCORE_NODE_ID = d.profile.node_id;
         if (d.profile.theme)   _applyThemePref(d.profile.theme);
-        // Apply profile pic to nav as soon as profile loads
+        if (d.profile.avatar_url) localStorage.setItem('wncore_avatar_url', d.profile.avatar_url);
         _applyAvatarToNav(d.profile.avatar_url);
-        // Also update the sign-in modal mini avatar (auth-avatar element)
         _applyAvatarToModal(d.profile.avatar_url);
         return d.profile;
       }
@@ -510,6 +509,7 @@
       _setStatus('prof-avatar-status', d.error, true);
     } else {
       _setStatus('prof-avatar-status', '✓ Avatar saved', false);
+      localStorage.setItem('wncore_avatar_url', _pendingAvatarUrl);
       // Update profile page large avatar
       const avLg = document.getElementById('profile-avatar-lg');
       if (avLg) {
@@ -795,6 +795,7 @@
     const d = await saveProfile({ avatar_url: '' });
     if (!d.error) {
       _pendingAvatarUrl = null;
+      localStorage.removeItem('wncore_avatar_url');
       const user = _authUser;
       const oauthAv = user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
       // BUG FIX: Safe initial — not injected into onerror attribute with raw quotes
@@ -1111,6 +1112,78 @@
     border-top: 1px solid var(--border); margin-top: 4px;
   }
   .listener-station { color: var(--text3); }
+
+  /* Mini profile card */
+  .listener-card-overlay {
+    display: none; position: fixed; inset: 0; z-index: 1202;
+    background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
+  }
+  .listener-card-overlay.open { display: block; }
+  .listener-card {
+    position: fixed; bottom: 0; left: 0; right: 0; max-width: 100%;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0; padding: 24px; z-index: 1203;
+    transform: translateY(100%); transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .listener-card.open { transform: translateY(0); }
+  .listener-card-header {
+    display: flex; align-items: flex-start; gap: 16px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--border);
+  }
+  .listener-card-avatar {
+    width: 72px; height: 72px; border-radius: 50%; flex-shrink: 0;
+    overflow: hidden; background: var(--surface2); display: flex;
+    align-items: center; justify-content: center; font-size: 1.4rem;
+    font-weight: 700; border: 2px solid var(--border); position: relative;
+  }
+  .listener-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .listener-card-avatar.real { border-color: var(--accent); }
+  .listener-card-avatar.ghost { border-color: #cc00ff; }
+  .listener-card-pixel-badge {
+    width: 28px; height: 28px; border-radius: 4px; image-rendering: pixelated;
+    position: absolute; bottom: -4px; right: -4px;
+    background: var(--surface2); border: 2px solid var(--border);
+  }
+  .listener-card-info { flex: 1; }
+  .listener-card-name {
+    font-size: 1.1rem; font-weight: 700; color: var(--text);
+    margin-bottom: 4px;
+  }
+  .listener-card-nodeid {
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    color: var(--text3); letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .listener-card-badges {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .listener-card-badge {
+    font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.5px;
+    padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);
+  }
+  .listener-card-badge.cred { background: rgba(200,71,42,0.12); color: var(--accent); border-color: rgba(200,71,42,0.3); }
+  .listener-card-badge.cred-2 { background: rgba(255,152,0,0.12); color: #ff9800; border-color: rgba(255,152,0,0.3); }
+  .listener-card-badge.cred-3 { background: rgba(200,71,42,0.12); color: var(--accent); border-color: rgba(200,71,42,0.3); }
+  .listener-card-badge.cred-4 { background: rgba(204,0,255,0.12); color: #cc00ff; border-color: rgba(204,0,255,0.3); }
+  .listener-card-station {
+    font-size: 0.82rem; color: var(--text2);
+    padding-top: 12px; border-top: 1px solid var(--border);
+  }
+  .listener-card-station-label {
+    font-family: 'DM Mono', monospace; font-size: 0.62rem;
+    color: var(--text3); letter-spacing: 1px; margin-bottom: 4px;
+  }
+  .listener-card-station-value {
+    font-size: 0.88rem; color: var(--text);
+  }
+  .listener-card-close {
+    align-self: center; margin-top: 8px; padding: 8px 16px;
+    background: transparent; border: 1px solid var(--border);
+    border-radius: 10px; color: var(--text2); cursor: pointer;
+    font-size: 0.75rem; font-family: 'DM Mono', monospace;
+    transition: all 0.15s;
+  }
+  .listener-card-close:hover { border-color: var(--accent); color: var(--accent); }
   `;
 
   let _cssInjected = false;
@@ -1176,6 +1249,7 @@
   let _displayList = [];
   let _rotateTimer = null;
   let _fetchedOnce = false;
+  let _selectedCardIdx = null;
 
   function _buildFakePool(count) {
     const pool = [];
@@ -1232,12 +1306,17 @@
       countEl.textContent = liveEl.textContent.replace('live', 'online');
     }
 
+    // WRONGNESS integration — random spike on render
+    if (typeof window.WRONGNESS !== 'undefined' && window.WRONGNESS?.spike && Math.random() < 0.15) {
+      window.WRONGNESS.spike(2);
+    }
+
     if (!_displayList.length) {
       el.innerHTML = '<div class="listeners-loading">No signal detected.</div>';
       return;
     }
 
-    const rows = _displayList.map(u => {
+    const rows = _displayList.map((u, idx) => {
       const isReal  = !u.fake;
       const tainted = isReal && u.tainted;
       const cl      = isReal ? (u.clearance_level || 0) : 0;
@@ -1278,7 +1357,11 @@
         ? `<img class="listener-pixel-badge" src="${_esc(badgeUrl)}" alt="badge" width="18" height="18">`
         : '';
 
-      return `<div class="listener-row">
+      // Click handler for real users
+      const rowClick = isReal ? ` onclick="window._openListenerCard(${idx})"` : '';
+      const rowCursor = isReal ? 'cursor:pointer;' : 'cursor:default;';
+
+      return `<div class="listener-row" style="${rowCursor}" ${rowClick}>
   <div style="position:relative;flex-shrink:0">
     <div class="${_esc(avatarClass)}">${avatarInner}</div>
     ${pixelBadgeHtml}
@@ -1321,6 +1404,35 @@
       </div>
     `;
     document.body.appendChild(panel);
+
+    // Inject mini profile card overlay
+    const cardOverlay = document.createElement('div');
+    cardOverlay.className = 'listener-card-overlay';
+    cardOverlay.id = 'listener-card-overlay';
+    cardOverlay.onclick = () => window._closeListenerCard();
+    document.body.appendChild(cardOverlay);
+
+    const card = document.createElement('div');
+    card.className = 'listener-card';
+    card.id = 'listener-card';
+    card.innerHTML = `
+      <div class="listener-card-header">
+        <div class="listener-card-avatar" id="listener-card-avatar">
+          <span id="listener-card-initial">?</span>
+        </div>
+        <div class="listener-card-info">
+          <div class="listener-card-name" id="listener-card-name"></div>
+          <div class="listener-card-nodeid" id="listener-card-nodeid"></div>
+          <div class="listener-card-badges" id="listener-card-badges"></div>
+        </div>
+      </div>
+      <div class="listener-card-station">
+        <div class="listener-card-station-label">CURRENTLY LISTENING</div>
+        <div class="listener-card-station-value" id="listener-card-station"></div>
+      </div>
+      <button class="listener-card-close" onclick="window._closeListenerCard()">CLOSE</button>
+    `;
+    document.body.appendChild(card);
   }
 
   // ── Inject nav button ─────────────────────────────────────────────────────
@@ -1368,6 +1480,64 @@
       if (_panelOpen) _renderList();
     }, 15000 + Math.random() * 10000);
   }
+
+  // ── Mini profile card functions ──────────────────────────────────────────
+  window._openListenerCard = function(idx) {
+    if (idx < 0 || idx >= _displayList.length) return;
+    const u = _displayList[idx];
+    if (u.fake) return; // Only real users have cards
+    
+    _selectedCardIdx = idx;
+    const overlay = document.getElementById('listener-card-overlay');
+    const card = document.getElementById('listener-card');
+    if (!overlay || !card) return;
+
+    const cl = u.clearance_level || 0;
+    const avatarEl = document.getElementById('listener-card-avatar');
+    const nameEl = document.getElementById('listener-card-name');
+    const nodeIdEl = document.getElementById('listener-card-nodeid');
+    const badgesEl = document.getElementById('listener-card-badges');
+    const stationEl = document.getElementById('listener-card-station');
+    const initialEl = document.getElementById('listener-card-initial');
+
+    const initial = (u.display_name || '?')[0].toUpperCase();
+    const avatarClass = cl >= 4 ? 'listener-card-avatar ghost' : 'listener-card-avatar real';
+    
+    avatarEl.className = avatarClass;
+    if (u.avatar_url) {
+      avatarEl.innerHTML = `<img src="${_esc(u.avatar_url)}" alt="" onerror="this.style.display='none'"><span id="listener-card-initial" style="display:none">${initial}</span>`;
+      if (u.badge_url) {
+        avatarEl.innerHTML += `<img class="listener-card-pixel-badge" src="${_esc(u.badge_url)}" alt="badge" width="28" height="28">`;
+      }
+    } else {
+      avatarEl.innerHTML = `<span id="listener-card-initial">${initial}</span>`;
+    }
+
+    nameEl.textContent = u.display_name || '—';
+    nodeIdEl.textContent = u.node_id || 'verified node';
+    stationEl.textContent = u.station || _fakeStation();
+
+    // Build badges
+    let badgeHtml = '';
+    if (cl > 0) {
+      badgeHtml += `<span class="listener-card-badge ${_credBadgeClass(cl)}">${_credLabel(cl)}</span>`;
+    }
+    if (u.tainted && cl < 1) {
+      badgeHtml += `<span class="listener-card-badge">⚠ RELAY</span>`;
+    }
+    badgesEl.innerHTML = badgeHtml;
+
+    overlay.classList.add('open');
+    card.classList.add('open');
+  };
+
+  window._closeListenerCard = function() {
+    const overlay = document.getElementById('listener-card-overlay');
+    const card = document.getElementById('listener-card');
+    if (overlay) overlay.classList.remove('open');
+    if (card) card.classList.remove('open');
+    _selectedCardIdx = null;
+  };
 
   // ── Open/close ────────────────────────────────────────────────────────────
   window.toggleListenersPanel = async function() {
