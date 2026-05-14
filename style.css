@@ -157,15 +157,16 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .mobile-nav-backdrop.open{display:block;}
 .mobile-nav{
   display:none;position:fixed;
-  top:var(--header-h);left:0;right:0;
-  bottom:calc(var(--player-h) + 56px); /* stop above player+bottomnav */
+  top:0;left:0;right:0;bottom:0;
   background:var(--bg);
-  z-index:494; /* below header(500) above backdrop(493) */
+  z-index:499; /* below header(500) above backdrop(493) */
+  /* padding-top/bottom set in mobile.css to clear header + player/bottom-nav */
   padding:20px 16px;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
   flex-direction:column;gap:6px;
   transform:translateY(-8px);opacity:0;
   transition:transform 0.22s cubic-bezier(.4,0,.2,1),opacity 0.22s;
+  box-sizing:border-box;
 }
 .mobile-nav.open{display:flex;transform:translateY(0);opacity:1;}
 .mobile-nav a{font-size:1.05rem;color:var(--text2);text-decoration:none;padding:14px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);font-weight:500;display:flex;align-items:center;gap:10px;min-height:52px;}

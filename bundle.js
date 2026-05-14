@@ -1157,8 +1157,7 @@ function _authUpdateNav(user) {
   if (!btn) return;
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
-    // If bundle_append already injected a DiceBear avatar img, don't overwrite it —
-    // just keep styles consistent and let _applyAvatarToNav own the button contents.
+    // If bundle_append already injected a DiceBear avatar img, don't overwrite it
     const hasAvatarImg = btn.querySelector('img') !== null;
     if (!hasAvatarImg) {
       btn.textContent = '▸ ' + name;
@@ -6955,11 +6954,7 @@ function fixMobileHome() {
     });
   }
   
-  // Ensure mobile bottom nav is at correct position
-  const mobileNav = document.getElementById('mobile-nav');
-  if(mobileNav) {
-    mobileNav.style.top = 'var(--header-h, 56px)';
-  }
+  // mobile-nav position is fully controlled via CSS (top:0/bottom:0 + padding)
 }
 
 // ─── IMPROVED ADMIN PANEL ─────────────────────────────────────────────────
