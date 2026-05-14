@@ -1,6 +1,6 @@
-// WNCORE Radio — Service Worker v10
-// Updated for merged bundle — bundle.js replaces 14 separate JS files
-const CACHE = 'wncore-v10';
+// WNCORE Radio — Service Worker v11
+// Updated: bundle_append.js fixes (saveProfile, live_station, volume); index.html SEO pass
+const CACHE = 'wncore-v11';
 const PRECACHE = [
   '/',
   '/index.html',

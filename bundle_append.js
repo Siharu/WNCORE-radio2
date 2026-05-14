@@ -127,9 +127,18 @@
     const initial = name[0].toUpperCase();
     av.innerHTML = `<img src="${_esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
   }
+
+  // ── Save profile fields to /api/user ──────────────────────────────────────
+  // BUG FIX: Function declaration was missing — only the body existed, causing
+  // a syntax error that silently prevented the entire SECTION 1 IIFE from running.
+  async function saveProfile(fields) {
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
+      // volume comes from a 0-100 range slider; API validates 0.0–1.0
+      if ('default_volume' in fields && typeof fields.default_volume === 'number') {
+        fields = { ...fields, default_volume: fields.default_volume / 100 };
+      }
       const r = await fetch('/api/user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -607,6 +616,9 @@
     const bigSrc = savedAvatar || dicebearUrl(DICEBEAR_STYLES[0].id, _avatarSeed);
 
     return `
+    <!-- SIGNAL INTEGRITY — populated by Section 3 corruption system -->
+    <div id="prof-signal-integrity" class="sig-stage${Math.min((function(v){return v>=25?4:v>=12?3:v>=5?2:v>=1?1:0;})(window.__WNCORE_SIHARU_VISITS_FROM_PROFILE || 0), 4)}"></div>
+
     <!-- AVATAR -->
     <div class="prof-section" id="prof-avatar-section">
       <div class="prof-section-title">◈ Profile Picture</div>
@@ -704,9 +716,9 @@
         </div>
       </div>
       <div class="prof-field">
-        <div class="prof-label">Default Volume <span id="prof-vol-label" style="color:var(--accent)">${profile?.default_volume ?? 80}%</span></div>
+        <div class="prof-label">Default Volume <span id="prof-vol-label" style="color:var(--accent)">${Math.round((profile?.default_volume ?? 0.8) * 100)}%</span></div>
         <input type="range" id="prof-input-volume" min="0" max="100"
-          value="${profile?.default_volume ?? 80}"
+          value="${Math.round((profile?.default_volume ?? 0.8) * 100)}"
           oninput="document.getElementById('prof-vol-label').textContent=this.value+'%'"
           style="width:100%;accent-color:var(--accent);cursor:pointer">
       </div>
@@ -1184,6 +1196,25 @@
     transition: all 0.15s;
   }
   .listener-card-close:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* FIX: Mobile — pad card bottom so content clears player bar + bottom nav */
+  @media (max-width: 768px) {
+    .listener-card {
+      padding-bottom: calc(var(--player-h, 68px) + 56px + env(safe-area-inset-bottom, 0px) + 16px);
+    }
+  }
+
+  /* Hide desktop nav ONLINE button on mobile — mobile nav drawer already has one */
+  @media (max-width: 768px) {
+    #listeners-nav-trigger { display: none !important; }
+  }
+
+  /* iOS: prevent momentum scroll bleed-through on backdrops */
+  .listeners-backdrop.open,
+  .listener-card-overlay.open {
+    touch-action: none;
+    -webkit-overflow-scrolling: auto;
+  }
   `;
 
   let _cssInjected = false;
@@ -1577,13 +1608,64 @@
     _renderList();
   }, 60000);
 
-  // Inject CSS + nav button on DOMContentLoaded
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => { _injectCSS(); _injectNavButton(); });
-  } else {
+  // Inject CSS + nav button on DOMContentLoaded — with retry for slow bundle.js eval
+  function _tryInjectNavButton(attempts) {
     _injectCSS();
-    _injectNavButton();
+    const navAuthBtn = document.getElementById('nav-auth-btn');
+    if (navAuthBtn || attempts >= 10) {
+      _injectNavButton();
+    } else {
+      setTimeout(() => _tryInjectNavButton(attempts + 1), 150);
+    }
   }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => _tryInjectNavButton(0));
+  } else {
+    _tryInjectNavButton(0);
+  }
+
+  // ── Option A: Live station broadcast ────────────────────────────────────────
+  // Call window._broadcastStation(stationName) from bundle.js whenever a real
+  // user starts playing a station. This POSTs live_station to the API so the
+  // listeners panel can show the real station name instead of a fake fallback.
+  // Requires the `live_station` column to exist (see Supabase SQL below).
+  //
+  // SQL (run once):
+  //   ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_station text;
+  //
+  // Usage in bundle.js (wherever playStation() is called):
+  //   if (window._broadcastStation) window._broadcastStation(station.name);
+  let _broadcastTimer = null;
+  window._broadcastStation = function(stationName) {
+    if (_broadcastTimer) clearTimeout(_broadcastTimer);
+    // 3s debounce — avoids spam when user rapidly browses stations
+    _broadcastTimer = setTimeout(async () => {
+      try {
+        const token = await _getToken();
+        if (!token) return;
+        await fetch('/api/user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ mode: 'save_profile', live_station: stationName || '' })
+        });
+      } catch (e) { /* non-critical — fail silently */ }
+    }, 3000);
+  };
+
+  // Clear station on tab close so listeners panel doesn't show stale "online" status
+  window.addEventListener('pagehide', async () => {
+    try {
+      const token = await _getToken().catch(() => null);
+      if (!token) return;
+      const blob = new Blob(
+        [JSON.stringify({ mode: 'save_profile', live_station: '' })],
+        { type: 'application/json' }
+      );
+      // sendBeacon is reliable on page unload; fetch is not
+      navigator.sendBeacon && navigator.sendBeacon('/api/user', blob);
+    } catch (e) {}
+  });
 
 })();
 

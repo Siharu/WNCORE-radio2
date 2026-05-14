@@ -23,11 +23,14 @@
 <!-- OPEN GRAPH -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://wncoreradio.net/">
-<meta property="og:image" content="/images/og-preview.jpg">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
+<!-- SEO IMPACT: og:image must resolve to a real file — broken image URL causes
+     social share previews to fail entirely, reducing click-through from social
+     and messaging platforms. Using existing wncore-art-512.png as fallback. -->
+<meta property="og:image" content="https://wncoreradio.net/images/wncore-art-512.png">
+<meta property="og:image:width" content="512">
+<meta property="og:image:height" content="512">
 <meta property="og:image:alt" content="WNCORE Radio — Stream live radio from 12,000+ stations">
-<meta name="twitter:image" content="/images/og-preview.jpg">
+<meta name="twitter:image" content="https://wncoreradio.net/images/wncore-art-512.png">
 <meta property="og:title" content="WNCORE Radio — Free Live Radio from 310 Countries">
 <meta property="og:description" content="Stream 12,000+ verified radio stations worldwide. Jazz, classical, hip-hop, anime, news and more. Free. No signup. Est. 2016.">
 <meta property="og:site_name" content="WNCORE Radio">
@@ -63,6 +66,43 @@
   "foundingDate": "2016",
   "numberOfEmployees": {"@type": "QuantitativeValue", "value": 1},
   "genre": ["Jazz", "Classical", "Hip-Hop", "Rock", "Anime", "News", "Electronic", "Ambient"]
+}
+</script>
+
+<!-- SEO IMPACT: Organization schema helps Google/AI crawlers establish entity identity,
+     enables Knowledge Panel eligibility, and provides AEO crawlers a direct-answer
+     anchor for queries like "what is WNCORE Radio". BreadcrumbList aids sitelinks. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "WNCORE Radio",
+  "url": "https://wncoreradio.net/",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://wncoreradio.net/images/wncore-art-512.png",
+    "width": 512,
+    "height": 512
+  },
+  "sameAs": [],
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer support",
+    "url": "https://wncoreradio.net/"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home",           "item": "https://wncoreradio.net/" },
+    { "@type": "ListItem", "position": 2, "name": "Top Charts",     "item": "https://wncoreradio.net/#charts" },
+    { "@type": "ListItem", "position": 3, "name": "Genres",         "item": "https://wncoreradio.net/#genres" },
+    { "@type": "ListItem", "position": 4, "name": "Anime / J-Music","item": "https://wncoreradio.net/#anime" },
+    { "@type": "ListItem", "position": 5, "name": "Live Music",     "item": "https://wncoreradio.net/#livemusic" }
+  ]
 }
 </script>
 
@@ -108,7 +148,9 @@
       <span class="logo-mark">WNCORE</span>
       <span class="logo-freq">EST. 2016</span>
     </a>
-    <nav id="main-nav">
+    <!-- SEO IMPACT: aria-label on nav lets screen readers and crawlers distinguish
+         this as the primary site navigation landmark, improving crawl depth signals. -->
+    <nav id="main-nav" aria-label="Primary navigation">
       <a href="#" class="active" onclick="showPage('home',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
         Global Array
@@ -222,6 +264,11 @@
 </nav>
 
 <!-- ══════════════ HOME PAGE ══════════════ -->
+<!-- SEO IMPACT: <main> landmark tells Google and AI crawlers this is the primary
+     content zone. Without it, crawlers must guess. Inverted Pyramid: the page
+     sections below are ordered from broadest (global stations) to most specific
+     (ARG/lore content), matching AEO extraction patterns. -->
+<main id="wncore-main" role="main" aria-label="WNCORE Radio content">
 <div id="page-home" class="page active" style="position:relative;">
 <video id="home-hero-video" autoplay muted loop playsinline aria-hidden="true"
   style="position:fixed;inset:0;width:100%;height:100%;object-fit:cover;z-index:0;opacity:0;transition:opacity 1.5s;pointer-events:none;"></video>
@@ -1009,6 +1056,7 @@
 </div>
 
 <!-- ══════════════ PLAYER BAR ══════════════ -->
+</main><!-- /wncore-main -->
 <div class="player-bar" role="region" aria-label="Audio player">
   <div class="pb-station">
     <div class="pb-art" id="pb-art">
