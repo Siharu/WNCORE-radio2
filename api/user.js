@@ -342,7 +342,7 @@ async function handleListeners(res) {
 
   try {
     const r = await fetch(
-      sbRest('user_profiles?select=display_name,avatar_url,node_id,clearance_level,siharu_visits&display_name=not.is.null&order=updated_at.desc&limit=20'),
+      sbRest('user_profiles?select=display_name,avatar_url,node_id,clearance_level,siharu_visits,live_station&display_name=not.is.null&order=updated_at.desc&limit=20'),
       { headers: sbHeaders(SUPABASE_SERVICE_KEY, { 'Accept': 'application/json' }) }
     );
     if (!r.ok) return res.status(200).json({ users: [], total: 0 });
@@ -352,8 +352,10 @@ async function handleListeners(res) {
       const cl = computeClearance(row.siharu_visits);
       return {
         display_name:    row.display_name,
-        avatar_url:      row.avatar_url || null,
-        node_id:         row.node_id    || null,
+        avatar_url:      row.avatar_url   || null,
+        node_id:         row.node_id      || null,
+        // live_station: Option A — client POSTs this on play; null if column absent (graceful)
+        station:         row.live_station || null,
         clearance_level: cl,
         tainted:         (row.siharu_visits || 0) > 0,
         // Send pixel badge URL for ARG cred holders
@@ -442,6 +444,12 @@ module.exports = async function handler(req, res) {
         field('default_volume', validateVolume);
         field('avatar_url',     validateAvatarUrl);
         field('genre_tags',     validateGenreTags);
+        // Option A: client reports which station the user is currently playing
+        // Requires: ALTER TABLE public.user_profiles ADD COLUMN IF NOT EXISTS live_station text;
+        if ('live_station' in body) {
+          const ls = String(body.live_station || '').trim().slice(0, 120);
+          updates.live_station = ls || null;
+        }
         // NOTE: siharu_visits/clearance_level are NOT settable here — only via siharu_visit mode
         if ('hide_email' in body) updates.hide_email = !!body.hide_email;
 
