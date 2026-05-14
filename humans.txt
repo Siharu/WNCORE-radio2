@@ -1,0 +1,14 @@
+/* TEAM */
+Creator: WNCORE
+Location: Signal Unknown
+Contact: wncoreradio.net
+
+/* SITE */
+Last update: 2026-05-14
+Standards: HTML5, CSS3, Vanilla JS
+Components: Supabase, Groq, Radio Browser API
+Deployment: Vercel
+
+/* NOTE */
+If you're reading this you've gone one layer deeper.
+Frequency 88.7 is not in our index.

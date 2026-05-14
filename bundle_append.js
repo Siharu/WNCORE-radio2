@@ -91,6 +91,8 @@
         if (d.profile.avatar_url) localStorage.setItem('wncore_avatar_url', d.profile.avatar_url);
         _applyAvatarToNav(d.profile.avatar_url);
         _applyAvatarToModal(d.profile.avatar_url);
+        // Re-run nav update now that display_name is loaded — fixes "nib shag" showing instead of custom name
+        if (typeof _authUpdateNav === 'function' && window._authUser) _authUpdateNav(window._authUser);
         return d.profile;
       }
     } catch (e) { console.warn('[WNCORE profile] fetch error', e); }
@@ -110,8 +112,11 @@
     if (!avatarUrl) return;
     const btn = document.getElementById('nav-auth-btn');
     if (!btn || !_authUser) return;
-    const name = _authUser.user_metadata?.full_name || _authUser.user_metadata?.name || _authUser.email?.split('@')[0] || '?';
-    const initial = (name)[0].toUpperCase();
+    // Prefer saved profile display_name over OAuth name
+    const profileName = window.__WNCORE_PROFILE?.display_name;
+    const oauthName = _authUser.user_metadata?.full_name || _authUser.user_metadata?.name || _authUser.email?.split('@')[0] || '?';
+    const name = profileName || oauthName;
+    const initial = name[0].toUpperCase();
     btn.innerHTML = `<img src="${_esc(avatarUrl)}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;" onerror="this.parentElement.textContent='${initial}'">`; 
     btn.style.cssText = 'background:transparent !important;border:2px solid var(--accent) !important;color:var(--accent) !important;padding:3px !important;border-radius:50% !important;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;';
     btn.onclick = function() { showPage('profile', null); };
@@ -561,8 +566,7 @@
         <div class="prof-section-title">◈ ARG Signal Cred</div>
         <div style="font-size:0.82rem;color:var(--text2);line-height:1.7;margin-bottom:12px">
           Visit <a href="https://siharu.vercel.app" target="_blank" rel="noopener"
-            style="color:var(--accent);text-decoration:none"
-            onclick="sessionStorage.removeItem('wncore_siharu_return_counted')">siharu.vercel.app</a>
+            style="color:var(--accent);text-decoration:none">siharu.vercel.app</a>
           and return here to earn your pixel badge. Each confirmed visit increases your
           clearance level. Higher levels unlock rarer badges.
         </div>
@@ -1612,12 +1616,14 @@
   function _tryInjectNavButton(attempts) {
     _injectCSS();
     const navAuthBtn = document.getElementById('nav-auth-btn');
-    if (navAuthBtn || attempts >= 10) {
+    if (navAuthBtn || attempts >= 30) {
       _injectNavButton();
     } else {
-      setTimeout(() => _tryInjectNavButton(attempts + 1), 150);
+      setTimeout(() => _tryInjectNavButton(attempts + 1), 200);
     }
   }
+  // Also expose so auth state changes can re-trigger injection
+  window._retryListenersNavBtn = () => _tryInjectNavButton(0);
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => _tryInjectNavButton(0));
@@ -1961,12 +1967,15 @@ ${stage >= 4 ? '> ██ BREACH CONFIRMED. GHOST PROTOCOL ACTIVE.' : ''}
   // ── Referrer detection ────────────────────────────────────────────────────
   (function _checkReferrer() {
     try {
-      if (document.referrer && document.referrer.includes(SIHARU_HOST)) {
-        const flagKey = 'wncore_siharu_return_counted';
-        if (!sessionStorage.getItem(flagKey)) {
-          sessionStorage.setItem(flagKey, '1');
-          setTimeout(() => { _siharuIncrementAndSave(); }, 1200);
-        }
+      const hasSiharuReferrer = document.referrer && document.referrer.includes(SIHARU_HOST);
+      // Also check localStorage flag set when user clicked the siharu link (departure flag)
+      const departedFlag = localStorage.getItem('wncore_siharu_departed');
+      if (hasSiharuReferrer || departedFlag) {
+        // Clear departure flag so it only fires once per actual visit
+        localStorage.removeItem('wncore_siharu_departed');
+        // Remove session flag so each tab-return counts independently
+        sessionStorage.removeItem('wncore_siharu_return_counted');
+        setTimeout(() => { _siharuIncrementAndSave(); }, 1200);
       }
     } catch {}
   })();
@@ -1976,6 +1985,8 @@ ${stage >= 4 ? '> ██ BREACH CONFIRMED. GHOST PROTOCOL ACTIVE.' : ''}
     try {
       const a = e.target.closest('a[href]');
       if (a && a.href && a.href.includes(SIHARU_HOST)) {
+        // Set departure flag so we can count the visit on return even if referrer is blocked
+        localStorage.setItem('wncore_siharu_departed', '1');
         sessionStorage.removeItem('wncore_siharu_return_counted');
       }
     } catch {}

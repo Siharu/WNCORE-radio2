@@ -96,17 +96,19 @@ header{
   position:fixed;top:0;left:0;right:0;height:var(--header-h);
   background:rgba(245,243,239,0.92);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);z-index:500;display:flex;align-items:center;
+  overflow:hidden;
 }
-.header-inner{width:100%;max-width:1440px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:24px}
+.header-inner{width:100%;max-width:1440px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:16px;min-width:0;overflow:hidden;}
+
 .logo{display:flex;align-items:baseline;gap:8px;text-decoration:none}
 .logo-mark{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--text);letter-spacing:-0.5px}
 .logo-freq{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent);letter-spacing:1px;padding:2px 6px;border:1px solid var(--accent);border-radius:3px}
-nav{display:flex;gap:2px;margin-left:4px}
+nav{display:flex;gap:2px;margin-left:4px;min-width:0;flex-shrink:1;overflow:hidden;}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;}
 nav a{font-size:0.82rem;color:var(--text2);text-decoration:none;padding:6px 10px;border-radius:6px;transition:all 0.15s;font-weight:400;white-space:nowrap;display:flex;align-items:center;gap:5px}
 nav a:hover{background:var(--surface2);color:var(--text)}
 nav a.active{color:var(--text);font-weight:500}
 nav a svg{width:13px;height:13px;opacity:0.6}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:12px}
 .live-dot{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--text2);font-weight:500;white-space:nowrap}
 .live-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(22,163,74,0.2);animation:pulse-dot 2s ease-in-out infinite;flex-shrink:0}
 @keyframes pulse-dot{0%,100%{box-shadow:0 0 0 2px rgba(22,163,74,0.2)}50%{box-shadow:0 0 0 5px rgba(22,163,74,0.1)}}

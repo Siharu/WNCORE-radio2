@@ -26,11 +26,13 @@
 <!-- SEO IMPACT: og:image must resolve to a real file — broken image URL causes
      social share previews to fail entirely, reducing click-through from social
      and messaging platforms. Using existing wncore-art-512.png as fallback. -->
-<meta property="og:image" content="https://wncoreradio.net/images/wncore-art-512.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
+<meta property="og:image" content="https://wncoreradio.net/images/og-preview.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="WNCORE Radio — Stream live radio from 12,000+ stations">
-<meta name="twitter:image" content="https://wncoreradio.net/images/wncore-art-512.png">
+<meta name="twitter:image" content="https://wncoreradio.net/images/og-preview.jpg">
+<!-- TODO: add twitter:site once @wncoreradio account is set up:
+     <meta name="twitter:site" content="@wncoreradio"> -->
 <meta property="og:title" content="WNCORE Radio — Free Live Radio from 310 Countries">
 <meta property="og:description" content="Stream 12,000+ verified radio stations worldwide. Jazz, classical, hip-hop, anime, news and more. Free. No signup. Est. 2016.">
 <meta property="og:site_name" content="WNCORE Radio">
@@ -65,7 +67,9 @@
   "description": "Global broadcast radio network. 12,000+ stations. Est. 2016.",
   "foundingDate": "2016",
   "numberOfEmployees": {"@type": "QuantitativeValue", "value": 1},
-  "genre": ["Jazz", "Classical", "Hip-Hop", "Rock", "Anime", "News", "Electronic", "Ambient"]
+  "genre": ["Jazz", "Classical", "Hip-Hop", "Rock", "Anime", "News", "Electronic", "Ambient"],
+  "datePublished": "2016-01-01",
+  "dateModified": "2026-05-14"
 }
 </script>
 
@@ -107,6 +111,17 @@
 </script>
 
 <script>
+// Dark mode flash prevention — must run before first paint.
+// Reads localStorage before bundle.js (deferred) applies the class,
+// preventing the flash of light mode on hard reload for dark-mode users.
+try {
+  if (localStorage.getItem('wncore-dark') === '1') {
+    document.body.classList.add('dark-mode');
+  }
+} catch(e) {}
+</script>
+
+<script>
 // Lazy-load globe.gl only when globe section enters viewport
 (function(){
   var loaded = false;
@@ -131,6 +146,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://de1.api.radio-browser.info">
+<link rel="preconnect" href="https://api.dicebear.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
@@ -2258,6 +2274,7 @@ document.addEventListener('DOMContentLoaded', loadSiteConfig);
 </script>
 
 <script src="bundle.js" defer></script>
+<script src="bundle_append.js" defer></script>
 
 <script>
 // Signal connection box clock + ARG flicker

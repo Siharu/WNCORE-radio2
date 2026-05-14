@@ -570,6 +570,7 @@ function playStation(url, name, meta, emoji) {
       playPromise.then(() => {
         isPlaying = true;
         window.isPlaying = true; // FIX: sync window.isPlaying so PWA prompt works
+        if (window._broadcastStation) window._broadcastStation(name); // Option A: live station tracking
         updateUI(name, meta, emoji||'📻');
         updateMiniPlayerVisibility();
         // NOTE: applyStationSecondaryEffects removed from here — it called initAudioFX()
@@ -758,11 +759,11 @@ function setPlayIcon(playing) {
 function togglePlay() {
   if(!currentStation) return;
   if(isPlaying) {
-    audio.pause(); isPlaying=false; setPlayIcon(false);
+    audio.pause(); isPlaying=false; window.isPlaying=false; setPlayIcon(false);
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('playing')});
     stopProgressSync();
   } else {
-    audio.play().catch(() => updateStatus('TAP TO PLAY')); isPlaying=true; setPlayIcon(true);
+    audio.play().catch(() => updateStatus('TAP TO PLAY')); isPlaying=true; window.isPlaying=true; setPlayIcon(true);
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.add('playing')});
     startProgressSync();
   }
@@ -1156,7 +1157,10 @@ function _authUpdateNav(user) {
   const btn = document.getElementById('nav-auth-btn');
   if (!btn) return;
   if (user) {
-    const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+    // Prefer saved profile display_name over OAuth name from user metadata
+    const profileName = window.__WNCORE_PROFILE?.display_name;
+    const oauthName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+    const name = profileName || oauthName;
     const dicebearUrl = window.__WNCORE_PROFILE?.avatar_url || localStorage.getItem('wncore_avatar_url') || null;
     if (dicebearUrl) {
       // Profile already cached — render avatar circle immediately
@@ -1165,12 +1169,11 @@ function _authUpdateNav(user) {
       btn.style.cssText = 'background:transparent !important;border:2px solid var(--accent) !important;color:var(--accent) !important;padding:3px !important;border-radius:50% !important;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;';
       btn.onclick = function() { if(typeof showPage==='function') showPage('profile', null); else openSignIn(); };
     } else {
-      // Profile not yet fetched — show name text; bundle_append will replace with avatar
-      btn.textContent = '▸ ' + name;
-      btn.style.cssText = '';
-      btn.style.color = 'var(--accent)';
-      btn.style.background = 'transparent';
-      btn.style.border = '1px solid var(--accent)';
+      // Profile not yet fetched — show initial only (not full name) to avoid flashing OAuth name
+      const initial = name[0].toUpperCase();
+      btn.textContent = initial;
+      btn.style.cssText = 'background:var(--accent) !important;border:2px solid var(--accent) !important;color:#fff !important;padding:3px !important;border-radius:50% !important;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem;';
+      btn.onclick = function() { if(typeof showPage==='function') showPage('profile', null); else openSignIn(); };
     }
     btn.title = name;
   } else {
@@ -1274,7 +1277,14 @@ async function _authInit() {
   const { data: { session } } = await sb.auth.getSession();
   _authUser = session?.user || null;
   _authUpdateNav(_authUser);
-  if (_authUser) { migrateFavsToV2(); setTimeout(authSyncFavsDown, 1000); }
+  if (_authUser) {
+    migrateFavsToV2();
+    setTimeout(authSyncFavsDown, 1000);
+    // Fetch profile early so display_name + avatar replace the OAuth name in nav ASAP
+    if (typeof fetchProfile === 'function') {
+      fetchProfile(false).then(p => { if (p) _authUpdateNav(_authUser); }).catch(() => {});
+    }
+  }
 
   // Auto-open profile modal after OAuth redirect (URL contains #access_token)
   if (_authUser && window.location.hash.includes('access_token')) {
@@ -1286,7 +1296,15 @@ async function _authInit() {
     _authUser = session?.user || null;
     _authUpdateNav(_authUser);
     _authUpdateModal(_authUser);
-    if (_authUser) { migrateFavsToV2(); setTimeout(authSyncFavsDown, 800); }
+    if (_authUser) {
+      migrateFavsToV2();
+      setTimeout(authSyncFavsDown, 800);
+      // Re-fetch profile on auth change (e.g. sign in) to get display_name
+      if (typeof fetchProfile === 'function') {
+        window.__WNCORE_PROFILE = null; // force fresh fetch
+        fetchProfile(false).then(p => { if (p) _authUpdateNav(_authUser); }).catch(() => {});
+      }
+    }
   });
 }
 
@@ -2206,7 +2224,7 @@ function lmPlayChannel(chId) {
   if(typeof audio !== 'undefined' && !audio.paused) {
     audio.pause();
     isPlaying = false;
-    if(typeof setPlayIcon === 'function') setPlayIcon(false);
+    window.isPlaying = false;
     if(typeof updateStatus === 'function') updateStatus('STANDBY');
   }
   // Stop existing lm audio cleanly
@@ -3269,14 +3287,8 @@ function applyEQPreset(presetKey) {
   if (btn) btn.classList.add('active');
 }
 
-function makeDistortionCurve(amount) {
-  const n = 256, curve = new Float32Array(n);
-  for (let i = 0; i < n; i++) {
-    const x = (i * 2) / n - 1;
-    curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
-  }
-  return curve;
-}
+// NOTE: duplicate definition removed — using the cached version defined earlier in bundle.js
+// which uses n=44100 and the _distCurveCache Map. This stub is intentionally left empty.
 
 function buildEQPanel() {
   if (document.getElementById('eq-panel')) return;
@@ -9915,6 +9927,10 @@ document.addEventListener('DOMContentLoaded', () => {
         window.__WNCORE_PROFILE = d.profile;
         if (d.profile.node_id) window.__WNCORE_NODE_ID = d.profile.node_id;
         if (d.profile.theme)   _applyThemePref(d.profile.theme);
+        // Cache avatar for nav and future cold loads
+        if (d.profile.avatar_url) localStorage.setItem('wncore_avatar_url', d.profile.avatar_url);
+        // Update nav immediately with the real display_name + avatar
+        if (typeof _authUpdateNav === 'function' && _authUser) _authUpdateNav(_authUser);
         return d.profile;
       }
     } catch (e) { console.warn('[WNCORE profile] fetch error', e); }
