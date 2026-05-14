@@ -1157,10 +1157,17 @@ function _authUpdateNav(user) {
   if (!btn) return;
   if (user) {
     const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
-    // If bundle_append already injected a DiceBear avatar img, don't overwrite it
-    const hasAvatarImg = btn.querySelector('img') !== null;
-    if (!hasAvatarImg) {
+    const dicebearUrl = window.__WNCORE_PROFILE?.avatar_url || null;
+    if (dicebearUrl) {
+      // Profile already cached — render avatar circle immediately
+      const initial = name[0].toUpperCase();
+      btn.innerHTML = `<img src="${dicebearUrl}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;display:block;" onerror="this.parentElement.textContent='${initial}'">`;
+      btn.style.cssText = 'background:transparent !important;border:2px solid var(--accent) !important;color:var(--accent) !important;padding:3px !important;border-radius:50% !important;width:32px;height:32px;display:flex;align-items:center;justify-content:center;overflow:hidden;';
+      btn.onclick = function() { if(typeof showPage==='function') showPage('profile', null); else openSignIn(); };
+    } else {
+      // Profile not yet fetched — show name text; bundle_append will replace with avatar
       btn.textContent = '▸ ' + name;
+      btn.style.cssText = '';
       btn.style.color = 'var(--accent)';
       btn.style.background = 'transparent';
       btn.style.border = '1px solid var(--accent)';
@@ -1168,9 +1175,7 @@ function _authUpdateNav(user) {
     btn.title = name;
   } else {
     btn.textContent = 'Sign In';
-    btn.style.color = '';
-    btn.style.background = '';
-    btn.style.border = '';
+    btn.style.cssText = '';
     btn.title = '';
   }
 }
@@ -1179,7 +1184,8 @@ function _authUpdateModal(user) {
   if (user) {
     const name = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '—';
     const initial = (name[0] || '?').toUpperCase();
-    const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
+    // Prefer saved DiceBear avatar; fall back to OAuth profile photo
+    const avatarUrl = window.__WNCORE_PROFILE?.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || null;
     const provider = (user.app_metadata?.provider || 'email').replace('email','Email').replace('google','Google').replace('discord','Discord');
     const since = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US',{month:'short',year:'numeric'}) : '—';
     const favCount = (JSON.parse(localStorage.getItem('wncore_favs_v2')||'[]')).length;

@@ -90,6 +90,8 @@
         if (d.profile.theme)   _applyThemePref(d.profile.theme);
         // Apply profile pic to nav as soon as profile loads
         _applyAvatarToNav(d.profile.avatar_url);
+        // Also update the sign-in modal mini avatar (auth-avatar element)
+        _applyAvatarToModal(d.profile.avatar_url);
         return d.profile;
       }
     } catch (e) { console.warn('[WNCORE profile] fetch error', e); }
@@ -117,7 +119,15 @@
     btn.title = name;
   }
 
-  async function saveProfile(fields) {
+  // ── Apply DiceBear avatar to the sign-in modal mini-card ─────────────────
+  function _applyAvatarToModal(avatarUrl) {
+    if (!avatarUrl) return;
+    const av = document.getElementById('auth-avatar');
+    if (!av) return;
+    const name = _authUser?.user_metadata?.full_name || _authUser?.user_metadata?.name || _authUser?.email?.split('@')[0] || '?';
+    const initial = name[0].toUpperCase();
+    av.innerHTML = `<img src="${_esc(avatarUrl)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+  }
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
@@ -508,6 +518,8 @@
       }
       // BUG FIX: Update nav button with new DiceBear avatar immediately
       _applyAvatarToNav(_pendingAvatarUrl);
+      // Also update the modal mini avatar
+      _applyAvatarToModal(_pendingAvatarUrl);
       showToast('✓ Avatar updated', 'success');
     }
   };
