@@ -342,7 +342,7 @@ async function handleListeners(res) {
 
   try {
     const r = await fetch(
-      sbRest('user_profiles?select=display_name,avatar_url,node_id,clearance_level,siharu_visits,live_station&display_name=not.is.null&order=updated_at.desc&limit=20'),
+      sbRest('user_profiles?select=display_name,avatar_url,node_id,clearance_level,siharu_visits,live_station,created_at&display_name=not.is.null&order=updated_at.desc&limit=20'),
       { headers: sbHeaders(SUPABASE_SERVICE_KEY, { 'Accept': 'application/json' }) }
     );
     if (!r.ok) return res.status(200).json({ users: [], total: 0 });
@@ -360,6 +360,7 @@ async function handleListeners(res) {
         tainted:         (row.siharu_visits || 0) > 0,
         // Send pixel badge URL for ARG cred holders
         badge_url:       cl > 0 ? badgeUrl(row.node_id, cl) : null,
+        joined:          row.created_at ? row.created_at.slice(0, 10) : null,
       };
     });
 
