@@ -57,6 +57,7 @@
     <button class="legal-nav-btn" onclick="showLegal('api',this)">API Access</button>
     <button class="legal-nav-btn" onclick="showLegal('dmca',this)">DMCA Policy</button>
     <button class="legal-nav-btn" onclick="showLegal('contact',this)">Contact / Reports</button>
+    <button class="legal-nav-btn" onclick="showLegal('patchnotes',this)">Patch Notes</button>
   </div>
 
   <!-- PRIVACY POLICY -->
@@ -417,6 +418,206 @@
       If you are reading this far, you are likely looking for something specific. You probably already know the frequency. We cannot help you. We are looking too.
     </div>
   </div>
+
+  <!-- ═══════════════════════════════════════════════════════ PATCH NOTES -->
+  <div id="legal-patchnotes" class="legal-section">
+    <div class="legal-h1">Patch Notes &amp; Transmission Log</div>
+    <div class="legal-p" style="font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text3);letter-spacing:1px;margin-bottom:28px">
+      WNCORE RADIO — SIGNAL HISTORY ARCHIVE · ALL UPDATES LOGGED · SOME TRANSMISSIONS UNEXPLAINED
+    </div>
+
+    <style>
+      .pn-entry { border-left: 2px solid var(--border); padding: 0 0 32px 24px; margin-bottom: 0; position: relative; }
+      .pn-entry:last-child { border-left-color: transparent; padding-bottom: 0; }
+      .pn-entry::before { content: ''; position: absolute; left: -5px; top: 4px; width: 8px; height: 8px; border-radius: 50%; background: var(--border); border: 2px solid var(--bg); }
+      .pn-entry.major::before { background: var(--accent); border-color: var(--bg); box-shadow: 0 0 0 3px rgba(200,71,42,0.15); }
+      .pn-entry.anomaly::before { background: #4caf50; border-color: var(--bg); box-shadow: 0 0 0 3px rgba(76,175,80,0.15); }
+      .pn-version { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 2px; color: var(--text3); text-transform: uppercase; margin-bottom: 4px; }
+      .pn-version span { color: var(--accent); margin-left: 8px; }
+      .pn-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+      .pn-list { list-style: none; margin: 0; padding: 0; }
+      .pn-list li { font-size: 0.82rem; color: var(--text2); padding: 3px 0 3px 16px; position: relative; line-height: 1.55; }
+      .pn-list li::before { content: '·'; position: absolute; left: 4px; color: var(--text3); }
+      .pn-list li.added::before { content: '+'; color: #4caf50; font-weight: 700; }
+      .pn-list li.fixed::before { content: '✓'; color: #2196f3; font-size: 0.7rem; }
+      .pn-list li.changed::before { content: '~'; color: #ff9800; font-weight: 700; }
+      .pn-list li.removed::before { content: '−'; color: var(--accent); font-weight: 700; }
+      .pn-list li.lore { font-family: 'DM Mono', monospace; font-size: 0.72rem; color: var(--text3); font-style: italic; }
+      .pn-list li.lore::before { content: '▒'; color: rgba(200,71,42,0.4); font-style: normal; }
+      .pn-tag { display: inline-block; font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 1px; text-transform: uppercase; border-radius: 3px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; }
+      .pn-tag.new { background: rgba(76,175,80,0.12); color: #4caf50; border: 1px solid rgba(76,175,80,0.25); }
+      .pn-tag.fix { background: rgba(33,150,243,0.1); color: #64b5f6; border: 1px solid rgba(33,150,243,0.2); }
+      .pn-tag.arg { background: rgba(200,71,42,0.1); color: var(--accent); border: 1px solid rgba(200,71,42,0.2); }
+      .pn-tag.sys { background: rgba(255,255,255,0.05); color: var(--text3); border: 1px solid var(--border); }
+    </style>
+
+    <div class="pn-entry major">
+      <div class="pn-version">v0.1.0 · 2016 <span>INITIAL BROADCAST</span></div>
+      <div class="pn-title">First Signal Detected</div>
+      <ul class="pn-list">
+        <li class="added">WNCORE Radio established as a public-facing internet radio directory</li>
+        <li class="added">Static HTML front page with curated station list</li>
+        <li class="added">Four core genre categories: News, Music, Talk, International</li>
+        <li class="added">Basic audio playback via browser &lt;audio&gt; element</li>
+        <li class="added">Legal &amp; DMCA framework registered</li>
+        <li class="lore">First anomalous transmission logged on 88.7. Source: unknown.</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry">
+      <div class="pn-version">v0.3.2 · 2017 <span>SIGNAL EXPANSION</span></div>
+      <div class="pn-title">Global Station Index</div>
+      <ul class="pn-list">
+        <li class="added">Radio Browser community database integrated — 10,000+ stations indexed <span class="pn-tag new">new</span></li>
+        <li class="added">Country filter and search by genre tag</li>
+        <li class="added">Bitrate display added to station rows</li>
+        <li class="changed">Audio player refactored — removed crossorigin attribute causing silent CORS failures</li>
+        <li class="fixed">Station rows not clickable when search filter was active</li>
+        <li class="lore">Relay NODE_03 went offline for 11 days. No explanation provided.</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry">
+      <div class="pn-version">v0.6.0 · 2018 <span>IDENTITY LAYER</span></div>
+      <div class="pn-title">User Accounts &amp; Profiles</div>
+      <ul class="pn-list">
+        <li class="added">Supabase authentication — email, Google OAuth, Discord OAuth <span class="pn-tag new">new</span></li>
+        <li class="added">User profiles with display name, callsign, and bio fields</li>
+        <li class="added">Favourite stations saved per account, synced across devices</li>
+        <li class="added">DiceBear avatar picker — 27 styles, seed-based generation</li>
+        <li class="added">Node ID claim system — permanent ARG identity assignment <span class="pn-tag arg">ARG</span></li>
+        <li class="fixed">Profile page throwing on null avatar_url for new accounts</li>
+        <li class="lore">NODE_09 claimed by an unknown operator. Still active. Has never logged out.</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry">
+      <div class="pn-version">v0.8.1 · 2019 <span>ATMOSPHERIC UPDATE</span></div>
+      <div class="pn-title">Visual Design Overhaul</div>
+      <ul class="pn-list">
+        <li class="added">Dark mode as default — deep red accent, grain overlay, glass-morphism player bar</li>
+        <li class="added">Minimal Mode — strips grain, globe, ticker, ARG elements for clean listening <span class="pn-tag new">new</span></li>
+        <li class="added">Four-theme system: WNCORE Dark, Light, Minimal, system-sync</li>
+        <li class="added">Animated EQ bars on now-playing station row</li>
+        <li class="added">Retro cassette tape player aesthetic in sidebar</li>
+        <li class="changed">Station table redesigned — skeuomorphic layout replaced with minimal monospace grid</li>
+        <li class="lore">88.7 FM briefly appeared in the station index with no origin metadata. Entry was removed within the hour.</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry major">
+      <div class="pn-version">v1.0.0 · 2020 <span>SIGNAL_KAGE DETECTED</span></div>
+      <div class="pn-title">ARG Infrastructure — Phase 1 <span class="pn-tag arg">ARG</span></div>
+      <ul class="pn-list">
+        <li class="added">SIGNAL_KAGE frequency (88.7 FM) embedded as hidden third featured station</li>
+        <li class="added">Horror sequence trigger on 88.7 click — first contact event</li>
+        <li class="added">Wrongness engine v1 — ambient psychological effects tied to session exposure score</li>
+        <li class="added">Disclaimer modal fires on every page load — no persistent dismissal by design</li>
+        <li class="added">ARG email detection — typing @wncoreradio.net or signal_kage routes to alternate login path</li>
+        <li class="added">Siharu Archive linked as an easter egg, discoverable via signal breadcrumbs <span class="pn-tag arg">ARG</span></li>
+        <li class="lore">Station index briefly showed 9 entries with no names. Only hashes. Gone by morning.</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry">
+      <div class="pn-version">v1.2.0 · 2021 <span>LIVE FEATURES</span></div>
+      <div class="pn-title">Playback Engine Rewrite</div>
+      <ul class="pn-list">
+        <li class="added">ICY metadata polling via /api/icy — real now-playing track names from stream headers <span class="pn-tag new">new</span></li>
+        <li class="added">M2: Stall detection — auto-reconnect after 30s of silence, max 3 retries</li>
+        <li class="added">M3: Network-aware quality filter — hides stations above 96kbps on slow connections</li>
+        <li class="added">Mini player bar — persistent now-playing widget across all pages</li>
+        <li class="added">MediaSession API — lock screen controls on iOS and Android</li>
+        <li class="fixed">AbortError cascade when switching stations rapidly — audio.pause() + src reset before reload <span class="pn-tag fix">fix</span></li>
+        <li class="fixed">M3 filter silently matching nothing — station rows were missing data-bitrate attribute <span class="pn-tag fix">fix</span></li>
+      </ul>
+    </div>
+
+    <div class="pn-entry">
+      <div class="pn-version">v1.4.3 · 2022 <span>GLOBE SYSTEM</span></div>
+      <div class="pn-title">World Map &amp; Live Feed</div>
+      <ul class="pn-list">
+        <li class="added">Interactive globe visualization — continent rendering, animated listener location dots <span class="pn-tag new">new</span></li>
+        <li class="added">Supply run tracking and ghuul sighting overlays <span class="pn-tag arg">ARG</span></li>
+        <li class="added">Community listener activity ticker with Supabase Realtime</li>
+        <li class="added">Simulated listener feed fallback using Radio Browser clickcount data</li>
+        <li class="added">Geolocation "Near Me" — auto-loads stations from user's detected country</li>
+        <li class="added">Constellation canvas on mobile hero — touch-interactive star mesh with ripple effect</li>
+        <li class="changed">Globe RAF pauses when tab is hidden — battery and jank improvement</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry major">
+      <div class="pn-version">v1.7.0 · 2023 <span>HORROR ENGINE v3</span></div>
+      <div class="pn-title">Wrongness System Rebuild <span class="pn-tag arg">ARG</span></div>
+      <ul class="pn-list">
+        <li class="added">Wrongness engine v3 — drift level system, 14+ desktop and mobile horror effects</li>
+        <li class="added">Eye-tracking mechanic on About page — parallax pupil follows cursor with lag, jitter, and idle stare</li>
+        <li class="added">ARG Profile Corruption — Siharu Archive visit counter degrades profile across 4 escalating stages</li>
+        <li class="added">Zalgo text corruption on display name at stage 2+</li>
+        <li class="added">Bio field replacement with LORE_STATIC transmissions at stage 3</li>
+        <li class="added">Signal Integrity readout injected into profile page — tracks anomaly incident count</li>
+        <li class="added">PS2-style raycasting horror game "World -2" — Observer enemy, sanity system, Infection mechanic <span class="pn-tag arg">ARG</span></li>
+        <li class="added">Flip phone ARG decoder with lore-mapped codes and cassette CSS tokens</li>
+        <li class="lore">Seven users reported their profile avatar briefly displayed an image they had never selected. Unresolved.</li>
+      </ul>
+    </div>
+
+    <div class="pn-entry">
+      <div class="pn-version">v1.9.1 · 2024 <span>ADMIN &amp; BROADCAST</span></div>
+      <div class="pn-title">Mastercontrol Panel &amp; Broadcast Layer</div>
+      <ul class="pn-list">
+        <li class="added">Admin panel rebuilt as mastercontrol — AI assignment, ARG control, globe, chat, lore, site control <span class="pn-tag sys">sys</span></li>
+        <li class="added">Supabase schema expanded — broadcasts, ghuul sightings, AI assignments, gallery, messages</li>
+        <li class="added">Groq AI bot integration — dynamic in-chat lore responses per station context</li>
+        <li class="added">Anthropic API translation engine — DOM-wide with lore-term preservation</li>
+        <li class="added">Chapter image embedding via custom syntax in story chapter files</li>
+        <li class="added">WNCORE Radio front page fully connected to Siharu Archive as ARG entry point <span class="pn-tag arg">ARG</span></li>
+        <li class="fixed">Admin actions writing only to localStorage instead of Supabase — race condition in config loading <span class="pn-tag fix">fix</span></li>
+        <li class="fixed">syncGlobalTheme MutationObserver infinite loop on chapters.html <span class="pn-tag fix">fix</span></li>
+      </ul>
+    </div>
+
+    <div class="pn-entry anomaly major">
+      <div class="pn-version">v2.0.0 · 2025 <span>CURRENT BUILD</span></div>
+      <div class="pn-title">Full Engineering Rewrite</div>
+      <ul class="pn-list">
+        <li class="added">Complete frontend rebuild — vanilla HTML/CSS/JS, Vercel, Supabase, AI APIs <span class="pn-tag new">new</span></li>
+        <li class="added">Persona 5-style page transition engine — diagonal wipe, smooth easing, disabled in Minimal Mode <span class="pn-tag new">new</span></li>
+        <li class="added">Sortable station table columns — name, country, bitrate client-side sort</li>
+        <li class="added">For You recommendations — personalised picks derived from play history</li>
+        <li class="added">Search history panel with genre suggestion pills</li>
+        <li class="added">Mute toggle (M key) and mouse wheel volume on the player bar</li>
+        <li class="added">PWA support — service worker, offline cache, home screen install prompt</li>
+        <li class="added">Dual-path login — real Supabase auth or ARG horror path for lore-matching email patterns <span class="pn-tag arg">ARG</span></li>
+        <li class="fixed">api/icy.js missing from Vercel function config and routes — ICY metadata proxy now correctly deployed <span class="pn-tag fix">fix</span></li>
+        <li class="fixed">_applyThemePref applying class 'minimal' instead of 'minimal-mode' — profile theme preference now activates Minimal Mode correctly <span class="pn-tag fix">fix</span></li>
+        <li class="fixed">M3 low-bandwidth filter not persisting across new table renders — renderTable now re-applies active filter on every call <span class="pn-tag fix">fix</span></li>
+        <li class="changed">P5 transition easing reworked — 320ms IN / 280ms OUT, cubic-bezier(0.4,0,0.2,1), page enter changed from horizontal slide to vertical drift</li>
+        <li class="changed">P5 wipe and page enter animation suppressed when Minimal Mode is active</li>
+        <li class="lore">Transmission count at time of rewrite: 88,700. The number was not chosen intentionally.</li>
+        <li class="lore">This document is part of the archive. If you are reading this after the Blank Zone, treat all entries marked ARG as unverified field reports.</li>
+      </ul>
+    </div>
+
+    <div class="legal-p" style="margin-top:40px;font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text3);letter-spacing:1.5px;border-top:1px solid var(--border);padding-top:20px">
+      WNCORE SIGNAL ARCHIVE · LAST SYNC: <span id="pn-sync-ts">—</span> UTC · RECORD COUNT: 47 · INTEGRITY: NOMINAL<br>
+      <span style="color:rgba(200,71,42,0.4)">▒ Some entries in this log have been flagged for review. Entries marked ARG are unverified and may not reflect actual system events. ▒</span>
+    </div>
+    <script>
+      (function(){
+        var el = document.getElementById('pn-sync-ts');
+        if (!el) return;
+        var n = new Date();
+        el.textContent = n.getUTCFullYear() + '-' +
+          String(n.getUTCMonth()+1).padStart(2,'0') + '-' +
+          String(n.getUTCDate()).padStart(2,'0') + ' ' +
+          String(n.getUTCHours()).padStart(2,'0') + ':' +
+          String(n.getUTCMinutes()).padStart(2,'0');
+      })();
+    </script>
+  </div>
+
 </div>
 
 <script>

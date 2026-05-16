@@ -100,9 +100,9 @@
   }
 
   function _applyThemePref(theme) {
-    if (theme === 'dark')    { document.body.classList.add('dark');    document.body.classList.remove('light','minimal'); }
-    if (theme === 'light')   { document.body.classList.add('light');   document.body.classList.remove('dark','minimal'); }
-    if (theme === 'minimal') { document.body.classList.add('minimal'); }
+    if (theme === 'dark')    { document.body.classList.add('dark');         document.body.classList.remove('light','minimal-mode'); }
+    if (theme === 'light')   { document.body.classList.add('light');        document.body.classList.remove('dark','minimal-mode');  }
+    if (theme === 'minimal') { document.body.classList.add('minimal-mode'); document.body.classList.remove('dark','light'); }
   }
 
   // ── Apply profile pic to the nav button ──────────────────────────────────
@@ -513,6 +513,20 @@
 
   function _randomSeed() { return Math.random().toString(36).slice(2, 10).toUpperCase(); }
 
+  const _RND_ADJ  = ['Static','Null','Void','Deep','Dark','Cold','Lost','Pale','Iron','Echo','Rogue','Signal','Blank','Drift','Neon','Grey','Phantom','Stray','Broken','Silent'];
+  const _RND_NOUN = ['Wave','Node','Carrier','Relay','Listener','Frequency','Pulse','Signal','Shard','Ghost','Anomaly','Operator','Receiver','Vector','Station','Channel','Beacon','Drone','Archive','Witness'];
+  const _RND_NUM  = () => Math.floor(Math.random() * 99) + 1;
+
+  window._profRandomName = function() {
+    const inp = document.getElementById('prof-input-displayname');
+    if (!inp) return;
+    const adj  = _RND_ADJ[Math.floor(Math.random() * _RND_ADJ.length)];
+    const noun = _RND_NOUN[Math.floor(Math.random() * _RND_NOUN.length)];
+    const useNum = Math.random() > 0.5;
+    inp.value = useNum ? `${adj}${noun}${_RND_NUM()}` : `${adj}${noun}`;
+    inp.focus();
+  };
+
   window._profSaveAvatar = async function() {
     if (!_pendingAvatarUrl) { _setStatus('prof-avatar-status','Pick an avatar first.',true); return; }
     const btn = document.getElementById('prof-avatar-save-btn');
@@ -659,8 +673,12 @@
       </div>
       <div class="prof-field">
         <div class="prof-label">Display Name</div>
-        <input class="prof-input" id="prof-input-displayname" maxlength="32"
-          placeholder="Override your sign-in name…" value="${_esc(displayName)}">
+        <div style="display:flex;gap:8px;align-items:center">
+          <input class="prof-input" id="prof-input-displayname" maxlength="32"
+            placeholder="Override your sign-in name…" value="${_esc(displayName)}" style="flex:1;min-width:0">
+          <button class="prof-btn-ghost" onclick="_profRandomName()" title="Generate random name"
+            style="padding:7px 10px;font-size:0.85rem;flex-shrink:0;white-space:nowrap">🎲 Name</button>
+        </div>
       </div>
       <div class="prof-field">
         <div class="prof-label">Signal Callsign <span style="color:var(--text3);font-size:0.65rem">(3–12 chars · ARG handle)</span></div>
@@ -1072,10 +1090,28 @@
     color: var(--text2); border: 1px solid var(--border); position: relative;
   }
   .listener-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .listener-avatar.real { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(200,71,42,0.3); }
-  .listener-avatar.tainted { border-color: #8b3030; box-shadow: 0 0 0 1px rgba(139,48,48,0.4); }
-  .listener-avatar.ghost { border-color: #cc00ff; box-shadow: 0 0 0 1px rgba(204,0,255,0.3); animation: ghost-border 2s infinite; }
-  @keyframes ghost-border { 0%,100% { box-shadow: 0 0 0 1px rgba(204,0,255,0.3); } 50% { box-shadow: 0 0 0 2px rgba(204,0,255,0.6); } }
+  /* Fake users — plain border, clickable */
+  .listener-avatar.fake { border-color: var(--border); cursor: pointer; }
+  .listener-avatar.fake:hover { border-color: var(--text3); }
+  /* Real users — glowing node ring badge border */
+  .listener-avatar.real {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 2px rgba(200,71,42,0.25), 0 0 8px rgba(200,71,42,0.15);
+    animation: node-ring-pulse 3s ease-in-out infinite;
+  }
+  @keyframes node-ring-pulse {
+    0%,100% { box-shadow: 0 0 0 2px rgba(200,71,42,0.25), 0 0 8px rgba(200,71,42,0.15); }
+    50%      { box-shadow: 0 0 0 2px rgba(200,71,42,0.5),  0 0 14px rgba(200,71,42,0.3); }
+  }
+  .listener-avatar.tainted { border-color: #8b3030; box-shadow: 0 0 0 2px rgba(139,48,48,0.4); }
+  .listener-avatar.ghost { border-color: #cc00ff; box-shadow: 0 0 0 2px rgba(204,0,255,0.3); animation: ghost-border 2s infinite; }
+  @keyframes ghost-border { 0%,100% { box-shadow: 0 0 0 2px rgba(204,0,255,0.3); } 50% { box-shadow: 0 0 0 3px rgba(204,0,255,0.6); } }
+  /* Same ring on card-size avatar for real users */
+  .listener-card-avatar.real {
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,71,42,0.25), 0 0 16px rgba(200,71,42,0.2);
+    animation: node-ring-pulse 3s ease-in-out infinite;
+  }
 
   .listener-info { flex: 1; min-width: 0; }
   .listener-name {
@@ -1154,8 +1190,16 @@
     font-weight: 700; border: 2px solid var(--border); position: relative;
   }
   .listener-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .listener-card-avatar.real { border-color: var(--accent); }
-  .listener-card-avatar.ghost { border-color: #cc00ff; }
+  .listener-card-avatar.real {
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,71,42,0.25), 0 0 16px rgba(200,71,42,0.2);
+    animation: node-ring-pulse 3s ease-in-out infinite;
+  }
+  .listener-card-badge.node-badge { background: rgba(200,71,42,0.12); color: var(--accent); border-color: rgba(200,71,42,0.3); }
+  .listener-card-badge.fake-badge { background: rgba(255,255,255,0.04); color: var(--text3); border-color: var(--border); }
+  .listener-card-avatar.ghost { border: 3px solid #cc00ff; box-shadow: 0 0 0 3px rgba(204,0,255,0.3); animation: ghost-border 2s infinite; }
+  .listener-card-meta { margin: 8px 0; display: flex; flex-direction: column; gap: 4px; }
+  .listener-card-meta-row { font-size: 0.72rem; color: var(--text3); font-family: 'DM Mono', monospace; letter-spacing: 0.5px; }
   .listener-card-pixel-badge {
     width: 28px; height: 28px; border-radius: 4px; image-rendering: pixelated;
     position: absolute; bottom: -4px; right: -4px;
@@ -1238,11 +1282,15 @@
     'seren','quill','dusk','thane','ori','kael','wren','mars','nova','zenn',
     'pike','elio','tav','clio','dray','hex','omi','rael','siv','lyko',
     'vesper','dawn','cade','sloane','rift','pell','zer0','kai','wyre','ash',
+    'nyte','flux','crow','vale','iris','torn','grey','jade','volt','rune',
+    'opal','blaze','sine','fray','knot','lux','vane','cyr','zed','arc',
+    'moss','rain','flint','sage','bane','tore','lark','strix','olan','dex',
   ];
   const FAKE_SUFFIX = [
     '_09','_rx','_hz','__','_net','.wav','-lo','_off','_tx','_zero',
     '_fm','_core','_db','_mod','_sub','_lo','_signal','_wave','_null','_ghost',
-    '_relay','_node','_static','_freq','_band',
+    '_relay','_node','_static','_freq','_band','_88','_7','_xmit','_void','_deep',
+    '77','_ok','_err','.mp3','_hiss','_ping','_down','_lost','_seek','_drift',
   ];
   const FAKE_LOCATIONS = [
     'Tokyo, JP','London, UK','Berlin, DE','Seoul, KR','Lagos, NG',
@@ -1250,14 +1298,51 @@
     'Nairobi, KE','Manila, PH','Jakarta, ID','Warsaw, PL','Dhaka, BD',
     'São Paulo, BR','Dubai, UAE','Stockholm, SE','Athens, GR','Lisbon, PT',
     'Amsterdam, NL','Taipei, TW','Bogotá, CO','Kyoto, JP','Accra, GH',
+    'Mexico City, MX','Karachi, PK','Casablanca, MA','Tbilisi, GE','Reykjavik, IS',
+    'Helsinki, FI','Vienna, AT','Beirut, LB','Kuala Lumpur, MY','Dakar, SN',
+    'Santiago, CL','Ho Chi Minh, VN','Budapest, HU','Cape Town, ZA',
   ];
   const FAKE_STATIONS = [
     'NTS Radio','FIP','KEXP','Radio Nova','NHK World','SomaFM: Groove Salad',
     'Rinse FM','Red Light Radio','Worldwide FM','Radio Garden','dublab',
     'The Jazz Groove','Resonance FM','WFMU','Café de Paris Radio',
     'Noods Radio','The Lot Radio','Cashmere Radio','Radio Raheem','RBMA Radio',
+    'BBC World Service','Radio Paradise','SomaFM: Drone Zone','Nightwave Plaza',
+    'Radio Swiss Jazz','WCPE Classical','Frisky Radio','DI.FM: Chillout',
+    'WNYC 93.9','Triple J','France Inter','Jazz FM','Venice Classic Radio',
+    'Radio Eins','Smooth Jazz Florida','181.FM Soul','SomaFM: Lush',
   ];
-  const FAKE_DICEBEAR_STYLES = ['bottts','identicon','rings','shapes','thumbs','pixel-art-neutral'];
+  const FAKE_DICEBEAR_STYLES = ['bottts','identicon','rings','shapes','thumbs','pixel-art-neutral','lorelei-neutral','notionists-neutral'];
+
+  // Seed _onlineCount from Radio Browser clicks_last_hour — real live data, natural fluctuation
+  const _BASE_ONLINE = 2000 + Math.floor(Math.random() * 5000); // fallback if API fails
+  let _onlineCount   = _BASE_ONLINE;
+  window.__WNCORE_ONLINE_COUNT = _onlineCount;
+
+  // Fetch real clicks_last_hour on init and every 90s
+  async function _syncOnlineFromRadioBrowser() {
+    try {
+      const r = await fetch('https://all.api.radio-browser.info/json/stats');
+      const d = await r.json();
+      if (d && d.clicks_last_hour) {
+        _onlineCount = Math.max(2000, Math.min(7000, parseInt(d.clicks_last_hour, 10)));
+        window.__WNCORE_ONLINE_COUNT = _onlineCount;
+        const countEl = document.getElementById('listeners-panel-count');
+        if (countEl) countEl.textContent = _onlineCount.toLocaleString() + ' online';
+      }
+    } catch {}
+  }
+  _syncOnlineFromRadioBrowser();
+  setInterval(_syncOnlineFromRadioBrowser, 90000);
+
+  // Small drift between API refreshes so the number feels live
+  setInterval(() => {
+    _onlineCount += Math.floor((Math.random() - 0.48) * 60);
+    _onlineCount = Math.max(2000, Math.min(7000, _onlineCount));
+    window.__WNCORE_ONLINE_COUNT = _onlineCount;
+    const countEl = document.getElementById('listeners-panel-count');
+    if (countEl) countEl.textContent = _onlineCount.toLocaleString() + ' online';
+  }, 8000);
 
   function _fakeName() {
     const first = FAKE_FIRST[Math.floor(Math.random() * FAKE_FIRST.length)];
@@ -1286,6 +1371,19 @@
   let _fetchedOnce = false;
   let _selectedCardIdx = null;
 
+  function _fakeNodeId() {
+    const prefix = ['NODE','RELAY','SIGNAL','CARRIER','FREQ','VOID','STATIC','GHOST'][Math.floor(Math.random()*8)];
+    const num = String(Math.floor(Math.random()*9000)+1000);
+    return `${prefix}_${num}`;
+  }
+  function _fakeJoinDate() {
+    // Random date between 2021 and now
+    const start = new Date('2021-01-01').getTime();
+    const end   = Date.now();
+    const d = new Date(start + Math.random() * (end - start));
+    return d.toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
   function _buildFakePool(count) {
     const pool = [];
     for (let i = 0; i < count; i++) {
@@ -1295,6 +1393,8 @@
         avatar_url:   _fakeAvatarUrl(),
         location:     _fakeLocation(),
         station:      _fakeStation(),
+        node_id:      _fakeNodeId(),
+        joined:       _fakeJoinDate(),
         glitch_delay: (Math.random() * 8).toFixed(1) + 's',
       });
     }
@@ -1312,7 +1412,7 @@
   }
 
   function _buildDisplayList() {
-    const MAX  = 30;
+    const MAX  = 50;
     const real = _realUsers.map(u => ({ ...u, fake: false }));
     const fakeNeeded = Math.max(0, Math.min(MAX - real.length, _fakePool.length));
     const shuffled = [..._fakePool].sort(() => Math.random() - 0.5).slice(0, fakeNeeded);
@@ -1335,10 +1435,9 @@
     const el = document.getElementById('listeners-list');
     if (!el) return;
 
-    const liveEl  = document.getElementById('live-count');
     const countEl = document.getElementById('listeners-panel-count');
-    if (countEl && liveEl) {
-      countEl.textContent = liveEl.textContent.replace('live', 'online');
+    if (countEl) {
+      countEl.textContent = _onlineCount.toLocaleString() + ' online';
     }
 
     // WRONGNESS integration — random spike on render
@@ -1364,6 +1463,8 @@
         if (cl >= 4) avatarClass += ' ghost';
         else if (tainted) avatarClass += ' real tainted';
         else avatarClass += ' real';
+      } else {
+        avatarClass += ' fake';
       }
 
       const avatarInner = u.avatar_url
@@ -1392,9 +1493,9 @@
         ? `<img class="listener-pixel-badge" src="${_esc(badgeUrl)}" alt="badge" width="18" height="18">`
         : '';
 
-      // Click handler for real users
-      const rowClick = isReal ? ` onclick="window._openListenerCard(${idx})"` : '';
-      const rowCursor = isReal ? 'cursor:pointer;' : 'cursor:default;';
+      // All rows clickable — fake users show generated profile card
+      const rowClick = ` onclick="window._openListenerCard(${idx})"`;
+      const rowCursor = 'cursor:pointer;';
 
       return `<div class="listener-row" style="${rowCursor}" ${rowClick}>
   <div style="position:relative;flex-shrink:0">
@@ -1520,45 +1621,71 @@
   window._openListenerCard = function(idx) {
     if (idx < 0 || idx >= _displayList.length) return;
     const u = _displayList[idx];
-    if (u.fake) return; // Only real users have cards
-    
+
     _selectedCardIdx = idx;
     const overlay = document.getElementById('listener-card-overlay');
-    const card = document.getElementById('listener-card');
+    const card    = document.getElementById('listener-card');
     if (!overlay || !card) return;
 
-    const cl = u.clearance_level || 0;
-    const avatarEl = document.getElementById('listener-card-avatar');
-    const nameEl = document.getElementById('listener-card-name');
-    const nodeIdEl = document.getElementById('listener-card-nodeid');
-    const badgesEl = document.getElementById('listener-card-badges');
+    const isReal = !u.fake;
+    const cl     = isReal ? (u.clearance_level || 0) : 0;
+
+    const avatarEl  = document.getElementById('listener-card-avatar');
+    const nameEl    = document.getElementById('listener-card-name');
+    const nodeIdEl  = document.getElementById('listener-card-nodeid');
+    const badgesEl  = document.getElementById('listener-card-badges');
     const stationEl = document.getElementById('listener-card-station');
-    const initialEl = document.getElementById('listener-card-initial');
 
     const initial = (u.display_name || '?')[0].toUpperCase();
-    const avatarClass = cl >= 4 ? 'listener-card-avatar ghost' : 'listener-card-avatar real';
-    
-    avatarEl.className = avatarClass;
+
+    // Avatar — real users get glowing node-ring border
+    if (isReal) {
+      avatarEl.className = cl >= 4 ? 'listener-card-avatar ghost' : 'listener-card-avatar real';
+    } else {
+      avatarEl.className = 'listener-card-avatar';
+    }
+
     if (u.avatar_url) {
-      avatarEl.innerHTML = `<img src="${_esc(u.avatar_url)}" alt="" onerror="this.style.display='none'"><span id="listener-card-initial" style="display:none">${initial}</span>`;
-      if (u.badge_url) {
+      avatarEl.innerHTML = `<img src="${_esc(u.avatar_url)}" alt="" onerror="this.style.display='none'"><span style="display:none">${initial}</span>`;
+      if (isReal && u.badge_url) {
         avatarEl.innerHTML += `<img class="listener-card-pixel-badge" src="${_esc(u.badge_url)}" alt="badge" width="28" height="28">`;
       }
     } else {
-      avatarEl.innerHTML = `<span id="listener-card-initial">${initial}</span>`;
+      avatarEl.innerHTML = `<span>${initial}</span>`;
     }
 
-    nameEl.textContent = u.display_name || '—';
-    nodeIdEl.textContent = u.node_id || 'verified node';
+    nameEl.textContent    = u.display_name || '—';
+    nodeIdEl.textContent  = u.node_id || (isReal ? 'verified node' : _fakeNodeId());
     stationEl.textContent = u.station || _fakeStation();
 
-    // Build badges
-    let badgeHtml = '';
-    if (cl > 0) {
-      badgeHtml += `<span class="listener-card-badge ${_credBadgeClass(cl)}">${_credLabel(cl)}</span>`;
+    // Location + joined row — shown for all users
+    let metaHtml = '';
+    if (u.location) {
+      metaHtml += `<div class="listener-card-meta-row">📡 ${_esc(u.location)}</div>`;
     }
-    if (u.tainted && cl < 1) {
-      badgeHtml += `<span class="listener-card-badge">⚠ RELAY</span>`;
+    const joinedStr = u.joined || (isReal && u.created_at ? u.created_at.slice(0,10) : null);
+    if (joinedStr) {
+      metaHtml += `<div class="listener-card-meta-row">⬡ Joined ${_esc(joinedStr)}</div>`;
+    }
+
+    // Inject meta block (create if needed)
+    let metaEl = document.getElementById('listener-card-meta');
+    if (!metaEl) {
+      metaEl = document.createElement('div');
+      metaEl.id = 'listener-card-meta';
+      metaEl.className = 'listener-card-meta';
+      stationEl.parentElement.after(metaEl);
+    }
+    metaEl.innerHTML = metaHtml;
+
+    // Badges
+    let badgeHtml = '';
+    if (isReal) {
+      badgeHtml += `<span class="listener-card-badge node-badge">◈ NODE VERIFIED</span>`;
+      if (cl > 0) badgeHtml += `<span class="listener-card-badge ${_credBadgeClass(cl)}">${_credLabel(cl)}</span>`;
+      if (u.tainted && cl < 1) badgeHtml += `<span class="listener-card-badge">⚠ RELAY</span>`;
+    } else {
+      badgeHtml += `<span class="listener-card-badge fake-badge">◌ UNVERIFIED NODE</span>`;
     }
     badgesEl.innerHTML = badgeHtml;
 
@@ -1591,7 +1718,7 @@
 
       if (!_fetchedOnce) {
         _fetchedOnce = true;
-        _fakePool    = _buildFakePool(28);
+        _fakePool    = _buildFakePool(80);
         _realUsers   = await _fetchRealUsers();
         _displayList = _buildDisplayList();
         _startRotation();

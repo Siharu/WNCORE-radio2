@@ -584,6 +584,19 @@ html, body {
   overflow-x: hidden;
 }
 
+/* ─── iOS Safari scroll fix — prevents body scroll lock after player bar appears ── */
+html {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+.page-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+/* Prevent iOS momentum scroll from getting stuck when fixed elements added/removed */
+body:not(.mobile-menu-open) {
+  -webkit-overflow-scrolling: touch;
+}
+
 
 /* Fix terminal overlays on mobile */
 

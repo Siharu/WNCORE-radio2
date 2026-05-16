@@ -73,8 +73,16 @@ body.minimal-mode header{background:rgba(250,250,250,0.98)!important;backdrop-fi
 body.minimal-mode .player-bar{background:rgba(255,255,255,0.98)!important;border-top:1px solid var(--border)!important}
 body.minimal-mode .featured-card:hover,body.minimal-mode .rec-card:hover{transform:none!important;box-shadow:none!important}
 body.minimal-mode.dark-mode{--bg:#111;--surface:#1a1a1a;--surface2:#222;--text:#eee;--text2:#aaa;--text3:#666}
+/* Disable P5 wipe overlay and page enter animation in minimal mode */
+body.minimal-mode #p5-wipe{display:none!important}
+body.minimal-mode .page.p5-enter{animation:none!important;opacity:1!important;transform:none!important}
 
 /* ── BODY ── */
+html {
+  overflow-y: scroll; /* Force iOS Safari to use a stable scroll container — prevents scroll-lock when fixed bars appear/disappear */
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
+}
 body{
   font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);
   overflow-x:hidden;padding-top:var(--header-h);padding-bottom:calc(var(--player-h) + 56px);
@@ -3137,53 +3145,54 @@ html.dark .share-option-btn:hover {
   height: 120%;
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
   transform: translateX(-115%);
-  will-change: transform;
+  will-change: transform, opacity;
   transition: none;
 }
 
 #p5-wipe-a {
   left: -5%;
   background: #c8472a;
+  opacity: 0.92;
 }
 
 #p5-wipe-b {
-  left: 28%;
-  background: #1a1814;
-  opacity: 0.88;
+  left: 26%;
+  background: #0e0d0b;
+  opacity: 0.72;
 }
 
-/* IN: sweep from left to center */
+/* IN: sweep from left — smooth deceleration into position */
 #p5-wipe.in #p5-wipe-a {
-  transition: transform 220ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(0%);
 }
 
 #p5-wipe.in #p5-wipe-b {
-  transition: transform 230ms cubic-bezier(0.86, 0, 0.07, 1);
-  transition-delay: 20ms;
+  transition: transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 30ms;
   transform: translateX(0%);
 }
 
-/* OUT: sweep right off screen */
+/* OUT: sweep right — gentle ease-in so it doesn't snap */
 #p5-wipe.out #p5-wipe-a {
-  transition: transform 200ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition: transform 280ms cubic-bezier(0.4, 0, 0.6, 1);
   transform: translateX(115%);
 }
 
 #p5-wipe.out #p5-wipe-b {
-  transition: transform 210ms cubic-bezier(0.86, 0, 0.07, 1);
-  transition-delay: 15ms;
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.6, 1);
+  transition-delay: 18ms;
   transform: translateX(115%);
 }
 
 /* ── PAGE ENTER ANIMATION ──────────────────────────────────────────────── */
 .page.p5-enter {
-  animation: p5PageEnter 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+  animation: p5PageEnter 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
 }
 
 @keyframes p5PageEnter {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0);    }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
 /* ── GENRE PILL — click stamp ripple ──────────────────────────────────── */
@@ -3204,12 +3213,12 @@ html.dark .share-option-btn:hover {
 }
 
 .genre-btn.p5-stamp::after {
-  animation: p5Stamp 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: p5Stamp 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes p5Stamp {
-  0%   { opacity: 0.3;  transform: scale(0.5);  }
-  60%  { opacity: 0.1;  transform: scale(1.04); }
+  0%   { opacity: 0.25; transform: scale(0.5);  }
+  55%  { opacity: 0.08; transform: scale(1.04); }
   100% { opacity: 0;    transform: scale(1.04); }
 }
 
@@ -4169,53 +4178,54 @@ body:not(.dark-mode) header.scrolled {
   height: 120%;
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
   transform: translateX(-115%);
-  will-change: transform;
+  will-change: transform, opacity;
   transition: none;
 }
 
 #p5-wipe-a {
   left: -5%;
   background: #c8472a;
+  opacity: 0.92;
 }
 
 #p5-wipe-b {
-  left: 28%;
-  background: #1a1814;
-  opacity: 0.88;
+  left: 26%;
+  background: #0e0d0b;
+  opacity: 0.72;
 }
 
-/* IN: sweep from left to center */
+/* IN: sweep from left — smooth deceleration into position */
 #p5-wipe.in #p5-wipe-a {
-  transition: transform 220ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition: transform 320ms cubic-bezier(0.4, 0, 0.2, 1);
   transform: translateX(0%);
 }
 
 #p5-wipe.in #p5-wipe-b {
-  transition: transform 230ms cubic-bezier(0.86, 0, 0.07, 1);
-  transition-delay: 20ms;
+  transition: transform 360ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition-delay: 30ms;
   transform: translateX(0%);
 }
 
-/* OUT: sweep right off screen */
+/* OUT: sweep right — gentle ease-in so it doesn't snap */
 #p5-wipe.out #p5-wipe-a {
-  transition: transform 200ms cubic-bezier(0.86, 0, 0.07, 1);
+  transition: transform 280ms cubic-bezier(0.4, 0, 0.6, 1);
   transform: translateX(115%);
 }
 
 #p5-wipe.out #p5-wipe-b {
-  transition: transform 210ms cubic-bezier(0.86, 0, 0.07, 1);
-  transition-delay: 15ms;
+  transition: transform 260ms cubic-bezier(0.4, 0, 0.6, 1);
+  transition-delay: 18ms;
   transform: translateX(115%);
 }
 
 /* ── PAGE ENTER ANIMATION ──────────────────────────────────────────────── */
 .page.p5-enter {
-  animation: p5PageEnter 200ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+  animation: p5PageEnter 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
 }
 
 @keyframes p5PageEnter {
-  from { opacity: 0; transform: translateX(16px); }
-  to   { opacity: 1; transform: translateX(0);    }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
 }
 
 /* ── GENRE PILL — click stamp ripple ──────────────────────────────────── */
@@ -4236,12 +4246,12 @@ body:not(.dark-mode) header.scrolled {
 }
 
 .genre-btn.p5-stamp::after {
-  animation: p5Stamp 300ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: p5Stamp 380ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes p5Stamp {
-  0%   { opacity: 0.3;  transform: scale(0.5);  }
-  60%  { opacity: 0.1;  transform: scale(1.04); }
+  0%   { opacity: 0.25; transform: scale(0.5);  }
+  55%  { opacity: 0.08; transform: scale(1.04); }
   100% { opacity: 0;    transform: scale(1.04); }
 }
 

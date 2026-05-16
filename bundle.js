@@ -511,6 +511,8 @@ function renderTable(stations, tbodyId) {
     const tags = (s.tags||'').split(',').slice(0,2).filter(t=>t.trim()).map(t=>`<span class="st-tag">${escHtml(t.trim())}</span>`).join('');
     const emoji = getCountryEmoji(s.countrycode);
     const tr = document.createElement('tr');
+    tr.className = 'station-row';
+    tr.dataset.bitrate = s.bitrate || 0;
     tr.innerHTML = `
       <td class="st-num">${i+1}</td>
       <td class="st-eq"><div class="st-eq-bars" id="eq-${i}-${tbodyId}"><span></span><span></span><span></span></div></td>
@@ -521,6 +523,14 @@ function renderTable(stations, tbodyId) {
     tr.onclick = () => playStation(s.url_resolved, s.name, s.country||'Unknown', emoji);
     tbody.appendChild(tr);
   });
+  // Re-apply low-bandwidth filter if active (M3)
+  if (window._wncLowBwMode) {
+    const MAX_BR = 96;
+    tbody.querySelectorAll('tr.station-row[data-bitrate]').forEach(row => {
+      const br = parseInt(row.dataset.bitrate) || 0;
+      row.style.display = (br > 0 && br > MAX_BR) ? 'none' : '';
+    });
+  }
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────
@@ -803,8 +813,8 @@ function toggleSleepTimer(btn) {
 document.getElementById('vol-slider').addEventListener('input', e => { audio.volume = e.target.value; });
 
 // ─── MOUSE WHEEL VOLUME CONTROL ──────────────────────────────────────────
-// Allow scrolling over the player bar to adjust volume
-document.querySelector('.pb-vol').addEventListener('wheel', e => {
+// Scroll anywhere on the player bar to adjust volume
+document.querySelector('.player-bar').addEventListener('wheel', e => {
   e.preventDefault();
   const slider = document.getElementById('vol-slider');
   if (!slider) return;
@@ -952,6 +962,18 @@ async function doSearch(q) {
 
 // ─── PAGE SWITCHING ───────────────────────────────────────────────────────
 function showPage(id, linkEl) {
+  // Always reset any scroll lock left by mobile menu or listeners panel
+  document.body.style.overflow = '';
+  // Close mobile menu if open
+  if (mobileMenuOpen) {
+    mobileMenuOpen = false;
+    const nav = document.getElementById('mobile-nav');
+    const backdrop = document.getElementById('mobile-nav-backdrop');
+    const btn = document.getElementById('mobile-menu-btn');
+    if (nav) nav.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+  }
   // Load page-specific data
   if(id==='favorites') loadFavoritesPage();
   if(id==='profile') loadProfilePage();
@@ -960,13 +982,19 @@ function showPage(id, linkEl) {
   document.getElementById('page-'+id).classList.add('active');
   document.querySelectorAll('nav a, .mobile-nav a').forEach(a=>a.classList.remove('active'));
   if(linkEl) linkEl.classList.add('active');
-  if(!already) window.scrollTo({top:0,behavior:'instant'});
+  // Scroll to top — use both methods for iOS Safari compatibility
+  window.scrollTo({top:0,behavior:'instant'});
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop = 0;
   if(id==='charts') loadChartsPage();
   if(id==='podcasts') loadPodcastsPage();
   if(id==='genres') loadGenrePage();
   if(id==='anime') loadAnimePage();
   if(id==='about') initAboutEerie();
   if(id==='livemusic') loadLiveMusicPage();
+  // Re-trigger constellation resize after home page becomes visible
+  // (canvas gets H=0 when section was hidden, needs recalc after display:block)
+  if(id==='home') setTimeout(function(){ if(typeof window._constellationResize==='function') window._constellationResize(); }, 60);
   updateMiniPlayerVisibility();
 }
 
@@ -1907,29 +1935,16 @@ setInterval(()=>{
 setInterval(()=>{const el=document.getElementById('live-count');if(el)el.textContent=`${(12841+Math.floor(Math.random()*40)-20).toLocaleString()} live`;},7000);
 // Real listener count from Radio Browser stats API
 (async function fetchRealListenerCount(){
-  try {
-    const r = await fetch('https://all.api.radio-browser.info/json/stats');
-    const d = await r.json();
-    if (d && d.clicks_last_hour) {
-      const count = parseInt(d.clicks_last_hour, 10);
-      const fmt = count >= 1000 ? Math.round(count/1000)+'K' : count.toString();
-      const el = document.getElementById('listener-count');
-      if (el) el.textContent = fmt;
-    }
-  } catch(e) {}
-  // Gentle drift every 90s
-  setInterval(async function(){
-    try {
-      const r = await fetch('https://all.api.radio-browser.info/json/stats');
-      const d = await r.json();
-      if (d && d.clicks_last_hour) {
-        const count = parseInt(d.clicks_last_hour, 10);
-        const fmt = count >= 1000 ? Math.round(count/1000)+'K' : count.toString();
-        const el = document.getElementById('listener-count');
-        if (el) el.textContent = fmt;
-      }
-    } catch(e) {}
-  }, 90000);
+  // Sync globe stat with _onlineCount (the 2K–7K panel counter) for consistency
+  function _syncGlobeListenerCount() {
+    const el = document.getElementById('listener-count');
+    if (!el) return;
+    const count = typeof _onlineCount !== 'undefined' ? _onlineCount
+                : (window.__WNCORE_ONLINE_COUNT || (2000 + Math.floor(Math.random() * 5000)));
+    el.textContent = count >= 1000 ? (count / 1000).toFixed(1).replace('.0','') + 'K' : count.toString();
+  }
+  _syncGlobeListenerCount();
+  setInterval(_syncGlobeListenerCount, 8000);
 })();
 
 // ─── VEO VIDEO AMBIENT HELPERS ────────────────────────────────────────────
@@ -2596,6 +2611,7 @@ const KB_SHORTCUTS = [
   { key: 'K',       desc: 'Play / Pause' },
   { key: 'N',       desc: 'Next station' },
   { key: 'P',       desc: 'Previous station' },
+  { key: '↑ / ↓',  desc: 'Volume up / down' },
   { key: 'F',       desc: 'Favourite current station' },
   { key: '/',       desc: 'Open search' },
   { key: 'Ctrl K',  desc: 'Open search (alt)' },
@@ -2674,6 +2690,20 @@ document.addEventListener('keydown', e => {
   if (k === '/') {
     e.preventDefault();
     if (typeof openSearch === 'function') openSearch();
+    return;
+  }
+  // Arrow up/down → volume ±5%
+  if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    const slider = document.getElementById('vol-slider');
+    const au = document.getElementById('audio');
+    if (!slider || !au) return;
+    e.preventDefault();
+    const step = 0.05;
+    let v = parseFloat(slider.value) + (e.key === 'ArrowUp' ? step : -step);
+    v = Math.min(1, Math.max(0, v));
+    slider.value = v;
+    au.volume = v;
+    try { localStorage.setItem('wncore-vol', v); } catch {}
     return;
   }
 });
@@ -7007,26 +7037,8 @@ function enhanceAdmin() {
 
 // ─── KEYBOARD SHORTCUTS DISPLAY ──────────────────────────────────────────
 function showKeyboardHelp() {
-  const existing = document.getElementById('kb-help-modal');
-  if(existing) { existing.classList.toggle('open'); return; }
-  
-  const modal = document.createElement('div');
-  modal.id = 'kb-help-modal';
-  modal.className = 'kb-help-modal open';
-  modal.innerHTML = `
-    <div class="kb-help-box">
-      <div class="kb-help-title">Keyboard Shortcuts</div>
-      <div class="kb-shortcuts">
-        <div class="kb-row"><span class="kb-key">Ctrl+K</span><span>Search stations</span></div>
-        <div class="kb-row"><span class="kb-key">Space</span><span>Play / Pause</span></div>
-        <div class="kb-row"><span class="kb-key">Esc</span><span>Close modal</span></div>
-        <div class="kb-row"><span class="kb-key">Ctrl+B</span><span>Admin panel</span></div>
-      </div>
-      <button class="kb-help-close" onclick="document.getElementById('kb-help-modal').classList.remove('open')">Close</button>
-    </div>
-  `;
-  modal.addEventListener('click', e => { if(e.target === modal) modal.classList.remove('open'); });
-  document.body.appendChild(modal);
+  // Delegate to the canonical kb-modal (buildKbModal / openKbModal above)
+  if (typeof openKbModal === 'function') openKbModal();
 }
 
 // Space bar to play/pause
@@ -7123,6 +7135,11 @@ document.addEventListener('DOMContentLoaded', () => {
   audio.addEventListener('pause', () => setMS(false));
   audio.addEventListener('ended', () => setMS(false));
 
+  // Tell the OS this is a live stream — removes the broken seek bar on desktop
+  try {
+    navigator.mediaSession.setPositionState({ duration: Infinity, playbackRate: 1, position: 0 });
+  } catch(e) {}
+
   // Intercept action handlers
   try {
     navigator.mediaSession.setActionHandler('play',  () => { audio.play().catch(() => {}); });
@@ -7147,14 +7164,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   } catch(e) {}
 
-  // [NEUTRALIZED: session wrapper — handled by unified hook in bundle.js]
-  // Feature: updateSession
-
-  // iOS Safari: play a tiny silent buffer to keep audio context alive
-  function keepAudioAlive() {
-    if (!audio.paused) return;
-    // do nothing if paused intentionally
-  }
+  // iOS silent primer handled by initIOSSilentPrimer() below (M1)
+  // visibilitychange → resume handled by initAutoReconnectOnReturn() (M4)
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden && !audio.paused) {
       audio.play().catch(() => {});
@@ -7230,6 +7241,298 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => banner.remove(), 400);
       }
     }, 7000);
+  });
+})();
+
+
+// ─── M1. iOS SILENT AUDIO PRIMER ─────────────────────────────────────────────
+// iOS Safari kills the audio context if it was never unlocked by a user gesture
+// before screen lock. Fix: on first tap anywhere, play a 0.001s silent buffer
+// through the same AudioContext. This "unlocks" it so background play survives
+// lock screen. Android doesn't need this but it's harmless there.
+(function initIOSSilentPrimer() {
+  const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  if (!isIOS) return;
+  if (sessionStorage.getItem('wncore-ios-primed')) return;
+
+  let primed = false;
+
+  function prime() {
+    if (primed) return;
+    primed = true;
+    sessionStorage.setItem('wncore-ios-primed', '1');
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const buf = ctx.createBuffer(1, 1, 22050);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+      // Keep context alive — store reference so it doesn't GC
+      window._wncIOSCtx = ctx;
+    } catch(e) {}
+    document.removeEventListener('touchstart', prime, true);
+    document.removeEventListener('touchend',   prime, true);
+  }
+
+  document.addEventListener('touchstart', prime, { capture: true, passive: true });
+  document.addEventListener('touchend',   prime, { capture: true, passive: true });
+})();
+
+
+// ─── M2. AUTO-RETRY ON STALL ─────────────────────────────────────────────────
+// On mobile, streams stall far more often than on desktop (cell signal drops,
+// app switching, etc). "stalled" event fires → wait 8s → reload src to force
+// reconnect. If still stalled after reload, show retry button. Clears itself
+// on successful "playing" event so it never interrupts a healthy stream.
+(function initStallAutoRetry() {
+  const audio = document.getElementById('audio');
+  if (!audio) return;
+
+  let _stallTimer   = null;
+  let _stallCount   = 0;
+  const MAX_AUTO    = 3;     // auto-retry up to 3 times before giving up
+  const STALL_WAIT  = 8000;  // ms before first reload attempt
+
+  function clearStallTimer() {
+    if (_stallTimer) { clearTimeout(_stallTimer); _stallTimer = null; }
+  }
+
+  function attemptReload() {
+    const station = window.currentStation;
+    if (!station || !station.url) return;
+    if (!window.isPlaying) return; // user paused intentionally — don't retry
+
+    _stallCount++;
+
+    if (_stallCount <= MAX_AUTO) {
+      // Silent reload — swap src to force reconnect
+      if (typeof window.updateStatus === 'function') window.updateStatus('RECONNECTING…');
+      const np = document.getElementById('np-track');
+      if (np) np.textContent = `— reconnecting (${_stallCount}/${MAX_AUTO}) —`;
+
+      const vol = audio.volume;
+      audio.src = station.url;
+      audio.volume = vol;
+      audio.load();
+      audio.play().catch(() => {});
+
+      // Schedule next attempt if still stalled
+      _stallTimer = setTimeout(attemptReload, STALL_WAIT + 2000);
+    } else {
+      // Exhausted auto retries — surface manual retry to user
+      _stallCount = 0;
+      if (typeof window.updateStatus === 'function') window.updateStatus('STREAM LOST');
+      const np   = document.getElementById('np-track');
+      const meta = document.getElementById('np-meta');
+      if (np) np.textContent = '— signal lost —';
+      if (meta && typeof window.playStation === 'function') {
+        meta.innerHTML = 'Stream lost &nbsp;<span id="wncore-stall-retry" style="cursor:pointer;color:var(--accent);font-weight:600;border:1px solid var(--accent);border-radius:4px;padding:1px 7px;font-size:0.82em;">&#8635; Retry</span>';
+        const btn = document.getElementById('wncore-stall-retry');
+        if (btn) btn.addEventListener('click', () => {
+          _stallCount = 0;
+          window.playStation(station.url, station.name, station.meta, station.emoji);
+        }, { once: true });
+      }
+    }
+  }
+
+  audio.addEventListener('stalled', () => {
+    if (!window.isPlaying) return;
+    clearStallTimer();
+    _stallTimer = setTimeout(attemptReload, STALL_WAIT);
+  });
+
+  audio.addEventListener('waiting', () => {
+    // "waiting" fires constantly during normal buffering — only arm timer
+    // if we haven't already started one from a stalled event
+    if (!window.isPlaying || _stallTimer) return;
+    _stallTimer = setTimeout(attemptReload, STALL_WAIT + 4000);
+  });
+
+  // Any successful play clears everything
+  audio.addEventListener('playing', () => {
+    clearStallTimer();
+    _stallCount = 0;
+  });
+
+  // User manually changed station — reset
+  const origPlay = window.playStation;
+  if (typeof origPlay === 'function') {
+    window.playStation = function() {
+      clearStallTimer();
+      _stallCount = 0;
+      return origPlay.apply(this, arguments);
+    };
+  }
+})();
+
+
+// ─── M3. NETWORK-AWARE STREAM QUALITY ────────────────────────────────────────
+// Android Chrome exposes navigator.connection.effectiveType ('2g','3g','4g','wifi').
+// On slow connections, auto-enable a "Low Bandwidth Mode" that:
+//   1. Filters station list to ≤96kbps entries (less buffering, fewer stalls)
+//   2. Shows a dismissable banner so the user knows why the list is shorter
+//   3. Re-evaluates on connection change events
+// iOS doesn't expose this API — gracefully skipped.
+(function initNetworkAwareQuality() {
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!conn) return; // iOS / unsupported — skip silently
+
+  const LOW_BW_TYPES  = new Set(['slow-2g', '2g', '3g']);
+  const MAX_BITRATE   = 96; // kbps threshold for low-bandwidth mode
+  const STORAGE_KEY   = 'wncore-lowbw-dismissed';
+
+  let lowBwActive = false;
+  let bannerEl    = null;
+
+  // ── Banner ──────────────────────────────────────────────────────────────────
+  function showLowBwBanner() {
+    if (bannerEl || sessionStorage.getItem(STORAGE_KEY)) return;
+
+    const s = document.createElement('style');
+    s.textContent = `
+      #wnc-lowbw-banner {
+        position: fixed; bottom: calc(var(--player-h, 76px) + 56px + 10px); left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #1a1a1c; border: 1px solid var(--accent, #c8472a);
+        color: #e0ddd8; border-radius: 8px; padding: 10px 14px;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 0.73rem; font-family: inherit; z-index: 9999;
+        max-width: calc(100vw - 32px); box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+      }
+      #wnc-lowbw-banner.show {
+        opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all;
+      }
+      #wnc-lowbw-icon { font-size: 1.1rem; flex-shrink: 0; }
+      #wnc-lowbw-text strong { display: block; color: #fff; margin-bottom: 2px; }
+      #wnc-lowbw-close {
+        background: none; border: none; color: #888; cursor: pointer;
+        font-size: 1rem; padding: 2px 4px; flex-shrink: 0; line-height: 1;
+      }
+    `;
+    document.head.appendChild(s);
+
+    bannerEl = document.createElement('div');
+    bannerEl.id = 'wnc-lowbw-banner';
+    bannerEl.innerHTML = `
+      <span id="wnc-lowbw-icon">📶</span>
+      <div id="wnc-lowbw-text">
+        <strong>Low Bandwidth Mode</strong>
+        Showing stations ≤${MAX_BITRATE}kbps to reduce buffering.
+      </div>
+      <button id="wnc-lowbw-close" aria-label="Dismiss">✕</button>`;
+    document.body.appendChild(bannerEl);
+    requestAnimationFrame(() => bannerEl.classList.add('show'));
+
+    document.getElementById('wnc-lowbw-close').onclick = () => {
+      bannerEl.classList.remove('show');
+      sessionStorage.setItem(STORAGE_KEY, '1');
+      setTimeout(() => { if (bannerEl) { bannerEl.remove(); bannerEl = null; } }, 400);
+    };
+    setTimeout(() => {
+      if (bannerEl) { bannerEl.classList.remove('show'); setTimeout(() => { if (bannerEl) { bannerEl.remove(); bannerEl = null; } }, 400); }
+    }, 9000);
+  }
+
+  function hideLowBwBanner() {
+    if (!bannerEl) return;
+    bannerEl.classList.remove('show');
+    setTimeout(() => { if (bannerEl) { bannerEl.remove(); bannerEl = null; } }, 400);
+  }
+
+  // ── Station table filter ─────────────────────────────────────────────────────
+  function applyLowBwFilter() {
+    // Patch the rendered station rows — hide rows whose bitrate exceeds threshold
+    document.querySelectorAll('.station-row[data-bitrate]').forEach(row => {
+      const br = parseInt(row.dataset.bitrate) || 0;
+      row.style.display = (br > 0 && br > MAX_BITRATE) ? 'none' : '';
+    });
+    // Also patch future renders via a global flag playStation picks up
+    window._wncLowBwMode = true;
+  }
+
+  function removeLowBwFilter() {
+    document.querySelectorAll('.station-row[data-bitrate]').forEach(row => {
+      row.style.display = '';
+    });
+    window._wncLowBwMode = false;
+  }
+
+  // ── Evaluate ─────────────────────────────────────────────────────────────────
+  function evaluate() {
+    const type = conn.effectiveType || '';
+    const isLow = LOW_BW_TYPES.has(type);
+
+    if (isLow && !lowBwActive) {
+      lowBwActive = true;
+      applyLowBwFilter();
+      showLowBwBanner();
+    } else if (!isLow && lowBwActive) {
+      lowBwActive = false;
+      removeLowBwFilter();
+      hideLowBwBanner();
+      showToast('Connection improved — all stations available', 'success');
+    }
+  }
+
+  conn.addEventListener('change', evaluate);
+  // Initial check after DOM settles
+  setTimeout(evaluate, 1500);
+})();
+
+
+// ─── M4. AUTO-RECONNECT ON RETURN ────────────────────────────────────────────
+// When a mobile user comes back to the tab/app after a long absence (e.g. phone
+// was in pocket, OS killed the stream), silently attempt to resume the last
+// station. Only fires if: (a) audio is paused, (b) a station was playing before
+// the user left, (c) at least 60s have elapsed since they left.
+// Shows a non-intrusive toast — never autoplays without prior user intent.
+(function initAutoReconnectOnReturn() {
+  const audio = document.getElementById('audio');
+  if (!audio) return;
+
+  let _hiddenAt      = null;   // timestamp when tab went hidden
+  let _wasPlaying    = false;  // were we playing when we left?
+  const MIN_AWAY_MS  = 60000;  // 60s minimum absence before attempting reconnect
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      _hiddenAt   = Date.now();
+      _wasPlaying = window.isPlaying && !!window.currentStation;
+    } else {
+      // Tab became visible again
+      if (!_wasPlaying || !_hiddenAt) return;
+      const awayMs = Date.now() - _hiddenAt;
+      _hiddenAt = null;
+
+      if (awayMs < MIN_AWAY_MS) return; // short switch — stream likely still alive
+
+      // Check if audio actually died
+      const station = window.currentStation;
+      if (!station || !station.url) return;
+
+      // Give browser 1.5s to self-recover before we intervene
+      setTimeout(() => {
+        if (!audio.paused || !_wasPlaying) return; // recovered on its own
+        _wasPlaying = false;
+
+        // Silent reconnect attempt
+        if (typeof window.updateStatus === 'function') window.updateStatus('RECONNECTING…');
+        const vol = audio.volume;
+        audio.src = station.url;
+        audio.volume = vol;
+        audio.load();
+        audio.play().then(() => {
+          if (typeof showToast === 'function') showToast('▶ Stream resumed', 'success');
+        }).catch(() => {
+          // Autoplay blocked (iOS) — show manual prompt instead
+          if (typeof showToast === 'function') showToast('Tap ▶ to resume stream', 'info', 5000);
+          if (typeof window.updateStatus === 'function') window.updateStatus('TAP TO PLAY');
+        });
+      }, 1500);
+    }
   });
 })();
 
@@ -8017,6 +8320,43 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('%c — further signals at siharu.vercel.app —', 'color:#555;font-size:10px;font-family:monospace;font-style:italic;');
 })();
 
+// ─── DESKTOP STATION NOTIFICATIONS ───────────────────────────────────────────
+// Silent OS notification when station changes — desktop only, opt-in.
+// Permission requested once after first play. Never shown on mobile (they have
+// lock screen controls). Never nagged — if denied, permanently skipped.
+(function() {
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  if (isMobile || !('Notification' in window)) return;
+
+  let _permitted = Notification.permission === 'granted';
+  let _asked     = Notification.permission !== 'default'; // already decided
+  let _activeNote = null;
+
+  // Ask once, quietly, after first play interaction
+  function maybeAsk() {
+    if (_asked) return;
+    _asked = true;
+    Notification.requestPermission().then(p => { _permitted = p === 'granted'; });
+  }
+  document.addEventListener('wncore-station-changed', maybeAsk, { once: true });
+
+  window._wncNotifyStation = function(name, meta, emoji) {
+    if (!_permitted) return;
+    if (document.visibilityState === 'visible') return; // tab is focused — no need
+    if (_activeNote) { try { _activeNote.close(); } catch(e) {} }
+    try {
+      _activeNote = new Notification('Now playing', {
+        body: (emoji || '📻') + ' ' + (name || 'Unknown station') + (meta ? '\n' + meta : ''),
+        icon: '/images/wncore-art-192.png',
+        silent: true,
+        tag:  'wncore-now-playing',
+      });
+      _activeNote.onclick = () => { window.focus(); _activeNote.close(); };
+    } catch(e) {}
+  };
+})();
+
+
 /* ━━━ v5-fixes.js ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
 // WNCORE Radio — v5 Fixes
 // Applies after all other scripts (loaded last with defer)
@@ -8527,6 +8867,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    /* Skip the wipe entirely in minimal mode */
+    if (document.body.classList.contains('minimal-mode')) {
+      swapFn();
+      window.scrollTo({ top: 0, behavior: 'instant' });
+      return;
+    }
+
     var wipe = document.getElementById('p5-wipe');
     if (!wipe) {
       swapFn();
@@ -8579,10 +8926,10 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(function () {
           wipe.classList.remove('out');
           _wiping = false;
-        }, 250);
-      }, 60);
+        }, 300);
+      }, 80);
 
-    }, 255);
+    }, 350);
   }
 
   /* ── 3. PATCH showPage ─────────────────────────────────────────────── */
@@ -8964,7 +9311,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Use full viewport width for a wider, more open feel
     W = window.innerWidth;
     var section = document.querySelector('.globe-section');
-    H = section ? section.offsetHeight : 300;
+    // Guard: section might have offsetHeight=0 if page was just made visible
+    // Use a minimum of 300 and retry once after a frame if 0
+    H = section ? Math.max(section.offsetHeight, 300) : 300;
 
     // Cap DPR to 1 on low-end, 2 max otherwise
     var dpr = isLowEnd ? 1 : Math.min(window.devicePixelRatio || 1, 2);
@@ -8981,6 +9330,14 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas.style.left     = '0';
     canvas.style.top      = '0';
   }
+
+  // Expose so showPage('home') can re-trigger resize+redraw after page becomes visible
+  window._constellationResize = function() {
+    if (!canvas || !ctx) { init(); return; }
+    resize();
+    buildConnections();
+    if (!raf) raf = requestAnimationFrame(loop);
+  };
 
   /* ── TOUCH ──────────────────────────────────────────────────────────── */
   function onTouch(e) {
@@ -9146,6 +9503,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof updateMbnDot        === 'function') try { updateMbnDot(); }                catch(e) {}
         if (typeof updateMiniWidget    === 'function') try { updateMiniWidget(name, meta, emoji); } catch(e) {}
         if (typeof scrobblePush        === 'function') try { scrobblePush(station); }         catch(e) {}
+        // D2: silent OS notification — desktop only, opt-in, never nags
+        try { _wncNotifyStation(name, meta, emoji); } catch(e) {}
         var _au = document.getElementById('audio');
         if (typeof startWaveformDraw   === 'function' && _au) try { startWaveformDraw(_au); } catch(e) {}
         try { document.dispatchEvent(new CustomEvent('wncore-station-changed', { detail: { name: name, url: url } })); } catch(e) {}
@@ -9938,9 +10297,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function _applyThemePref(theme) {
-    if (theme === 'dark')    { document.body.classList.add('dark');    document.body.classList.remove('light','minimal'); }
-    if (theme === 'light')   { document.body.classList.add('light');   document.body.classList.remove('dark','minimal'); }
-    if (theme === 'minimal') { document.body.classList.add('minimal'); }
+    if (theme === 'dark')    { document.body.classList.add('dark');         document.body.classList.remove('light','minimal-mode'); isMinimal = false; }
+    if (theme === 'light')   { document.body.classList.add('light');        document.body.classList.remove('dark','minimal-mode');  isMinimal = false; }
+    if (theme === 'minimal') { document.body.classList.add('minimal-mode'); document.body.classList.remove('dark','light'); isMinimal = true; }
   }
 
   // ── Save to /api/user ─────────────────────────────────────────────────────

@@ -4,8 +4,8 @@
   "functions": {
     "api/config.js": { "maxDuration": 10 },
     "api/chat.js":   { "maxDuration": 10 },
-    "api/upload.js": { "maxDuration": 10 },
-    "api/user.js":   { "maxDuration": 10 },
+    "api/upload.js": { "maxDuration": 30 },
+    "api/user.js":   { "maxDuration": 15 },
     "api/icy.js":    { "maxDuration": 10 }
   },
   "headers": [
