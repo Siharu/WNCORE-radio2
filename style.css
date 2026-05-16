@@ -243,7 +243,7 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 @keyframes fadeInUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── MAIN LAYOUT ── */
-.page-wrap{max-width:1440px;margin:0 auto;padding:40px 24px;display:grid;grid-template-columns:1fr 300px;gap:32px}
+.page-wrap{width:100%;padding:40px 24px 40px 24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,280px);gap:24px;box-sizing:border-box;overflow:hidden}
 
 /* ── GENRE STRIP ── */
 .genre-strip-wrap{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 0}
@@ -338,7 +338,7 @@ body.dark-mode .station-table tr:hover{background:rgba(30,28,24,0.85)}
 .anime-img-real:hover{opacity:1;transform:scale(1.02)}
 
 /* ── SIDEBAR ── */
-.sidebar{display:flex;flex-direction:column;gap:18px}
+.sidebar{display:flex;flex-direction:column;gap:18px;min-width:0;overflow:hidden}
 .sidebar-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px}
 .sb-label{font-family:'DM Mono',monospace;font-size:0.57rem;letter-spacing:2px;color:var(--text3);margin-bottom:12px;text-transform:uppercase}
 
@@ -6033,6 +6033,12 @@ body:not(.dark-mode) header.scrolled {
     max-width: 100%;
   }
   
+  /* Single column layout on mobile */
+  .page-wrap {
+    grid-template-columns: 1fr !important;
+    padding: 16px 12px !important;
+  }
+
   /* Main col padding */
   .main-col {
     padding: 0 !important;
