@@ -1,10 +1,10 @@
 /* TEAM */
 Creator: WNCORE
 Location: Signal Unknown
-Contact: wncoreradio.net
+Contact: https://wncore-radio.vercel.app
 
 /* SITE */
-Last update: 2026-05-14
+Last update: 2025-05-14
 Standards: HTML5, CSS3, Vanilla JS
 Components: Supabase, Groq, Radio Browser API
 Deployment: Vercel
