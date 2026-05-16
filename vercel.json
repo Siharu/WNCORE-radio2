@@ -4,8 +4,9 @@
   "functions": {
     "api/config.js": { "maxDuration": 10 },
     "api/chat.js":   { "maxDuration": 10 },
-    "api/upload.js": { "maxDuration": 30 },
-    "api/user.js":   { "maxDuration": 15 }
+    "api/upload.js": { "maxDuration": 10 },
+    "api/user.js":   { "maxDuration": 10 },
+    "api/icy.js":    { "maxDuration": 10 }
   },
   "headers": [
     {
@@ -37,6 +38,7 @@
     { "src": "/api/chat",   "dest": "/api/chat.js"   },
     { "src": "/api/upload", "dest": "/api/upload.js" },
     { "src": "/api/user",   "dest": "/api/user.js"   },
+    { "src": "/api/icy",    "dest": "/api/icy.js"    },
     { "src": "/(.*)",       "dest": "/$1"            }
   ]
 }
