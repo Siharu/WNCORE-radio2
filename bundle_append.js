@@ -1791,12 +1791,14 @@
     try {
       const token = await _getToken().catch(() => null);
       if (!token) return;
-      const blob = new Blob(
-        [JSON.stringify({ mode: 'save_profile', live_station: '' })],
-        { type: 'application/json' }
-      );
-      // sendBeacon is reliable on page unload; fetch is not
-      navigator.sendBeacon && navigator.sendBeacon('/api/user', blob);
+      // keepalive:true lets the browser complete this request even as the page unloads,
+      // and — unlike sendBeacon — supports custom headers and JSON body.
+      fetch('/api/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ mode: 'save_profile', live_station: '' }),
+        keepalive: true,
+      }).catch(() => {});
     } catch (e) {}
   });
 

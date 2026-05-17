@@ -439,7 +439,7 @@ let chartsData = null;
 
 async function loadStations(genre='') {
   const tbody = document.getElementById('station-tbody');
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Loading stations…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Loading stations…</td></tr>`;
   try {
     const api = await _resolveApi();
     const offset = Math.floor(Math.random()*30);
@@ -466,14 +466,14 @@ async function loadStations(genre='') {
     const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('http'));
     renderTable(playable.length ? playable : d, 'station-tbody');
   } catch(e) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Signal degraded. <span style="cursor:pointer;color:var(--accent)" onclick="loadStations('')">Retry</span></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Signal degraded. <span style="cursor:pointer;color:var(--accent)" onclick="loadStations('')">Retry</span></td></tr>`;
   }
 }
 
 async function loadChartsPage() {
   const tbody = document.getElementById('charts-tbody');
   if(chartsData) { renderTable(chartsData,'charts-tbody'); return; }
-  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>`;
 
   // Fallback shown if fetch doesn't resolve within 6 seconds
   const CHARTS_FALLBACK = [
@@ -499,9 +499,39 @@ async function loadChartsPage() {
     renderTable(CHARTS_FALLBACK, 'charts-tbody');
     // Append a subtle note about fallback
     const note = document.createElement('tr');
-    note.innerHTML = `<td colspan="6" style="text-align:center;padding:8px 24px 16px;color:var(--text3);font-size:0.72rem;opacity:0.6;">Station index unavailable — showing curated selection · <span style="cursor:pointer;color:var(--accent)" onclick="chartsData=null;loadChartsPage()">Reload live charts</span></td>`;
+    note.innerHTML = `<td colspan="7" style="text-align:center;padding:8px 24px 16px;color:var(--text3);font-size:0.72rem;opacity:0.6;">Station index unavailable — showing curated selection · <span style="cursor:pointer;color:var(--accent)" onclick="chartsData=null;loadChartsPage()">Reload live charts</span></td>`;
     tbody.appendChild(note);
   }
+}
+
+function stationGradient(tags, name) {
+  const tag = (tags || '').split(',')[0].trim().toLowerCase();
+  const map = {
+    jazz: ['#b45309','#92400e'], rock: ['#7c3aed','#4c1d95'],
+    ambient: ['#0f766e','#134e4a'], news: ['#1d4ed8','#1e3a8a'],
+    classical: ['#9f1239','#881337'], anime: ['#be185d','#9d174d'],
+    electronic: ['#6d28d9','#4c1d95'], pop: ['#db2777','#9d174d'],
+    talk: ['#0369a1','#0c4a6e'], country: ['#b45309','#78350f'],
+    metal: ['#374151','#111827'], folk: ['#166534','#14532d'],
+    hip: ['#7c2d12','#431407'], latin: ['#b91c1c','#7f1d1d'],
+    default: ['#374151','#1f2937']
+  };
+  const colors = map[tag] || map.default;
+  return `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
+}
+
+function stationCoverHtml(s, size) {
+  const sz = size || 32;
+  const grad = stationGradient(s.tags, s.name);
+  const initial = escHtml((s.name||'?')[0].toUpperCase());
+  // In minimal mode, skip image entirely — don't even request the URL
+  if (document.body.classList.contains('minimal-mode')) {
+    return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><span class="st-cover-init">${initial}</span></div>`;
+  }
+  if (s.favicon && s.favicon.startsWith('http')) {
+    return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><img src="${escHtml(s.favicon)}" width="${sz}" height="${sz}" loading="lazy" onerror="this.style.display='none'"></div>`;
+  }
+  return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><span class="st-cover-init">${initial}</span></div>`;
 }
 
 function renderTable(stations, tbodyId) {
@@ -516,6 +546,7 @@ function renderTable(stations, tbodyId) {
     tr.innerHTML = `
       <td class="st-num">${i+1}</td>
       <td class="st-eq"><div class="st-eq-bars" id="eq-${i}-${tbodyId}"><span></span><span></span><span></span></div></td>
+      <td class="st-cover-cell">${stationCoverHtml(s, 32)}</td>
       <td><div class="st-name">${escHtml(s.name)}</div><div class="st-tags">${tags}</div></td>
       <td class="st-country">${escHtml(s.country||'—')}</td>
       <td class="st-bitrate">${s.bitrate?s.bitrate+'k':'—'}</td>
@@ -953,7 +984,12 @@ async function doSearch(q) {
     stations.forEach(s => {
       const el = document.createElement('div'); el.className='search-result-item';
       const emoji = getCountryEmoji(s.countrycode);
-      el.innerHTML = `<div class="sr-icon">${emoji}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).map(t=>escHtml(t.trim())).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
+      const srGrad = stationGradient(s.tags, s.name);
+      const srInit = escHtml((s.name||'?')[0].toUpperCase());
+      const srImg = (s.favicon && s.favicon.startsWith('http'))
+        ? `<img src="${escHtml(s.favicon)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'">`
+        : `<span style="font-size:1rem;line-height:1">${emoji}</span>`;
+      el.innerHTML = `<div class="sr-icon" style="background:${srGrad};overflow:hidden">${srImg}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).map(t=>escHtml(t.trim())).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
       el.onclick = () => { playStation(s.url_resolved, s.name, s.country||'Unknown', emoji); closeSearch(); };
       results.appendChild(el);
     });
@@ -1077,7 +1113,7 @@ function playAnimeStation(idx) {
 }
 async function loadAnimeStationsLive() {
   const tbody = document.getElementById('anime-live-tbody');
-  tbody.innerHTML=`<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text3);font-size:0.8rem;">Scanning frequencies...</td></tr>`;
+  tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--text3);font-size:0.8rem;">Scanning frequencies...</td></tr>`;
   try {
     const [r1,r2] = await Promise.all([
       fetch(`${_a}/stations/search?limit=15&https=true&tag=anime&order=clickcount&reverse=true`),
@@ -1167,6 +1203,10 @@ async function _getSupabase() {
   } catch { return null; }
 }
 
+// Pre-warm: kick off /api/config + Supabase init in the background immediately
+// so _sbClient is ready before user navigates to profile (saves 1-2s cold start)
+setTimeout(() => _getSupabase().catch(() => {}), 200);
+
 function _authShowView(view) {
   ['auth-signedout-view','auth-signedin-view','auth-loading-view'].forEach(id => {
     const el = document.getElementById(id);
@@ -1208,6 +1248,29 @@ function _authUpdateNav(user) {
     btn.textContent = 'Sign In';
     btn.style.cssText = '';
     btn.title = '';
+  }
+  // ── Mobile nav button — mirrors desktop auth state ──────────────────────
+  const mBtn = document.getElementById('mobile-nav-auth-btn');
+  if (!mBtn) return;
+  if (user) {
+    const profileName = window.__WNCORE_PROFILE?.display_name;
+    const oauthName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+    const name = profileName || oauthName;
+    const dicebearUrl = window.__WNCORE_PROFILE?.avatar_url || localStorage.getItem('wncore_avatar_url') || null;
+    const initial = name[0].toUpperCase();
+    if (dicebearUrl) {
+      mBtn.innerHTML = `<img src="${dicebearUrl}" style="width:22px;height:22px;border-radius:50%;object-fit:cover;display:inline-block;vertical-align:middle;margin-right:8px;" onerror="this.style.display='none'">${initial} — Profile`;
+    } else {
+      mBtn.textContent = initial + ' — Profile';
+    }
+    mBtn.style.cssText = 'margin:0;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);';
+    mBtn.onclick = function() { if(typeof showPage==='function') showPage('profile', null); if(typeof toggleMobileMenu==='function') toggleMobileMenu(); return false; };
+    mBtn.title = name;
+  } else {
+    mBtn.textContent = 'Sign In';
+    mBtn.style.cssText = 'margin:0';
+    mBtn.onclick = function() { openSignIn(); toggleMobileMenu(); return false; };
+    mBtn.title = '';
   }
 }
 
@@ -2967,7 +3030,7 @@ async function applyCountryFilter(country) {
   _activeCountryFilter = country;
   const tbody = document.getElementById('station-tbody');
   if (!tbody) return;
-  tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Filtering...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Filtering...</td></tr>';
   try {
     const url = country
       ? `https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&country=${encodeURIComponent(country)}&order=clickcount&reverse=true`
@@ -2977,7 +3040,7 @@ async function applyCountryFilter(country) {
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
     attachPreviewToTable(stations, 'station-tbody');
   } catch {
-    tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Signal lost — try again</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Signal lost — try again</td></tr>';
   }
 }
 window.applyCountryFilter = applyCountryFilter;
@@ -5420,7 +5483,7 @@ if (document.readyState === 'loading') {
   pop.id = 'station-hover-pop';
   pop.className = 'station-hover-pop';
   pop.innerHTML = `
-    <div class="shp-flag" id="shp-flag"></div>
+    <div class="shp-cover" id="shp-cover"></div>
     <div class="shp-body">
       <div class="shp-name" id="shp-name"></div>
       <div class="shp-meta" id="shp-meta"></div>
@@ -5435,7 +5498,15 @@ if (document.readyState === 'loading') {
     clearTimeout(hideTimer);
     const rect = row.getBoundingClientRect();
     const flag = station.countrycode ? getCountryEmojiImp(station.countrycode) : '🌐';
-    document.getElementById('shp-flag').textContent = flag;
+    const coverEl = document.getElementById('shp-cover');
+    const grad = stationGradient(station.tags, station.name);
+    if (station.favicon && station.favicon.startsWith('http')) {
+      coverEl.style.background = grad;
+      coverEl.innerHTML = `<img src="${station.favicon}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'">`;
+    } else {
+      coverEl.style.background = grad;
+      coverEl.innerHTML = `<span style="font-size:1.4rem;line-height:1">${flag}</span>`;
+    }
     document.getElementById('shp-name').textContent = station.name || '—';
     const parts = [station.country, station.bitrate ? station.bitrate + ' kbps' : null].filter(Boolean);
     document.getElementById('shp-meta').textContent = parts.join(' · ');
@@ -6827,8 +6898,12 @@ function adminSaveFeatured(idx) {
         
         const el = document.createElement('div');
         el.className = 'search-result-item';
+        const srGrad = (typeof stationGradient === 'function') ? stationGradient(s.tags, s.name) : '#374151';
+        const srImg = (s.favicon && s.favicon.startsWith('http'))
+          ? `<img src="${s.favicon.replace(/"/g,'&quot;')}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'">`
+          : `<span style="font-size:1rem;line-height:1">${emoji}</span>`;
         el.innerHTML = `
-          <div class="sr-icon">${emoji}</div>
+          <div class="sr-icon" style="background:${srGrad};overflow:hidden">${srImg}</div>
           <div class="sr-body">
             <div class="sr-name">${escHtml ? escHtml(s.name) : s.name}</div>
             <div class="sr-meta">${escHtml ? escHtml(s.country||'Unknown') : (s.country||'Unknown')} · ${tags}${bitrate ? ' · ' + bitrate : ''}</div>
@@ -6952,34 +7027,8 @@ function fallbackShare(station) {
 }
 
 // ─── TOAST NOTIFICATION SYSTEM ────────────────────────────────────────────
-let toastQueue = [];
-let toastActive = false;
-
-function showToast(msg, duration = 2800) {
-  toastQueue.push({msg, duration});
-  if(!toastActive) processToastQueue();
-}
-
-function processToastQueue() {
-  if(!toastQueue.length) { toastActive = false; return; }
-  toastActive = true;
-  const {msg, duration} = toastQueue.shift();
-  
-  let toast = document.getElementById('wncore-toast');
-  if(!toast) {
-    toast = document.createElement('div');
-    toast.id = 'wncore-toast';
-    document.body.appendChild(toast);
-  }
-  
-  toast.textContent = msg;
-  toast.className = 'wncore-toast show';
-  
-  setTimeout(() => {
-    toast.className = 'wncore-toast';
-    setTimeout(() => processToastQueue(), 400);
-  }, duration);
-}
+// Duplicate definition removed — showToast(message, type, duration) defined
+// at section 25 above is the canonical version. All type-based styling works.
 
 // ─── MOBILE HOME PAGE FIXES ────────────────────────────────────────────────
 function fixMobileHome() {
@@ -7316,6 +7365,8 @@ document.addEventListener('DOMContentLoaded', () => {
       audio.volume = vol;
       audio.load();
       audio.play().catch(() => {});
+      // Restart ICY metadata poll — pause event fired when src was reassigned, killing it
+      if (typeof window._wncStartIcyPoll === 'function') window._wncStartIcyPoll(station.url);
 
       // Schedule next attempt if still stalled
       _stallTimer = setTimeout(attemptReload, STALL_WAIT + 2000);
@@ -9946,6 +9997,10 @@ document.addEventListener('DOMContentLoaded', () => {
     au.addEventListener('ended', stopIcyPoll);
   })();
 
+  // Expose on window so M2 stall retry can restart polling after silent src reload
+  window._wncStartIcyPoll = startIcyPoll;
+  window._wncStopIcyPoll  = stopIcyPoll;
+
 
   // ── 2. FOR YOU — personalised recommendations from history ─────────────
   var GRADIENT_PRESETS = [
@@ -10266,11 +10321,21 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Currently selected avatar URL (before saving) ─────────────────────────
   let _pendingAvatarUrl = null;
 
+  // ── Cached access token (saves one getSession() round-trip per profile open)
+  let _cachedToken = null;
+  let _cachedTokenExpiry = 0;
+
   // ── Get Supabase access token ─────────────────────────────────────────────
   async function _getToken() {
+    const now = Date.now();
+    if (_cachedToken && now < _cachedTokenExpiry) return _cachedToken;
     const sb = await _getSupabase();
     if (!sb) return null;
     const { data: { session } } = await sb.auth.getSession();
+    if (session?.access_token) {
+      _cachedToken = session.access_token;
+      _cachedTokenExpiry = now + 4 * 60 * 1000; // re-cache every 4 min
+    }
     return session?.access_token || null;
   }
 
@@ -11112,11 +11177,53 @@ document.addEventListener('DOMContentLoaded', () => {
     _injectCSS();
     INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
 
-    // Inject immediately with null so sections appear right away (no waiting on API)
+    // If we already have a cached profile, inject it immediately — zero wait
+    const cached = window.__WNCORE_PROFILE;
+    if (cached) {
+      await _injectSections(cached);
+      // Backfill display name / avatar in case they changed
+      if (cached.display_name) {
+        const dn = document.getElementById('profile-display-name');
+        if (dn) dn.textContent = cached.display_name;
+      }
+      if (cached.avatar_url) {
+        const avLg = document.getElementById('profile-avatar-lg');
+        if (avLg) {
+          const initial = (cached.display_name || _authUser.email || '?')[0].toUpperCase();
+          avLg.innerHTML = `<img src="${_esc(cached.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+        }
+      }
+      // Silently refresh in background — update UI only if something changed
+      fetchProfile(true).then(profile => {
+        if (!profile) return;
+        const changed = !cached || profile.avatar_url !== cached.avatar_url || profile.display_name !== cached.display_name;
+        if (!changed) return;
+        INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
+        _injectSections(profile);
+        if (profile.display_name) {
+          const dn = document.getElementById('profile-display-name');
+          if (dn) dn.textContent = profile.display_name;
+        }
+        if (profile.avatar_url) {
+          const avLg = document.getElementById('profile-avatar-lg');
+          if (avLg) {
+            const initial = (profile.display_name || _authUser.email || '?')[0].toUpperCase();
+            avLg.innerHTML = `<img src="${_esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+          }
+        }
+        if (profile.hide_email) {
+          const de = document.getElementById('profile-display-email');
+          if (de) de.textContent = '••••@••••';
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // No cache yet — show skeleton immediately, then load real data
     await _injectSections(null);
 
     // Then fetch real data and re-inject
-    const profile = await fetchProfile(true).catch(e => { console.warn('[WNCORE profile] fetchProfile error', e); return null; });
+    const profile = await fetchProfile(false).catch(e => { console.warn('[WNCORE profile] fetchProfile error', e); return null; });
     if (profile) {
       INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
       await _injectSections(profile);

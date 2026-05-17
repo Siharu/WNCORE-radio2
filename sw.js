@@ -1,6 +1,6 @@
 // WNCORE Radio — Service Worker v11
 // Updated: bundle_append.js fixes (saveProfile, live_station, volume); index.html SEO pass
-const CACHE = 'wncore-v11';
+const CACHE = 'wncore-v12';
 const PRECACHE = [
   '/',
   '/index.html',

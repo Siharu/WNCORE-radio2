@@ -155,10 +155,12 @@ try {
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://de1.api.radio-browser.info">
 <link rel="preconnect" href="https://api.dicebear.com">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="https://api.groq.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,300&family=DM+Mono:wght@400;500&family=Playfair+Display:ital,wght@0,700;1,400&display=swap">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 </head>
 <body>
 
@@ -283,7 +285,7 @@ try {
         Minimal
       </button>
     </div>
-    <button onclick="openSignIn();toggleMobileMenu();return false" class="modal-btn" style="margin:0">Sign In</button>
+    <button id="mobile-nav-auth-btn" onclick="openSignIn();toggleMobileMenu();return false" class="modal-btn" style="margin:0">Sign In</button>
   </div>
 </nav>
 
@@ -360,8 +362,10 @@ try {
     <div class="featured-row" id="featured-row">
       <article class="featured-card" onclick="playFeatured(0)" role="button" aria-label="Play Radio Paradise">
         <div class="fc-listeners">4,211 listening</div>
-        <div class="fc-flag">
-          <svg viewBox="0 0 36 24" xmlns="http://www.w3.org/2000/svg" width="28" height="18"><rect width="36" height="24" fill="#B22234"/><rect y="2.18" width="36" height="2.18" fill="#fff"/><rect y="6.55" width="36" height="2.18" fill="#fff"/><rect y="10.91" width="36" height="2.18" fill="#fff"/><rect y="15.27" width="36" height="2.18" fill="#fff"/><rect y="19.64" width="36" height="2.18" fill="#fff"/><rect width="14.4" height="13.09" fill="#3C3B6E"/></svg>
+        <div class="fc-cover-wrap">
+          <div class="fc-cover-img" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">
+            <img src="https://www.radioparadise.com/graphics/apple-touch-icon.png" loading="lazy" onerror="this.style.display='none'" alt="Radio Paradise">
+          </div>
         </div>
         <div class="fc-name">Radio Paradise</div>
         <div class="fc-meta">Rock / Eclectic · California, US · 320kbps</div>
@@ -373,8 +377,10 @@ try {
       </article>
       <article class="featured-card" onclick="playFeatured(1)" role="button" aria-label="Play BBC World Service">
         <div class="fc-listeners">8,832 listening</div>
-        <div class="fc-flag">
-          <svg viewBox="0 0 60 36" xmlns="http://www.w3.org/2000/svg" width="28" height="18"><rect width="60" height="36" fill="#012169"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,36 M60,0 L0,36" stroke="#C8102E" stroke-width="4"/><path d="M30,0 V36 M0,18 H60" stroke="#fff" stroke-width="10"/><path d="M30,0 V36 M0,18 H60" stroke="#C8102E" stroke-width="6"/></svg>
+        <div class="fc-cover-wrap">
+          <div class="fc-cover-img" style="background:linear-gradient(135deg,#1d4ed8,#1e3a8a)">
+            <img src="https://www.bbc.co.uk/favicon.ico" loading="lazy" onerror="this.style.display='none'" alt="BBC World Service">
+          </div>
         </div>
         <div class="fc-name">BBC World Service</div>
         <div class="fc-meta">News / Talk · London, UK · 128kbps</div>
@@ -386,15 +392,17 @@ try {
       </article>
       <article class="featured-card featured-card--arg" onclick="playFeatured(2)" role="button" aria-label="88.7 FM — unknown signal">
         <div class="fc-listeners fc-listeners--warn">NO SIGNAL</div>
-        <div class="fc-flag">
-          <!-- Animated SVG radio signal icon instead of emoji -->
-          <svg viewBox="0 0 32 32" width="28" height="28" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="16" cy="16" r="3" fill="#c8472a"/>
-            <path d="M10 22c-3.3-3.3-3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
-            <path d="M22 22c3.3-3.3 3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
-            <path d="M6 26c-5.5-5.5-5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
-            <path d="M26 26c5.5-5.5 5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
-          </svg>
+        <div class="fc-cover-wrap">
+          <div class="fc-cover-img fc-cover-img--arg" style="background:linear-gradient(135deg,#1a0a05,#2d1008);display:flex;align-items:center;justify-content:center">
+            <!-- Animated SVG radio signal icon instead of emoji -->
+            <svg viewBox="0 0 32 32" width="40" height="40" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="16" cy="16" r="3" fill="#c8472a"/>
+              <path d="M10 22c-3.3-3.3-3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
+              <path d="M22 22c3.3-3.3 3.3-8.7 0-12" stroke="#c8472a" stroke-width="2" stroke-linecap="round" class="signal-ring r1"/>
+              <path d="M6 26c-5.5-5.5-5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
+              <path d="M26 26c5.5-5.5 5.5-14.5 0-20" stroke="#c8472a" stroke-width="1.5" stroke-linecap="round" opacity="0.4" class="signal-ring r2"/>
+            </svg>
+          </div>
         </div>
         <div class="fc-name fc-name--warn">88.7 FM — ██████████</div>
         <div class="fc-meta fc-meta--warn">UNKNOWN · Location redacted · ——kbps</div>
@@ -423,14 +431,15 @@ try {
         <tr>
           <th class="st-num"></th>
           <th class="st-eq"></th>
+          <th class="st-cover-cell"></th>
           <th class="st-th-sort" data-col="name" onclick="sortStationTable('station-tbody','name')">Station <span class="sort-arrow" id="sarr-station-tbody-name"></span></th>
           <th class="st-th-sort" data-col="country" onclick="sortStationTable('station-tbody','country')">Country <span class="sort-arrow" id="sarr-station-tbody-country"></span></th>
           <th class="st-th-sort" data-col="bitrate" onclick="sortStationTable('station-tbody','bitrate')">Bitrate <span class="sort-arrow" id="sarr-station-tbody-bitrate"></span></th>
           <th></th>
         </tr>
       </thead>
-      <tbody id="station-tbody"><tr class="skeleton-row"><td colspan="6" class="loading-row">Scanning frequencies…</td></tr>
-        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Establishing connection...</td></tr>
+      <tbody id="station-tbody"><tr class="skeleton-row"><td colspan="7" class="loading-row">Scanning frequencies…</td></tr>
+        <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Establishing connection...</td></tr>
       </tbody>
     </table>
 
@@ -581,6 +590,7 @@ try {
         <tr>
           <th class="st-num"></th>
           <th class="st-eq"></th>
+          <th class="st-cover-cell"></th>
           <th class="st-th-sort" onclick="sortStationTable('charts-tbody','name')">Station <span class="sort-arrow" id="sarr-charts-tbody-name"></span></th>
           <th class="st-th-sort" onclick="sortStationTable('charts-tbody','country')">Country <span class="sort-arrow" id="sarr-charts-tbody-country"></span></th>
           <th class="st-th-sort" onclick="sortStationTable('charts-tbody','bitrate')">Bitrate <span class="sort-arrow" id="sarr-charts-tbody-bitrate"></span></th>
@@ -588,7 +598,7 @@ try {
         </tr>
       </thead>
       <tbody id="charts-tbody">
-        <tr><td colspan="6" style="text-align:center;padding:48px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>
+        <tr><td colspan="7" style="text-align:center;padding:48px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>
       </tbody>
     </table>
   </div>
@@ -650,7 +660,7 @@ try {
     </div>
     <table class="station-table" style="margin-bottom:0;" aria-label="Live anime radio stations">
       <tbody id="anime-live-tbody">
-        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
+        <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
       </tbody>
     </table>
   </div>
