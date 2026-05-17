@@ -55,10 +55,36 @@ body.dark-mode{
 body.dark-mode header{background:rgba(20,18,15,0.96);border-bottom:1px solid rgba(255,255,255,0.12)}
 body.dark-mode .featured-card:hover{box-shadow:0 12px 32px rgba(0,0,0,0.4)}
 body.dark-mode .sign-in-btn{background:#f0ede8;color:#1a1814}
+/* FIX 1.4: ghost buttons get orange bg + white text in dark mode */
+body.dark-mode .lucky-btn,
+body.dark-mode .az-btn,
+body.dark-mode .mw-btn,
+body.dark-mode .lang-btn,
+body.dark-mode .thm-font-btn,
+body.dark-mode .eq-preset-btn,
+body.dark-mode .minimal-btn:not(.on){
+  background:var(--accent)!important;
+  color:#fff!important;
+  border-color:var(--accent)!important;
+}
 body.dark-mode .genre-strip-wrap{background:var(--surface)}
 body.dark-mode .oauth-btn.google{background:#fff;color:#1a1814}
 body.dark-mode .oauth-btn.apple{background:#000;color:#fff}
 body.dark-mode .oauth-btn.discord{background:#5865F2;color:#fff}
+/* FIX 4.1: ARG glitch Discord button */
+.oauth-btn.discord.glitch-active{
+  animation:discord-glitch 0.18s steps(1) infinite;
+  text-shadow:2px 0 #ff0066,-2px 0 #00ffcc;
+  border-color:#ff0066!important;
+}
+@keyframes discord-glitch{
+  0%  {transform:translate(0,0);  filter:hue-rotate(0deg)}
+  20% {transform:translate(-3px,1px); filter:hue-rotate(90deg)}
+  40% {transform:translate(3px,-1px);filter:hue-rotate(180deg)}
+  60% {transform:translate(-1px,2px);filter:hue-rotate(270deg)}
+  80% {transform:translate(2px,0);  filter:hue-rotate(90deg)}
+  100%{transform:translate(0,0);  filter:hue-rotate(0deg)}
+}
 
 /* ── MINIMAL MODE ── */
 body.minimal-mode{--bg:#fafafa;--surface:#fff;--surface2:#f5f5f5;--border:rgba(0,0,0,0.06);--text:#111;--text2:#555;--text3:#999}
@@ -110,11 +136,11 @@ header{
 }
 .header-inner{width:100%;max-width:1440px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:10px;min-width:0;}
 
-.logo{display:flex;align-items:baseline;gap:8px;text-decoration:none}
+.logo{display:flex;align-items:baseline;gap:8px;text-decoration:none;flex-shrink:0;margin-right:auto;}
 .logo-mark{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--text);letter-spacing:-0.5px}
 .logo-freq{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent);letter-spacing:1px;padding:2px 6px;border:1px solid var(--accent);border-radius:3px}
-nav{display:flex;gap:1px;margin-left:2px;min-width:0;flex-shrink:1;}
-.header-right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+nav{display:flex;gap:1px;min-width:0;flex-shrink:1;overflow:hidden;}
+.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
 nav a{font-size:0.82rem;color:var(--text2);text-decoration:none;padding:6px 10px;border-radius:6px;transition:all 0.15s;font-weight:400;white-space:nowrap;display:flex;align-items:center;gap:5px}
 nav a:hover{background:var(--surface2);color:var(--text)}
 nav a.active{color:var(--text);font-weight:500}
@@ -356,9 +382,11 @@ body.dark-mode .station-table tr:hover{background:rgba(30,28,24,0.85)}
 .np-meta{font-size:0.7rem;color:var(--text2);margin-bottom:10px}
 .np-track{font-size:0.68rem;color:var(--text3);background:var(--surface2);padding:7px 9px;border-radius:7px;font-style:italic;line-height:1.4;margin-bottom:10px}
 .np-progress{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-bottom:12px}
-.np-progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0}
+.np-progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width 0.3s}
 .np-progress-fill.playing{animation:progFill 8s linear infinite}
+.np-progress-fill.loading{animation:progPulse 1.2s ease-in-out infinite}
 @keyframes progFill{0%{width:0%}100%{width:100%}}
+@keyframes progPulse{0%,100%{opacity:0.3;width:30%}50%{opacity:1;width:70%}}
 .np-controls{display:flex;align-items:center;justify-content:center;gap:14px}
 .np-ctrl-btn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center}
 .np-ctrl-btn:hover{color:var(--text);background:var(--surface2)}
@@ -1888,12 +1916,12 @@ body.dark-mode .lang-btn.active { background:var(--accent);color:#fff;border-col
   height: 100%; width: 0%;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   border-radius: 2px;
-  animation: np-flow 4s linear infinite;
+  transition: width 0.3s;
 }
-@keyframes np-flow {
-  from { width: 0%; margin-left: 0 }
-  to   { width: 100%; }
-}
+.np-progress-fill.playing { animation: np-flow 8s linear infinite; }
+.np-progress-fill.loading { animation: np-pulse 1.2s ease-in-out infinite; }
+@keyframes np-flow { from { width: 0%; } to { width: 100%; } }
+@keyframes np-pulse { 0%,100%{opacity:0.3;width:30%} 50%{opacity:1;width:70%} }
 
 /* ── MOBILE BOTTOM NAV ADJUSTMENTS ── */
 

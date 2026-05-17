@@ -487,12 +487,29 @@ async function loadChartsPage() {
   const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000));
   try {
     // Pull from multiple pages and shuffle to get fresh charts each visit
-    const offsets = [0, 50, 100];
-    const pick = offsets[Math.floor(Math.random()*offsets.length)];
-    const fetchPromise = fetch(`${_a}/stations/search?limit=50&https=true&order=clickcount&reverse=true&offset=${pick}`).then(r=>r.json());
+    /* FIX 3.2: load 100 stations with load-more pagination instead of hard 50-cap */
+    let _chartsOffset = 0;
+    const CHARTS_PER_PAGE = 100;
+    const fetchPromise = fetch(`${_a}/stations/search?limit=${CHARTS_PER_PAGE}&https=true&order=clickcount&reverse=true&offset=${_chartsOffset}`).then(r=>r.json());
     const d = await Promise.race([fetchPromise, timeout]);
     chartsData = d; // cache within session
     renderTable(d, 'charts-tbody');
+    // Inject Load More button
+    const lmTr = document.createElement('tr');
+    lmTr.id = 'charts-load-more-row';
+    lmTr.innerHTML = `<td colspan="7" style="text-align:center;padding:14px"><button onclick="window._loadMoreCharts()" style="font-family:'DM Mono',monospace;font-size:0.72rem;padding:8px 20px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text2);cursor:pointer;letter-spacing:1px">LOAD MORE STATIONS</button></td>`;
+    document.getElementById('charts-tbody').appendChild(lmTr);
+    window._chartsOffset = CHARTS_PER_PAGE;
+    window._loadMoreCharts = async function() {
+      window._chartsOffset += CHARTS_PER_PAGE;
+      const r = await fetch(`${_a}/stations/search?limit=${CHARTS_PER_PAGE}&https=true&order=clickcount&reverse=true&offset=${window._chartsOffset}`);
+      const more = await r.json();
+      if(!more || !more.length) { document.getElementById('charts-load-more-row')?.remove(); return; }
+      const tbody = document.getElementById('charts-tbody');
+      const lmRow = document.getElementById('charts-load-more-row');
+      renderTable(more, 'charts-tbody', true); // append mode
+      if(lmRow) tbody.appendChild(lmRow); // keep load-more at bottom
+    };
   } catch(e) {
     // On timeout or error, show static fallback stations
     chartsData = CHARTS_FALLBACK;
@@ -551,7 +568,7 @@ function renderTable(stations, tbodyId) {
       <td class="st-country">${escHtml(s.country||'—')}</td>
       <td class="st-bitrate">${s.bitrate?s.bitrate+'k':'—'}</td>
       <td><button class="st-play-btn" aria-label="Play">${SVG.play}</button></td>`;
-    tr.onclick = () => playStation(s.url_resolved, s.name, s.country||'Unknown', emoji);
+    tr.onclick = () => { if(currentStation) currentStation.favicon = s.favicon||''; playStation(s.url_resolved, s.name, s.country||'Unknown', emoji); };
     tbody.appendChild(tr);
   });
   // Re-apply low-bandwidth filter if active (M3)
@@ -580,7 +597,7 @@ function playStation(url, name, meta, emoji) {
     if (npTrack) npTrack.textContent = '— station offline —';
     return;
   }
-  currentStation = {url, name, meta, emoji: emoji||'📻'};
+  currentStation = {url, name, meta, emoji: emoji||'📻', favicon: ''};
 
   // FIX: Always stop the current stream cleanly before switching.
   // Setting audio.src while playing causes an AbortError on the old
@@ -612,7 +629,7 @@ function playStation(url, name, meta, emoji) {
         isPlaying = true;
         window.isPlaying = true; // FIX: sync window.isPlaying so PWA prompt works
         if (window._broadcastStation) window._broadcastStation(name); // Option A: live station tracking
-        updateUI(name, meta, emoji||'📻');
+        updateUI(name, meta, emoji||'📻', currentStation.favicon||'');
         updateMiniPlayerVisibility();
         // NOTE: applyStationSecondaryEffects removed from here — it called initAudioFX()
         // unconditionally which broke CORS-restricted streams. Now only called for horror stations.
@@ -749,7 +766,8 @@ function play887Static() {
   }, 220);
 }
 
-function updateUI(name, meta, emoji) {
+/* FIX 2.1: favicon passed in and rendered; falls back to SVG radio icon */
+function updateUI(name, meta, emoji, favicon) {
   document.getElementById('pb-name').textContent = name;
   document.getElementById('np-name').textContent = name;
   document.getElementById('pb-meta').textContent = meta;
@@ -759,9 +777,12 @@ function updateUI(name, meta, emoji) {
   const miniMeta = document.getElementById('mini-meta');
   if(miniName) miniName.textContent = name;
   if(miniMeta) miniMeta.textContent = meta;
-  // SVG radio icon in player art instead of emoji
-  document.getElementById('pb-art').innerHTML = SVG.radio;
-  document.getElementById('np-art-icon').innerHTML = SVG.radio;
+  // Show real favicon if available, else fallback to SVG radio icon
+  const artHtml = (favicon && favicon.startsWith('http'))
+    ? `<img src="${favicon}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.innerHTML=SVG.radio">`
+    : SVG.radio;
+  document.getElementById('pb-art').innerHTML = artHtml;
+  document.getElementById('np-art-icon').innerHTML = artHtml;
   document.getElementById('np-track').textContent = '— receiving signal —';
   document.getElementById('np-fill').classList.add('playing');
   document.getElementById('pb-fill').classList.add('playing');
@@ -822,9 +843,21 @@ function updateMiniPlayerVisibility() {
 
 // Attach audio play/pause listeners to keep UI in sync when playback state changes externally
 if (audio) {
-  audio.addEventListener('play', () => { isPlaying = true; window.isPlaying = true; setPlayIcon(true); startProgressSync(); });
-  audio.addEventListener('pause', () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync(); });
-  audio.addEventListener('ended', () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync(); });
+  /* FIX 2.2: progress fill class driven by real audio events */
+  function _setFillState(state) {
+    ['np-fill','pb-fill'].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.classList.remove('playing','loading');
+      if(state) el.classList.add(state);
+    });
+  }
+  audio.addEventListener('play',    () => { isPlaying = true;  window.isPlaying = true;  setPlayIcon(true);  startProgressSync(); _setFillState('playing'); });
+  audio.addEventListener('pause',   () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();  _setFillState(null); });
+  audio.addEventListener('ended',   () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();  _setFillState(null); });
+  audio.addEventListener('waiting', () => { _setFillState('loading'); });
+  audio.addEventListener('stalled', () => { _setFillState('loading'); });
+  audio.addEventListener('playing', () => { _setFillState('playing'); });
 }
 
 function toggleFavorite(btn) {
@@ -1995,7 +2028,16 @@ setInterval(()=>{
 },45000);
 
 // ─── LIVE FLUCTUATION ─────────────────────────────────────────────────────
-setInterval(()=>{const el=document.getElementById('live-count');if(el)el.textContent=`${(12841+Math.floor(Math.random()*40)-20).toLocaleString()} live`;},7000);
+/* FIX 3.3: live-count uses real _onlineCount from Radio Browser, not pure random */
+setInterval(()=>{
+  const el = document.getElementById('live-count');
+  if(!el) return;
+  const base = (typeof window.__WNCORE_ONLINE_COUNT !== 'undefined' && window.__WNCORE_ONLINE_COUNT > 0)
+    ? window.__WNCORE_ONLINE_COUNT
+    : 12841;
+  const jitter = Math.floor(Math.random()*40) - 20;
+  el.textContent = (base + jitter).toLocaleString() + ' live';
+}, 7000);
 // Real listener count from Radio Browser stats API
 (async function fetchRealListenerCount(){
   // Sync globe stat with _onlineCount (the 2K–7K panel counter) for consistency
@@ -9435,6 +9477,7 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas = document.createElement('canvas');
     canvas.id = 'wnc-constellation';
     canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.display = 'block'; // override CSS default display:none
     canvas.style.pointerEvents = 'auto'; // allow touch
     canvas.style.zIndex = '1';
 
@@ -9480,20 +9523,17 @@ document.addEventListener('DOMContentLoaded', () => {
     var _resizeTimer;
     window.addEventListener('resize', function() {
       clearTimeout(_resizeTimer);
+      /* FIX 1.3: always resize canvas on orientation change; never kill it */
       _resizeTimer = setTimeout(function() {
-        if (isMobile()) {
-          resize();
-          // Respawn stars spread across new dimensions
-          for (var i = 0; i < stars.length; i++) {
-            if (stars[i].x > W * 1.15 || stars[i].y > H + 20) {
-              stars[i].respawn();
-            }
+        resize();
+        // Respawn stars that ended up outside new dimensions
+        for (var i = 0; i < stars.length; i++) {
+          if (stars[i].x > W * 1.15 || stars[i].y > H + 20) {
+            stars[i].respawn();
           }
-          buildConnections();
-        } else {
-          if (raf) cancelAnimationFrame(raf);
-          canvas.style.display = 'none';
         }
+        buildConnections();
+        if (!raf) raf = requestAnimationFrame(loop);
       }, 120);
     });
   }
@@ -10246,10 +10286,26 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof _realOauthGoogle === 'function') _realOauthGoogle();
     });
   };
+  /* FIX 4.1: ARG — glitch animation then teleport to cat API (no real auth) */
   window.oauthDiscord = function() {
-    maybeGlitchBtn('.oauth-btn.discord', 'INTERCEPTING…', function() {
-      if (typeof _realOauthDiscord === 'function') _realOauthDiscord();
-    });
+    var btn = document.querySelector('.oauth-btn.discord');
+    if(btn) {
+      btn.classList.add('glitch-active');
+      var glitchTexts = ['INTERCEPTING…','SYS_ERR','NODE_09','̴̡̛͎̺͒̂C̵','REROUTING…'];
+      var i = 0;
+      var orig = btn.textContent;
+      var iv = setInterval(function(){
+        btn.textContent = glitchTexts[i++ % glitchTexts.length];
+      }, 80);
+      setTimeout(function(){
+        clearInterval(iv);
+        btn.classList.remove('glitch-active');
+        btn.textContent = orig;
+        window.location.href = 'https://thecatapi.com/';
+      }, 900);
+    } else {
+      window.location.href = 'https://thecatapi.com/';
+    }
   };
 
   // Add a small lore hint in the modal footer that doubles as an ARG clue
@@ -11170,81 +11226,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Patch loadProfilePage ─────────────────────────────────────────────────
+  // [NEUTRALIZED]: bundle_append.js contains the definitive fixed version with
+  // auth-wait + DOM-wait retry logic (FIX 3.1). This patch is intentionally
+  // left as a no-op so bundle_append.js's override wins the final chain.
+  // Do not re-enable this block.
   const _origLoadProfilePage = window.loadProfilePage || function(){};
-  window.loadProfilePage = async function() {
-    _origLoadProfilePage();
-    if (!_authUser) { console.warn('[WNCORE profile] no _authUser at profile load'); return; }
-    _injectCSS();
-    INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
-
-    // If we already have a cached profile, inject it immediately — zero wait
-    const cached = window.__WNCORE_PROFILE;
-    if (cached) {
-      await _injectSections(cached);
-      // Backfill display name / avatar in case they changed
-      if (cached.display_name) {
-        const dn = document.getElementById('profile-display-name');
-        if (dn) dn.textContent = cached.display_name;
-      }
-      if (cached.avatar_url) {
-        const avLg = document.getElementById('profile-avatar-lg');
-        if (avLg) {
-          const initial = (cached.display_name || _authUser.email || '?')[0].toUpperCase();
-          avLg.innerHTML = `<img src="${_esc(cached.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
-        }
-      }
-      // Silently refresh in background — update UI only if something changed
-      fetchProfile(true).then(profile => {
-        if (!profile) return;
-        const changed = !cached || profile.avatar_url !== cached.avatar_url || profile.display_name !== cached.display_name;
-        if (!changed) return;
-        INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
-        _injectSections(profile);
-        if (profile.display_name) {
-          const dn = document.getElementById('profile-display-name');
-          if (dn) dn.textContent = profile.display_name;
-        }
-        if (profile.avatar_url) {
-          const avLg = document.getElementById('profile-avatar-lg');
-          if (avLg) {
-            const initial = (profile.display_name || _authUser.email || '?')[0].toUpperCase();
-            avLg.innerHTML = `<img src="${_esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
-          }
-        }
-        if (profile.hide_email) {
-          const de = document.getElementById('profile-display-email');
-          if (de) de.textContent = '••••@••••';
-        }
-      }).catch(() => {});
-      return;
-    }
-
-    // No cache yet — show skeleton immediately, then load real data
-    await _injectSections(null);
-
-    // Then fetch real data and re-inject
-    const profile = await fetchProfile(false).catch(e => { console.warn('[WNCORE profile] fetchProfile error', e); return null; });
-    if (profile) {
-      INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
-      await _injectSections(profile);
-    }
-
-    if (profile?.display_name) {
-      const dn = document.getElementById('profile-display-name');
-      if (dn) dn.textContent = profile.display_name;
-    }
-    if (profile?.avatar_url) {
-      const avLg = document.getElementById('profile-avatar-lg');
-      if (avLg) {
-        const initial = (profile.display_name || _authUser.email || '?')[0].toUpperCase();
-        avLg.innerHTML = `<img src="${_esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
-      }
-    }
-    if (profile?.hide_email) {
-      const de = document.getElementById('profile-display-email');
-      if (de) de.textContent = '••••@••••';
-    }
-  };
 
   // ── On auth change, warm profile + apply avatar/node ─────────────────────
   document.addEventListener('DOMContentLoaded', async function() {

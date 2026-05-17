@@ -945,31 +945,69 @@
     window._profSelectAvatar(_avatarSelectedStyle);
   }
 
+  // FIX 3.1: robust profile loader — waits for auth session + DOM wrapper before injecting
   const _origLoadProfilePage = window.loadProfilePage || function(){};
+
+  // Poll until _authUser is set (Supabase is async; user may nav to profile before session resolves)
+  function _waitForAuth(maxMs) {
+    return new Promise(function(resolve) {
+      var deadline = Date.now() + (maxMs || 3000);
+      (function check() {
+        if (typeof _authUser !== 'undefined' && _authUser) return resolve(_authUser);
+        if (Date.now() > deadline) return resolve(null);
+        setTimeout(check, 80);
+      })();
+    });
+  }
+
+  // Poll until the profile page wrapper div is in the DOM and visible
+  function _waitForWrapper(maxMs) {
+    return new Promise(function(resolve) {
+      var deadline = Date.now() + (maxMs || 2000);
+      (function check() {
+        var page = document.getElementById('page-profile');
+        var w = page && page.querySelector('div[style*="max-width:860px"]');
+        if (w) return resolve(w);
+        if (Date.now() > deadline) return resolve(null);
+        requestAnimationFrame(check);
+      })();
+    });
+  }
+
   window.loadProfilePage = async function() {
     _origLoadProfilePage();
-    if (!_authUser) return;
-    _injectCSS();
-    INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
 
-    const profile = await fetchProfile(true);
+    // Wait for Supabase session if not resolved yet
+    var user = _authUser || await _waitForAuth(3000);
+    if (!user) return; // genuinely signed out
+
+    _injectCSS();
+    INJECTED_IDS.forEach(function(id) { document.getElementById(id)?.remove(); });
+
+    // Wait for showPage() to paint the profile DOM before injecting sections
+    var wrapper = await _waitForWrapper(2000);
+    if (!wrapper) {
+      console.warn('[WNCORE profile] page-profile wrapper not found — avatar/identity sections not injected');
+      return;
+    }
+
+    var profile = await fetchProfile(true).catch(function() { return null; });
     await _injectSections(profile);
 
-    if (profile?.display_name) {
-      const dn = document.getElementById('profile-display-name');
+    if (profile && profile.display_name) {
+      var dn = document.getElementById('profile-display-name');
       if (dn) dn.textContent = profile.display_name;
     }
-    if (profile?.avatar_url) {
-      const avLg = document.getElementById('profile-avatar-lg');
+    if (profile && profile.avatar_url) {
+      var avLg = document.getElementById('profile-avatar-lg');
       if (avLg) {
-        const initial = _esc((profile.display_name || _authUser.email || '?')[0].toUpperCase());
-        avLg.innerHTML = `<img src="${_esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+        var initial = _esc((profile.display_name || user.email || '?')[0].toUpperCase());
+        avLg.innerHTML = '<img src="' + _esc(profile.avatar_url) + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent=\'' + initial + '\'">';
       }
-      // BUG FIX: also apply to nav when profile page opens
       _applyAvatarToNav(profile.avatar_url);
     }
-    if (profile?.hide_email) {
-      const de = document.getElementById('profile-display-email');
+    if (profile && profile.hide_email) {
+      var de = document.getElementById('profile-display-email');
       if (de) de.textContent = '••••@••••';
     }
   };
