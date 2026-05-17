@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "outputDirectory": ".",
   "functions": {
     "api/config.js": {
       "maxDuration": 10
