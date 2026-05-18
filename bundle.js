@@ -470,12 +470,17 @@ async function loadStations(genre='') {
   }
 }
 
+// Task 3.2: Charts pagination state
+let _chartsOffset = 0;
+const _CHARTS_PAGE_SIZE = 100;
+let _chartsLoading = false;
+let _chartsExhausted = false;
+
 async function loadChartsPage() {
   const tbody = document.getElementById('charts-tbody');
-  if(chartsData) { renderTable(chartsData,'charts-tbody'); return; }
+  if(chartsData) { renderTable(chartsData,'charts-tbody'); _attachChartsPagination(tbody); return; }
   tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>`;
 
-  // Fallback shown if fetch doesn't resolve within 6 seconds
   const CHARTS_FALLBACK = [
     { name:'Radio Paradise', country:'US', codec:'AAC', bitrate:320, votes:999, url_resolved:'https://stream.radioparadise.com/aac-320', tags:'eclectic' },
     { name:'BBC World Service', country:'GB', codec:'MP3', bitrate:128, votes:990, url_resolved:'https://stream.live.vc.bbcmedia.co.uk/bbc_world_service', tags:'news' },
@@ -484,42 +489,85 @@ async function loadChartsPage() {
     { name:'WNYC 93.9 FM', country:'US', codec:'MP3', bitrate:128, votes:950, url_resolved:'https://fm939.wnyc.org/wnycfm.aac', tags:'public radio' },
   ];
 
-  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 6000));
+  _chartsOffset = 0; _chartsExhausted = false;
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 8000));
   try {
-    // Pull from multiple pages and shuffle to get fresh charts each visit
-    /* FIX 3.2: load 100 stations with load-more pagination instead of hard 50-cap */
-    let _chartsOffset = 0;
-    const CHARTS_PER_PAGE = 100;
-    const fetchPromise = fetch(`${_a}/stations/search?limit=${CHARTS_PER_PAGE}&https=true&order=clickcount&reverse=true&offset=${_chartsOffset}`).then(r=>r.json());
+    const fetchPromise = fetch(`${_a}/stations/search?limit=${_CHARTS_PAGE_SIZE}&https=true&order=clickcount&reverse=true&offset=0`).then(r=>r.json());
     const d = await Promise.race([fetchPromise, timeout]);
-    chartsData = d; // cache within session
+    chartsData = d;
+    _chartsOffset = d.length;
+    if (d.length < _CHARTS_PAGE_SIZE) _chartsExhausted = true;
     renderTable(d, 'charts-tbody');
-    // Inject Load More button
-    const lmTr = document.createElement('tr');
-    lmTr.id = 'charts-load-more-row';
-    lmTr.innerHTML = `<td colspan="7" style="text-align:center;padding:14px"><button onclick="window._loadMoreCharts()" style="font-family:'DM Mono',monospace;font-size:0.72rem;padding:8px 20px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);color:var(--text2);cursor:pointer;letter-spacing:1px">LOAD MORE STATIONS</button></td>`;
-    document.getElementById('charts-tbody').appendChild(lmTr);
-    window._chartsOffset = CHARTS_PER_PAGE;
-    window._loadMoreCharts = async function() {
-      window._chartsOffset += CHARTS_PER_PAGE;
-      const r = await fetch(`${_a}/stations/search?limit=${CHARTS_PER_PAGE}&https=true&order=clickcount&reverse=true&offset=${window._chartsOffset}`);
-      const more = await r.json();
-      if(!more || !more.length) { document.getElementById('charts-load-more-row')?.remove(); return; }
-      const tbody = document.getElementById('charts-tbody');
-      const lmRow = document.getElementById('charts-load-more-row');
-      renderTable(more, 'charts-tbody', true); // append mode
-      if(lmRow) tbody.appendChild(lmRow); // keep load-more at bottom
-    };
+    _attachChartsPagination(tbody);
   } catch(e) {
-    // On timeout or error, show static fallback stations
     chartsData = CHARTS_FALLBACK;
     renderTable(CHARTS_FALLBACK, 'charts-tbody');
-    // Append a subtle note about fallback
     const note = document.createElement('tr');
     note.innerHTML = `<td colspan="7" style="text-align:center;padding:8px 24px 16px;color:var(--text3);font-size:0.72rem;opacity:0.6;">Station index unavailable — showing curated selection · <span style="cursor:pointer;color:var(--accent)" onclick="chartsData=null;loadChartsPage()">Reload live charts</span></td>`;
     tbody.appendChild(note);
   }
 }
+
+async function _loadMoreCharts() {
+  if (_chartsLoading || _chartsExhausted) return;
+  const tbody = document.getElementById('charts-tbody');
+  const btn = document.getElementById('charts-load-more-btn');
+  if (!tbody) return;
+  _chartsLoading = true;
+  if (btn) { btn.textContent = 'Loading…'; btn.disabled = true; }
+  try {
+    const r = await fetch(`${_a}/stations/search?limit=${_CHARTS_PAGE_SIZE}&https=true&order=clickcount&reverse=true&offset=${_chartsOffset}`);
+    const d = await r.json();
+    if (!d || d.length === 0) { _chartsExhausted = true; if(btn) btn.remove(); return; }
+    _chartsOffset += d.length;
+    if (d.length < _CHARTS_PAGE_SIZE) _chartsExhausted = true;
+    // Remove the load-more row before appending new rows
+    const oldRow = document.getElementById('charts-load-more-row');
+    if (oldRow) oldRow.remove();
+    chartsData = [...(chartsData||[]), ...d];
+    // Append new rows directly (renderTable would overwrite the table)
+    const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('http'));
+    playable.forEach((s, i) => {
+      const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
+      const tags = (s.tags||'').split(',').slice(0,2).filter(t=>t.trim()).map(t=>`<span class="st-tag">${escHtml(t.trim())}</span>`).join('');
+      const tr = document.createElement('tr');
+      tr.className = 'station-row';
+      tr.dataset.bitrate = s.bitrate || 0;
+      const cover = typeof stationCoverHtml === 'function' ? stationCoverHtml(s, 32) : '';
+      const rowNum = _chartsOffset - d.length + i + 1;
+      tr.innerHTML = `
+        <td class="st-num">${rowNum}</td>
+        <td class="st-eq"><div class="st-eq-bars"><span></span><span></span><span></span></div></td>
+        <td class="st-cover-cell">${cover}</td>
+        <td><div class="st-name">${escHtml(s.name)}</div><div class="st-tags">${tags}</div></td>
+        <td class="st-country">${escHtml(s.country||'—')}</td>
+        <td class="st-bitrate">${s.bitrate?s.bitrate+'k':'—'}</td>
+        <td><button class="st-play-btn" aria-label="Play" onclick="event.stopPropagation()">${typeof SVG!=='undefined'?SVG.play:'▶'}</button></td>`;
+      tr.onclick = () => playStation(s.url_resolved, s.name, s.country||'Unknown', emoji, s.favicon||null);
+      tbody.appendChild(tr);
+    });
+    if (!_chartsExhausted) _attachChartsPagination(tbody);
+  } catch(e) {
+    if(btn) { btn.textContent = 'Load more'; btn.disabled = false; }
+  } finally {
+    _chartsLoading = false;
+  }
+}
+
+function _attachChartsPagination(tbody) {
+  if (_chartsExhausted) return;
+  const existing = document.getElementById('charts-load-more-row');
+  if (existing) existing.remove();
+  const row = document.createElement('tr');
+  row.id = 'charts-load-more-row';
+  row.innerHTML = `<td colspan="7" style="text-align:center;padding:16px 0;">
+    <button id="charts-load-more-btn" onclick="_loadMoreCharts()" style="font-family:'DM Mono',monospace;font-size:0.72rem;letter-spacing:1px;padding:8px 20px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.15s">
+      LOAD MORE — ${_chartsOffset.toLocaleString()} of 12,000+ stations
+    </button>
+  </td>`;
+  tbody.appendChild(row);
+}
+
 
 function stationGradient(tags, name) {
   const tag = (tags || '').split(',')[0].trim().toLowerCase();
@@ -568,7 +616,7 @@ function renderTable(stations, tbodyId) {
       <td class="st-country">${escHtml(s.country||'—')}</td>
       <td class="st-bitrate">${s.bitrate?s.bitrate+'k':'—'}</td>
       <td><button class="st-play-btn" aria-label="Play">${SVG.play}</button></td>`;
-    tr.onclick = () => { if(currentStation) currentStation.favicon = s.favicon||''; playStation(s.url_resolved, s.name, s.country||'Unknown', emoji); };
+    tr.onclick = () => playStation(s.url_resolved, s.name, s.country||'Unknown', emoji, s.favicon||null);
     tbody.appendChild(tr);
   });
   // Re-apply low-bandwidth filter if active (M3)
@@ -590,29 +638,28 @@ function getCountryEmoji(code){
 }
 
 // ─── PLAYBACK ─────────────────────────────────────────────────────────────
-function playStation(url, name, meta, emoji) {
+function playStation(url, name, meta, emoji, favicon) {
   if (!url || !url.startsWith('http')) {
     updateStatus('NO SIGNAL');
     const npTrack = document.getElementById('np-track');
     if (npTrack) npTrack.textContent = '— station offline —';
     return;
   }
-  currentStation = {url, name, meta, emoji: emoji||'📻', favicon: ''};
+  currentStation = {url, name, meta, emoji: emoji||'📻', favicon: favicon||null};
 
-  // FIX: Always stop the current stream cleanly before switching.
-  // Setting audio.src while playing causes an AbortError on the old
-  // play() promise, which previously triggered a retry loop that froze the page.
+  // Stop current stream cleanly before switching
   audio.pause();
   audio.src = '';
 
-  // Pause Live Music player if running to avoid dual audio
-  if(typeof lmAudio !== 'undefined' && !lmAudio.paused) {
-    lmAudio.pause();
+  // If Live Music was active, reset its UI state — audio is the same element
+  if (lmIsPlaying) {
     lmIsPlaying = false;
+    lmCurrentChannel = null;
+    lmSetWaveformState(false);
     const iconEl = document.getElementById('lm-play-icon');
-    if(iconEl) iconEl.setAttribute('d','M8 5v14l11-7z');
     const npCard = document.getElementById('lm-np-card');
-    if(npCard) npCard.classList.remove('playing');
+    if (iconEl) iconEl.setAttribute('d','M8 5v14l11-7z');
+    if (npCard) npCard.classList.remove('playing');
   }
 
   updateStatus('CONNECTING…');
@@ -629,7 +676,7 @@ function playStation(url, name, meta, emoji) {
         isPlaying = true;
         window.isPlaying = true; // FIX: sync window.isPlaying so PWA prompt works
         if (window._broadcastStation) window._broadcastStation(name); // Option A: live station tracking
-        updateUI(name, meta, emoji||'📻', currentStation.favicon||'');
+        updateUI(name, meta, emoji||'📻', currentStation.favicon);
         updateMiniPlayerVisibility();
         // NOTE: applyStationSecondaryEffects removed from here — it called initAudioFX()
         // unconditionally which broke CORS-restricted streams. Now only called for horror stations.
@@ -712,7 +759,7 @@ window.playRec = playRec;
 
 function play887Static() {
   exposure += 20;
-  updateUI('88.7 FM', 'Signal Lost', '📻');
+  updateUI('88.7 FM', 'Signal Lost', '📻', null);
   document.getElementById('np-track').textContent = '— static —';
 
   // ── 88.7 SPECIAL BEHAVIOR ──────────────────────────────────────────────────
@@ -766,7 +813,6 @@ function play887Static() {
   }, 220);
 }
 
-/* FIX 2.1: favicon passed in and rendered; falls back to SVG radio icon */
 function updateUI(name, meta, emoji, favicon) {
   document.getElementById('pb-name').textContent = name;
   document.getElementById('np-name').textContent = name;
@@ -777,14 +823,21 @@ function updateUI(name, meta, emoji, favicon) {
   const miniMeta = document.getElementById('mini-meta');
   if(miniName) miniName.textContent = name;
   if(miniMeta) miniMeta.textContent = meta;
-  // Show real favicon if available, else fallback to SVG radio icon
-  const artHtml = (favicon && favicon.startsWith('http'))
-    ? `<img src="${favicon}" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.parentElement.innerHTML=SVG.radio">`
-    : SVG.radio;
-  document.getElementById('pb-art').innerHTML = artHtml;
-  document.getElementById('np-art-icon').innerHTML = artHtml;
+  // Task 2.1: Render station favicon art if available, otherwise fallback to SVG radio icon
+  function _artHtml(size) {
+    if (favicon && favicon.startsWith('http')) {
+      return `<img src="${escHtml(favicon)}" width="${size}" height="${size}" style="width:100%;height:100%;object-fit:cover;border-radius:${size>36?'8px':'6px'}" onerror="this.parentElement.innerHTML='${SVG.radio.replace(/'/g,'\\\'')}'">`;
+    }
+    return SVG.radio;
+  }
+  const pbArt = document.getElementById('pb-art');
+  const npArt = document.getElementById('np-art-icon');
+  if(pbArt) pbArt.innerHTML = _artHtml(40);
+  if(npArt) npArt.innerHTML = _artHtml(64);
   document.getElementById('np-track').textContent = '— receiving signal —';
+  document.getElementById('np-fill').classList.remove('buffering','paused');
   document.getElementById('np-fill').classList.add('playing');
+  document.getElementById('pb-fill').classList.remove('buffering','paused');
   document.getElementById('pb-fill').classList.add('playing');
   document.getElementById('pb-eq').classList.add('playing');
   setPlayIcon(true);
@@ -843,21 +896,45 @@ function updateMiniPlayerVisibility() {
 
 // Attach audio play/pause listeners to keep UI in sync when playback state changes externally
 if (audio) {
-  /* FIX 2.2: progress fill class driven by real audio events */
-  function _setFillState(state) {
-    ['np-fill','pb-fill'].forEach(id=>{
-      const el = document.getElementById(id);
-      if(!el) return;
-      el.classList.remove('playing','loading');
-      if(state) el.classList.add(state);
-    });
-  }
-  audio.addEventListener('play',    () => { isPlaying = true;  window.isPlaying = true;  setPlayIcon(true);  startProgressSync(); _setFillState('playing'); });
-  audio.addEventListener('pause',   () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();  _setFillState(null); });
-  audio.addEventListener('ended',   () => { isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();  _setFillState(null); });
-  audio.addEventListener('waiting', () => { _setFillState('loading'); });
-  audio.addEventListener('stalled', () => { _setFillState('loading'); });
-  audio.addEventListener('playing', () => { _setFillState('playing'); });
+  audio.addEventListener('play', () => {
+    isPlaying = true; window.isPlaying = true; setPlayIcon(true); startProgressSync();
+    // Task 2.2: sync progress bar to actual audio state
+    const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
+    fills.forEach(f => { if(f){ f.classList.remove('buffering','paused'); f.classList.add('playing'); }});
+  });
+  audio.addEventListener('pause', () => {
+    isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();
+    const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
+    fills.forEach(f => { if(f){ f.classList.remove('playing','buffering'); f.classList.add('paused'); }});
+    // Sync LM UI if Live Music was active
+    if (lmIsPlaying) {
+      lmIsPlaying = false;
+      lmSetWaveformState(false);
+      const iconEl = document.getElementById('lm-play-icon');
+      const npCard = document.getElementById('lm-np-card');
+      if (iconEl) iconEl.setAttribute('d','M8 5v14l11-7z');
+      if (npCard) npCard.classList.remove('playing');
+    }
+  });
+  audio.addEventListener('ended', () => {
+    isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();
+    const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
+    fills.forEach(f => { if(f){ f.classList.remove('playing','buffering','paused'); f.style.width='0'; }});
+    // Sync LM UI
+    if (lmIsPlaying) {
+      lmIsPlaying = false;
+      lmSetWaveformState(false);
+    }
+  });
+  });
+  audio.addEventListener('waiting', () => {
+    const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
+    fills.forEach(f => { if(f){ f.classList.remove('playing','paused'); f.classList.add('buffering'); }});
+  });
+  audio.addEventListener('playing', () => {
+    const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
+    fills.forEach(f => { if(f){ f.classList.remove('buffering','paused'); f.classList.add('playing'); }});
+  });
 }
 
 function toggleFavorite(btn) {
@@ -934,7 +1011,7 @@ async function skipStation(dir) {
   // Filter out the currently playing station
   const pool = _lastStations.filter(s => !currentStation || s.url_resolved !== currentStation.url);
   const s = pool[Math.floor(Math.random() * pool.length)] || _lastStations[0];
-  if (s) playStation(s.url_resolved, s.name, s.country || 'Unknown', getCountryEmoji(s.countrycode));
+  if (s) playStation(s.url_resolved, s.name, s.country || 'Unknown', getCountryEmoji(s.countrycode), s.favicon||null);
 }
 
 function toggleMinimal() {
@@ -1023,7 +1100,7 @@ async function doSearch(q) {
         ? `<img src="${escHtml(s.favicon)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'">`
         : `<span style="font-size:1rem;line-height:1">${emoji}</span>`;
       el.innerHTML = `<div class="sr-icon" style="background:${srGrad};overflow:hidden">${srImg}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).map(t=>escHtml(t.trim())).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
-      el.onclick = () => { playStation(s.url_resolved, s.name, s.country||'Unknown', emoji); closeSearch(); };
+      el.onclick = () => { playStation(s.url_resolved, s.name, s.country||'Unknown', emoji, s.favicon||null); closeSearch(); };
       results.appendChild(el);
     });
   } catch(e) { results.innerHTML='<div class="search-empty">Signal degraded — try again</div>'; }
@@ -1184,7 +1261,7 @@ async function loadPodcastsPage() {
     combined.forEach(s=>{
       const card=document.createElement('div'); card.className='rec-card';
       card.innerHTML=`<div class="rec-art" style="background:var(--surface2);">${SVG.mic.replace('viewBox','width="22" height="22" viewBox')}</div><div class="rec-info"><div class="rec-name">${escHtml(s.name||s.desc)}</div><div class="rec-desc">${escHtml(s.country||s.desc||'Talk Radio')}</div></div>`;
-      card.onclick=()=>playStation(s.url_resolved||s.url, s.name, s.country||s.desc, '🎙');
+      card.onclick=()=>playStation(s.url_resolved||s.url, s.name, s.country||s.desc, '🎙', s.favicon||null);
       grid.appendChild(card);
     });
   } catch(e) {
@@ -2027,17 +2104,22 @@ setInterval(()=>{
   }
 },45000);
 
-// ─── LIVE FLUCTUATION ─────────────────────────────────────────────────────
-/* FIX 3.3: live-count uses real _onlineCount from Radio Browser, not pure random */
-setInterval(()=>{
-  const el = document.getElementById('live-count');
-  if(!el) return;
-  const base = (typeof window.__WNCORE_ONLINE_COUNT !== 'undefined' && window.__WNCORE_ONLINE_COUNT > 0)
-    ? window.__WNCORE_ONLINE_COUNT
-    : 12841;
-  const jitter = Math.floor(Math.random()*40) - 20;
-  el.textContent = (base + jitter).toLocaleString() + ' live';
-}, 7000);
+// Task 3.3: Hybrid telemetry — header live count uses real _onlineCount when available,
+// adds simulated concurrent-session variance on top of the real base count.
+// window.__WNCORE_ONLINE_COUNT is populated from Radio Browser API in bundle_append.js.
+(function _startHybridLiveCount() {
+  function _updateLiveCount() {
+    const el = document.getElementById('live-count');
+    if (!el) return;
+    // Real base from Radio Browser API (set by bundle_append), fallback to 12841
+    const realBase = window.__WNCORE_ONLINE_COUNT || 12841;
+    // Add small session variance (+/- 40) on top of real base
+    const count = realBase + Math.floor(Math.random() * 80) - 40;
+    el.textContent = `${Math.max(0, count).toLocaleString()} live`;
+  }
+  _updateLiveCount();
+  setInterval(_updateLiveCount, 7000);
+})();
 // Real listener count from Radio Browser stats API
 (async function fetchRealListenerCount(){
   // Sync globe stat with _onlineCount (the 2K–7K panel counter) for consistency
@@ -2260,10 +2342,77 @@ const LM_CHANNELS = [
 let lmCurrentChannel = null;
 let lmCurrentStationIdx = 0;
 let lmIsPlaying = false;
-const lmAudio = new Audio();
-// NOTE: Do NOT set crossOrigin='anonymous' here — most radio streams don't send
-// CORS headers, and setting it causes the browser to block them entirely.
-// Audio playback does not require CORS unless you need Web Audio API analysis.
+let _lmRetries = 0;
+
+// ── UNIFIED PLAYER: Live Music now routes through the global audio element
+// and playStation() so there is ONE audio instance across the entire site.
+// lmAudio is gone. State is tracked via lmIsPlaying/lmCurrentChannel as
+// semantic markers so the LM UI can update correctly, but actual playback
+// lives in the same `audio` element used by every other section.
+
+function lmStartStation() {
+  if (!lmCurrentChannel) return;
+  const station = lmCurrentChannel.stations[lmCurrentStationIdx];
+
+  const titleEl = document.getElementById('lm-np-title');
+  if (titleEl) titleEl.textContent = `Connecting… (${station.name})`;
+
+  // Route through unified playStation — stops any current stream first
+  const ch = lmCurrentChannel;
+  playStation(
+    station.url,
+    station.name,
+    `WNCORE ${ch.genre} · ${ch.license}`,
+    '🎵',
+    null
+  );
+
+  // Wait for play event to confirm success, then update LM-specific UI
+  const onPlay = () => {
+    _lmRetries = 0;
+    lmIsPlaying = true;
+    lmUpdateUI(station);
+    lmSetWaveformState(true);
+    if (window.WRONGNESS) window.WRONGNESS.spike(5);
+    audio.removeEventListener('play', onPlay);
+    audio.removeEventListener('error', onError);
+  };
+  const onError = () => {
+    _lmRetries++;
+    if (_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
+      lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
+      if (titleEl) titleEl.textContent = 'Trying next stream…';
+      setTimeout(lmStartStation, 300);
+    } else {
+      _lmRetries = 0;
+      lmIsPlaying = false;
+      lmSetWaveformState(false);
+      if (titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
+    }
+    audio.removeEventListener('play', onPlay);
+    audio.removeEventListener('error', onError);
+  };
+  audio.addEventListener('play', onPlay);
+  audio.addEventListener('error', onError);
+}
+
+function lmPlayChannel(chId) {
+  const ch = LM_CHANNELS.find(c => c.id === chId);
+  if (!ch || !ch.stations.length) return;
+
+  // No need to manually stop audio — playStation() handles that
+  _lmRetries = 0;
+  lmCurrentChannel = ch;
+  lmCurrentStationIdx = Math.floor(Math.random() * ch.stations.length);
+
+  // Update channel bar active state
+  document.querySelectorAll('.lm-ch-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.ch === chId)
+  );
+
+  lmStartStation();
+}
+
 
 function loadLiveMusicPage() {
   buildLmWaveform();
@@ -2337,82 +2486,6 @@ function lmSelectChannel(btn, chId) {
   lmPlayChannel(chId);
 }
 
-function lmPlayChannel(chId) {
-  const ch = LM_CHANNELS.find(c=>c.id===chId);
-  if(!ch || !ch.stations.length) return;
-  // Pause main radio player to avoid dual audio
-  if(typeof audio !== 'undefined' && !audio.paused) {
-    audio.pause();
-    isPlaying = false;
-    window.isPlaying = false;
-    if(typeof updateStatus === 'function') updateStatus('STANDBY');
-  }
-  // Stop existing lm audio cleanly
-  if(lmAudio.src) { lmAudio.pause(); lmAudio.src=''; }
-  _lmRetries = 0; // reset retry counter on every new channel selection
-  lmCurrentChannel = ch;
-  lmCurrentStationIdx = Math.floor(Math.random() * ch.stations.length);
-  // Update channel bar active state
-  document.querySelectorAll('.lm-ch-btn').forEach(b=>b.classList.toggle('active', b.dataset.ch===chId));
-  lmStartStation();
-}
-
-let _lmRetries = 0;
-
-// Handle stream errors that fire AFTER play() already resolved (e.g. stream dies mid-session)
-lmAudio.addEventListener('error', () => {
-  if (!lmCurrentChannel || !lmIsPlaying) return;
-  _lmRetries++;
-  if (_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
-    lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
-    const titleEl = document.getElementById('lm-np-title');
-    if (titleEl) titleEl.textContent = 'Trying next stream…';
-    setTimeout(lmStartStation, 500);
-  } else {
-    _lmRetries = 0;
-    lmIsPlaying = false;
-    lmSetWaveformState(false);
-    const titleEl = document.getElementById('lm-np-title');
-    if (titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
-  }
-});
-
-function lmStartStation() {
-  if(!lmCurrentChannel) return;
-  const station = lmCurrentChannel.stations[lmCurrentStationIdx];
-  const titleEl = document.getElementById('lm-np-title');
-  if(titleEl) titleEl.textContent = `Connecting… (${station.name})`;
-  lmAudio.src = station.url;
-  lmAudio.load();
-  const p = lmAudio.play();
-  if(p) {
-    p.then(()=>{
-      _lmRetries = 0;
-      lmIsPlaying = true;
-      lmUpdateUI(station);
-      lmSetWaveformState(true);
-      if(window.WRONGNESS) window.WRONGNESS.spike(5);
-    }).catch(()=>{
-      _lmRetries++;
-      // Cap at 5 attempts — don't silently loop through all 30+ fallbacks
-      if(_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
-        lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
-        if(titleEl) titleEl.textContent = `Trying next stream…`;
-        setTimeout(lmStartStation, 300);
-      } else {
-        _lmRetries = 0;
-        if(titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
-        lmSetWaveformState(false);
-      }
-    });
-  } else {
-    // play() returned undefined (very old browser) — assume playing
-    lmIsPlaying = true;
-    lmUpdateUI(station);
-    lmSetWaveformState(true);
-  }
-}
-
 function lmUpdateUI(station) {
   const ch = lmCurrentChannel;
   const npCard = document.getElementById('lm-np-card');
@@ -2437,41 +2510,31 @@ function lmUpdateUI(station) {
 }
 
 function lmTogglePlay() {
-  if(!lmCurrentChannel) {
-    // Auto-start all channels
-    lmPlayChannel('all');
-    return;
-  }
-  if(lmIsPlaying) {
-    lmAudio.pause();
-    lmIsPlaying = false;
-    const iconEl = document.getElementById('lm-play-icon');
-    if(iconEl) iconEl.setAttribute('d','M8 5v14l11-7z');
-    const npCard = document.getElementById('lm-np-card');
-    if(npCard) npCard.classList.remove('playing');
-    lmSetWaveformState(false);
-  } else {
-    lmAudio.play().then(()=>{
-      lmIsPlaying = true;
-      const station = lmCurrentChannel.stations[lmCurrentStationIdx];
-      lmUpdateUI(station);
-      lmSetWaveformState(true);
-    }).catch(()=>{ lmCurrentStationIdx=0; lmStartStation(); });
-  }
+  if (!lmCurrentChannel) { lmPlayChannel('all'); return; }
+  // Unified: delegate to global togglePlay — one audio element, one state
+  togglePlay();
+  // Sync LM-specific UI to whatever state togglePlay moved us to
+  const nowPlaying = !audio.paused;
+  lmIsPlaying = nowPlaying;
+  const iconEl = document.getElementById('lm-play-icon');
+  const npCard = document.getElementById('lm-np-card');
+  if (iconEl) iconEl.setAttribute('d', nowPlaying ? 'M6 19h4V5H6v14zm8-14v14h4V5h-4z' : 'M8 5v14l11-7z');
+  if (npCard) npCard.classList.toggle('playing', nowPlaying);
+  lmSetWaveformState(nowPlaying);
 }
 
 function lmNext() {
-  if(!lmCurrentChannel) return;
+  if (!lmCurrentChannel) return;
   lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
   lmStartStation();
 }
 
 function lmShuffle() {
-  if(!lmCurrentChannel) { lmPlayChannel('all'); return; }
-  const idx = Math.floor(Math.random() * lmCurrentChannel.stations.length);
-  lmCurrentStationIdx = idx;
+  if (!lmCurrentChannel) { lmPlayChannel('all'); return; }
+  lmCurrentStationIdx = Math.floor(Math.random() * lmCurrentChannel.stations.length);
   lmStartStation();
 }
+
 
 function lmSetWaveformState(playing) {
   const bars = document.querySelectorAll('.lm-bar');
@@ -2992,8 +3055,7 @@ async function feelingLucky() {
     if (stations.length && typeof playStation === 'function') {
       const s = stations[0];
       const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
-      playStation(s.url_resolved, s.name, s.country || 'Unknown', emoji);
-      showToast(`🎲 Tuned to: ${s.name}`, 'info');
+      playStation(s.url_resolved, s.name, s.country || 'Unknown', emoji, s.favicon||null);
     }
   } catch {
     showToast('Signal lost — try again', 'warn');
@@ -9477,7 +9539,6 @@ document.addEventListener('DOMContentLoaded', () => {
     canvas = document.createElement('canvas');
     canvas.id = 'wnc-constellation';
     canvas.setAttribute('aria-hidden', 'true');
-    canvas.style.display = 'block'; // override CSS default display:none
     canvas.style.pointerEvents = 'auto'; // allow touch
     canvas.style.zIndex = '1';
 
@@ -9523,16 +9584,19 @@ document.addEventListener('DOMContentLoaded', () => {
     var _resizeTimer;
     window.addEventListener('resize', function() {
       clearTimeout(_resizeTimer);
-      /* FIX 1.3: always resize canvas on orientation change; never kill it */
       _resizeTimer = setTimeout(function() {
+        // Task 1.3: Always resize the canvas on any dimension change (including
+        // orientation switches). The old else-branch was cancelling the RAF and
+        // hiding the canvas when isMobile() returned false on landscape — that
+        // caused the blank-canvas-on-rotate bug. Now we always resize + respawn.
         resize();
-        // Respawn stars that ended up outside new dimensions
         for (var i = 0; i < stars.length; i++) {
           if (stars[i].x > W * 1.15 || stars[i].y > H + 20) {
             stars[i].respawn();
           }
         }
         buildConnections();
+        // Restart animation loop if it was halted
         if (!raf) raf = requestAnimationFrame(loop);
       }, 120);
     });
@@ -10264,9 +10328,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof _realHandleCreate === 'function') return _realHandleCreate();
   };
 
-  // Override oauthGoogle / oauthDiscord to keep real path
-  // but add a subtle ARG easter egg: if exposure > 60, the button
-  // label glitches for 500ms before proceeding normally
+  // Override oauthGoogle to keep real auth path with mild ARG glitch
   function maybeGlitchBtn(btnSelector, label, cb) {
     var btn = document.querySelector(btnSelector);
     if (btn && typeof exposure !== 'undefined' && exposure > 60) {
@@ -10279,33 +10341,140 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   var _realOauthGoogle  = window.oauthGoogle;
-  var _realOauthDiscord = window.oauthDiscord;
 
   window.oauthGoogle = function() {
     maybeGlitchBtn('.oauth-btn.google', 'INTERCEPTING…', function() {
       if (typeof _realOauthGoogle === 'function') _realOauthGoogle();
     });
   };
-  /* FIX 4.1: ARG — glitch animation then teleport to cat API (no real auth) */
-  window.oauthDiscord = function() {
-    var btn = document.querySelector('.oauth-btn.discord');
-    if(btn) {
-      btn.classList.add('glitch-active');
-      var glitchTexts = ['INTERCEPTING…','SYS_ERR','NODE_09','̴̡̛͎̺͒̂C̵','REROUTING…'];
-      var i = 0;
-      var orig = btn.textContent;
-      var iv = setInterval(function(){
-        btn.textContent = glitchTexts[i++ % glitchTexts.length];
-      }, 80);
-      setTimeout(function(){
-        clearInterval(iv);
-        btn.classList.remove('glitch-active');
-        btn.textContent = orig;
-        window.location.href = 'https://thecatapi.com/';
-      }, 900);
-    } else {
-      window.location.href = 'https://thecatapi.com/';
+
+  // ── Task 4.1: Discord Login — Glitch UI + Cat Redirect ───────────────────
+  // The Discord button is redesigned as a visually unstable, "corrupted" element.
+  // Clicking it bypasses auth and teleports the browser to a cat image endpoint.
+  var _CAT_ENDPOINTS = [
+    'https://thecatapi.com/',
+    'https://cataas.com/',
+    'https://placekitten.com/',
+  ];
+
+  function _injectDiscordGlitch() {
+    var discordBtn = document.querySelector('.oauth-btn.discord');
+    if (!discordBtn || discordBtn.dataset.glitched) return;
+    discordBtn.dataset.glitched = '1';
+
+    // Override onclick entirely — no real auth, just the cat redirect
+    discordBtn.onclick = function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      _triggerDiscordGlitchAndRedirect(discordBtn);
+      return false;
+    };
+
+    // Inject glitch CSS if not already present
+    if (!document.getElementById('discord-glitch-css')) {
+      var style = document.createElement('style');
+      style.id = 'discord-glitch-css';
+      style.textContent = `
+        .oauth-btn.discord {
+          position: relative;
+          animation: discord-glitch-idle 3.5s step-end infinite;
+          text-shadow: none;
+        }
+        @keyframes discord-glitch-idle {
+          0%,85%   { transform: none; filter: none; }
+          86%      { transform: translateX(-2px) skewX(-3deg); filter: hue-rotate(90deg); }
+          87%      { transform: translateX(3px);  filter: hue-rotate(200deg) brightness(1.4); }
+          88%      { transform: translateX(-1px) skewX(2deg); filter: none; }
+          89%,100% { transform: none; filter: none; }
+        }
+        .oauth-btn.discord .discord-glitch-text::before,
+        .oauth-btn.discord .discord-glitch-text::after {
+          content: attr(data-text);
+          position: absolute;
+          left: 0; top: 0;
+          width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center;
+          pointer-events: none;
+        }
+        .oauth-btn.discord .discord-glitch-text::before {
+          color: #ff0066;
+          clip: rect(0,0,0,0);
+          animation: discord-slice-a 4s steps(2) infinite;
+          text-shadow: 2px 0 #ff0066;
+        }
+        .oauth-btn.discord .discord-glitch-text::after {
+          color: #00ffcc;
+          clip: rect(0,0,0,0);
+          animation: discord-slice-b 3s steps(3) infinite;
+          text-shadow: -2px 0 #00ffcc;
+        }
+        @keyframes discord-slice-a {
+          0%  { clip: rect(0px,9999px,0px,0); }
+          20% { clip: rect(4px,9999px,14px,0); transform: translateX(-3px); }
+          40% { clip: rect(0px,9999px,0px,0); }
+        }
+        @keyframes discord-slice-b {
+          0%  { clip: rect(0px,9999px,0px,0); }
+          15% { clip: rect(8px,9999px,18px,0); transform: translateX(3px); }
+          35% { clip: rect(0px,9999px,0px,0); }
+        }
+        .oauth-btn.discord.glitch-firing {
+          animation: discord-glitch-fire 0.06s step-end infinite !important;
+        }
+        @keyframes discord-glitch-fire {
+          0%   { transform: translateX(-4px) skewX(-8deg); filter: hue-rotate(180deg) brightness(2); background: #ff0066 !important; }
+          25%  { transform: translateX(6px)  skewX(5deg);  filter: hue-rotate(270deg); background: #00ffcc !important; }
+          50%  { transform: translateX(-3px) skewX(-4deg); filter: brightness(0.3); background: #000 !important; }
+          75%  { transform: translateX(4px);               filter: hue-rotate(90deg) brightness(1.8); }
+          100% { transform: none; filter: none; }
+        }
+      `;
+      document.head.appendChild(style);
     }
+
+    // Wrap inner text in glitch span
+    var svgEl = discordBtn.querySelector('svg');
+    var textNode = Array.from(discordBtn.childNodes).find(n => n.nodeType === 3 && n.textContent.trim());
+    if (textNode) {
+      var span = document.createElement('span');
+      span.className = 'discord-glitch-text';
+      span.dataset.text = textNode.textContent.trim();
+      span.style.cssText = 'position:relative;display:inline-block;';
+      span.textContent = textNode.textContent.trim();
+      discordBtn.replaceChild(span, textNode);
+    }
+  }
+
+  function _triggerDiscordGlitchAndRedirect(btn) {
+    btn.classList.add('glitch-firing');
+    btn.disabled = true;
+
+    // Rapid label flicker sequence
+    var labels = ['D̶̡͚͕I̵̬̱͐S̷͚̈́Ç̴͔̑̚Ö̷̻́R̴͙̎Ḓ̷͑̚', 'SIGNAL_KAGE', 'ACCESS GRANTED', '██████', '> REDIRECTING'];
+    var labelEl = btn.querySelector('.discord-glitch-text') || btn;
+    var li = 0;
+    var flickInterval = setInterval(function() {
+      labelEl.textContent = labels[li % labels.length];
+      li++;
+    }, 80);
+
+    // After 700ms of chaos — navigate to cat
+    setTimeout(function() {
+      clearInterval(flickInterval);
+      var catUrl = _CAT_ENDPOINTS[Math.floor(Math.random() * _CAT_ENDPOINTS.length)];
+      window.location.href = catUrl;
+    }, 700);
+  }
+
+  // Run immediately and also on auth modal open
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(_injectDiscordGlitch, 800);
+  });
+  // Re-inject on modal open (modal may render after DOMContentLoaded)
+  var _origShowAuth = window.showAuth;
+  window.showAuth = function() {
+    if (typeof _origShowAuth === 'function') _origShowAuth.apply(this, arguments);
+    setTimeout(_injectDiscordGlitch, 100);
   };
 
   // Add a small lore hint in the modal footer that doubles as an ARG clue
@@ -11226,11 +11395,97 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ── Patch loadProfilePage ─────────────────────────────────────────────────
-  // [NEUTRALIZED]: bundle_append.js contains the definitive fixed version with
-  // auth-wait + DOM-wait retry logic (FIX 3.1). This patch is intentionally
-  // left as a no-op so bundle_append.js's override wins the final chain.
-  // Do not re-enable this block.
   const _origLoadProfilePage = window.loadProfilePage || function(){};
+  window.loadProfilePage = async function() {
+    // Task 3.1: If _authUser is null, Supabase session may not have resolved yet.
+    // Wait for it (up to 3s) before giving up and showing signed-out state.
+    if (!_authUser) {
+      const sb = await _getSupabase().catch(() => null);
+      if (sb) {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session?.user) {
+            window._authUser = session.user;
+            // Also update the module-scoped _authUser via the existing setter
+            if (typeof _authUpdateNav === 'function') _authUpdateNav(session.user);
+          }
+        } catch(e) {}
+      }
+    }
+
+    _origLoadProfilePage();
+    if (!_authUser) { console.warn('[WNCORE profile] no _authUser at profile load'); return; }
+    _injectCSS();
+    INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
+
+    // If we already have a cached profile, inject it immediately — zero wait
+    const cached = window.__WNCORE_PROFILE;
+    if (cached) {
+      await _injectSections(cached);
+      // Backfill display name / avatar in case they changed
+      if (cached.display_name) {
+        const dn = document.getElementById('profile-display-name');
+        if (dn) dn.textContent = cached.display_name;
+      }
+      if (cached.avatar_url) {
+        const avLg = document.getElementById('profile-avatar-lg');
+        if (avLg) {
+          const initial = (cached.display_name || _authUser.email || '?')[0].toUpperCase();
+          avLg.innerHTML = `<img src="${_esc(cached.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+        }
+      }
+      // Silently refresh in background — update UI only if something changed
+      fetchProfile(true).then(profile => {
+        if (!profile) return;
+        const changed = !cached || profile.avatar_url !== cached.avatar_url || profile.display_name !== cached.display_name;
+        if (!changed) return;
+        INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
+        _injectSections(profile);
+        if (profile.display_name) {
+          const dn = document.getElementById('profile-display-name');
+          if (dn) dn.textContent = profile.display_name;
+        }
+        if (profile.avatar_url) {
+          const avLg = document.getElementById('profile-avatar-lg');
+          if (avLg) {
+            const initial = (profile.display_name || _authUser.email || '?')[0].toUpperCase();
+            avLg.innerHTML = `<img src="${_esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+          }
+        }
+        if (profile.hide_email) {
+          const de = document.getElementById('profile-display-email');
+          if (de) de.textContent = '••••@••••';
+        }
+      }).catch(() => {});
+      return;
+    }
+
+    // No cache yet — show skeleton immediately, then load real data
+    await _injectSections(null);
+
+    // Then fetch real data and re-inject
+    const profile = await fetchProfile(false).catch(e => { console.warn('[WNCORE profile] fetchProfile error', e); return null; });
+    if (profile) {
+      INJECTED_IDS.forEach(id => document.getElementById(id)?.remove());
+      await _injectSections(profile);
+    }
+
+    if (profile?.display_name) {
+      const dn = document.getElementById('profile-display-name');
+      if (dn) dn.textContent = profile.display_name;
+    }
+    if (profile?.avatar_url) {
+      const avLg = document.getElementById('profile-avatar-lg');
+      if (avLg) {
+        const initial = (profile.display_name || _authUser.email || '?')[0].toUpperCase();
+        avLg.innerHTML = `<img src="${_esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.textContent='${initial}'">`;
+      }
+    }
+    if (profile?.hide_email) {
+      const de = document.getElementById('profile-display-email');
+      if (de) de.textContent = '••••@••••';
+    }
+  };
 
   // ── On auth change, warm profile + apply avatar/node ─────────────────────
   document.addEventListener('DOMContentLoaded', async function() {

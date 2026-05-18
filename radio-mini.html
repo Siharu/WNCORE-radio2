@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>WNCORE · Radio</title>
+<meta name="description" content="WNCORE Mini — pocket radio. 12,000+ stations. Just play.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WNCORE·R">
+<meta name="theme-color" content="#0a0908">
+<link rel="icon" href="/favicon.ico">
+<link rel="manifest" href="/manifest-mini.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0908;
+  --surface:rgba(255,255,255,0.06);
+  --surface2:rgba(255,255,255,0.10);
+  --border:rgba(255,255,255,0.08);
+  --text:#f0ede8;
+  --text2:rgba(240,237,232,0.6);
+  --text3:rgba(240,237,232,0.3);
+  --accent:#c8472a;
+  --accent2:#e8824a;
+  --green:#22c55e;
+  --mono:'DM Mono',monospace;
+  --sans:'Syne',sans-serif;
+  --r:16px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bot:env(safe-area-inset-bottom,0px);
+}
+html,body{
+  width:100%;height:100%;max-width:420px;margin:0 auto;
+  background:var(--bg);color:var(--text);
+  font-family:var(--mono);overflow:hidden;
+  position:relative;
+}
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 50% at 50% 20%, rgba(200,71,42,0.08) 0%, transparent 70%);
+}
+
+/* ── APP SHELL ── */
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;
+  padding-top:calc(var(--safe-top) + 0px);
+  padding-bottom:var(--safe-bot)}
+
+/* ── HEADER ── */
+#mini-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px 10px;flex-shrink:0;
+}
+#mini-logo{font-family:var(--sans);font-size:1.1rem;font-weight:800;letter-spacing:-0.5px;
+  color:var(--text);display:flex;align-items:center;gap:6px}
+#mini-logo span{font-size:0.55rem;font-weight:400;letter-spacing:2px;
+  color:var(--accent);font-family:var(--mono);
+  border:1px solid rgba(200,71,42,0.4);padding:2px 5px;border-radius:3px}
+#mini-status{display:flex;align-items:center;gap:6px;font-size:0.58rem;letter-spacing:1px;color:var(--text3)}
+.mini-dot{width:6px;height:6px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.mini-dot.live{background:var(--accent);animation:blink 1.4s step-end infinite;
+  box-shadow:0 0 6px rgba(200,71,42,0.5)}
+.mini-dot.buffering{background:#eab308;animation:blink 0.6s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+
+/* ── TAB BAR ── */
+#tab-bar{display:flex;padding:0 20px;gap:4px;flex-shrink:0;margin-bottom:12px}
+.tab{flex:1;padding:7px 0;text-align:center;font-size:0.6rem;letter-spacing:1.5px;
+  color:var(--text3);cursor:pointer;border-radius:8px;transition:all 0.15s;
+  border:1px solid transparent}
+.tab.active{background:var(--surface);border-color:var(--border);color:var(--text)}
+
+/* ── PAGES ── */
+.page{flex:1;overflow-y:auto;overflow-x:hidden;display:none;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+  -webkit-overflow-scrolling:touch}
+.page::-webkit-scrollbar{width:2px}
+.page::-webkit-scrollbar-thumb{background:var(--border)}
+.page.active{display:block}
+
+/* ── NOW PLAYING PAGE ── */
+#pg-now{display:flex;flex-direction:column;align-items:center;padding:0 20px 20px;gap:16px}
+
+/* Art */
+#mini-art-wrap{width:100%;aspect-ratio:1;max-width:280px;position:relative;
+  border-radius:20px;overflow:hidden;background:var(--surface);
+  box-shadow:0 24px 48px rgba(0,0,0,0.5)}
+#mini-art{width:100%;height:100%;object-fit:cover;display:block;
+  transition:opacity 0.4s}
+#mini-art-fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px}
+#mini-art-waveform{position:absolute;bottom:0;left:0;right:0;height:48px;
+  display:flex;align-items:flex-end;gap:2px;padding:8px 10px;
+  background:linear-gradient(transparent,rgba(0,0,0,0.6))}
+.mini-wave-bar{flex:1;border-radius:2px 2px 0 0;min-height:4px;
+  background:rgba(200,71,42,0.7);transition:height 0.1s}
+.mini-wave-bar.fake{animation:fake-wave 1s ease-in-out infinite}
+@keyframes fake-wave{0%,100%{height:6px}50%{height:28px}}
+
+/* Station info */
+#mini-station-info{width:100%;text-align:center}
+#mini-station-name{font-family:var(--sans);font-size:1.3rem;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px}
+#mini-station-meta{font-size:0.62rem;color:var(--text2);letter-spacing:0.5px}
+#mini-track{font-size:0.6rem;color:var(--text3);margin-top:3px;
+  font-style:italic;min-height:16px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Controls */
+#mini-controls{display:flex;align-items:center;justify-content:center;gap:20px;width:100%}
+.mini-ctrl-btn{width:44px;height:44px;border-radius:50%;background:var(--surface);
+  border:1px solid var(--border);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all 0.15s;flex-shrink:0}
+.mini-ctrl-btn:hover{background:var(--surface2);color:var(--text)}
+.mini-ctrl-btn:active{transform:scale(0.92)}
+#mini-play-btn{width:60px;height:60px;background:var(--accent);
+  border:none;color:#fff;box-shadow:0 8px 20px rgba(200,71,42,0.35)}
+#mini-play-btn:hover{background:#d95030;box-shadow:0 10px 24px rgba(200,71,42,0.45)}
+#mini-play-btn svg{width:22px;height:22px}
+.mini-ctrl-btn svg{width:18px;height:18px}
+
+/* Volume */
+#mini-vol-row{display:flex;align-items:center;gap:10px;width:100%}
+#mini-vol-icon{color:var(--text3);flex-shrink:0}
+#mini-vol-icon svg{width:16px;height:16px}
+#mini-vol-slider{flex:1;appearance:none;height:3px;
+  border-radius:2px;background:var(--surface2);outline:none;cursor:pointer}
+#mini-vol-slider::-webkit-slider-thumb{appearance:none;width:14px;height:14px;
+  border-radius:50%;background:var(--text);cursor:pointer}
+#mini-vol-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;
+  background:var(--text);cursor:pointer;border:none}
+#mini-vol-val{font-size:0.58rem;color:var(--text3);width:28px;text-align:right;flex-shrink:0}
+
+/* Fav + share row */
+#mini-action-row{display:flex;gap:10px;width:100%}
+.mini-action-btn{flex:1;padding:10px;border-radius:10px;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text2);font-family:var(--mono);font-size:0.6rem;letter-spacing:1px;
+  cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.mini-action-btn:hover{background:var(--surface2);color:var(--text)}
+.mini-action-btn.faved{color:var(--accent);border-color:rgba(200,71,42,0.3)}
+.mini-action-btn svg{width:14px;height:14px;flex-shrink:0}
+
+/* ── SEARCH PAGE ── */
+#pg-search{padding:0 16px 20px}
+#mini-search-wrap{position:relative;margin-bottom:14px}
+#mini-search-input{width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px 12px 38px;color:var(--text);
+  font-family:var(--mono);font-size:0.75rem;outline:none;
+  transition:border-color 0.2s;-webkit-appearance:none}
+#mini-search-input:focus{border-color:rgba(200,71,42,0.4)}
+#mini-search-input::placeholder{color:var(--text3)}
+#mini-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  color:var(--text3);pointer-events:none}
+#mini-search-icon svg{width:14px;height:14px}
+
+/* Genre pills */
+#mini-genres{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mini-genre{padding:5px 10px;border-radius:20px;font-size:0.58rem;letter-spacing:1px;
+  background:var(--surface);border:1px solid var(--border);color:var(--text3);
+  cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.mini-genre:hover{color:var(--text);border-color:rgba(255,255,255,0.15)}
+.mini-genre.active{background:rgba(200,71,42,0.12);border-color:rgba(200,71,42,0.35);color:var(--accent)}
+
+/* Station list */
+#mini-results{display:flex;flex-direction:column;gap:2px}
+.mini-station-row{display:flex;align-items:center;gap:10px;padding:10px 10px;
+  border-radius:10px;cursor:pointer;transition:background 0.12s}
+.mini-station-row:hover,.mini-station-row.playing{background:var(--surface)}
+.mini-station-row.playing{border:1px solid rgba(200,71,42,0.2)}
+.ms-art{width:38px;height:38px;border-radius:8px;flex-shrink:0;overflow:hidden;
+  background:var(--surface2);display:flex;align-items:center;justify-content:center}
+.ms-art img{width:100%;height:100%;object-fit:cover}
+.ms-info{flex:1;min-width:0}
+.ms-name{font-size:0.75rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ms-meta{font-size:0.6rem;color:var(--text3);margin-top:2px}
+.ms-play{width:30px;height:30px;border-radius:50%;background:var(--surface2);
+  border:1px solid var(--border);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--text2);transition:all 0.15s}
+.ms-play:hover,.mini-station-row.playing .ms-play{background:var(--accent);border-color:var(--accent);color:#fff}
+.ms-play svg{width:12px;height:12px}
+.ms-loading{text-align:center;padding:24px;font-size:0.65rem;color:var(--text3);letter-spacing:1px}
+
+/* ── SAVED PAGE ── */
+#pg-saved{padding:0 16px 20px}
+.pg-section-title{font-size:0.55rem;letter-spacing:2px;color:var(--text3);
+  padding:12px 2px 8px;border-bottom:1px solid var(--border);margin-bottom:8px}
+#mini-saved-list{display:flex;flex-direction:column;gap:2px}
+#mini-saved-empty{text-align:center;padding:40px 20px;font-size:0.65rem;
+  color:var(--text3);line-height:2}
+
+/* ── SNACKBAR ── */
+#mini-snack{position:fixed;bottom:calc(var(--safe-bot) + 16px);left:50%;
+  transform:translateX(-50%) translateY(20px);z-index:100;
+  background:rgba(15,14,12,0.95);border:1px solid var(--border);
+  border-radius:10px;padding:10px 18px;font-size:0.65rem;letter-spacing:0.5px;
+  opacity:0;pointer-events:none;transition:all 0.3s;white-space:nowrap;
+  backdrop-filter:blur(8px)}
+#mini-snack.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── SKELETON ── */
+.skel{background:var(--surface);border-radius:6px;animation:skel-pulse 1.5s ease-in-out infinite}
+@keyframes skel-pulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+/* ── SCROLLBAR ── */
+.page{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.06) transparent}
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- Header -->
+  <header id="mini-header">
+    <div id="mini-logo">WNCORE <span>RADIO</span></div>
+    <div id="mini-status">
+      <div class="mini-dot" id="mini-signal-dot"></div>
+      <span id="mini-signal-text">STANDBY</span>
+    </div>
+  </header>
+
+  <!-- Tab bar -->
+  <div id="tab-bar">
+    <div class="tab active" data-page="now">NOW PLAYING</div>
+    <div class="tab" data-page="search">BROWSE</div>
+    <div class="tab" data-page="saved">SAVED</div>
+  </div>
+
+  <!-- ── NOW PLAYING PAGE ── -->
+  <div class="page active" id="pg-now">
+    <div id="mini-art-wrap">
+      <img id="mini-art" src="" alt="" style="opacity:0">
+      <div id="mini-art-fallback">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,232,0.15)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/><path d="M10.5 19c1.48-3.52 2.06-6.52 1.5-10"/><path d="M12 2a10 10 0 010 20"/></svg>
+        <span style="font-size:0.6rem;color:rgba(240,237,232,0.15);letter-spacing:2px">NO SIGNAL</span>
+      </div>
+      <div id="mini-art-waveform"></div>
+    </div>
+
+    <div id="mini-station-info">
+      <div id="mini-station-name">— Select a Station —</div>
+      <div id="mini-station-meta">WNCORE GLOBAL ARRAY · 12,000+ STATIONS</div>
+      <div id="mini-track"></div>
+    </div>
+
+    <div id="mini-controls">
+      <button class="mini-ctrl-btn" id="mini-prev-btn" title="Previous" onclick="playPrev()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+      </button>
+      <button class="mini-ctrl-btn" id="mini-play-btn" onclick="togglePlay()">
+        <svg id="mini-play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="mini-ctrl-btn" id="mini-next-btn" title="Next" onclick="playNext()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zm2-8.14L11.03 12 8 14.14V9.86zM16 6h2v12h-2z"/></svg>
+      </button>
+    </div>
+
+    <div id="mini-vol-row">
+      <span id="mini-vol-icon">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+      </span>
+      <input type="range" id="mini-vol-slider" min="0" max="100" value="80" oninput="setVol(this.value)">
+      <span id="mini-vol-val">80</span>
+    </div>
+
+    <div id="mini-action-row">
+      <button class="mini-action-btn" id="mini-fav-btn" onclick="toggleFav()">
+        <svg id="mini-fav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+        SAVE
+      </button>
+      <button class="mini-action-btn" id="mini-share-btn" onclick="shareStation()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        SHARE
+      </button>
+      <button class="mini-action-btn" onclick="window.location.href='/'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+        FULL SITE
+      </button>
+    </div>
+  </div>
+
+  <!-- ── SEARCH / BROWSE PAGE ── -->
+  <div class="page" id="pg-search">
+    <div id="mini-search-wrap">
+      <span id="mini-search-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </span>
+      <input id="mini-search-input" type="search" placeholder="Search stations..." autocomplete="off">
+    </div>
+    <div id="mini-genres">
+      <div class="mini-genre active" data-tag="">TOP</div>
+      <div class="mini-genre" data-tag="jazz">JAZZ</div>
+      <div class="mini-genre" data-tag="classical">CLASSICAL</div>
+      <div class="mini-genre" data-tag="rock">ROCK</div>
+      <div class="mini-genre" data-tag="pop">POP</div>
+      <div class="mini-genre" data-tag="electronic">ELECTRONIC</div>
+      <div class="mini-genre" data-tag="hip hop">HIP HOP</div>
+      <div class="mini-genre" data-tag="ambient">AMBIENT</div>
+      <div class="mini-genre" data-tag="news">NEWS</div>
+      <div class="mini-genre" data-tag="anime">ANIME</div>
+      <div class="mini-genre" data-tag="lo-fi">LO-FI</div>
+    </div>
+    <div id="mini-results">
+      <div class="ms-loading">SCANNING FREQUENCIES…</div>
+    </div>
+  </div>
+
+  <!-- ── SAVED PAGE ── -->
+  <div class="page" id="pg-saved">
+    <div class="pg-section-title">SAVED STATIONS</div>
+    <div id="mini-saved-list"></div>
+    <div id="mini-saved-empty" style="display:none">
+      <div style="font-size:1.5rem;margin-bottom:8px;opacity:0.3">♡</div>
+      No saved stations yet.<br>Tap SAVE on any station<br>while it's playing.
+    </div>
+  </div>
+</div>
+
+<!-- Snackbar -->
+<div id="mini-snack"></div>
+
+<!-- Howler.js -->
+<script src="https://unpkg.com/howler@2.2.4/dist/howler.min.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const S = {
+  playing: false,
+  loading: false,
+  currentStation: null,
+  queue: [],          // current browsed list
+  queueIdx: -1,
+  howl: null,
+  howlPrev: null,     // for crossfade
+  volume: 0.8,
+  favs: [],
+  waveRaf: null,
+  waveAnalyser: null,
+};
+
+// Persistence
+function loadFavs() {
+  try { S.favs = JSON.parse(localStorage.getItem('wncore-mini-favs') || '[]'); } catch{ S.favs=[]; }
+}
+function saveFavs() {
+  try { localStorage.setItem('wncore-mini-favs', JSON.stringify(S.favs)); } catch{}
+}
+function loadVol() {
+  try {
+    const v = parseFloat(localStorage.getItem('wncore-vol') || '0.8');
+    S.volume = isNaN(v) ? 0.8 : Math.min(1, Math.max(0, v));
+  } catch{}
+}
+function saveVol(v) { try{ localStorage.setItem('wncore-vol', v); }catch{} }
+function saveLastStation(st) {
+  try{ localStorage.setItem('wncore-mini-last', JSON.stringify(st)); }catch{}
+}
+function loadLastStation() {
+  try{ return JSON.parse(localStorage.getItem('wncore-mini-last') || 'null'); }catch{ return null; }
+}
+
+/* ═══════════════════════════════════════════════════
+   RADIO BROWSER API
+═══════════════════════════════════════════════════ */
+const API_BASES = [
+  'https://de1.api.radio-browser.info/json',
+  'https://at1.api.radio-browser.info/json',
+  'https://nl1.api.radio-browser.info/json',
+];
+let apiBase = API_BASES[0];
+
+async function fetchStations(params = {}) {
+  const defaults = {limit:40, https:true, order:'clickcount', reverse:true};
+  const merged = {...defaults, ...params};
+  const qs = new URLSearchParams(merged).toString();
+  for (const base of API_BASES) {
+    try {
+      const r = await fetch(`${base}/stations/search?${qs}`, {
+        headers:{'User-Agent':'WNCORE-Mini/1.0'}
+      });
+      if (r.ok) { apiBase = base; return r.json(); }
+    } catch{}
+  }
+  return [];
+}
+
+/* ═══════════════════════════════════════════════════
+   HOWLER AUDIO ENGINE
+═══════════════════════════════════════════════════ */
+function createHowl(url) {
+  return new Howl({
+    src: [url],
+    html5: true,        // required for streaming
+    format: ['mp3','aac','ogg'],
+    volume: S.volume,
+    onplay: () => { S.playing=true; setPlaying(true); startWave(); },
+    onpause: () => { S.playing=false; setPlaying(false); },
+    onstop: () => { S.playing=false; setPlaying(false); },
+    onloaderror: () => { snack('Stream unavailable — trying next'); setTimeout(playNext,1000); },
+    onplayerror: (id, err) => {
+      // Try unlocking AudioContext on iOS
+      Howler.ctx && Howler.ctx.resume && Howler.ctx.resume();
+      S.howl && S.howl.play();
+    },
+  });
+}
+
+window.togglePlay = function() {
+  if (!S.currentStation) {
+    loadGenre(''); // load top stations and play first
+    return;
+  }
+  if (S.loading) return;
+  if (S.playing) {
+    S.howl && S.howl.pause();
+  } else {
+    S.howl ? S.howl.play() : playStation(S.currentStation);
+  }
+};
+
+function playStation(st) {
+  if (!st?.url_resolved) return;
+  setStatus('loading');
+
+  // Crossfade: fade out current howl
+  if (S.howl) {
+    const old = S.howl;
+    old.fade(S.volume, 0, 600);
+    setTimeout(() => old.unload(), 700);
+  }
+
+  S.currentStation = st;
+  S.playing = false;
+  S.loading = true;
+  saveLastStation(st);
+
+  // Update queue index
+  const idx = S.queue.findIndex(x=>x.stationuuid===st.stationuuid);
+  if (idx !== -1) S.queueIdx = idx;
+
+  updateNowPlaying(st);
+
+  S.howl = createHowl(st.url_resolved);
+  S.howl.fade(0, S.volume, 600);
+  S.howl.play();
+
+  // Log to WNCORE history for constellation unlock
+  logToHistory(st);
+  updateFavBtn();
+}
+
+window.playNext = function() {
+  if (S.queue.length === 0) return;
+  S.queueIdx = (S.queueIdx + 1) % S.queue.length;
+  playStation(S.queue[S.queueIdx]);
+};
+window.playPrev = function() {
+  if (S.queue.length === 0) return;
+  S.queueIdx = (S.queueIdx - 1 + S.queue.length) % S.queue.length;
+  playStation(S.queue[S.queueIdx]);
+};
+
+/* ═══════════════════════════════════════════════════
+   WAVEFORM VISUALIZER (via Howler's AudioContext)
+═══════════════════════════════════════════════════ */
+function startWave() {
+  if (S.waveRaf) cancelAnimationFrame(S.waveRaf);
+  const wrap = document.getElementById('mini-art-waveform');
+  wrap.innerHTML = '';
+
+  // Try to tap Howler's AudioContext
+  try {
+    if (!S.waveAnalyser && Howler.ctx) {
+      S.waveAnalyser = Howler.ctx.createAnalyser();
+      S.waveAnalyser.fftSize = 32;
+      // Howler connects its master gain to destination — we tap in between
+      Howler.masterGain.connect(S.waveAnalyser);
+    }
+  } catch{}
+
+  const barCount = 16;
+  const bars = [];
+  for (let i=0; i<barCount; i++) {
+    const b = document.createElement('div');
+    b.className = 'mini-wave-bar';
+    b.style.animationDelay = `${i*0.06}s`;
+    wrap.appendChild(b);
+    bars.push(b);
+  }
+
+  if (!S.waveAnalyser) {
+    // Fake animation fallback
+    bars.forEach(b=>b.classList.add('fake'));
+    return;
+  }
+
+  const buf = new Uint8Array(S.waveAnalyser.frequencyBinCount);
+  function draw() {
+    S.waveRaf = requestAnimationFrame(draw);
+    if (!S.playing) return;
+    S.waveAnalyser.getByteFrequencyData(buf);
+    const slice = Math.floor(buf.length / barCount);
+    bars.forEach((b,i) => {
+      const avg = buf.slice(i*slice,(i+1)*slice).reduce((a,c)=>a+c,0)/slice;
+      const h = 4 + (avg/255)*38;
+      b.style.height = h + 'px';
+      b.style.opacity = 0.4 + (avg/255)*0.6;
+    });
+  }
+  draw();
+}
+
+/* ═══════════════════════════════════════════════════
+   UI UPDATES
+═══════════════════════════════════════════════════ */
+function setStatus(state) {
+  const dot = document.getElementById('mini-signal-dot');
+  const txt = document.getElementById('mini-signal-text');
+  dot.className = 'mini-dot';
+  if (state==='live'){ dot.classList.add('live'); txt.textContent='LIVE'; }
+  else if (state==='loading'){ dot.classList.add('buffering'); txt.textContent='BUFFERING'; }
+  else { txt.textContent='STANDBY'; }
+  S.loading = state==='loading';
+}
+
+function setPlaying(playing) {
+  const icon = document.getElementById('mini-play-icon');
+  if (playing) {
+    icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+    setStatus('live');
+  } else {
+    icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+    if (!S.loading) setStatus('standby');
+  }
+}
+
+function updateNowPlaying(st) {
+  document.getElementById('mini-station-name').textContent = st.name || '—';
+  const flag = countryFlag(st.countrycode);
+  const tags = (st.tags||'').split(',').slice(0,2).filter(Boolean).join(' · ');
+  document.getElementById('mini-station-meta').textContent =
+    [flag, st.country||'—', tags||'Radio'].filter(Boolean).join(' · ');
+  document.getElementById('mini-track').textContent = '— receiving signal —';
+
+  // Art
+  const img = document.getElementById('mini-art');
+  const fallback = document.getElementById('mini-art-fallback');
+  if (st.favicon && st.favicon.startsWith('http')) {
+    img.style.opacity=0;
+    img.onload = () => { img.style.opacity=1; fallback.style.display='none'; };
+    img.onerror = () => { img.style.opacity=0; fallback.style.display='flex'; };
+    img.src = st.favicon;
+  } else {
+    img.style.opacity=0;
+    fallback.style.display='flex';
+  }
+
+  // Mark playing row in browse list
+  document.querySelectorAll('.mini-station-row').forEach(row => {
+    row.classList.toggle('playing', row.dataset.uuid===st.stationuuid);
+  });
+}
+
+function updateFavBtn() {
+  const btn = document.getElementById('mini-fav-btn');
+  const icon = document.getElementById('mini-fav-icon');
+  if (!btn || !icon) return;
+  const isFaved = S.currentStation &&
+    S.favs.some(f => f.stationuuid === S.currentStation.stationuuid);
+  btn.classList.toggle('faved', isFaved);
+  icon.setAttribute('fill', isFaved ? 'currentColor' : 'none');
+  // Update text node only — don't touch innerHTML (would destroy onclick)
+  const textNodes = Array.from(btn.childNodes).filter(n => n.nodeType === 3);
+  if (textNodes.length) {
+    textNodes[textNodes.length - 1].textContent = isFaved ? ' SAVED' : ' SAVE';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   STATION LIST RENDERING
+═══════════════════════════════════════════════════ */
+// Station data store — avoids XSS-risky onclick attribute injection
+const _stationStore = new Map();
+
+function renderStations(stations, containerId) {
+  const el = document.getElementById(containerId);
+  if (!stations.length) {
+    el.innerHTML = '<div class="ms-loading">No stations found</div>';
+    return;
+  }
+  // Store station objects by uuid for safe retrieval
+  stations.forEach(st => { if (st.stationuuid) _stationStore.set(st.stationuuid, st); });
+
+  el.innerHTML = stations.map(st => {
+    const flag = countryFlag(st.countrycode);
+    const tags = (st.tags||'').split(',').slice(0,1).filter(Boolean).join('');
+    const artHtml = st.favicon && st.favicon.startsWith('http')
+      ? `<img src="${esc(st.favicon)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(240,237,232,0.2)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/></svg>`;
+    return `<div class="mini-station-row" data-uuid="${esc(st.stationuuid)}">
+      <div class="ms-art">${artHtml}</div>
+      <div class="ms-info">
+        <div class="ms-name">${esc(st.name)}</div>
+        <div class="ms-meta">${flag} ${esc(st.country||'—')}${tags?' · '+esc(tags):''} · ${st.bitrate?st.bitrate+'k':''}</div>
+      </div>
+      <div class="ms-play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+    </div>`;
+  }).join('');
+
+  // Attach click handlers after render — no inline onclick, no XSS
+  el.querySelectorAll('.mini-station-row').forEach((row, i) => {
+    row.addEventListener('click', () => {
+      const uuid = row.dataset.uuid;
+      const st = _stationStore.get(uuid);
+      if (!st) return;
+      // Rebuild queue from current visible rows
+      S.queue = Array.from(el.querySelectorAll('.mini-station-row'))
+        .map(r => _stationStore.get(r.dataset.uuid))
+        .filter(Boolean);
+      S.queueIdx = i;
+      playStation(st);
+      switchTab('now');
+    });
+  });
+
+  // Mark currently playing
+  if (S.currentStation) {
+    el.querySelectorAll('.mini-station-row').forEach(row => {
+      row.classList.toggle('playing', row.dataset.uuid === S.currentStation.stationuuid);
+    });
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   BROWSE / SEARCH
+═══════════════════════════════════════════════════ */
+let searchTimeout = null;
+let activeGenre = '';
+
+async function loadGenre(tag) {
+  activeGenre = tag;
+  document.getElementById('mini-results').innerHTML = '<div class="ms-loading">SCANNING FREQUENCIES…</div>';
+  const params = tag
+    ? {limit:40,https:true,order:'votes',reverse:true,tag:tag}
+    : {limit:40,https:true,order:'clickcount',reverse:true};
+  const stations = await fetchStations(params).catch(()=>[]);
+  S.queue = stations;
+  S.queueIdx = 0;
+  renderStations(stations, 'mini-results');
+}
+
+document.getElementById('mini-search-input').addEventListener('input', e => {
+  clearTimeout(searchTimeout);
+  const q = e.target.value.trim();
+  if (!q) { loadGenre(activeGenre); return; }
+  searchTimeout = setTimeout(async () => {
+    document.getElementById('mini-results').innerHTML = '<div class="ms-loading">SEARCHING…</div>';
+    const stations = await fetchStations({limit:40,https:true,name:q,order:'clickcount',reverse:true}).catch(()=>[]);
+    S.queue = stations;
+    renderStations(stations, 'mini-results');
+  }, 400);
+});
+
+document.getElementById('mini-genres').addEventListener('click', e => {
+  const genre = e.target.closest('.mini-genre');
+  if (!genre) return;
+  document.querySelectorAll('.mini-genre').forEach(g=>g.classList.remove('active'));
+  genre.classList.add('active');
+  document.getElementById('mini-search-input').value = '';
+  loadGenre(genre.dataset.tag || '');
+});
+
+/* ═══════════════════════════════════════════════════
+   SAVED STATIONS
+═══════════════════════════════════════════════════ */
+window.toggleFav = function() {
+  if (!S.currentStation) return;
+  const idx = S.favs.findIndex(f=>f.stationuuid===S.currentStation.stationuuid);
+  if (idx === -1) {
+    S.favs.unshift({
+      name:S.currentStation.name,
+      url_resolved:S.currentStation.url_resolved,
+      country:S.currentStation.country,
+      countrycode:S.currentStation.countrycode,
+      tags:S.currentStation.tags,
+      favicon:S.currentStation.favicon,
+      stationuuid:S.currentStation.stationuuid,
+    });
+    snack('Saved to your stations');
+  } else {
+    S.favs.splice(idx,1);
+    snack('Removed from saved');
+  }
+  saveFavs();
+  updateFavBtn();
+  renderSaved();
+};
+
+function renderSaved() {
+  const list = document.getElementById('mini-saved-list');
+  const empty = document.getElementById('mini-saved-empty');
+  if (!S.favs.length) {
+    list.innerHTML = ''; empty.style.display = 'block'; return;
+  }
+  empty.style.display = 'none';
+  renderStations(S.favs, 'mini-saved-list');
+}
+
+/* ═══════════════════════════════════════════════════
+   VOLUME
+═══════════════════════════════════════════════════ */
+window.setVol = function(val) {
+  S.volume = val/100;
+  document.getElementById('mini-vol-val').textContent = val;
+  if (S.howl) S.howl.volume(S.volume);
+  Howler.volume(S.volume);
+  saveVol(S.volume);
+};
+
+/* ═══════════════════════════════════════════════════
+   SHARE
+═══════════════════════════════════════════════════ */
+window.shareStation = function() {
+  if (!S.currentStation) return;
+  const text = `Listening to ${S.currentStation.name} on WNCORE Radio`;
+  const url = `https://wncore-radio.vercel.app`;
+  if (navigator.share) {
+    navigator.share({title:'WNCORE Radio', text, url}).catch(()=>{});
+  } else {
+    navigator.clipboard?.writeText(`${text} — ${url}`).then(()=>snack('Copied to clipboard')).catch(()=>{});
+  }
+};
+
+/* ═══════════════════════════════════════════════════
+   HISTORY LOGGING (for constellation unlocks)
+═══════════════════════════════════════════════════ */
+function logToHistory(st) {
+  try {
+    const key = 'wncore-history-v2';
+    const hist = JSON.parse(localStorage.getItem(key)||'[]');
+    hist.unshift({
+      name:st.name, url:st.url_resolved,
+      country:st.country||'', tags:st.tags||'',
+      ts:Date.now()
+    });
+    localStorage.setItem(key, JSON.stringify(hist.slice(0,30)));
+  } catch{}
+}
+
+/* ═══════════════════════════════════════════════════
+   TAB SYSTEM
+═══════════════════════════════════════════════════ */
+window.switchTab = function(id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.page===id));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===`pg-${id}`));
+  if (id==='saved') renderSaved();
+};
+document.getElementById('tab-bar').addEventListener('click', e=>{
+  const tab = e.target.closest('.tab');
+  if (tab) switchTab(tab.dataset.page);
+});
+
+/* ═══════════════════════════════════════════════════
+   HELPERS
+═══════════════════════════════════════════════════ */
+function esc(s){ return String(s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function countryFlag(cc) {
+  if (!cc||cc.length!==2) return '🌐';
+  try{
+    return String.fromCodePoint(...[...cc.toUpperCase()].map(c=>c.charCodeAt(0)+127397));
+  }catch{return '🌐';}
+}
+function snack(msg,dur=2200){
+  const el=document.getElementById('mini-snack');
+  el.textContent=msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),dur);
+}
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+async function init() {
+  loadFavs();
+  loadVol();
+
+  // Apply saved volume
+  const volSlider = document.getElementById('mini-vol-slider');
+  volSlider.value = Math.round(S.volume*100);
+  document.getElementById('mini-vol-val').textContent = volSlider.value;
+
+  // Load top stations
+  loadGenre('');
+
+  // Restore last station display (don't autoplay — requires user gesture)
+  const last = loadLastStation();
+  if (last) {
+    S.currentStation = last;
+    updateNowPlaying(last);
+    updateFavBtn();
+    snack('Tap play to resume: ' + last.name, 3000);
+  }
+
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(()=>{});
+  }
+}
+
+init();
+</script>
+</body>
+</html>

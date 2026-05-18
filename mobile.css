@@ -151,21 +151,14 @@
   .anime-banner-video,
   .globe-ambient-video { display:none!important; }
 }
-@media (max-width: 768px) {
-  .header-inner { padding: 0 14px; gap: 12px; }
-  nav#main-nav { display: none !important; }
-  .theme-toggle-labels { display: none; }
-  .live-dot { display: none; }
-  .minimal-btn { display: none; }
-  .sign-in-btn { display: none; }
-  .mobile-menu-btn { display: flex !important; }
-  header { height: var(--header-h); }
-  .logo-mark { font-size: 1.15rem; }
-}
+/* ── Header responsive rules now live in style.css (fluid adaptive system).
+   Breakpoints: nav hides ≤900px, sign-in/theme-labels ≤768px,
+   clock ≤600px, theme-toggle ≤480px. Mobile-menu-btn always visible. ── */
 @media (max-width: 480px) {
   .ticker-label { display: none; }
   .ticker-wrap { height: 24px; }
   .ticker-inner { font-size: 0.54rem; }
+
 }
 @media (max-width: 768px) {
   .globe-section { height: 260px; }
@@ -671,23 +664,8 @@ body:not(.mobile-menu-open) {
 /* ── Small phones (≤480px): tighter but still open ── */
 
 /* ── Mobile nav drawer: breathe ── */
+/* Header responsive rules → style.css fluid adaptive system */
 
-@media (max-width: 768px) {
-  .header-inner { padding: 0 14px; gap: 12px; }
-  nav#main-nav { display: none !important; }
-  .theme-toggle-labels { display: none; }
-  .live-dot { display: none; }
-  .minimal-btn { display: none; }
-  .sign-in-btn { display: none; }
-  .mobile-menu-btn { display: flex !important; }
-  header { height: var(--header-h); }
-  .logo-mark { font-size: 1.15rem; }
-}
-@media (max-width: 480px) {
-  .ticker-label { display: none; }
-  .ticker-wrap { height: 24px; }
-  .ticker-inner { font-size: 0.54rem; }
-}
 @media (max-width: 768px) {
   .globe-section { height: 260px; }
   .globe-overlay-left {
@@ -2147,99 +2125,33 @@ body:not(.mobile-menu-open) {
 }
 @media (max-width: 768px) {
   .station-table-wrap {
-    overflow-x: hidden;
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     width: 100%;
     max-width: 100vw;
   }
 
-  /* Fixed layout: browser won't auto-squish columns */
-  .station-table {
-    table-layout: fixed !important;
-    width: 100% !important;
-  }
-
-  /* Hide country, bitrate, num columns on mobile */
   .station-table .col-country,
   .station-table .col-bitrate,
-  .station-table th:nth-child(1),
-  .station-table td:nth-child(1),
-  .station-table th:nth-child(2),
-  .station-table td:nth-child(2),
-  .station-table th:nth-child(5),
-  .station-table td:nth-child(5),
-  .station-table th:nth-child(6),
-  .station-table td:nth-child(6) {
-    display: none !important;
-  }
-
-  /* Cover art cell: fixed 44px */
-  .station-table th:nth-child(3),
-  .station-table td:nth-child(3) {
-    display: table-cell !important;
-    width: 44px !important;
-    min-width: 44px !important;
-    max-width: 44px !important;
-    padding: 8px 4px !important;
-  }
-
-  /* Name column: gets ALL remaining space */
   .station-table th:nth-child(4),
-  .station-table td:nth-child(4) {
-    display: table-cell !important;
-    width: auto !important;
-    min-width: 0 !important;
-    overflow: hidden !important;
-  }
-
-  /* Play button cell: fixed 48px touch target */
-  .station-table th:nth-child(7),
-  .station-table td:nth-child(7) {
-    display: table-cell !important;
-    width: 52px !important;
-    min-width: 52px !important;
-    max-width: 52px !important;
-    text-align: center !important;
-  }
-
-  /* Station name text: truncate with ellipsis, always visible */
-  .st-name {
-    display: block !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    color: var(--text) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    font-size: 0.84rem !important;
-    font-weight: 500 !important;
-  }
-
-  .st-tags {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+  .station-table td:nth-child(4),
+  .station-table th:nth-child(5),
+  .station-table td:nth-child(5) {
+    display: none !important;
   }
 
   .station-table td {
     padding: 10px 8px !important;
     font-size: 0.78rem !important;
-    vertical-align: middle !important;
-    overflow: hidden !important;
   }
 
   .station-row {
     min-height: 52px !important;
   }
 
-  .st-play-btn {
-    min-width: 40px !important;
-    min-height: 40px !important;
-    width: 40px !important;
-    height: 40px !important;
+  .play-btn {
+    min-width: 36px;
+    min-height: 36px;
   }
 }
 @media (max-width: 768px) {
@@ -3083,19 +2995,4 @@ body:not(.mobile-menu-open) {
   .mobile-bottom-nav.pb-active {
     bottom: var(--player-h, 72px) !important;
   }
-}
-
-
-/* FIX 1.2: force station name visible on all mobile dark backgrounds */
-@media (max-width: 768px) {
-  .st-name {
-    color: var(--text) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-  }
-  .rec-name, .rec-info {
-    color: var(--text) !important;
-    opacity: 1 !important;
-  }
-  .station-row td { overflow: visible; }
 }

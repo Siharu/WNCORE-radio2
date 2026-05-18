@@ -55,36 +55,10 @@ body.dark-mode{
 body.dark-mode header{background:rgba(20,18,15,0.96);border-bottom:1px solid rgba(255,255,255,0.12)}
 body.dark-mode .featured-card:hover{box-shadow:0 12px 32px rgba(0,0,0,0.4)}
 body.dark-mode .sign-in-btn{background:#f0ede8;color:#1a1814}
-/* FIX 1.4: ghost buttons get orange bg + white text in dark mode */
-body.dark-mode .lucky-btn,
-body.dark-mode .az-btn,
-body.dark-mode .mw-btn,
-body.dark-mode .lang-btn,
-body.dark-mode .thm-font-btn,
-body.dark-mode .eq-preset-btn,
-body.dark-mode .minimal-btn:not(.on){
-  background:var(--accent)!important;
-  color:#fff!important;
-  border-color:var(--accent)!important;
-}
 body.dark-mode .genre-strip-wrap{background:var(--surface)}
 body.dark-mode .oauth-btn.google{background:#fff;color:#1a1814}
 body.dark-mode .oauth-btn.apple{background:#000;color:#fff}
 body.dark-mode .oauth-btn.discord{background:#5865F2;color:#fff}
-/* FIX 4.1: ARG glitch Discord button */
-.oauth-btn.discord.glitch-active{
-  animation:discord-glitch 0.18s steps(1) infinite;
-  text-shadow:2px 0 #ff0066,-2px 0 #00ffcc;
-  border-color:#ff0066!important;
-}
-@keyframes discord-glitch{
-  0%  {transform:translate(0,0);  filter:hue-rotate(0deg)}
-  20% {transform:translate(-3px,1px); filter:hue-rotate(90deg)}
-  40% {transform:translate(3px,-1px);filter:hue-rotate(180deg)}
-  60% {transform:translate(-1px,2px);filter:hue-rotate(270deg)}
-  80% {transform:translate(2px,0);  filter:hue-rotate(90deg)}
-  100%{transform:translate(0,0);  filter:hue-rotate(0deg)}
-}
 
 /* ── MINIMAL MODE ── */
 body.minimal-mode{--bg:#fafafa;--surface:#fff;--surface2:#f5f5f5;--border:rgba(0,0,0,0.06);--text:#111;--text2:#555;--text3:#999}
@@ -134,41 +108,142 @@ header{
   background:rgba(245,243,239,0.92);backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);z-index:500;display:flex;align-items:center;
 }
-.header-inner{width:100%;max-width:1440px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:10px;min-width:0;}
 
-.logo{display:flex;align-items:baseline;gap:8px;text-decoration:none;flex-shrink:0;margin-right:auto;}
-.logo-mark{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;color:var(--text);letter-spacing:-0.5px}
-.logo-freq{font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent);letter-spacing:1px;padding:2px 6px;border:1px solid var(--accent);border-radius:3px}
+/* ═══════════════════════════════════════════════════════════════
+   FLUID HEADER SYSTEM — single source of truth.
+   Progressive disclosure: elements hide in order of importance
+   as viewport narrows. Menu button ALWAYS has guaranteed space.
+   No duplicate rules in mobile.css needed for header.
+═══════════════════════════════════════════════════════════════ */
+.header-inner{
+  width:100%;max-width:1440px;margin:0 auto;
+  padding:0 clamp(12px,3vw,24px);
+  display:flex;align-items:center;
+  gap:clamp(6px,1.5vw,12px);
+  min-width:0;
+}
+
+/* Logo — never shrinks, always leftmost */
+.logo{
+  display:flex;align-items:baseline;gap:8px;text-decoration:none;
+  flex-shrink:0;
+  /* Guaranteed right margin so nav never touches logo */
+  margin-right:clamp(8px,2vw,20px);
+}
+.logo-mark{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.05rem,2.5vw,1.35rem);
+  font-weight:700;color:var(--text);letter-spacing:-0.5px;
+}
+.logo-freq{
+  font-family:'DM Mono',monospace;font-size:0.58rem;color:var(--accent);
+  letter-spacing:1px;padding:2px 6px;border:1px solid var(--accent);border-radius:3px;
+}
+
+/* Nav — takes available space, shrinks and hides on narrow viewports */
 nav{display:flex;gap:1px;min-width:0;flex-shrink:1;overflow:hidden;}
-.header-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
-nav a{font-size:0.82rem;color:var(--text2);text-decoration:none;padding:6px 10px;border-radius:6px;transition:all 0.15s;font-weight:400;white-space:nowrap;display:flex;align-items:center;gap:5px}
+nav a{
+  font-size:0.82rem;color:var(--text2);text-decoration:none;
+  padding:6px 10px;border-radius:6px;transition:all 0.15s;
+  font-weight:400;white-space:nowrap;display:flex;align-items:center;gap:5px;
+}
 nav a:hover{background:var(--surface2);color:var(--text)}
 nav a.active{color:var(--text);font-weight:500}
 nav a svg{width:13px;height:13px;opacity:0.6}
-.live-dot{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--text2);font-weight:500;white-space:nowrap}
+
+/* Header-right — flex container, always rightmost, always fully visible.
+   Items inside hide progressively via breakpoints below. */
+.header-right{
+  margin-left:auto;
+  display:flex;align-items:center;
+  gap:6px;
+  flex-shrink:0;
+  /* Hard minimum so menu button is never clipped */
+  min-width:44px;
+}
+
+/* ── Progressive element hiding — largest to smallest viewport ──
+   Breakpoints chosen so header-right never overflows its container.
+   Calculation at 390px screen:
+     padding: 24px | logo: ~120px | gap: 8px | header-right max: 238px
+     Visible at ≤768px: clock(0) + theme(74) + search(34) + menu(44) = 152px ✓ */
+
+/* ≤900px — hide nav (hamburger takes over), hide live-dot, minimal-btn */
+@media (max-width:900px) {
+  nav#main-nav { display:none !important; }
+  .live-dot    { display:none !important; }
+  .minimal-btn { display:none !important; }
+  .mobile-menu-btn { display:flex !important; }
+}
+
+/* ≤768px — hide sign-in (in mobile drawer instead), hide theme labels */
+@media (max-width:768px) {
+  .sign-in-btn         { display:none !important; }
+  .theme-toggle-labels { display:none !important; }
+  header { height:var(--header-h,56px); }
+  .logo-mark { font-size:1.1rem; }
+}
+
+/* ≤600px — hide clock, shrink theme toggle track */
+@media (max-width:600px) {
+  .header-clock        { display:none !important; }
+  .theme-toggle-track  { width:40px; height:24px; }
+  .theme-toggle-thumb  { width:16px; height:16px; top:3px; left:3px; }
+  body.dark-mode .theme-toggle-thumb { transform:translateX(16px); }
+  .header-inner { padding:0 12px; gap:6px; }
+}
+
+/* ≤480px — hide theme toggle entirely, live-count already gone,
+   only logo + search + menu remain = ~212px total, safe on 390px */
+@media (max-width:480px) {
+  .theme-toggle        { display:none !important; }
+  .live-count          { display:none !important; }
+}
+
+/* Ensure mobile-menu-btn always has its own space — never squeezed to 0 */
+.mobile-menu-btn{
+  display:none;
+  width:44px;height:44px;          /* 44px min touch target */
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--surface2);
+  color:var(--text);cursor:pointer;
+  align-items:center;justify-content:center;
+  flex-shrink:0;                   /* never shrinks */
+}
+
+.mobile-nav-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:493;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+.mobile-nav-backdrop.open{display:block;}
+
+/* ── HEADER ELEMENT BASE STYLES ── */
+.live-dot{display:flex;align-items:center;gap:6px;font-size:0.7rem;color:var(--text2);font-weight:500;white-space:nowrap;flex-shrink:0}
 .live-dot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 0 2px rgba(22,163,74,0.2);animation:pulse-dot 2s ease-in-out infinite;flex-shrink:0}
 @keyframes pulse-dot{0%,100%{box-shadow:0 0 0 2px rgba(22,163,74,0.2)}50%{box-shadow:0 0 0 5px rgba(22,163,74,0.1)}}
-.sign-in-btn{font-size:0.78rem;font-weight:500;padding:8px 14px;border-radius:8px;background:var(--text);color:#fff;border:none;cursor:pointer;transition:opacity 0.15s;white-space:nowrap}
+
+.sign-in-btn{font-size:0.78rem;font-weight:500;padding:8px 14px;border-radius:8px;background:var(--text);color:#fff;border:none;cursor:pointer;transition:opacity 0.15s;white-space:nowrap;flex-shrink:0}
 .sign-in-btn:hover{opacity:0.85}
-.minimal-btn{font-size:0.7rem;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all 0.15s;font-family:'DM Mono',monospace;letter-spacing:0.5px;white-space:nowrap}
+
+.minimal-btn{font-size:0.7rem;padding:6px 11px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all 0.15s;font-family:'DM Mono',monospace;letter-spacing:0.5px;white-space:nowrap;flex-shrink:0}
 .minimal-btn:hover{color:var(--text);border-color:rgba(0,0,0,0.2)}
 .minimal-btn.on{background:var(--text);color:#fff;border-color:var(--text)}
 
-/* ── THEME TOGGLE ── */
-.theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.search-btn{width:36px;height:36px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
+.search-btn:hover{color:var(--text);border-color:rgba(0,0,0,0.15)}
+.search-btn svg{width:14px;height:14px}
+
+/* Theme toggle — base */
+.theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;flex-shrink:0}
 .theme-toggle-track{width:52px;height:28px;border-radius:14px;background:var(--surface2);border:1px solid var(--border);position:relative;transition:background 0.3s,border-color 0.3s;flex-shrink:0}
 body.dark-mode .theme-toggle-track{background:#2d2a24;border-color:rgba(255,255,255,0.18)}
 .theme-toggle-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--text);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),background 0.3s;display:flex;align-items:center;justify-content:center}
 body.dark-mode .theme-toggle-thumb{transform:translateX(24px);background:#f0ede8}
 .theme-toggle-icon{width:12px;height:12px;flex-shrink:0}
+.theme-toggle-labels{display:flex;align-items:center;gap:6px}
 .tl-light,.tl-dark{font-size:0.58rem;color:var(--text3);letter-spacing:0.5px;line-height:1}
 body:not(.dark-mode) .tl-light{color:var(--accent);font-weight:600}
 body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 
-/* ── SEARCH ── */
-.search-btn{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;flex-shrink:0}
-.search-btn:hover{color:var(--text);border-color:rgba(0,0,0,0.15)}
-.search-btn svg{width:14px;height:14px}
+/* Search modal */
 .search-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);backdrop-filter:blur(6px);z-index:900;align-items:flex-start;justify-content:center;padding:80px 16px 16px}
 .search-modal-backdrop.open{display:flex}
 .search-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:580px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.15)}
@@ -189,10 +264,6 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 .search-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:4px 8px;border-radius:6px;transition:all 0.15s}
 .search-close:hover{color:var(--text);background:var(--surface2)}
 
-/* ── MOBILE MENU ── */
-.mobile-menu-btn{display:none;width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);cursor:pointer;align-items:center;justify-content:center;flex-shrink:0}
-.mobile-nav-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:493;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
-.mobile-nav-backdrop.open{display:block;}
 .mobile-nav{
   display:none;position:fixed;
   top:0;left:0;right:0;bottom:0;
@@ -382,11 +453,15 @@ body.dark-mode .station-table tr:hover{background:rgba(30,28,24,0.85)}
 .np-meta{font-size:0.7rem;color:var(--text2);margin-bottom:10px}
 .np-track{font-size:0.68rem;color:var(--text3);background:var(--surface2);padding:7px 9px;border-radius:7px;font-style:italic;line-height:1.4;margin-bottom:10px}
 .np-progress{height:3px;background:var(--surface2);border-radius:2px;overflow:hidden;margin-bottom:12px}
-.np-progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width 0.3s}
+.np-progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width 0.3s ease}
+/* playing class: animate only when audio is truly playing */
 .np-progress-fill.playing{animation:progFill 8s linear infinite}
-.np-progress-fill.loading{animation:progPulse 1.2s ease-in-out infinite}
+/* buffering class: slow pulse while connecting */
+.np-progress-fill.buffering{width:40% !important;animation:progBuffering 1.4s ease-in-out infinite;opacity:0.6}
+/* paused: hold position, no animation */
+.np-progress-fill.paused{animation:none}
 @keyframes progFill{0%{width:0%}100%{width:100%}}
-@keyframes progPulse{0%,100%{opacity:0.3;width:30%}50%{opacity:1;width:70%}}
+@keyframes progBuffering{0%,100%{opacity:0.3;width:35%}50%{opacity:0.8;width:55%}}
 .np-controls{display:flex;align-items:center;justify-content:center;gap:14px}
 .np-ctrl-btn{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center}
 .np-ctrl-btn:hover{color:var(--text);background:var(--surface2)}
@@ -1916,12 +1991,12 @@ body.dark-mode .lang-btn.active { background:var(--accent);color:#fff;border-col
   height: 100%; width: 0%;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
   border-radius: 2px;
-  transition: width 0.3s;
+  animation: np-flow 4s linear infinite;
 }
-.np-progress-fill.playing { animation: np-flow 8s linear infinite; }
-.np-progress-fill.loading { animation: np-pulse 1.2s ease-in-out infinite; }
-@keyframes np-flow { from { width: 0%; } to { width: 100%; } }
-@keyframes np-pulse { 0%,100%{opacity:0.3;width:30%} 50%{opacity:1;width:70%} }
+@keyframes np-flow {
+  from { width: 0%; margin-left: 0 }
+  to   { width: 100%; }
+}
 
 /* ── MOBILE BOTTOM NAV ADJUSTMENTS ── */
 
@@ -6237,4 +6312,40 @@ html.dark .share-option-btn:hover {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TASK 1.4 — DARK MODE BUTTON CONTRAST FIXES
+   Buttons that retained white/light bg in dark mode now
+   use orange background + white text as specified.
+═══════════════════════════════════════════════════════ */
+body.dark-mode .genre-btn:not(.active) {
+  background: var(--surface2) !important;
+  color: var(--text2) !important;
+  border-color: var(--border) !important;
+}
+body.dark-mode .np-play-btn {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+body.dark-mode .pb-play {
+  background: var(--accent) !important;
+  color: #fff !important;
+}
+body.dark-mode .minimal-btn.on {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+body.dark-mode .station-sort-btn.active,
+body.dark-mode .charts-view-btn.active,
+body.dark-mode .filter-btn.active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+/* Dark mode: any generic button with a bare white bg inside a card */
+body.dark-mode .sidebar-card button:not(.np-play-btn):not(.np-ctrl-btn) {
+  background: var(--surface2) !important;
+  color: var(--text2) !important;
 }

@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WNCORE — Signal Cartography / Constellation Archive</title>
+<meta name="description" content="WNCORE constellation archive. Some signals have left marks on the sky. Listen to find them.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04030a;
+  --surface:rgba(255,255,255,0.04);
+  --border:rgba(255,255,255,0.08);
+  --text:#e8e4df;
+  --text2:rgba(232,228,223,0.55);
+  --text3:rgba(232,228,223,0.25);
+  --accent:#c8472a;
+  --accent2:#e8824a;
+  --locked:#1a2040;
+  --unlocked:#c8472a;
+  --mono:'DM Mono',monospace;
+  --serif:'Playfair Display',serif;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono)}
+
+/* ── CANVAS ── */
+#three-canvas{position:fixed;inset:0;z-index:0}
+
+/* ── GRAIN OVERLAY ── */
+#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px}
+
+/* ── HEADER ── */
+#hd{position:fixed;top:0;left:0;right:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 24px;
+  border-bottom:1px solid var(--border);
+  background:rgba(4,3,10,0.8);
+  backdrop-filter:blur(12px)}
+#hd-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+#hd-logo-mark{font-family:var(--serif);font-size:1.1rem;color:var(--text);letter-spacing:-0.5px}
+#hd-logo-sep{width:1px;height:14px;background:var(--border)}
+#hd-logo-sub{font-size:0.58rem;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
+#hd-status{font-size:0.6rem;letter-spacing:1.5px;color:var(--text3)}
+#hd-status span{color:var(--accent)}
+#hd-back{font-size:0.6rem;letter-spacing:1.5px;color:var(--text3);text-decoration:none;
+  padding:5px 10px;border:1px solid var(--border);border-radius:4px;transition:all 0.15s}
+#hd-back:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
+
+/* ── SIDEBAR — constellation list ── */
+#sidebar{position:fixed;left:0;top:57px;bottom:0;width:220px;z-index:9;
+  border-right:1px solid var(--border);
+  background:rgba(4,3,10,0.7);
+  backdrop-filter:blur(12px);
+  overflow-y:auto;display:flex;flex-direction:column;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-track{background:transparent}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border)}
+#sb-title{padding:16px 16px 8px;font-size:0.55rem;letter-spacing:2px;color:var(--text3);border-bottom:1px solid var(--border)}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.15s;
+  font-size:0.7rem;letter-spacing:0.5px}
+.sb-item:hover{background:rgba(255,255,255,0.04)}
+.sb-item.active{background:rgba(200,71,42,0.08);border-right:2px solid var(--accent)}
+.sb-item.locked .sb-dot{background:var(--locked);box-shadow:none}
+.sb-item.unlocked .sb-dot{background:var(--accent);box-shadow:0 0 8px rgba(200,71,42,0.6)}
+.sb-item.solved .sb-dot{background:#22c55e;box-shadow:0 0 8px rgba(34,197,94,0.6)}
+.sb-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;transition:all 0.3s}
+.sb-name{flex:1;min-width:0}
+.sb-name-main{color:var(--text2);transition:color 0.3s}
+.sb-item.unlocked .sb-name-main,.sb-item.solved .sb-name-main{color:var(--text)}
+.sb-name-sub{font-size:0.58rem;color:var(--text3);margin-top:1px}
+.sb-badge{font-size:0.5rem;letter-spacing:1px;padding:2px 5px;border-radius:3px;flex-shrink:0}
+.sb-badge.locked-badge{background:rgba(255,255,255,0.04);color:var(--text3)}
+.sb-badge.unlocked-badge{background:rgba(200,71,42,0.15);color:var(--accent)}
+.sb-badge.solved-badge{background:rgba(34,197,94,0.12);color:#22c55e}
+
+/* ── INFO PANEL — right side ── */
+#info-panel{position:fixed;right:0;top:57px;bottom:0;width:260px;z-index:9;
+  border-left:1px solid var(--border);
+  background:rgba(4,3,10,0.7);
+  backdrop-filter:blur(12px);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}
+#info-panel.open{transform:translateX(0)}
+#ip-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+#ip-constellation-name{font-family:var(--serif);font-size:1.1rem;font-style:italic}
+#ip-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1rem;padding:4px;transition:color 0.15s}
+#ip-close:hover{color:var(--text)}
+#ip-body{flex:1;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.ip-row{font-size:0.65rem;letter-spacing:0.3px}
+.ip-label{color:var(--text3);letter-spacing:1.5px;font-size:0.55rem;margin-bottom:4px}
+.ip-val{color:var(--text2)}
+#ip-stars-list{display:flex;flex-direction:column;gap:4px}
+.ip-star-row{display:flex;align-items:center;gap:8px;padding:5px 8px;
+  border-radius:4px;border:1px solid rgba(255,255,255,0.04);font-size:0.62rem;
+  cursor:pointer;transition:all 0.15s}
+.ip-star-row:hover{border-color:rgba(200,71,42,0.2);background:rgba(200,71,42,0.05)}
+.ip-star-row.selected{border-color:var(--accent);background:rgba(200,71,42,0.1)}
+.ip-star-row.completed{border-color:rgba(34,197,94,0.3);color:#22c55e}
+.ip-star-idx{width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.05);
+  display:flex;align-items:center;justify-content:center;font-size:0.5rem;flex-shrink:0}
+#ip-progress{height:2px;background:rgba(255,255,255,0.06);border-radius:1px;margin-top:4px}
+#ip-progress-fill{height:100%;background:var(--accent);border-radius:1px;width:0;transition:width 0.4s}
+#ip-hint{font-size:0.62rem;color:var(--text3);line-height:1.6;font-style:italic}
+#ip-action-btn{margin-top:auto;padding:10px;background:rgba(200,71,42,0.1);
+  border:1px solid rgba(200,71,42,0.3);border-radius:6px;color:var(--accent);
+  font-family:var(--mono);font-size:0.65rem;letter-spacing:1.5px;cursor:pointer;transition:all 0.2s}
+#ip-action-btn:hover{background:rgba(200,71,42,0.2)}
+
+/* ── UNLOCK TOAST ── */
+#unlock-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  z-index:20;opacity:0;transition:all 0.4s;pointer-events:none;
+  background:rgba(4,3,10,0.95);border:1px solid var(--accent);
+  border-radius:8px;padding:12px 20px;text-align:center;min-width:280px}
+#unlock-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#unlock-toast-name{font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--text);margin-bottom:4px}
+#unlock-toast-sub{font-size:0.6rem;letter-spacing:1.5px;color:var(--accent)}
+
+/* ── PUZZLE MODAL ── */
+#puzzle-modal{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
+  background:rgba(4,3,10,0.92);backdrop-filter:blur(8px);
+  opacity:0;pointer-events:none;transition:opacity 0.3s}
+#puzzle-modal.open{opacity:1;pointer-events:all}
+#puzzle-box{background:#07060f;border:1px solid var(--border);border-radius:12px;
+  width:min(520px,90vw);max-height:85vh;overflow-y:auto;padding:28px;position:relative}
+#puzzle-close{position:absolute;top:16px;right:16px;background:none;border:none;
+  color:var(--text3);cursor:pointer;font-size:1rem;transition:color 0.15s}
+#puzzle-close:hover{color:var(--text)}
+#puzzle-title{font-family:var(--serif);font-size:1.3rem;margin-bottom:4px}
+#puzzle-subtitle{font-size:0.62rem;letter-spacing:1.5px;color:var(--accent);margin-bottom:20px}
+#puzzle-body{display:flex;flex-direction:column;gap:16px}
+
+/* Morse puzzle */
+#morse-display{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;
+  min-height:60px;padding:16px;background:rgba(255,255,255,0.02);border-radius:8px;
+  border:1px solid var(--border)}
+.morse-flash{width:12px;height:12px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background 0.08s}
+.morse-flash.dit{width:8px}
+.morse-flash.dah{width:20px;border-radius:4px}
+.morse-flash.lit{background:var(--accent);box-shadow:0 0 12px rgba(200,71,42,0.8)}
+#morse-input{background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:6px;padding:10px 14px;color:var(--text);font-family:var(--mono);
+  font-size:0.75rem;width:100%;letter-spacing:3px;text-align:center;outline:none;
+  transition:border-color 0.2s;text-transform:uppercase}
+#morse-input:focus{border-color:rgba(200,71,42,0.4)}
+#morse-input.correct{border-color:#22c55e;color:#22c55e}
+#morse-input.wrong{border-color:#ef4444;animation:shake 0.3s}
+
+/* Frequency puzzle */
+#freq-display{text-align:center;padding:20px;background:rgba(255,255,255,0.02);
+  border-radius:8px;border:1px solid var(--border)}
+#freq-value{font-family:var(--serif);font-size:2.2rem;color:var(--accent);
+  font-variant-numeric:tabular-nums;letter-spacing:-1px}
+#freq-unit{font-size:0.6rem;letter-spacing:2px;color:var(--text3);margin-top:2px}
+#freq-bar-wrap{position:relative;margin:12px 0}
+#freq-slider{width:100%;appearance:none;background:rgba(255,255,255,0.06);
+  border-radius:2px;height:3px;outline:none;cursor:pointer}
+#freq-slider::-webkit-slider-thumb{appearance:none;width:16px;height:16px;
+  border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(200,71,42,0.5)}
+#freq-indicator{font-size:0.6rem;letter-spacing:1px;color:var(--text3);text-align:center;margin-top:6px;height:16px}
+
+/* Acrostic puzzle */
+#acrostic-wrap{display:flex;flex-direction:column;gap:6px}
+.acrostic-row{display:flex;align-items:center;gap:10px;font-size:0.68rem}
+.acrostic-letter{width:24px;height:24px;border-radius:4px;background:rgba(200,71,42,0.1);
+  border:1px solid rgba(200,71,42,0.3);color:var(--accent);display:flex;align-items:center;
+  justify-content:center;font-weight:500;flex-shrink:0;font-size:0.75rem}
+.acrostic-star{color:var(--text2)}
+.acrostic-clue{color:var(--text3);font-size:0.6rem;font-style:italic}
+#acrostic-answer{background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  border-radius:6px;padding:10px 14px;color:var(--text);font-family:var(--mono);
+  font-size:0.75rem;width:100%;letter-spacing:3px;text-align:center;outline:none;
+  transition:border-color 0.2s;text-transform:uppercase}
+#acrostic-answer:focus{border-color:rgba(200,71,42,0.4)}
+#acrostic-answer.correct{border-color:#22c55e;color:#22c55e}
+#acrostic-answer.wrong{border-color:#ef4444;animation:shake 0.3s}
+
+/* Submit */
+#puzzle-submit{width:100%;padding:12px;background:rgba(200,71,42,0.1);
+  border:1px solid rgba(200,71,42,0.3);border-radius:6px;color:var(--accent);
+  font-family:var(--mono);font-size:0.7rem;letter-spacing:1.5px;cursor:pointer;transition:all 0.2s}
+#puzzle-submit:hover{background:rgba(200,71,42,0.2)}
+#puzzle-error{font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px;letter-spacing:0.5px}
+
+/* Lore reveal */
+#lore-reveal{display:none;flex-direction:column;gap:14px}
+#lore-reveal.show{display:flex}
+#lore-signal{font-size:0.55rem;letter-spacing:2px;color:var(--accent);margin-bottom:2px}
+#lore-text{font-size:0.75rem;line-height:1.8;color:var(--text2);font-style:italic;
+  border-left:2px solid rgba(200,71,42,0.3);padding-left:14px}
+#lore-code{font-size:0.6rem;letter-spacing:3px;color:var(--text3);
+  background:rgba(255,255,255,0.03);padding:8px 12px;border-radius:4px;
+  border:1px solid var(--border);cursor:pointer;transition:all 0.2s;text-align:center}
+#lore-code:hover{border-color:rgba(200,71,42,0.3);color:var(--text)}
+#lore-link{display:block;padding:10px;text-align:center;text-decoration:none;
+  background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.25);
+  border-radius:6px;color:var(--accent);font-size:0.65rem;letter-spacing:1.5px;transition:all 0.2s}
+#lore-link:hover{background:rgba(200,71,42,0.15)}
+
+/* ── BOTTOM HUD ── */
+#hud{position:fixed;bottom:0;left:220px;right:260px;z-index:10;
+  padding:12px 20px;border-top:1px solid var(--border);
+  background:rgba(4,3,10,0.8);backdrop-filter:blur(12px);
+  display:flex;align-items:center;gap:16px;font-size:0.6rem;letter-spacing:1px;color:var(--text3)}
+#hud.panel-closed{right:0}
+#hud-unlocked{color:var(--accent)}
+#hud-tip{margin-left:auto;font-style:italic;opacity:0.6}
+#seq-indicator{display:flex;align-items:center;gap:4px}
+.seq-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.1);transition:all 0.2s}
+.seq-dot.filled{background:var(--accent);box-shadow:0 0 4px rgba(200,71,42,0.6)}
+.seq-dot.wrong{background:#ef4444}
+
+/* ── ANIMATIONS ── */
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  #sidebar{width:180px}
+  #info-panel{width:100%;right:0;top:auto;bottom:0;height:55vh;
+    border-left:none;border-top:1px solid var(--border);
+    transform:translateY(100%)}
+  #info-panel.open{transform:translateY(0)}
+  #hud{left:180px;right:0}
+  #hud.panel-closed{right:0}
+}
+@media(max-width:480px){
+  #sidebar{display:none}
+  #hud{left:0}
+}
+</style>
+</head>
+<body>
+
+<canvas id="three-canvas"></canvas>
+<div id="grain"></div>
+
+<!-- Header -->
+<header id="hd">
+  <a id="hd-logo" href="/">
+    <span id="hd-logo-mark">WNCORE</span>
+    <span id="hd-logo-sep"></span>
+    <span id="hd-logo-sub">Signal Cartography</span>
+  </a>
+  <span id="hd-status">NODE 09 — <span id="hd-unlocked-count">0</span> / 20 SIGNALS MAPPED</span>
+  <a id="hd-back" href="/">← Return to Array</a>
+</header>
+
+<!-- Sidebar -->
+<nav id="sidebar">
+  <div id="sb-title">CONSTELLATION ARCHIVE</div>
+  <div id="sb-list"></div>
+</nav>
+
+<!-- Info Panel -->
+<aside id="info-panel">
+  <div id="ip-header">
+    <span id="ip-constellation-name">—</span>
+    <button id="ip-close">✕</button>
+  </div>
+  <div id="ip-body">
+    <div class="ip-row">
+      <div class="ip-label">UNLOCK CONDITION</div>
+      <div class="ip-val" id="ip-unlock-cond">—</div>
+    </div>
+    <div class="ip-row">
+      <div class="ip-label">DESIGNATION</div>
+      <div class="ip-val" id="ip-designation">—</div>
+    </div>
+    <div class="ip-row">
+      <div class="ip-label">SIGNAL SEQUENCE — click stars in order</div>
+      <div id="ip-stars-list"></div>
+      <div id="ip-progress"><div id="ip-progress-fill"></div></div>
+    </div>
+    <div class="ip-row">
+      <div class="ip-label">FIELD NOTE</div>
+      <div id="ip-hint" class="ip-hint"></div>
+    </div>
+    <button id="ip-action-btn">INITIATE PUZZLE SEQUENCE</button>
+  </div>
+</aside>
+
+<!-- Unlock Toast -->
+<div id="unlock-toast">
+  <div id="unlock-toast-name"></div>
+  <div id="unlock-toast-sub">CONSTELLATION UNLOCKED — SIGNAL RECEIVED</div>
+</div>
+
+<!-- Puzzle Modal -->
+<div id="puzzle-modal">
+  <div id="puzzle-box">
+    <button id="puzzle-close">✕</button>
+    <div id="puzzle-title"></div>
+    <div id="puzzle-subtitle"></div>
+    <div id="puzzle-body"></div>
+    <div id="lore-reveal">
+      <div id="lore-signal">TRANSMISSION DECODED</div>
+      <div id="lore-text"></div>
+      <div id="lore-code"></div>
+      <a id="lore-link" href="#" target="_blank">→ ACCESS ARCHIVE AT SIHARU.VERCEL.APP</a>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom HUD -->
+<div id="hud">
+  <span>DRAG TO ROTATE · SCROLL TO ZOOM</span>
+  <span id="hd-unlocked-count-hud"><span id="hud-unlocked">0</span> SIGNALS MAPPED</span>
+  <div id="seq-indicator"></div>
+  <span id="hud-tip">listen to radio to unlock constellations</span>
+</div>
+
+<!-- Three.js -->
+<script src="https://unpkg.com/three@0.165.0/build/three.min.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════════════
+   CONSTELLATION DATA
+   Each constellation has:
+   - stars: [{name, x, y, z}] — 3D positions in scene units
+   - lines: [[starIdx, starIdx]] — which stars to connect when unlocked
+   - tag: string[] — Radio Browser API tags that unlock this
+   - puzzle: {type, ...} — the puzzle definition
+   - lore: {text, code, signal} — the reward
+═══════════════════════════════════════════════════ */
+const CONSTELLATIONS = [
+  {
+    id:'orion', name:'Orion', designation:'ORI-α',
+    tag:['classical','orchestra','opera','baroque','chamber'],
+    hint:'Seven stars. The hunter faces west. His belt points to Sirius.',
+    stars:[
+      {name:'Betelgeuse',x:-1.2,y:2.1,z:-0.4},
+      {name:'Bellatrix', x:1.3,y:2.0,z:0.2},
+      {name:'Alnitak',   x:-0.6,y:0.8,z:0.1},
+      {name:'Alnilam',   x:0.0, y:0.7,z:0.0},
+      {name:'Mintaka',   x:0.7, y:0.6,z:-0.1},
+      {name:'Rigel',     x:1.4,y:-0.9,z:0.3},
+      {name:'Saiph',     x:-1.0,y:-1.0,z:-0.2},
+    ],
+    lines:[[0,2],[1,3],[2,3],[3,4],[2,6],[4,5],[0,1]],
+    sequence:[0,2,3,4,1,5,6],
+    puzzle:{type:'morse', word:'HUNTER', morse:'.... ..- -. - . .-.'},
+    lore:{
+      signal:'ORI-7.HUNTER',
+      text:'The hunter was not born. He was assembled — seven transmission nodes arranged in the shape of grief. BLANK ZONE cartographers first mapped this configuration in Year Zero. The belt stars are not stars. They are repeaters.',
+      code:'ARG-ORI-7H',
+      param:'signal=ORI-HUNTER-7'
+    }
+  },
+  {
+    id:'cygnus', name:'Cygnus', designation:'CYG-α',
+    tag:['jazz','blues','soul','swing','bebop'],
+    hint:'The Northern Cross. The swan flies south along the Milky Way.',
+    stars:[
+      {name:'Deneb',    x:0.0, y:2.2,z:0.0},
+      {name:'Sadr',     x:0.0, y:0.6,z:0.0},
+      {name:'Gienah',   x:-1.4,y:0.6,z:0.2},
+      {name:'Delta Cyg',x:1.4, y:0.6,z:-0.1},
+      {name:'Albireo',  x:0.0, y:-1.2,z:0.3},
+    ],
+    lines:[[0,1],[1,4],[2,1],[1,3]],
+    sequence:[0,1,2,3,4],
+    puzzle:{type:'frequency', target:88.7, tolerance:0.3, range:[80,100]},
+    lore:{
+      signal:'CYG-88.7',
+      text:'88.7 MHz. The frequency was not assigned. It appeared in the archive already occupied. The swan is a direction, not a destination. Those who tuned in before us left a message in the carrier wave. We have not decoded it. We do not try.',
+      code:'ARG-CYG-88',
+      param:'signal=CYG-88-OCCUPIED'
+    }
+  },
+  {
+    id:'scorpius', name:'Scorpius', designation:'SCO-α',
+    tag:['metal','rock','hardcore','punk','grunge','alternative'],
+    hint:'The scorpion. Antares marks the heart — a red supergiant, deep in the ecliptic.',
+    stars:[
+      {name:'Antares',   x:0.0, y:0.8,z:0.0},
+      {name:'Graffias',  x:-1.0,y:1.8,z:0.1},
+      {name:'Dschubba',  x:0.0, y:1.8,z:-0.2},
+      {name:'Acrab',     x:1.0, y:1.8,z:0.1},
+      {name:'Tau Sco',   x:0.6, y:0.0,z:0.2},
+      {name:'Shaula',    x:1.2,y:-1.4,z:-0.3},
+      {name:'Lesath',    x:1.4,y:-1.6,z:-0.1},
+    ],
+    lines:[[1,0],[2,0],[3,0],[0,4],[4,5],[5,6]],
+    sequence:[1,0,4,5,6,3,2],
+    puzzle:{type:'acrostic',
+      stars:['Antares','Shaula','Tau Sco','Acrab','Tiamat','Iamat','Chaos'],
+      clues:['The heart star','The stinger','Named for taurus','Second pincer','A name from myth','Not a star','The old word'],
+      answer:'STATIC'},
+    lore:{
+      signal:'SCO-STATIC',
+      text:'OBSEDIA found the scorpion useful. The stinger points at the galactic center. The galactic center is where the signal originates — not where it ends. When you hear static between stations, you are hearing the scorpion breathe.',
+      code:'ARG-SCO-ST',
+      param:'signal=SCO-STATIC-GALACTIC'
+    }
+  },
+  {
+    id:'cassiopeia', name:'Cassiopeia', designation:'CAS-α',
+    tag:['electronic','ambient','synthesizer','techno','edm','house'],
+    hint:'The W shape. Circumpolar in northern latitudes — never sets below the horizon.',
+    stars:[
+      {name:'Schedar',  x:-1.8,y:0.4,z:0.1},
+      {name:'Caph',     x:-0.9,y:1.2,z:0.0},
+      {name:'Navi',     x:0.0, y:0.4,z:0.2},
+      {name:'Ruchbah',  x:0.9, y:1.0,z:-0.1},
+      {name:'Segin',    x:1.8, y:0.4,z:0.1},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4]],
+    sequence:[0,1,2,3,4],
+    puzzle:{type:'morse', word:'SIGNAL', morse:'... .. --. -. .- .-..'},
+    lore:{
+      signal:'CAS-W5',
+      text:'Five nodes forming a W — or an M, depending on the season. SIGNAL_KAGE first used this configuration as a routing marker. The W means: the data passed through here. The M means: something is watching the data pass through.',
+      code:'ARG-CAS-W5',
+      param:'signal=CAS-ROUTING-KAGE'
+    }
+  },
+  {
+    id:'ursamajor', name:'Ursa Major', designation:'UMA-α',
+    tag:['pop','indie','singer-songwriter','folk','acoustic'],
+    hint:'The Great Bear. Seven bright stars form the Plough. The outer two point to Polaris.',
+    stars:[
+      {name:'Dubhe',    x:-1.0,y:1.6,z:0.1},
+      {name:'Merak',    x:-0.6,y:0.8,z:0.0},
+      {name:'Phecda',   x:0.4, y:0.8,z:0.2},
+      {name:'Megrez',   x:0.8, y:1.4,z:-0.1},
+      {name:'Alioth',   x:1.6, y:1.4,z:0.1},
+      {name:'Mizar',    x:2.2, y:0.8,z:0.0},
+      {name:'Alkaid',   x:2.8, y:0.0,z:0.2},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[0,3]],
+    sequence:[0,1,2,3,4,5,6],
+    puzzle:{type:'frequency', target:91.5, tolerance:0.4, range:[85,100]},
+    lore:{
+      signal:'UMA-PLOUGH',
+      text:'The seven navigators. Every civilization that looked up saw a different bear, a different cart, a different question mark. WNCORE uses them as a compass: the outer two stars always point toward the signal source. You are here. The source is elsewhere.',
+      code:'ARG-UMA-7N',
+      param:'signal=UMA-NAVIGATORS-7'
+    }
+  },
+  {
+    id:'lyra', name:'Lyra', designation:'LYR-α',
+    tag:['new age','meditation','relaxation','healing','spiritual','yoga'],
+    hint:'Vega anchors the Summer Triangle. The harp of Orpheus, cast into the sky.',
+    stars:[
+      {name:'Vega',    x:0.0, y:1.6,z:0.0},
+      {name:'Sheliak', x:-0.8,y:0.4,z:0.1},
+      {name:'Sulafat',  x:0.8, y:0.4,z:-0.1},
+      {name:'Delta Lyr',x:-0.5,y:0.0,z:0.2},
+      {name:'Zeta Lyr', x:0.5, y:0.0,z:0.1},
+    ],
+    lines:[[0,1],[0,2],[1,3],[2,4],[3,4],[1,2]],
+    sequence:[0,1,3,4,2,0],
+    puzzle:{type:'morse', word:'ORPHEUS', morse:'--- .-. .--. .... . ..- ...'},
+    lore:{
+      signal:'LYR-ORPHEUS',
+      text:'The instrument that could move stones. In 2031 a researcher at NODE 09 claimed to have received a musical transmission that caused structural harmonics in the antenna array. The recording was archived under OBSEDIA clearance level 4. The researcher was reassigned.',
+      code:'ARG-LYR-OP',
+      param:'signal=LYR-ORPHEUS-NODE09'
+    }
+  },
+  {
+    id:'perseus', name:'Perseus', designation:'PER-α',
+    tag:['news','talk','podcast','speech','documentary','public radio'],
+    hint:'The hero holds Medusa\'s head — the blinking star Algol. A winking demon.',
+    stars:[
+      {name:'Mirfak',  x:0.0, y:2.0,z:0.0},
+      {name:'Algol',   x:-1.4,y:0.6,z:0.2},
+      {name:'Atik',    x:1.0, y:1.0,z:-0.1},
+      {name:'Menkib',  x:1.6, y:-0.4,z:0.1},
+      {name:'Zeta Per',x:0.4, y:0.2,z:0.3},
+    ],
+    lines:[[0,1],[0,2],[0,4],[2,3],[1,4]],
+    sequence:[0,2,3,4,1],
+    puzzle:{type:'acrostic',
+      stars:['Mirfak','Atik','Gorgon','Ophelia','Nemesis'],
+      clues:['The brightest','Second star','The severed head','Not in Perseus','A concept, not a star'],
+      answer:'MAGON'},
+    lore:{
+      signal:'PER-ALGOL',
+      text:'Algol blinks every 2.87 days because a companion star eclipses it. The Arabs called it the Demon Star before they knew why it blinked. WNCORE signal logs from 2018 show a transmission on 88.7 that also blinked — on the same 2.87-day cycle. We do not know if this was intentional.',
+      code:'ARG-PER-AG',
+      param:'signal=PER-ALGOL-DEMON'
+    }
+  },
+  {
+    id:'aquila', name:'Aquila', designation:'AQL-α',
+    tag:['hip hop','rap','trap','grime','urban','rnb'],
+    hint:'The eagle. Altair spins so fast it bulges at its equator into an oblate shape.',
+    stars:[
+      {name:'Altair',  x:0.0, y:0.0,z:0.0},
+      {name:'Tarazed', x:-0.6,y:0.8,z:0.2},
+      {name:'Alshain', x:0.7, y:0.7,z:-0.1},
+      {name:'Delta Aql',x:-1.2,y:-0.4,z:0.1},
+      {name:'Lambda Aql',x:-0.4,y:-1.2,z:0.2},
+    ],
+    lines:[[1,0],[0,2],[0,3],[3,4]],
+    sequence:[2,0,1,3,4],
+    puzzle:{type:'frequency', target:95.0, tolerance:0.5, range:[88,104]},
+    lore:{
+      signal:'AQL-ALTAIR',
+      text:'Altair rotates once every 9 hours. At its equator, the escape velocity is nearly the speed of its own surface. SIGNAL_KAGE once described the ARG itself this way: spinning so fast the outside barely holds together. We are the equator.',
+      code:'ARG-AQL-AT',
+      param:'signal=AQL-ALTAIR-SPIN'
+    }
+  },
+  {
+    id:'gemini', name:'Gemini', designation:'GEM-α',
+    tag:['country','bluegrass','americana','western','outlaw'],
+    hint:'The twins Castor and Pollux. One mortal, one divine. Castor has six stars in three pairs.',
+    stars:[
+      {name:'Castor',  x:-1.0,y:1.8,z:0.1},
+      {name:'Pollux',  x:1.0, y:1.6,z:0.0},
+      {name:'Alhena',  x:0.8, y:0.0,z:0.2},
+      {name:'Mebsuda', x:-0.4,y:0.4,z:-0.1},
+      {name:'Tejat',   x:-1.2,y:0.0,z:0.1},
+    ],
+    lines:[[0,3],[3,4],[1,2],[0,1]],
+    sequence:[0,1,2,3,4],
+    puzzle:{type:'morse', word:'TWINS', morse:'- .-- .. -. ...'},
+    lore:{
+      signal:'GEM-TWINS',
+      text:'One mortal twin, one divine. The signal that comes from Gemini is always doubled — a carrier wave followed immediately by a ghost of itself, delayed by exactly 1.3 seconds. NODE 09 named this the Twin Echo. The source of the delay has not been identified.',
+      code:'ARG-GEM-TW',
+      param:'signal=GEM-TWIN-ECHO'
+    }
+  },
+  {
+    id:'leo', name:'Leo', designation:'LEO-α',
+    tag:['reggae','ska','dub','dancehall','caribbean'],
+    hint:'The lion. Regulus sits at the handle of the Sickle asterism, almost exactly on the ecliptic.',
+    stars:[
+      {name:'Regulus',  x:0.0, y:-0.6,z:0.0},
+      {name:'Algieba',  x:-0.4,y:0.4,z:0.2},
+      {name:'Zosma',    x:0.8, y:0.8,z:-0.1},
+      {name:'Denebola', x:2.0, y:0.8,z:0.1},
+      {name:'Eta Leo',  x:-1.0,y:1.2,z:0.2},
+      {name:'Adhafera', x:-0.8,y:0.8,z:-0.1},
+    ],
+    lines:[[0,1],[1,5],[5,4],[1,2],[2,3]],
+    sequence:[4,5,1,0,2,3],
+    puzzle:{type:'acrostic',
+      stars:['Regulus','Algieba','Node','Node 09','Algieba'],
+      clues:['The heart star','Double star system','A junction','Unknown status','Same star twice'],
+      answer:'RANNA'},
+    lore:{
+      signal:'LEO-REGULUS',
+      text:'Regulus precesses. In 2,100 years it will sit exactly at the vernal equinox. The ancient tracking system at NODE 09 was calibrated to Regulus\'s position in 2016. If the node is still receiving, its clock is now off by a measurable margin. We do not know if it corrects itself.',
+      code:'ARG-LEO-RG',
+      param:'signal=LEO-REGULUS-PREC'
+    }
+  },
+  {
+    id:'andromeda', name:'Andromeda', designation:'AND-α',
+    tag:['world music','international','traditional','cultural','ethnic'],
+    hint:'The chained princess. Her galaxy is visible to the naked eye — the farthest thing you can see unaided.',
+    stars:[
+      {name:'Alpheratz',x:0.0, y:1.4,z:0.0},
+      {name:'Mirach',   x:1.2, y:0.4,z:0.2},
+      {name:'Almach',   x:2.2, y:-0.4,z:-0.1},
+      {name:'Delta And',x:-0.6,y:0.8,z:0.1},
+    ],
+    lines:[[0,1],[1,2],[0,3]],
+    sequence:[3,0,1,2],
+    puzzle:{type:'frequency', target:107.9, tolerance:0.4, range:[100,110]},
+    lore:{
+      signal:'AND-GALAXY',
+      text:'2.537 million light-years. The Andromeda Galaxy is approaching us at 110 km/s. In approximately 4.5 billion years it will merge with the Milky Way. WNCORE was designed to survive this merger. The signal archive was designed to outlast the stars that carry it.',
+      code:'ARG-AND-GAL',
+      param:'signal=AND-ANDROMEDA-MERGE'
+    }
+  },
+  {
+    id:'draco', name:'Draco', designation:'DRA-α',
+    tag:['darkwave','gothic','industrial','noise','drone','dark ambient'],
+    hint:'The dragon winds between the two bears. Thuban was the North Star 4,700 years ago.',
+    stars:[
+      {name:'Eltanin',  x:0.0, y:2.0,z:0.0},
+      {name:'Rastaban', x:-0.8,y:1.4,z:0.2},
+      {name:'Grumium',  x:-1.6,y:0.6,z:-0.1},
+      {name:'Chi Dra',  x:-1.8,y:-0.2,z:0.1},
+      {name:'Thuban',   x:-0.8,y:-0.8,z:0.3},
+      {name:'Edasich',  x:0.6, y:-0.4,z:-0.2},
+    ],
+    lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]],
+    sequence:[4,3,2,1,0,5],
+    puzzle:{type:'morse', word:'ABSENCE', morse:'.- -... ... . -. -.-. .'},
+    lore:{
+      signal:'DRA-THUBAN',
+      text:'Thuban was the pole star when the pyramids were built. The builders aligned their shafts to it. When precession moved the pole to Polaris, the shafts pointed at nothing. WNCORE\'s early signal logs include a frequency range labeled THUBAN-NULL. It contains recordings of silence from sources that should not be silent.',
+      code:'ARG-DRA-TH',
+      param:'signal=DRA-THUBAN-NULL'
+    }
+  },
+  {
+    id:'centaurus', name:'Centaurus', designation:'CEN-α',
+    tag:['latin','bossa nova','samba','flamenco','tango','salsa'],
+    hint:'Alpha Centauri is our nearest stellar neighbor. 4.37 light-years. A three-star system.',
+    stars:[
+      {name:'Rigil Kent',x:0.0, y:0.0,z:0.0},
+      {name:'Hadar',    x:1.8, y:0.0,z:0.2},
+      {name:'Menkent',  x:-0.6,y:1.2,z:-0.1},
+      {name:'Muhlifain',x:0.8, y:0.8,z:0.1},
+    ],
+    lines:[[0,1],[0,2],[0,3],[2,3]],
+    sequence:[2,3,0,1],
+    puzzle:{type:'acrostic',
+      stars:['Rigil','Hadar','Ouroboros','Merak','Beta'],
+      clues:['Nearest neighbor','The second anchor','A serpent eating itself','In the great bear','Designation only'],
+      answer:'RHOMB'},
+    lore:{
+      signal:'CEN-PROXIMA',
+      text:'Proxima Centauri — the actual nearest star — was discovered in 1915. For all of human history before that, we thought we knew which star was closest. We were wrong by 0.24 light-years. WNCORE operates on the assumption that we are currently wrong about something of similar scale.',
+      code:'ARG-CEN-PX',
+      param:'signal=CEN-PROXIMA-WRONG'
+    }
+  },
+  {
+    id:'libra', name:'Libra', designation:'LIB-α',
+    tag:['lo-fi','chillhop','study','beats','instrumental hip hop'],
+    hint:'The scales. The only zodiac constellation that represents an object, not a creature.',
+    stars:[
+      {name:'Zuben El',  x:0.0, y:0.0,z:0.0},
+      {name:'Zuben Esc', x:1.4, y:0.8,z:0.1},
+      {name:'Brachium',  x:-1.2,y:0.8,z:-0.1},
+      {name:'Gamma Lib', x:0.6, y:-0.8,z:0.2},
+    ],
+    lines:[[2,0],[0,1],[0,3]],
+    sequence:[2,0,1,3],
+    puzzle:{type:'frequency', target:37.5, tolerance:1.0, range:[30,50]},
+    lore:{
+      signal:'LIB-SCALES',
+      text:'37.5 Hz. Below the threshold of conscious hearing. The sub-bass frequency generated by NODE 09\'s oscillator array during what logs describe as "idle mode." The scales of Libra historically weighed souls. The frequency may do something similar. The archive does not specify.',
+      code:'ARG-LIB-37',
+      param:'signal=LIB-SCALES-37HZ'
+    }
+  },
+  {
+    id:'aquarius', name:'Aquarius', designation:'AQR-α',
+    tag:['dance','disco','funk','groove','party'],
+    hint:'The water-bearer. Associated in Babylonian astronomy with the god Ea, who lived in the underground ocean.',
+    stars:[
+      {name:'Sadalsuud',x:0.0, y:1.2,z:0.0},
+      {name:'Sadalmelik',x:-1.2,y:0.4,z:0.2},
+      {name:'Sadachbia', x:0.8, y:0.0,z:-0.1},
+      {name:'Skat',      x:1.6, y:-0.8,z:0.1},
+      {name:'Eta Aqr',   x:-0.4,y:-0.8,z:0.2},
+    ],
+    lines:[[0,1],[0,2],[2,3],[1,4]],
+    sequence:[0,1,4,2,3],
+    puzzle:{type:'morse', word:'DELUGE', morse:'-.. . .-.. ..- --. .'},
+    lore:{
+      signal:'AQR-WATER',
+      text:'The water-bearer pours water that does not fall. In the original Babylonian sky-map, the water streams connect to Piscis Austrinus — the Southern Fish. The stream is a transmission path. The fish receives. In WNCORE\'s architecture, the receiver has always been downstream. Someone built the stream. We inherit it.',
+      code:'ARG-AQR-DL',
+      param:'signal=AQR-DELUGE-STREAM'
+    }
+  },
+  {
+    id:'corvus', name:'Corvus', designation:'CRV-α',
+    tag:['jazz rap','nu jazz','abstract hip hop','spoken word','experimental'],
+    hint:'The crow. A small but distinctive quadrilateral. Associated with the raven in Greek myth.',
+    stars:[
+      {name:'Algorab',  x:0.0, y:0.0,z:0.0},
+      {name:'Gienah',   x:-1.0,y:0.8,z:0.2},
+      {name:'Kraz',     x:1.0, y:0.8,z:-0.1},
+      {name:'Minkar',   x:1.2, y:-0.4,z:0.1},
+    ],
+    lines:[[0,1],[0,2],[0,3],[1,2]],
+    sequence:[1,2,0,3],
+    puzzle:{type:'acrostic',
+      stars:['Corvus','Raven','Orion','Wing','Node'],
+      clues:['Latin name','English name','The hunter','An anatomical part','A junction point'],
+      answer:'CROWN'},
+    lore:{
+      signal:'CRV-CROW',
+      text:'The crow was sent by Apollo to fetch water and returned late, having waited for a fig to ripen. He blamed the water-snake. Apollo, knowing the lie, placed them both in the sky — the crow forever unable to reach the water-bearer\'s cup. SIGNAL_KAGE uses the crow as a symbol for intercepted transmissions: caught in transit, the message changed.',
+      code:'ARG-CRV-CR',
+      param:'signal=CRV-CROW-INTERCEPT'
+    }
+  },
+  {
+    id:'piscis', name:'Piscis Austrinus', designation:'PSA-α',
+    tag:['shoegaze','dream pop','psychedelic','reverb','ethereal'],
+    hint:'Fomalhaut — the loneliest bright star. No bright neighbors for 20 degrees in any direction.',
+    stars:[
+      {name:'Fomalhaut',x:0.0, y:0.0,z:0.0},
+      {name:'Epsilon PsA',x:1.2,y:0.6,z:0.1},
+      {name:'Delta PsA',x:-0.8,y:0.8,z:-0.1},
+      {name:'Beta PsA', x:1.6, y:-0.4,z:0.2},
+    ],
+    lines:[[0,1],[0,2],[0,3]],
+    sequence:[2,0,1,3],
+    puzzle:{type:'frequency', target:88.0, tolerance:0.2, range:[85,92]},
+    lore:{
+      signal:'PSA-LONELY',
+      text:'Fomalhaut has a debris disk. In 2008, a planet was photographed inside it — Fomalhaut b. By 2020, astronomers realized it wasn\'t a planet. It was a collision cloud, expanding slowly into space. Something had destroyed something there, recently enough for us to watch the aftermath. We named it a planet first. Naming things makes us feel better.',
+      code:'ARG-PSA-FM',
+      param:'signal=PSA-FOMALHAUT-CLOUD'
+    }
+  },
+  {
+    id:'lepus', name:'Lepus', designation:'LEP-α',
+    tag:['children','nursery','family','educational','kids'],
+    hint:'The hare, crouching at Orion\'s feet. Easy to miss, harder to forget.',
+    stars:[
+      {name:'Arneb',   x:0.0, y:0.0,z:0.0},
+      {name:'Nihal',   x:1.0, y:0.6,z:0.1},
+      {name:'Epsilon Lep',x:1.4,y:-0.4,z:0.2},
+      {name:'Mu Lep',  x:-0.8,y:0.4,z:-0.1},
+    ],
+    lines:[[0,1],[1,2],[0,3]],
+    sequence:[3,0,1,2],
+    puzzle:{type:'morse', word:'HIDDEN', morse:'.... .. -.. -.. . -.'},
+    lore:{
+      signal:'LEP-HARE',
+      text:'The hare hides beneath the hunter. It is the one zodiac-adjacent figure that was never a zodiac sign. It slipped through the catalog. WNCORE\'s own documentation contains a similar gap: section 4.7 of the internal signal archive references stations indexed in a "Lepus cluster" — a range of frequencies that appear in the index but have no corresponding entries. Someone added them. No one removed them.',
+      code:'ARG-LEP-HD',
+      param:'signal=LEP-HIDDEN-CLUSTER'
+    }
+  },
+  {
+    id:'telescopium', name:'Telescopium', designation:'TEL-α',
+    tag:['science','nature','space','astronomy','tech','technology'],
+    hint:'One of Lacaille\'s 18th-century additions. Named for the instrument used to observe the sky.',
+    stars:[
+      {name:'Alpha Tel',x:0.0, y:0.0,z:0.0},
+      {name:'Zeta Tel', x:0.8, y:0.8,z:0.1},
+      {name:'Epsilon Tel',x:-0.6,y:0.6,z:-0.1},
+    ],
+    lines:[[0,1],[0,2]],
+    sequence:[1,0,2],
+    puzzle:{type:'acrostic',
+      stars:['Telescope','Echo','Lacaille','Omega'],
+      clues:['The instrument','The return signal','The cataloger','The end'],
+      answer:'TELO'},
+    lore:{
+      signal:'TEL-LENS',
+      text:'Lacaille named it in 1751 from the Cape of Good Hope while cataloging 10,000 southern stars in two years. He worked alone. The constellation Telescopium honors the instrument — but the instrument observed things that had no names yet. We still use his catalog. We have not finished naming what he found.',
+      code:'ARG-TEL-LC',
+      param:'signal=TEL-LACAILLE-UNNAMED'
+    }
+  },
+  {
+    id:'monoceros', name:'Monoceros', designation:'MON-α',
+    tag:['vaporwave','synthwave','city pop','retrofuture','80s','90s'],
+    hint:'The unicorn. Sits between Orion and Hydra. Contains the Rosette Nebula.',
+    stars:[
+      {name:'Beta Mon',  x:0.0, y:0.0,z:0.0},
+      {name:'Alpha Mon', x:1.4, y:0.8,z:0.1},
+      {name:'Gamma Mon', x:-0.8,y:0.6,z:-0.1},
+      {name:'Delta Mon', x:2.0, y:-0.4,z:0.2},
+      {name:'Epsilon Mon',x:-1.4,y:-0.2,z:0.1},
+    ],
+    lines:[[2,0],[0,1],[1,3],[0,4]],
+    sequence:[4,2,0,1,3],
+    puzzle:{type:'frequency', target:104.5, tolerance:0.4, range:[98,110]},
+    lore:{
+      signal:'MON-UNICORN',
+      text:'The unicorn hides between the giants. Its nebula — the Rosette — is 130 light-years wide and glows with ionized hydrogen. It has been forming stars for millions of years. In the WNCORE lore, the Rosette is the origin point of BLANK ZONE — not a location but a process. Something continuously forming in a region we cannot see directly.',
+      code:'ARG-MON-RN',
+      param:'signal=MON-ROSETTE-BLANK'
+    }
+  },
+];
+
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
+const STATE = {
+  unlockedIds: new Set(),
+  solvedIds:   new Set(),
+  selectedConstellation: null,
+  selectedStars: [],
+  sequence: [],
+};
+
+// Load from WNCORE's listening history
+function loadUnlockState() {
+  // Check WNCORE history for listened tags
+  try {
+    const hist = JSON.parse(localStorage.getItem('wncore-history-v2') || '[]');
+    const listenedTags = new Set();
+    hist.forEach(st => {
+      if (st.tags) st.tags.split(',').forEach(t => listenedTags.add(t.trim().toLowerCase()));
+      if (st.name) listenedTags.add(st.name.toLowerCase());
+    });
+    // Also check genre history
+    const genHist = JSON.parse(localStorage.getItem('wncore-genre-history') || '[]');
+    genHist.forEach(g => listenedTags.add(g.toLowerCase()));
+
+    CONSTELLATIONS.forEach(c => {
+      const unlocked = c.tag.some(t =>
+        listenedTags.has(t.toLowerCase()) ||
+        // Also match partial — "classical" matches "classical music"
+        [...listenedTags].some(lt => lt.includes(t.toLowerCase()) || t.toLowerCase().includes(lt))
+      );
+      if (unlocked) STATE.unlockedIds.add(c.id);
+    });
+  } catch(e) {}
+
+  // Load solved
+  try {
+    const solved = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
+    solved.forEach(id => STATE.solvedIds.add(id));
+  } catch(e) {}
+
+  // If nothing unlocked (new user or cleared history), give them 2 starter constellations
+  if (STATE.unlockedIds.size === 0) {
+    STATE.unlockedIds.add('orion');
+    STATE.unlockedIds.add('cygnus');
+  }
+}
+
+function saveSolved(id) {
+  STATE.solvedIds.add(id);
+  try {
+    localStorage.setItem('wncore-constellation-solved',
+      JSON.stringify([...STATE.solvedIds]));
+  } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════════════
+   THREE.JS SCENE
+═══════════════════════════════════════════════════ */
+const canvas = document.getElementById('three-canvas');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x04030a, 1);
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+camera.position.set(0, 0, 12);
+
+// ── Deep space background stars (ambient, non-interactive)
+function makeBackgroundStars() {
+  const count = 2000;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  const col = new Float32Array(count * 3);
+  const sizes = new Float32Array(count);
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 80 + Math.random() * 40;
+    pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+    pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    pos[i*3+2] = r * Math.cos(phi);
+    const bright = 0.15 + Math.random() * 0.6;
+    const tint = Math.random();
+    col[i*3]   = bright * (tint > 0.7 ? 1.0 : tint > 0.4 ? 0.85 : 0.75);
+    col[i*3+1] = bright * (tint > 0.7 ? 0.9 : tint > 0.4 ? 0.95 : 0.85);
+    col[i*3+2] = bright * (tint > 0.7 ? 0.8 : 1.0);
+    sizes[i] = Math.random() < 0.05 ? 2.5 : Math.random() < 0.2 ? 1.5 : 1.0;
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+  const mat = new THREE.PointsMaterial({
+    vertexColors: true,
+    sizeAttenuation: true,
+    size: 0.15,
+    transparent: true,
+    opacity: 0.8,
+  });
+  scene.add(new THREE.Points(geo, mat));
+}
+makeBackgroundStars();
+
+// ── Nebula — subtle colored cloud (sprite planes)
+function makeNebula() {
+  const colors = [0x1a0a2e, 0x0a1a2e, 0x2e0a1a];
+  colors.forEach((col, i) => {
+    const geo = new THREE.PlaneGeometry(60, 60);
+    const mat = new THREE.MeshBasicMaterial({
+      color: col, transparent: true, opacity: 0.08 + i * 0.03,
+      depthWrite: false, side: THREE.DoubleSide,
+    });
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set((i-1)*15, (i-1)*10, -60);
+    mesh.rotation.z = i * 0.4;
+    scene.add(mesh);
+  });
+}
+makeNebula();
+
+// ── Constellation meshes
+const constellationGroups = {}; // id → {group, starMeshes, lineMeshes, labelSprites}
+const SCALE = 2.2; // scene scale factor for constellation positions
+
+// Star materials
+const matStarLocked   = new THREE.MeshBasicMaterial({color:0x1e2650, transparent:true, opacity:0.6});
+const matStarUnlocked = new THREE.MeshBasicMaterial({color:0xffd4aa, transparent:true, opacity:0.95});
+const matStarSelected = new THREE.MeshBasicMaterial({color:0xc8472a});
+const matStarSolved   = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
+
+function buildConstellationMesh(c, offset) {
+  const group = new THREE.Group();
+  group.position.set(offset.x, offset.y, offset.z);
+
+  const starMeshes = [];
+  const lineMeshes = [];
+
+  const isUnlocked = STATE.unlockedIds.has(c.id);
+  const isSolved   = STATE.solvedIds.has(c.id);
+
+  // Stars
+  c.stars.forEach((star, idx) => {
+    const geo = new THREE.SphereGeometry(isUnlocked ? 0.09 : 0.055, 8, 8);
+    const mat = isSolved ? matStarSolved.clone() :
+                isUnlocked ? matStarUnlocked.clone() :
+                matStarLocked.clone();
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(star.x * SCALE * 0.5, star.y * SCALE * 0.5, star.z * SCALE * 0.5);
+    mesh.userData = {constId: c.id, starIdx: idx, starName: star.name};
+
+    // Glow sprite for unlocked stars
+    if (isUnlocked || isSolved) {
+      const glowGeo = new THREE.SphereGeometry(0.18, 8, 8);
+      const glowMat = new THREE.MeshBasicMaterial({
+        color: isSolved ? 0x22c55e : 0xc8472a,
+        transparent: true, opacity: 0.12
+      });
+      const glow = new THREE.Mesh(glowGeo, glowMat);
+      mesh.add(glow);
+    }
+
+    group.add(mesh);
+    starMeshes.push(mesh);
+  });
+
+  // Connection lines (only for unlocked/solved)
+  if (isUnlocked || isSolved) {
+    c.lines.forEach(([a, b]) => {
+      const sa = c.stars[a], sb = c.stars[b];
+      const points = [
+        new THREE.Vector3(sa.x*SCALE*0.5, sa.y*SCALE*0.5, sa.z*SCALE*0.5),
+        new THREE.Vector3(sb.x*SCALE*0.5, sb.y*SCALE*0.5, sb.z*SCALE*0.5),
+      ];
+      const geo = new THREE.BufferGeometry().setFromPoints(points);
+      const mat = new THREE.LineBasicMaterial({
+        color: isSolved ? 0x22c55e : 0xc8472a,
+        transparent: true,
+        opacity: isSolved ? 0.5 : 0.25,
+      });
+      const line = new THREE.Line(geo, mat);
+      group.add(line);
+      lineMeshes.push(line);
+    });
+  }
+
+  scene.add(group);
+  constellationGroups[c.id] = {group, starMeshes, lineMeshes, c};
+}
+
+// Distribute constellations across a sphere
+function layoutConstellations() {
+  const n = CONSTELLATIONS.length;
+  CONSTELLATIONS.forEach((c, i) => {
+    // Fibonacci sphere distribution
+    const phi = Math.acos(1 - 2*(i+0.5)/n);
+    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+    const r = 5;
+    const offset = {
+      x: r * Math.sin(phi) * Math.cos(theta),
+      y: r * Math.cos(phi),
+      z: r * Math.sin(phi) * Math.sin(theta),
+    };
+    buildConstellationMesh(c, offset);
+  });
+}
+layoutConstellations();
+
+// ── Orbit controls (manual implementation — no OrbitControls import needed)
+let isDragging = false, lastMouse = {x:0, y:0};
+const spherical = {theta: 0, phi: Math.PI/2, r: 12};
+
+function updateCamera() {
+  camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+  camera.position.y = spherical.r * Math.cos(spherical.phi);
+  camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+  camera.lookAt(0, 0, 0);
+}
+updateCamera();
+
+canvas.addEventListener('mousedown', e => { isDragging=true; lastMouse={x:e.clientX,y:e.clientY}; });
+window.addEventListener('mouseup', () => { isDragging=false; });
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - lastMouse.x;
+  const dy = e.clientY - lastMouse.y;
+  spherical.theta -= dx * 0.008;
+  spherical.phi = Math.max(0.1, Math.min(Math.PI-0.1, spherical.phi + dy * 0.006));
+  lastMouse = {x:e.clientX, y:e.clientY};
+  updateCamera();
+});
+canvas.addEventListener('wheel', e => {
+  spherical.r = Math.max(4, Math.min(22, spherical.r + e.deltaY * 0.015));
+  updateCamera();
+}, {passive:true});
+
+// Touch support
+let lastTouchDist = 0;
+canvas.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) { isDragging=true; lastMouse={x:e.touches[0].clientX,y:e.touches[0].clientY}; }
+  if (e.touches.length === 2) {
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    lastTouchDist = Math.sqrt(dx*dx+dy*dy);
+  }
+}, {passive:true});
+canvas.addEventListener('touchmove', e => {
+  if (e.touches.length === 1 && isDragging) {
+    const dx=e.touches[0].clientX-lastMouse.x, dy=e.touches[0].clientY-lastMouse.y;
+    spherical.theta-=dx*0.008; spherical.phi=Math.max(0.1,Math.min(Math.PI-0.1,spherical.phi+dy*0.006));
+    lastMouse={x:e.touches[0].clientX,y:e.touches[0].clientY}; updateCamera();
+  }
+  if (e.touches.length===2) {
+    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    spherical.r=Math.max(4,Math.min(22,spherical.r-(dist-lastTouchDist)*0.03));
+    lastTouchDist=dist; updateCamera();
+  }
+}, {passive:true});
+canvas.addEventListener('touchend', ()=>{ isDragging=false; }, {passive:true});
+
+// ── Raycasting — click detection
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points = {threshold: 0.15};
+const mouse = new THREE.Vector2();
+let clickStart = {x:0, y:0};
+
+canvas.addEventListener('mousedown', e => { clickStart={x:e.clientX,y:e.clientY}; });
+canvas.addEventListener('mouseup', e => {
+  const dx = Math.abs(e.clientX-clickStart.x), dy = Math.abs(e.clientY-clickStart.y);
+  if (dx>5||dy>5) return; // was a drag, not a click
+  mouse.x = (e.clientX/window.innerWidth)*2-1;
+  mouse.y = -(e.clientY/window.innerHeight)*2+1;
+  handleClick();
+});
+
+function handleClick() {
+  raycaster.setFromCamera(mouse, camera);
+  const allStarMeshes = [];
+  Object.values(constellationGroups).forEach(({starMeshes}) => allStarMeshes.push(...starMeshes));
+  const hits = raycaster.intersectObjects(allStarMeshes);
+  if (hits.length === 0) return;
+  const hit = hits[0].object;
+  const constId = hit.userData.constId;
+  const starIdx = hit.userData.starIdx;
+  const c = CONSTELLATIONS.find(x=>x.id===constId);
+  if (!c) return;
+
+  const isUnlocked = STATE.unlockedIds.has(c.id);
+  if (!isUnlocked) {
+    showToastLocked(c);
+    return;
+  }
+
+  // Open info panel for this constellation
+  if (STATE.selectedConstellation !== constId) {
+    STATE.selectedConstellation = constId;
+    STATE.selectedStars = [];
+    openInfoPanel(c);
+  }
+
+  // Register star in sequence
+  registerStarClick(c, starIdx, hit);
+}
+
+// ── Render loop
+let time = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.008;
+
+  // Gentle auto-rotate when not dragging
+  if (!isDragging) {
+    spherical.theta += 0.0008;
+    updateCamera();
+  }
+
+  // Pulse glow on unlocked stars
+  Object.values(constellationGroups).forEach(({starMeshes, c}) => {
+    const isUnlocked = STATE.unlockedIds.has(c.id);
+    if (!isUnlocked) return;
+    starMeshes.forEach((mesh, i) => {
+      if (mesh.children[0]) {
+        mesh.children[0].material.opacity = 0.08 + 0.06 * Math.sin(time * 1.5 + i * 0.8);
+      }
+    });
+  });
+
+  renderer.render(scene, camera);
+}
+animate();
+
+// ── Resize
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+/* ═══════════════════════════════════════════════════
+   UI — SIDEBAR
+═══════════════════════════════════════════════════ */
+function buildSidebar() {
+  const list = document.getElementById('sb-list');
+  list.innerHTML = '';
+  CONSTELLATIONS.forEach(c => {
+    const unlocked = STATE.unlockedIds.has(c.id);
+    const solved   = STATE.solvedIds.has(c.id);
+    const div = document.createElement('div');
+    div.className = `sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
+    div.id = `sb-${c.id}`;
+    div.innerHTML = `
+      <span class="sb-dot"></span>
+      <span class="sb-name">
+        <div class="sb-name-main">${c.name}</div>
+        <div class="sb-name-sub">${c.designation}</div>
+      </span>
+      <span class="sb-badge ${solved?'solved-badge':unlocked?'unlocked-badge':'locked-badge'}">
+        ${solved?'SOLVED':unlocked?'OPEN':'LOCKED'}
+      </span>`;
+    div.addEventListener('click', () => {
+      if (!unlocked && !solved) { showToastLockedSb(c); return; }
+      STATE.selectedConstellation = c.id;
+      STATE.selectedStars = [];
+      openInfoPanel(c);
+      // Focus camera on this constellation
+      const grp = constellationGroups[c.id];
+      if (grp) {
+        const pos = grp.group.position;
+        const angle = Math.atan2(pos.x, pos.z);
+        const elevation = Math.atan2(pos.y, Math.sqrt(pos.x*pos.x+pos.z*pos.z));
+        spherical.theta = angle;
+        spherical.phi = Math.PI/2 - elevation;
+        updateCamera();
+      }
+    });
+    list.appendChild(div);
+  });
+
+  // Update header count
+  const count = STATE.unlockedIds.size + STATE.solvedIds.size;
+  document.getElementById('hd-unlocked-count').textContent = STATE.unlockedIds.size;
+  document.getElementById('hud-unlocked').textContent = STATE.unlockedIds.size;
+}
+
+function updateSidebarItem(c) {
+  const item = document.getElementById(`sb-${c.id}`);
+  if (!item) return;
+  const solved   = STATE.solvedIds.has(c.id);
+  const unlocked = STATE.unlockedIds.has(c.id);
+  item.className = `sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
+  const badge = item.querySelector('.sb-badge');
+  if (badge) {
+    badge.className = `sb-badge ${solved?'solved-badge':unlocked?'unlocked-badge':'locked-badge'}`;
+    badge.textContent = solved?'SOLVED':unlocked?'OPEN':'LOCKED';
+  }
+}
+
+/* ═══════════════════════════════════════════════════
+   UI — INFO PANEL
+═══════════════════════════════════════════════════ */
+function openInfoPanel(c) {
+  const panel = document.getElementById('info-panel');
+  panel.classList.add('open');
+  document.getElementById('ip-constellation-name').textContent = c.name;
+  document.getElementById('ip-designation').textContent = c.designation;
+  document.getElementById('ip-unlock-cond').textContent =
+    `Listen to: ${c.tag.slice(0,3).join(', ')}${c.tag.length>3?' +more':''}`;
+  document.getElementById('ip-hint').textContent = c.hint;
+
+  const starsList = document.getElementById('ip-stars-list');
+  starsList.innerHTML = '';
+  c.sequence.forEach((starIdx, order) => {
+    const star = c.stars[starIdx];
+    const div = document.createElement('div');
+    div.className = 'ip-star-row';
+    div.id = `ip-star-${c.id}-${order}`;
+    div.innerHTML = `<div class="ip-star-idx">${order+1}</div><span>${star.name}</span>`;
+    div.addEventListener('click', () => registerStarClick(c, starIdx, null));
+    starsList.appendChild(div);
+  });
+
+  document.getElementById('ip-progress-fill').style.width = '0%';
+  document.getElementById('ip-action-btn').style.display =
+    STATE.solvedIds.has(c.id) ? 'none' : 'block';
+
+  // Mark active in sidebar
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  const sbItem = document.getElementById(`sb-${c.id}`);
+  if (sbItem) sbItem.classList.add('active');
+
+  // Reset sequence
+  STATE.selectedStars = [];
+  updateSeqIndicator(c);
+}
+
+document.getElementById('ip-close').addEventListener('click', () => {
+  document.getElementById('info-panel').classList.remove('open');
+  STATE.selectedConstellation = null;
+  STATE.selectedStars = [];
+  updateSeqIndicator(null);
+});
+
+document.getElementById('ip-action-btn').addEventListener('click', () => {
+  const c = CONSTELLATIONS.find(x=>x.id===STATE.selectedConstellation);
+  if (c && STATE.selectedStars.length === c.sequence.length) openPuzzle(c);
+  else showPanelHint('Complete the star sequence first');
+});
+
+function showPanelHint(msg) {
+  const btn = document.getElementById('ip-action-btn');
+  const orig = btn.textContent;
+  btn.textContent = msg;
+  btn.style.color = '#ef4444';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+}
+
+/* ═══════════════════════════════════════════════════
+   STAR SEQUENCE LOGIC
+═══════════════════════════════════════════════════ */
+function registerStarClick(c, starIdx, mesh) {
+  if (STATE.solvedIds.has(c.id)) return;
+  const expectedOrder = STATE.selectedStars.length;
+  const expectedStarIdx = c.sequence[expectedOrder];
+
+  if (starIdx === expectedStarIdx) {
+    // Correct!
+    STATE.selectedStars.push(starIdx);
+    // Highlight star
+    if (mesh) {
+      mesh.material = matStarSelected.clone();
+    }
+    // Highlight in info panel
+    const rowEl = document.getElementById(`ip-star-${c.id}-${expectedOrder}`);
+    if (rowEl) rowEl.classList.add('selected');
+
+    updateSeqIndicator(c);
+    const pct = (STATE.selectedStars.length / c.sequence.length) * 100;
+    document.getElementById('ip-progress-fill').style.width = pct + '%';
+
+    if (STATE.selectedStars.length === c.sequence.length) {
+      // All stars clicked in correct order!
+      setTimeout(() => openPuzzle(c), 400);
+    }
+  } else {
+    // Wrong order — flash error
+    glitchFlash();
+    STATE.selectedStars = [];
+    updateSeqIndicator(c);
+    document.getElementById('ip-progress-fill').style.width = '0%';
+    // Reset row highlights
+    document.querySelectorAll(`[id^="ip-star-${c.id}-"]`).forEach(el => el.classList.remove('selected','completed'));
+    // Reset star colors
+    if (constellationGroups[c.id]) {
+      constellationGroups[c.id].starMeshes.forEach(m => {
+        m.material = STATE.solvedIds.has(c.id) ? matStarSolved.clone() : matStarUnlocked.clone();
+      });
+    }
+  }
+}
+
+function updateSeqIndicator(c) {
+  const ind = document.getElementById('seq-indicator');
+  ind.innerHTML = '';
+  if (!c) return;
+  c.sequence.forEach((_, i) => {
+    const dot = document.createElement('span');
+    dot.className = 'seq-dot' + (i < STATE.selectedStars.length ? ' filled' : '');
+    ind.appendChild(dot);
+  });
+}
+
+function glitchFlash() {
+  document.body.style.filter = 'hue-rotate(120deg) brightness(1.4)';
+  setTimeout(() => { document.body.style.filter = 'brightness(0.2)'; }, 60);
+  setTimeout(() => { document.body.style.filter = ''; }, 120);
+}
+
+/* ═══════════════════════════════════════════════════
+   TOASTS
+═══════════════════════════════════════════════════ */
+function showUnlockToast(c) {
+  const toast = document.getElementById('unlock-toast');
+  document.getElementById('unlock-toast-name').textContent = c.name;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+function showToastLocked(c) { showInfoToast(`${c.name} is locked — listen to ${c.tag.slice(0,2).join(' or ')} radio to unlock`); }
+function showToastLockedSb(c) { showInfoToast(`Unlock ${c.name} by listening to ${c.tag.slice(0,2).join(', ')} on WNCORE`); }
+function showInfoToast(msg) {
+  const toast = document.getElementById('unlock-toast');
+  document.getElementById('unlock-toast-name').textContent = msg;
+  document.getElementById('unlock-toast-sub').textContent = 'GO TO WNCORE RADIO';
+  toast.classList.add('show');
+  setTimeout(() => { toast.classList.remove('show'); document.getElementById('unlock-toast-sub').textContent = 'CONSTELLATION UNLOCKED — SIGNAL RECEIVED'; }, 3500);
+}
+
+/* ═══════════════════════════════════════════════════
+   PUZZLE SYSTEM
+═══════════════════════════════════════════════════ */
+let currentPuzzleConstellation = null;
+let morseInterval = null;
+
+function openPuzzle(c) {
+  currentPuzzleConstellation = c;
+  const modal = document.getElementById('puzzle-modal');
+  const body  = document.getElementById('puzzle-body');
+  document.getElementById('lore-reveal').classList.remove('show');
+  document.getElementById('lore-reveal').style.display = 'none';
+  document.getElementById('puzzle-error').textContent = '';
+  modal.classList.add('open');
+
+  document.getElementById('puzzle-title').textContent = c.name;
+  document.getElementById('puzzle-subtitle').textContent =
+    '— ' + (c.puzzle.type==='morse'?'DECODE THE MORSE TRANSMISSION':
+             c.puzzle.type==='frequency'?'TUNE TO THE EXACT FREQUENCY':
+             'DECODE THE HIDDEN WORD') + ' —';
+
+  body.innerHTML = '';
+  if (c.puzzle.type === 'morse') buildMorsePuzzle(c, body);
+  else if (c.puzzle.type === 'frequency') buildFrequencyPuzzle(c, body);
+  else if (c.puzzle.type === 'acrostic') buildAcrosticPuzzle(c, body);
+}
+
+// ── Morse Puzzle
+function buildMorsePuzzle(c, body) {
+  const morseCode = c.puzzle.morse;
+  const symbols = morseCode.split(' ').join('  ').split('');
+
+  body.innerHTML = `
+    <div style="font-size:0.62rem;color:var(--text3);line-height:1.7">
+      Watch the lights. Each letter is separated by a space. Dots are short, dashes are long.
+      Type the decoded word.
+    </div>
+    <div id="morse-display"></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button onclick="playMorse('${morseCode}')" style="padding:8px 16px;background:rgba(200,71,42,0.1);border:1px solid rgba(200,71,42,0.3);border-radius:6px;color:var(--accent);font-family:var(--mono);font-size:0.6rem;letter-spacing:1px;cursor:pointer">▶ PLAY SIGNAL</button>
+      <span style="font-size:0.58rem;color:var(--text3)">click to replay</span>
+    </div>
+    <input id="morse-input" type="text" placeholder="TYPE DECODED WORD" autocomplete="off" spellcheck="false">
+    <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
+    <button id="puzzle-submit" onclick="submitPuzzle()">SUBMIT TRANSMISSION</button>`;
+
+  // Build display dots/dashes
+  const display = document.getElementById('morse-display');
+  morseCode.split('').forEach(ch => {
+    if (ch === ' ') { const sp = document.createElement('span'); sp.style.cssText='display:inline-block;width:10px'; display.appendChild(sp); return; }
+    const dot = document.createElement('span');
+    dot.className = `morse-flash ${ch==='.'?'dit':'dah'}`;
+    display.appendChild(dot);
+  });
+
+  // Auto-play once
+  setTimeout(() => playMorse(morseCode), 600);
+}
+
+window.playMorse = function(code) {
+  if (morseInterval) { clearInterval(morseInterval); morseInterval=null; }
+  const display = document.getElementById('morse-display');
+  if (!display) return;
+  const flashes = display.querySelectorAll('.morse-flash');
+  let fi = 0, ci = 0;
+  const symbols = code.replace(/ /g, ' _').split('').filter(c=>c!=='_');
+  // Reset all
+  flashes.forEach(f=>f.classList.remove('lit'));
+
+  // Flash sequence
+  function nextFlash() {
+    if (fi >= flashes.length) return;
+    const f = flashes[fi];
+    const isDit = f.classList.contains('dit');
+    f.classList.add('lit');
+    setTimeout(() => {
+      f.classList.remove('lit');
+      fi++;
+      // Gap between elements
+      const gap = isDit ? 100 : 200;
+      morseInterval = setTimeout(nextFlash, gap);
+    }, isDit ? 180 : 450);
+  }
+  nextFlash();
+};
+
+// ── Frequency Puzzle
+function buildFrequencyPuzzle(c, body) {
+  const {target, tolerance, range} = c.puzzle;
+  body.innerHTML = `
+    <div style="font-size:0.62rem;color:var(--text3);line-height:1.7">
+      A transmission has been detected. Tune the receiver to the exact frequency to lock on.
+      You need to be within ${tolerance} MHz.
+    </div>
+    <div id="freq-display">
+      <div id="freq-value">${((range[0]+range[1])/2).toFixed(1)}</div>
+      <div id="freq-unit">MHz</div>
+    </div>
+    <div id="freq-bar-wrap">
+      <input type="range" id="freq-slider" min="${range[0]*10}" max="${range[1]*10}" value="${((range[0]+range[1])/2)*10}" oninput="updateFreq(this.value)">
+    </div>
+    <div id="freq-indicator"></div>
+    <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
+    <button id="puzzle-submit" onclick="submitPuzzle()">LOCK FREQUENCY</button>`;
+}
+
+window.updateFreq = function(val) {
+  const freq = (val/10).toFixed(1);
+  document.getElementById('freq-value').textContent = freq;
+  const c = currentPuzzleConstellation;
+  const diff = Math.abs(parseFloat(freq) - c.puzzle.target);
+  const ind = document.getElementById('freq-indicator');
+  if (diff < 0.5) ind.textContent = diff < 0.2 ? '◉ STRONG SIGNAL' : '◎ SIGNAL DETECTED';
+  else if (diff < 2) ind.textContent = diff > c.puzzle.target - parseFloat(freq) ? '▷ TUNE LOWER' : '◁ TUNE HIGHER';
+  else ind.textContent = '— NO SIGNAL —';
+  ind.style.color = diff < c.puzzle.target*0.005+0.2 ? 'var(--accent)' : diff < 1 ? '#eab308' : 'var(--text3)';
+};
+
+// ── Acrostic Puzzle
+function buildAcrosticPuzzle(c, body) {
+  const {stars, clues, answer} = c.puzzle;
+  const rows = stars.map((star, i) => `
+    <div class="acrostic-row">
+      <div class="acrostic-letter">${answer[i] || '?'}</div>
+      <div>
+        <div class="acrostic-star">${star}</div>
+        <div class="acrostic-clue">${clues[i]}</div>
+      </div>
+    </div>`).join('');
+  body.innerHTML = `
+    <div style="font-size:0.62rem;color:var(--text3);line-height:1.7">
+      The first letters of these star names and references spell a hidden word.
+      Read the orange letters downward.
+    </div>
+    <div id="acrostic-wrap">${rows}</div>
+    <input id="acrostic-answer" type="text" placeholder="ENTER THE HIDDEN WORD" autocomplete="off" spellcheck="false" maxlength="${answer.length}">
+    <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
+    <button id="puzzle-submit" onclick="submitPuzzle()">SUBMIT TRANSMISSION</button>`;
+}
+
+// ── Submit
+window.submitPuzzle = function() {
+  const c = currentPuzzleConstellation;
+  if (!c) return;
+  let correct = false;
+
+  if (c.puzzle.type === 'morse') {
+    const input = document.getElementById('morse-input');
+    correct = input && input.value.trim().toUpperCase() === c.puzzle.word.toUpperCase();
+    if (!correct && input) { input.classList.add('wrong'); setTimeout(()=>input.classList.remove('wrong'),500); }
+  } else if (c.puzzle.type === 'frequency') {
+    const slider = document.getElementById('freq-slider');
+    if (slider) {
+      const freq = parseFloat(slider.value)/10;
+      correct = Math.abs(freq - c.puzzle.target) <= c.puzzle.tolerance;
+    }
+  } else if (c.puzzle.type === 'acrostic') {
+    const input = document.getElementById('acrostic-answer');
+    correct = input && input.value.trim().toUpperCase() === c.puzzle.answer.toUpperCase();
+    if (!correct && input) { input.classList.add('wrong'); setTimeout(()=>input.classList.remove('wrong'),500); }
+  }
+
+  if (correct) {
+    onPuzzleSolved(c);
+  } else {
+    const err = document.getElementById('puzzle-error');
+    if (err) { err.textContent = 'Incorrect — the signal does not match. Try again.'; setTimeout(()=>err.textContent='',3000); }
+  }
+};
+
+function onPuzzleSolved(c) {
+  saveSolved(c.id);
+
+  // Update 3D scene
+  const grp = constellationGroups[c.id];
+  if (grp) {
+    grp.starMeshes.forEach(m => { m.material = matStarSolved.clone(); if(m.children[0]) m.children[0].material.color.setHex(0x22c55e); });
+    grp.lineMeshes.forEach(l => { l.material.color.setHex(0x22c55e); l.material.opacity=0.5; });
+  }
+
+  updateSidebarItem(c);
+
+  // Show lore reveal
+  document.getElementById('puzzle-body').style.display = 'none';
+  const lore = document.getElementById('lore-reveal');
+  lore.style.display = 'flex';
+  setTimeout(()=>lore.classList.add('show'),50);
+  document.getElementById('lore-text').textContent = c.lore.text;
+  document.getElementById('lore-code').textContent = c.lore.code;
+  const link = document.getElementById('lore-link');
+  link.href = `https://siharu.vercel.app?${c.lore.param}&constellation=${c.id}`;
+
+  // Copy code on click
+  document.getElementById('lore-code').addEventListener('click', () => {
+    navigator.clipboard?.writeText(c.lore.code).catch(()=>{});
+    document.getElementById('lore-code').textContent = 'COPIED TO CLIPBOARD';
+    setTimeout(()=>document.getElementById('lore-code').textContent=c.lore.code, 2000);
+  });
+}
+
+document.getElementById('puzzle-close').addEventListener('click', () => {
+  document.getElementById('puzzle-modal').classList.remove('open');
+  document.getElementById('puzzle-body').style.display = '';
+  if (morseInterval) { clearInterval(morseInterval); morseInterval=null; }
+});
+
+document.getElementById('puzzle-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('puzzle-modal')) {
+    document.getElementById('puzzle-modal').classList.remove('open');
+  }
+});
+
+/* ═══════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════ */
+loadUnlockState();
+buildSidebar();
+
+// Check every 30s if new stations unlocked (in case they have main site open in another tab)
+setInterval(() => {
+  const prevSize = STATE.unlockedIds.size;
+  loadUnlockState();
+  if (STATE.unlockedIds.size > prevSize) {
+    const newIds = [...STATE.unlockedIds].filter(id => {
+      const c = CONSTELLATIONS.find(x=>x.id===id);
+      return c && !document.getElementById(`sb-${id}`)?.classList.contains('unlocked');
+    });
+    newIds.forEach(id => {
+      const c = CONSTELLATIONS.find(x=>x.id===id);
+      if (c) {
+        showUnlockToast(c);
+        // Remove stale locked mesh from scene before rebuilding as unlocked
+        const existing = constellationGroups[id];
+        if (existing) {
+          scene.remove(existing.group);
+          delete constellationGroups[id];
+        }
+        // Re-derive the same Fibonacci offset position for this constellation
+        const i = CONSTELLATIONS.indexOf(c);
+        const n = CONSTELLATIONS.length;
+        const phi = Math.acos(1 - 2*(i+0.5)/n);
+        const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+        const r = 5;
+        buildConstellationMesh(c, {
+          x: r * Math.sin(phi) * Math.cos(theta),
+          y: r * Math.cos(phi),
+          z: r * Math.sin(phi) * Math.sin(theta),
+        });
+        updateSidebarItem(c);
+      }
+    });
+    buildSidebar();
+  }
+}, 30000);
+
+// Update HUD
+setInterval(() => {
+  document.getElementById('hd-unlocked-count').textContent = STATE.unlockedIds.size;
+  document.getElementById('hud-unlocked').textContent = STATE.unlockedIds.size;
+}, 2000);
+</script>
+</body>
+</html>
