@@ -25,6 +25,16 @@
 // SECTION 1 — PROFILE SYSTEM
 // ─────────────────────────────────────────────────────────────────────────────
 
+// SAFETY SHIM — _getSupabase comes from bundle.js (loaded first via defer).
+// If bundle.js failed to execute, fall back to no-ops so this file never throws
+// a ReferenceError that breaks the entire page.
+if (typeof _getSupabase === 'undefined') {
+  console.warn('[bundle_append] _getSupabase missing — bundle.js may not have executed.');
+  window._getSupabase = async () => null;
+}
+if (typeof showPage  === 'undefined') window.showPage  = () => {};
+if (typeof showToast === 'undefined') window.showToast = () => {};
+
 (function () {
   'use strict';
 

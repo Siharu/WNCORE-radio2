@@ -847,47 +847,8 @@ function updateUI(name, meta, emoji, favicon) {
   document.getElementById('pb-fill').classList.add('playing');
   document.getElementById('pb-eq').classList.add('playing');
   setPlayIcon(true);
-  // Always sync LM top card when a station successfully plays
-  if (typeof lmSyncTopCard === 'function') lmSyncTopCard();
 }
 function updateStatus(msg) { document.getElementById('pb-name').textContent = msg; }
-
-// ── LM TOP CARD SYNC ─────────────────────────────────────────────────────
-// Called every time updateUI() fires (i.e. every successful playStation).
-// If lmCurrentChannel is set, update the top card from the live currentStation.
-// This replaces the fragile callback-chain approach in lmStartStation.
-function lmSyncTopCard() {
-  if (!lmCurrentChannel) return;
-  const st = window.currentStation;
-  if (!st) return;
-  const ch = lmCurrentChannel;
-
-  const npCard  = document.getElementById('lm-np-card');
-  const titleEl = document.getElementById('lm-np-title');
-  const srcEl   = document.getElementById('lm-np-source');
-  const tagEl   = document.getElementById('lm-np-tag');
-  const licEl   = document.getElementById('lm-np-license-text');
-  const iconEl  = document.getElementById('lm-play-icon');
-  if (!npCard) return;
-
-  npCard.classList.add('playing');
-  if (titleEl) titleEl.textContent = st.name;
-  // src field exists on LM stations; fall back to meta
-  if (srcEl)   srcEl.textContent = st.src ? `Source: ${st.src} · ${ch.genre}` : ch.genre;
-  if (tagEl)   tagEl.textContent = `WNCORE ${ch.genre.toUpperCase()}`;
-  if (licEl)   licEl.textContent = `${ch.license} · Royalty-free`;
-  if (iconEl)  iconEl.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
-
-  // Highlight active card
-  document.querySelectorAll('.lm-card').forEach(c => c.classList.remove('active-card'));
-  const activeCard = document.getElementById('lm-card-' + ch.id);
-  if (activeCard) activeCard.classList.add('active-card');
-
-  lmIsPlaying = true;
-  _lmRetries = 0;
-  lmSetWaveformState(true);
-}
-window.lmSyncTopCard = lmSyncTopCard;
 
 const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
 const ICON_PAUSE = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
@@ -1078,67 +1039,26 @@ try {
   }
 } catch(e){}
 
-// ─── MINI PLAYER LAUNCH TRANSITION ───────────────────────────────────────
+// ─── MINI PLAYER LAUNCHER ─────────────────────────────────────────────────
 function launchMiniPlayer() {
-  // If already transitioning, bail
-  if (document.getElementById('wncore-mini-transition')) return;
-
-  const overlay = document.createElement('div');
-  overlay.id = 'wncore-mini-transition';
-  overlay.style.cssText = [
-    'position:fixed', 'inset:0', 'z-index:99999',
-    'background:#0a0908', 'pointer-events:all',
-    'opacity:0', 'transition:opacity 0s',
-    'display:flex', 'align-items:center', 'justify-content:center',
-    'flex-direction:column', 'gap:16px',
-    'font-family:'DM Mono',monospace',
-  ].join(';');
-
-  // Scan-line texture
-  overlay.innerHTML = `
-    <div style="position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,0.015) 0px,rgba(255,255,255,0.015) 1px,transparent 1px,transparent 4px);pointer-events:none;z-index:1"></div>
-    <div id="wmt-logo" style="position:relative;z-index:2;font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;letter-spacing:-0.5px;color:#f0ede8;opacity:0;transform:scale(0.85);transition:opacity 0.35s,transform 0.35s">
-      WNCORE <span style="font-size:0.5rem;font-weight:400;letter-spacing:2px;color:#c8472a;font-family:'DM Mono',monospace;border:1px solid rgba(200,71,42,0.4);padding:2px 6px;border-radius:3px;vertical-align:middle">RADIO</span>
-    </div>
-    <div id="wmt-bar" style="position:relative;z-index:2;width:120px;height:2px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;opacity:0;transition:opacity 0.2s">
-      <div id="wmt-bar-fill" style="height:100%;width:0%;background:#c8472a;border-radius:2px;transition:width 0.55s cubic-bezier(0.4,0,0.2,1)"></div>
-    </div>
-    <div id="wmt-label" style="position:relative;z-index:2;font-size:0.55rem;letter-spacing:2px;color:rgba(240,237,232,0.3);opacity:0;transition:opacity 0.2s">SWITCHING TO MINI MODE</div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  // Step 1: fade in overlay fast
-  requestAnimationFrame(() => {
-    overlay.style.transition = 'opacity 0.18s ease';
-    overlay.style.opacity = '1';
-  });
-
-  // Step 2: glitch the page content behind (scale + blur)
-  document.body.style.transition = 'transform 0.18s ease, filter 0.18s ease';
-  document.body.style.transform = 'scale(0.97)';
-  document.body.style.filter = 'blur(4px)';
-
-  setTimeout(() => {
-    // Step 3: show logo + bar
-    const logo = document.getElementById('wmt-logo');
-    const bar  = document.getElementById('wmt-bar');
-    const lbl  = document.getElementById('wmt-label');
-    if (logo) { logo.style.opacity='1'; logo.style.transform='scale(1)'; }
-    if (bar)  bar.style.opacity = '1';
-    if (lbl)  lbl.style.opacity = '1';
-
-    // Step 4: animate progress bar
-    setTimeout(() => {
-      const fill = document.getElementById('wmt-bar-fill');
-      if (fill) fill.style.width = '100%';
-    }, 60);
-
-    // Step 5: navigate
-    setTimeout(() => {
-      window.location.href = '/radio-mini.html';
-    }, 700);
-  }, 180);
+  // If on mobile, navigate directly; on desktop open as compact popup
+  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+  if (isMobile) {
+    window.location.href = '/radio-mini.html';
+    return;
+  }
+  const w = 380, h = 620;
+  const left = Math.max(0, window.screenX + window.outerWidth - w - 20);
+  const top  = Math.max(0, window.screenY + Math.round((window.outerHeight - h) / 2));
+  const popup = window.open(
+    '/radio-mini.html',
+    'wncore-mini-player',
+    `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
+  );
+  if (!popup) {
+    // Popup blocked — fall back to tab
+    window.open('/radio-mini.html', '_blank', 'noopener');
+  }
 }
 window.launchMiniPlayer = launchMiniPlayer;
 
@@ -2495,8 +2415,11 @@ function lmStartStation() {
     null,
     // onSuccess: called inside playStation's .then()
     () => {
-      lmCurrentChannel = ch; // ensure ref is live before lmSyncTopCard reads it
-      lmSyncTopCard();       // single source of truth — reads currentStation directly
+      _lmRetries = 0;
+      lmIsPlaying = true;
+      lmCurrentChannel = ch;
+      lmUpdateUI(station, ch);
+      lmSetWaveformState(true);
       if (window.WRONGNESS) window.WRONGNESS.spike(5);
     },
     // onFail: called inside playStation's .catch()
@@ -4427,22 +4350,7 @@ window.voteStation = voteStation;
 // ─── 33. SHARE STATION BUTTON ─────────────────────────────────────────────
 // Generates a shareable URL with station name encoded as query param.
 // Copies to clipboard, shows toast. On load, auto-plays if ?station= present.
-function shareCurrentStation() {
-  const cs = window.currentStation;
-  if (!cs) { showToast('Nothing playing to share', 'warn'); return; }
-  const url = `${location.origin}${location.pathname}?station=${encodeURIComponent(cs.name)}&src=${encodeURIComponent(cs.url)}`;
-  navigator.clipboard.writeText(url).then(() => {
-    showToast('🔗 Station link copied!', 'success');
-  }).catch(() => {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-    document.body.appendChild(ta); ta.select();
-    document.execCommand('copy'); ta.remove();
-    showToast('🔗 Station link copied!', 'success');
-  });
-}
-window.shareCurrentStation = shareCurrentStation;
+// shareCurrentStation defined below in initShareSystem block (line ~7041)
 
 function checkAutoPlayFromURL() {
   const params = new URLSearchParams(location.search);
@@ -5018,7 +4926,7 @@ function renderNetworkMap() {
 
     // Label (only on hover-like random sample)
     if (isGhost || Math.random() < 0.3) {
-      ctx.font = `${isGhost ? 'bold ' : ''}9px DM Mono, monospace`;
+      ctx.font = `${isGhost ? 'bold ' : ''}9px 'DM Mono', monospace`;
       ctx.fillStyle = isGhost ? '#c8472a' : (isDark ? 'rgba(240,237,232,0.5)' : 'rgba(26,24,20,0.4)');
       ctx.fillText(name, x + 6, y - 4);
     }
@@ -8661,9 +8569,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.currentStation && typeof window.updateStatus === 'function') {
         window.updateStatus(window.currentStation.name || 'LIVE');
       }
-      // Sync LM top card on every actual audio play — catches cases where
-      // updateUI already fired but the card hadn't rendered yet
-      if (typeof lmSyncTopCard === 'function') lmSyncTopCard();
     });
   }
 
