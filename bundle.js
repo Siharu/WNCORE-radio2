@@ -847,47 +847,8 @@ function updateUI(name, meta, emoji, favicon) {
   document.getElementById('pb-fill').classList.add('playing');
   document.getElementById('pb-eq').classList.add('playing');
   setPlayIcon(true);
-  // Always sync LM top card when a station successfully plays
-  if (typeof lmSyncTopCard === 'function') lmSyncTopCard();
 }
 function updateStatus(msg) { document.getElementById('pb-name').textContent = msg; }
-
-// ── LM TOP CARD SYNC ─────────────────────────────────────────────────────
-// Called every time updateUI() fires (i.e. every successful playStation).
-// If lmCurrentChannel is set, update the top card from the live currentStation.
-// This replaces the fragile callback-chain approach in lmStartStation.
-function lmSyncTopCard() {
-  if (!lmCurrentChannel) return;
-  const st = window.currentStation;
-  if (!st) return;
-  const ch = lmCurrentChannel;
-
-  const npCard  = document.getElementById('lm-np-card');
-  const titleEl = document.getElementById('lm-np-title');
-  const srcEl   = document.getElementById('lm-np-source');
-  const tagEl   = document.getElementById('lm-np-tag');
-  const licEl   = document.getElementById('lm-np-license-text');
-  const iconEl  = document.getElementById('lm-play-icon');
-  if (!npCard) return;
-
-  npCard.classList.add('playing');
-  if (titleEl) titleEl.textContent = st.name;
-  // src field exists on LM stations; fall back to meta
-  if (srcEl)   srcEl.textContent = st.src ? `Source: ${st.src} · ${ch.genre}` : ch.genre;
-  if (tagEl)   tagEl.textContent = `WNCORE ${ch.genre.toUpperCase()}`;
-  if (licEl)   licEl.textContent = `${ch.license} · Royalty-free`;
-  if (iconEl)  iconEl.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
-
-  // Highlight active card
-  document.querySelectorAll('.lm-card').forEach(c => c.classList.remove('active-card'));
-  const activeCard = document.getElementById('lm-card-' + ch.id);
-  if (activeCard) activeCard.classList.add('active-card');
-
-  lmIsPlaying = true;
-  _lmRetries = 0;
-  lmSetWaveformState(true);
-}
-window.lmSyncTopCard = lmSyncTopCard;
 
 const ICON_PLAY = '<path d="M8 5v14l11-7z"/>';
 const ICON_PAUSE = '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>';
@@ -2495,8 +2456,11 @@ function lmStartStation() {
     null,
     // onSuccess: called inside playStation's .then()
     () => {
-      lmCurrentChannel = ch; // ensure ref is live before lmSyncTopCard reads it
-      lmSyncTopCard();       // single source of truth — reads currentStation directly
+      _lmRetries = 0;
+      lmIsPlaying = true;
+      lmCurrentChannel = ch;
+      lmUpdateUI(station, ch);
+      lmSetWaveformState(true);
       if (window.WRONGNESS) window.WRONGNESS.spike(5);
     },
     // onFail: called inside playStation's .catch()
@@ -8661,9 +8625,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (window.currentStation && typeof window.updateStatus === 'function') {
         window.updateStatus(window.currentStation.name || 'LIVE');
       }
-      // Sync LM top card on every actual audio play — catches cases where
-      // updateUI already fired but the card hadn't rendered yet
-      if (typeof lmSyncTopCard === 'function') lmSyncTopCard();
     });
   }
 
