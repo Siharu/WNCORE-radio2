@@ -1040,27 +1040,268 @@ try {
 } catch(e){}
 
 // ─── MINI PLAYER LAUNCHER ─────────────────────────────────────────────────
-function launchMiniPlayer() {
-  // If on mobile, navigate directly; on desktop open as compact popup
-  const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
-  if (isMobile) {
-    window.location.href = '/radio-mini.html';
-    return;
-  }
-  const w = 380, h = 620;
-  const left = Math.max(0, window.screenX + window.outerWidth - w - 20);
-  const top  = Math.max(0, window.screenY + Math.round((window.outerHeight - h) / 2));
-  const popup = window.open(
-    '/radio-mini.html',
-    'wncore-mini-player',
-    `width=${w},height=${h},left=${left},top=${top},resizable=yes,scrollbars=no,toolbar=no,menubar=no,location=no,status=no`
-  );
-  if (!popup) {
-    // Popup blocked — fall back to tab
-    window.open('/radio-mini.html', '_blank', 'noopener');
-  }
+// ─── MINI PLAYER ARG MORPH TRANSITION ────────────────────────────────────
+(function () {
+  // Inject styles once
+  const STYLE_ID = '__mini-morph-style';
+  function _injectMorphStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    const s = document.createElement('style');
+    s.id = STYLE_ID;
+    s.textContent = `
+#mini-morph-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: #000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  overflow: hidden;
 }
-window.launchMiniPlayer = launchMiniPlayer;
+#mini-morph-overlay.active {
+  display: flex;
+  animation: __mmo-in 0.25s ease forwards;
+}
+@keyframes __mmo-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* scanlines */
+#mini-morph-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(200,71,42,0.04) 2px,
+    rgba(200,71,42,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+  animation: __mmo-scan 6s linear infinite;
+}
+@keyframes __mmo-scan {
+  from { background-position: 0 0; }
+  to   { background-position: 0 100px; }
+}
+
+/* noise flicker */
+#mini-morph-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.18);
+  pointer-events: none;
+  z-index: 1;
+  animation: __mmo-flick 0.12s step-end infinite;
+}
+@keyframes __mmo-flick {
+  0%   { opacity: 0.0; }
+  25%  { opacity: 0.12; }
+  50%  { opacity: 0.0; }
+  75%  { opacity: 0.08; }
+  100% { opacity: 0.0; }
+}
+
+/* red radial glow */
+#mini-morph-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(200,71,42,0.10) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* terminal box */
+#mini-morph-term {
+  position: relative;
+  z-index: 2;
+  width: min(480px, 92vw);
+  border: 1px solid rgba(200,71,42,0.25);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(200,71,42,0.08), 0 0 0 1px rgba(255,255,255,0.04);
+  animation: __mmo-term-in 0.35s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+}
+@keyframes __mmo-term-in {
+  from { transform: scale(0.93) translateY(12px); opacity: 0; }
+  to   { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* chrome bar */
+#mini-morph-chrome {
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(200,71,42,0.15);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mmc-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+#mini-morph-chrome-title {
+  font-size: 0.46rem;
+  letter-spacing: 2.5px;
+  color: rgba(200,71,42,0.5);
+  text-transform: uppercase;
+  flex: 1;
+}
+#mini-morph-chrome-badge {
+  font-size: 0.4rem;
+  letter-spacing: 1.5px;
+  color: rgba(200,71,42,0.4);
+  border: 1px solid rgba(200,71,42,0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  animation: __mmo-badge-pulse 1.4s step-end infinite;
+}
+@keyframes __mmo-badge-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* terminal body */
+#mini-morph-body {
+  background: rgba(10,9,8,0.97);
+  padding: 14px 18px;
+  min-height: 160px;
+  max-height: 55vh;
+  overflow: hidden;
+  font-size: 0.65rem;
+  line-height: 1.7;
+  letter-spacing: 0.5px;
+}
+#mini-morph-body > div {
+  animation: __mmo-line-in 0.18s ease forwards;
+}
+@keyframes __mmo-line-in {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.mmt-dim   { color: rgba(240,237,232,0.3); }
+.mmt-ok    { color: rgba(34,197,94,0.8); }
+.mmt-warn  { color: rgba(234,179,8,0.8); }
+.mmt-red   { color: rgba(200,71,42,0.9); }
+.mmt-white { color: rgba(240,237,232,0.85); }
+.mmt-curs  { animation: __mmo-curs 0.9s step-end infinite; }
+@keyframes __mmo-curs { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* progress bar */
+#mini-morph-progress {
+  height: 2px;
+  background: rgba(255,255,255,0.04);
+  border-top: 1px solid rgba(200,71,42,0.12);
+  overflow: hidden;
+}
+#mini-morph-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(200,71,42,0.6), rgba(200,71,42,1));
+  transition: width 0.08s linear;
+  box-shadow: 0 0 8px rgba(200,71,42,0.5);
+}
+
+/* morph-out flash */
+#mini-morph-overlay.morphing {
+  animation: __mmo-out 0.35s ease forwards;
+}
+@keyframes __mmo-out {
+  0%   { opacity: 1; filter: brightness(1); }
+  60%  { opacity: 1; filter: brightness(3) saturate(0); }
+  100% { opacity: 0; filter: brightness(0); }
+}
+    `;
+    document.head.appendChild(s);
+  }
+
+  function _buildOverlay() {
+    if (document.getElementById('mini-morph-overlay')) return;
+    const el = document.createElement('div');
+    el.id = 'mini-morph-overlay';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = `
+      <div id="mini-morph-bg"></div>
+      <div id="mini-morph-term">
+        <div id="mini-morph-chrome">
+          <div class="mmc-dot" style="background:#ff5f57"></div>
+          <div class="mmc-dot" style="background:#febc2e"></div>
+          <div class="mmc-dot" style="background:#28c840"></div>
+          <div id="mini-morph-chrome-title">WNCORE · SIGNAL REROUTE</div>
+          <div id="mini-morph-chrome-badge">⬤ LIVE</div>
+        </div>
+        <div id="mini-morph-body"></div>
+        <div id="mini-morph-progress"><div id="mini-morph-progress-fill"></div></div>
+      </div>
+    `;
+    document.body.appendChild(el);
+  }
+
+  async function _typeLines(body, fill, lines) {
+    for (const { t, d, p } of lines) {
+      await new Promise(r => setTimeout(r, d));
+      if (t !== null) {
+        const div = document.createElement('div');
+        div.innerHTML = t;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+      }
+      if (p != null && fill) {
+        fill.style.width = p + '%';
+      }
+    }
+  }
+
+  window.launchMiniPlayer = async function launchMiniPlayer() {
+    _injectMorphStyles();
+    _buildOverlay();
+
+    const overlay = document.getElementById('mini-morph-overlay');
+    const body    = document.getElementById('mini-morph-body');
+    const fill    = document.getElementById('mini-morph-progress-fill');
+
+    body.innerHTML = '';
+    fill.style.width = '0%';
+    fill.style.transition = 'none';
+    overlay.classList.remove('morphing');
+    overlay.classList.add('active');
+
+    // Prevent body scroll during transition
+    document.body.style.overflow = 'hidden';
+
+    const LINES = [
+      { t: '<span class="mmt-dim">$ wncore_signal --reroute --target=node_mini</span>', d: 0,   p: 0 },
+      { t: '<span class="mmt-dim">Establishing secure channel...</span>',                d: 320, p: 8 },
+      { t: '<span class="mmt-ok">[ OK ] TLS handshake complete</span>',                 d: 680, p: 22 },
+      { t: '<span class="mmt-ok">[ OK ] Node authentication passed</span>',             d: 950, p: 36 },
+      { t: null,                                                                         d: 1080, p: null },
+      { t: '<span class="mmt-dim">Compressing signal stream...</span>',                 d: 1150, p: 50 },
+      { t: '<span class="mmt-warn">[ SYS ] Collapsing broadcast interface...</span>',  d: 1480, p: 64 },
+      { t: '<span class="mmt-red">[ NODE_MINI ] Pocket relay online</span>',            d: 1820, p: 78 },
+      { t: '<span class="mmt-dim">Rerouting... <span class="mmt-curs">█</span></span>', d: 2100, p: 90 },
+      { t: '<span class="mmt-white">ACCESS GRANTED — SWITCHING TO MINI MODE</span>',   d: 2480, p: 100 },
+    ];
+
+    // Animate progress fill smoothly after first frame
+    setTimeout(() => { fill.style.transition = 'width 0.08s linear'; }, 50);
+
+    await _typeLines(body, fill, LINES);
+
+    // Brief pause at 100%, then morph-out flash and navigate
+    await new Promise(r => setTimeout(r, 320));
+
+    overlay.classList.add('morphing');
+    await new Promise(r => setTimeout(r, 350));
+
+    document.body.style.overflow = '';
+    window.location.href = '/radio-mini.html';
+  };
+})();
 
 // ─── MOBILE MENU ──────────────────────────────────────────────────────────
 function toggleMobileMenu() {
