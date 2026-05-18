@@ -926,7 +926,6 @@ if (audio) {
       lmSetWaveformState(false);
     }
   });
-  });
   audio.addEventListener('waiting', () => {
     const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
     fills.forEach(f => { if(f){ f.classList.remove('playing','paused'); f.classList.add('buffering'); }});
@@ -4209,94 +4208,15 @@ if (document.readyState === 'loading') {
 // 20 new features. Wrongness level: MODERATE.
 // ═══════════════════════════════════════════════════════
 
-// ─── 31. MINI NOW-PLAYING WIDGET (floating, draggable) ────────────────────
-// Compact persistent widget that stays visible while browsing pages.
-// WRONGNESS: station name occasionally shows a different name for 300ms.
-let _miniDragging = false, _miniDx = 0, _miniDy = 0;
-
+// ─── 31. MINI NOW-PLAYING WIDGET ─────────────────────────────────────────
+// Removed — replaced by wncore-player.js (universal player bar).
+// Stubs kept so any legacy call sites don't throw.
 function buildMiniWidget() {
-  if (document.getElementById('mini-widget')) return;
-  const w = document.createElement('div');
-  w.id = 'mini-widget';
-  w.className = 'mini-widget';
-  w.innerHTML = `
-    <div class="mw-drag-handle" id="mw-handle" title="Drag to move">⠿</div>
-    <div class="mw-art" id="mw-art">📻</div>
-    <div class="mw-info">
-      <div class="mw-name" id="mw-name">Not playing</div>
-      <div class="mw-meta" id="mw-meta">Select a station</div>
-    </div>
-    <div class="mw-controls">
-      <button class="mw-btn" onclick="if(typeof togglePlay==='function')togglePlay()" title="Play/Pause">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path id="mw-play-icon" d="M8 5v14l11-7z"/></svg>
-      </button>
-      <button class="mw-btn" onclick="if(typeof skipStation==='function')skipStation(1)" title="Next">
-        <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M6 18l8.5-6L6 6v12zM16 6h2v12h-2z"/></svg>
-      </button>
-      <button class="mw-btn mw-close-btn" onclick="hideMiniWidget()" title="Hide">✕</button>
-    </div>`;
-  document.body.appendChild(w);
-
-  // Default position: bottom-left above player
-  w.style.left = '16px';
-  w.style.bottom = 'calc(var(--player-h, 80px) + 60px)';
-
-  // Drag logic
-  const handle = document.getElementById('mw-handle');
-  handle.addEventListener('mousedown', e => {
-    _miniDragging = true;
-    const rect = w.getBoundingClientRect();
-    _miniDx = e.clientX - rect.left;
-    _miniDy = e.clientY - rect.top;
-    w.style.bottom = 'auto';
-    w.style.top = rect.top + 'px';
-    document.body.classList.add('no-select');
-  });
-  document.addEventListener('mousemove', e => {
-    if (!_miniDragging) return;
-    w.style.left = Math.max(0, e.clientX - _miniDx) + 'px';
-    w.style.top  = Math.max(0, e.clientY - _miniDy) + 'px';
-  });
-  document.addEventListener('mouseup', () => {
-    _miniDragging = false;
-    document.body.classList.remove('no-select');
-  });
-
-  // WRONGNESS: name flicker every ~25s
-  setInterval(() => {
-    if (Math.random() < 0.35) {
-      const nm = document.getElementById('mw-name');
-      if (!nm || nm.textContent === 'Not playing') return;
-      const orig = nm.textContent;
-      const ghosts = ['NODE_09 Transmission','██████████','SIGNAL_KAGE','Unknown Origin'];
-      nm.textContent = ghosts[Math.floor(Math.random() * ghosts.length)];
-      nm.style.color = 'var(--accent)';
-      setTimeout(() => { nm.textContent = orig; nm.style.color = ''; }, 300);
-    }
-  }, 25000);
+  /* no-op — wncore-player.js handles the universal player bar */
 }
-
-function updateMiniWidget(name, meta, emoji) {
-  const nm  = document.getElementById('mw-name');
-  const mt  = document.getElementById('mw-meta');
-  const art = document.getElementById('mw-art');
-  if (nm)  nm.textContent  = name  || 'Not playing';
-  if (mt)  mt.textContent  = meta  || '—';
-  if (art) art.textContent = emoji || '📻';
-  const w = document.getElementById('mini-widget');
-  if (w) w.classList.add('active');
-}
-
-function hideMiniWidget() {
-  const w = document.getElementById('mini-widget');
-  if (w) w.classList.remove('active');
-}
-
-function showMiniWidget() {
-  if (!document.getElementById('mini-widget')) buildMiniWidget();
-  const w = document.getElementById('mini-widget');
-  if (w) w.classList.add('active');
-}
+function updateMiniWidget() { /* no-op — wncore-player.js fires wncore-station-change */ }
+function hideMiniWidget()    { /* no-op */ }
+function showMiniWidget()    { /* no-op */ }
 window.hideMiniWidget = hideMiniWidget;
 window.showMiniWidget = showMiniWidget;
 
@@ -5478,7 +5398,7 @@ function patchRenderTableV2() {
 // ═══════════════════════════════════════════════════════
 
 function bootV2() {
-  buildMiniWidget();
+  // buildMiniWidget() — removed, replaced by wncore-player.js
   buildStationModal();
   buildScheduleCard();
   buildSearchAutocomplete();
@@ -9656,7 +9576,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof showBitrateInPlayer === 'function') try { showBitrateInPlayer(station); }  catch(e) {}
         if (typeof updateFavButton     === 'function') try { updateFavButton(); }             catch(e) {}
         if (typeof updateMbnDot        === 'function') try { updateMbnDot(); }                catch(e) {}
-        if (typeof updateMiniWidget    === 'function') try { updateMiniWidget(name, meta, emoji); } catch(e) {}
+        if (typeof updateMiniWidget    === 'function') try { updateMiniWidget(name, meta, emoji); } catch(e) {} // stub — wncore-player.js listens to wncore-station-change event below
         if (typeof scrobblePush        === 'function') try { scrobblePush(station); }         catch(e) {}
         // D2: silent OS notification — desktop only, opt-in, never nags
         try { _wncNotifyStation(name, meta, emoji); } catch(e) {}
