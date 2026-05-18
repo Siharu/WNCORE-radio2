@@ -638,11 +638,12 @@ function getCountryEmoji(code){
 }
 
 // ─── PLAYBACK ─────────────────────────────────────────────────────────────
-function playStation(url, name, meta, emoji, favicon) {
+function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
   if (!url || !url.startsWith('http')) {
     updateStatus('NO SIGNAL');
     const npTrack = document.getElementById('np-track');
     if (npTrack) npTrack.textContent = '— station offline —';
+    if (_onFail) _onFail();
     return;
   }
   currentStation = {url, name, meta, emoji: emoji||'📻', favicon: favicon||null};
@@ -651,8 +652,8 @@ function playStation(url, name, meta, emoji, favicon) {
   audio.pause();
   audio.src = '';
 
-  // If Live Music was active, reset its UI state — audio is the same element
-  if (lmIsPlaying) {
+  // If Live Music was active and this call is NOT coming from LM itself, reset LM UI
+  if (lmIsPlaying && !_onSuccess) {
     lmIsPlaying = false;
     lmCurrentChannel = null;
     lmSetWaveformState(false);
@@ -675,6 +676,7 @@ function playStation(url, name, meta, emoji, favicon) {
       playPromise.then(() => {
         isPlaying = true;
         window.isPlaying = true; // FIX: sync window.isPlaying so PWA prompt works
+        if (_onSuccess) _onSuccess();
         if (window._broadcastStation) window._broadcastStation(name); // Option A: live station tracking
         updateUI(name, meta, emoji||'📻', currentStation.favicon);
         updateMiniPlayerVisibility();
@@ -707,6 +709,7 @@ function playStation(url, name, meta, emoji, favicon) {
         updateStatus('STREAM UNAVAILABLE');
         const npTrack = document.getElementById('np-track');
         if (npTrack) npTrack.textContent = '— signal lost —';
+        if (_onFail) _onFail();
       });
     }
   }, 50);
@@ -2359,48 +2362,51 @@ let _lmRetries = 0;
 
 function lmStartStation() {
   if (!lmCurrentChannel) return;
-  const station = lmCurrentChannel.stations[lmCurrentStationIdx];
+
+  // Snapshot channel and station before calling playStation.
+  // playStation runs async (50ms defer) and by the time callbacks fire,
+  // lmCurrentChannel may have been cleared if a non-LM station interrupted.
+  // Closuring ch/station here makes retry logic immune to that race.
+  const ch = lmCurrentChannel;
+  const station = ch.stations[lmCurrentStationIdx];
 
   const titleEl = document.getElementById('lm-np-title');
   if (titleEl) titleEl.textContent = `Connecting… (${station.name})`;
 
-  // Route through unified playStation — stops any current stream first
-  const ch = lmCurrentChannel;
+  // Pass success/fail callbacks into playStation so the retry logic
+  // runs inside the same promise chain — no separate audio event listeners
+  // that race against playStation's own 50ms defer.
   playStation(
     station.url,
     station.name,
     `WNCORE ${ch.genre} · ${ch.license}`,
     '🎵',
-    null
-  );
-
-  // Wait for play event to confirm success, then update LM-specific UI
-  const onPlay = () => {
-    _lmRetries = 0;
-    lmIsPlaying = true;
-    lmUpdateUI(station);
-    lmSetWaveformState(true);
-    if (window.WRONGNESS) window.WRONGNESS.spike(5);
-    audio.removeEventListener('play', onPlay);
-    audio.removeEventListener('error', onError);
-  };
-  const onError = () => {
-    _lmRetries++;
-    if (_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
-      lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
-      if (titleEl) titleEl.textContent = 'Trying next stream…';
-      setTimeout(lmStartStation, 300);
-    } else {
+    null,
+    // onSuccess: called inside playStation's .then()
+    () => {
       _lmRetries = 0;
-      lmIsPlaying = false;
-      lmSetWaveformState(false);
-      if (titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
+      lmIsPlaying = true;
+      lmCurrentChannel = ch;
+      lmUpdateUI(station, ch);
+      lmSetWaveformState(true);
+      if (window.WRONGNESS) window.WRONGNESS.spike(5);
+    },
+    // onFail: called inside playStation's .catch()
+    () => {
+      _lmRetries++;
+      if (_lmRetries < Math.min(5, ch.stations.length)) {
+        lmCurrentChannel = ch;
+        lmCurrentStationIdx = (lmCurrentStationIdx + 1) % ch.stations.length;
+        if (titleEl) titleEl.textContent = 'Trying next stream…';
+        setTimeout(lmStartStation, 300);
+      } else {
+        _lmRetries = 0;
+        lmIsPlaying = false;
+        lmSetWaveformState(false);
+        if (titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
+      }
     }
-    audio.removeEventListener('play', onPlay);
-    audio.removeEventListener('error', onError);
-  };
-  audio.addEventListener('play', onPlay);
-  audio.addEventListener('error', onError);
+  );
 }
 
 function lmPlayChannel(chId) {
@@ -2493,8 +2499,10 @@ function lmSelectChannel(btn, chId) {
   lmPlayChannel(chId);
 }
 
-function lmUpdateUI(station) {
-  const ch = lmCurrentChannel;
+function lmUpdateUI(station, ch) {
+  // ch can be passed explicitly (from lmStartStation snapshot) or fall back to the live ref
+  if (!ch) ch = lmCurrentChannel;
+  if (!ch) return;
   const npCard = document.getElementById('lm-np-card');
   const titleEl = document.getElementById('lm-np-title');
   const srcEl = document.getElementById('lm-np-source');
