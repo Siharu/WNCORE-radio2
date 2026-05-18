@@ -934,10 +934,20 @@
       if (m) _avatarSelectedStyle = m[1];
     }
 
-    const acctSection = Array.from(wrapper.children).filter(el => el.tagName === 'DIV').pop();
+    // Find the last DIV child of wrapper (the Account section) to insert before it.
+    // Use a strict child check to avoid the NotFoundError if acctSection got detached.
+    const divChildren = Array.from(wrapper.children).filter(el => el.tagName === 'DIV');
+    const acctSection = divChildren.length > 0 ? divChildren[divChildren.length - 1] : null;
     const tmp = document.createElement('div');
     tmp.innerHTML = _buildSections(profile);
-    while (tmp.firstChild) wrapper.insertBefore(tmp.firstChild, acctSection);
+    while (tmp.firstChild) {
+      const node = tmp.firstChild;
+      if (acctSection && acctSection.parentNode === wrapper) {
+        wrapper.insertBefore(node, acctSection);
+      } else {
+        wrapper.appendChild(node);
+      }
+    }
 
     window._profRenderAvatarGrid();
     const seedInp = document.getElementById('prof-avatar-seed-input');

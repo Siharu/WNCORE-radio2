@@ -319,8 +319,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <span id="hud-tip">listen to radio to unlock constellations</span>
 </div>
 
-<!-- Three.js -->
-<script src="https://unpkg.com/three@0.165.0/build/three.min.js"></script>
+<!-- Three.js with fallback CDN -->
+<script>
+  window._THREE_LOAD_ERROR = false;
+</script>
+<script src="https://unpkg.com/three@0.165.0/build/three.min.js"
+  onerror="window._THREE_LOAD_ERROR=true;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js';document.head.appendChild(s);"></script>
 <script>
 'use strict';
 
@@ -833,6 +837,14 @@ function saveSolved(id) {
 /* ═══════════════════════════════════════════════════
    THREE.JS SCENE
 ═══════════════════════════════════════════════════ */
+function _initThreeScene() {
+  if (typeof THREE === 'undefined') {
+    // THREE not loaded yet (CDN delay/fallback in progress) — retry briefly
+    var _retries = (window._threeRetries = (window._threeRetries || 0) + 1);
+    if (_retries < 30) { setTimeout(_initThreeScene, 100); }
+    else { console.warn('[WNCORE] THREE.js failed to load — constellation 3D view unavailable'); }
+    return;
+  }
 const canvas = document.getElementById('three-canvas');
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -1112,6 +1124,14 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+} // end _initThreeScene
+
+// Start the scene — retry loop handles CDN fallback timing
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _initThreeScene);
+} else {
+  _initThreeScene();
+}
 
 /* ═══════════════════════════════════════════════════
    UI — SIDEBAR

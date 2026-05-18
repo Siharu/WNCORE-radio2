@@ -1,8 +1,17 @@
+# WNCORE Radio — robots.txt
+# https://wncoreradio.vercel.app
+
 User-agent: *
 Allow: /
+Allow: /index.html
+Allow: /constellation.html
+Allow: /radio-mini.html
+Allow: /legal.html
 Disallow: /api/
 Disallow: /sw.js
 Disallow: /admin
-Disallow: /images/6
+
+# Note: XHR calls to all.api.radio-browser.info are blocked by that service's own
+# robots.txt for crawlers — this is expected behaviour and does not affect page indexing.
 
 Sitemap: https://wncore-radio.vercel.app/sitemap.xml

@@ -2133,10 +2133,12 @@ body:not(.mobile-menu-open) {
 
   .station-table .col-country,
   .station-table .col-bitrate,
-  .station-table th:nth-child(4),
-  .station-table td:nth-child(4),
+  .station-table .st-country,
+  .station-table .st-bitrate,
   .station-table th:nth-child(5),
-  .station-table td:nth-child(5) {
+  .station-table td:nth-child(5),
+  .station-table th:nth-child(6),
+  .station-table td:nth-child(6) {
     display: none !important;
   }
 

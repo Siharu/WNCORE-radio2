@@ -1298,18 +1298,26 @@ function closeSignInBtn() { document.getElementById('signin-modal').classList.re
 // the site still works if SUPABASE_URL / SUPABASE_ANON_KEY aren't configured.
 let _sbClient = null;
 let _authUser = null;
+let _sbInitPromise = null; // lock: prevents concurrent createClient calls
 
 async function _getSupabase() {
   if (_sbClient) return _sbClient;
-  try {
-    // Keys are injected by the Vercel api/config.js endpoint at runtime
-    const r = await fetch('/api/config');
-    if (!r.ok) return null;
-    const cfg = await r.json();
-    if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return null;
-    _sbClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
-    return _sbClient;
-  } catch { return null; }
+  // If already initializing, wait for the same promise instead of creating a new client
+  if (_sbInitPromise) return _sbInitPromise;
+  _sbInitPromise = (async () => {
+    try {
+      // Keys are injected by the Vercel api/config.js endpoint at runtime
+      const r = await fetch('/api/config');
+      if (!r.ok) return null;
+      const cfg = await r.json();
+      if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return null;
+      if (!_sbClient) {
+        _sbClient = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+      }
+      return _sbClient;
+    } catch { return null; }
+  })();
+  return _sbInitPromise;
 }
 
 // Pre-warm: kick off /api/config + Supabase init in the background immediately
@@ -3962,6 +3970,10 @@ function buildMobileBottomNav() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
       <span>Saved</span>
     </button>
+    <a class="mbn-btn" id="mbn-mini" href="/radio-mini.html" style="text-decoration:none;color:inherit">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><rect x="2" y="8" width="20" height="14" rx="2"/><path d="M6 8V6a6 6 0 0112 0v2"/><circle cx="12" cy="15" r="3"/></svg>
+      <span>Mini</span>
+    </a>
     <button class="mbn-btn" id="mbn-playing" onclick="mbnNav('home',this);scrollToPlayer()">
       <div class="mbn-playing-dot" id="mbn-dot"></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
@@ -9523,9 +9535,18 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', function() {
+      init();
+      // Retry resize after CSS layout settles (fixes height:0 on first paint)
+      setTimeout(function() {
+        if (typeof window._constellationResize === 'function') window._constellationResize();
+      }, 400);
+    });
   } else {
     init();
+    setTimeout(function() {
+      if (typeof window._constellationResize === 'function') window._constellationResize();
+    }, 400);
   }
 
 })();
