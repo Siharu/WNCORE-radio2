@@ -934,7 +934,7 @@
       if (m) _avatarSelectedStyle = m[1];
     }
 
-    const acctSection = wrapper.querySelector('div:last-child');
+    const acctSection = Array.from(wrapper.children).filter(el => el.tagName === 'DIV').pop();
     const tmp = document.createElement('div');
     tmp.innerHTML = _buildSections(profile);
     while (tmp.firstChild) wrapper.insertBefore(tmp.firstChild, acctSection);

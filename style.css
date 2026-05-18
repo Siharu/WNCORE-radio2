@@ -1572,32 +1572,7 @@ body.reduced-motion .w-subliminal { animation:none!important;opacity:0.55!import
    IMPROVEMENTS v2 — items 31–50 styles
 ═══════════════════════════════════════════════════════ */
 
-/* ── 31. MINI WIDGET ── */
-.mini-widget {
-  position:fixed;z-index:9975;
-  background:var(--surface);border:1px solid var(--border);border-radius:12px;
-  padding:8px 10px;display:flex;align-items:center;gap:8px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.12);
-  opacity:0;pointer-events:none;transform:translateY(6px);
-  transition:opacity 0.2s,transform 0.2s;
-  min-width:200px;max-width:280px;
-}
-.mini-widget.active { opacity:1;pointer-events:auto;transform:translateY(0); }
-.mw-drag-handle { cursor:grab;color:var(--text3);font-size:0.9rem;flex-shrink:0;user-select:none; }
-.mw-drag-handle:active { cursor:grabbing; }
-.mw-art { font-size:1.2rem;flex-shrink:0; }
-.mw-info { flex:1;min-width:0; }
-.mw-name { font-size:0.75rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-.mw-meta { font-size:0.62rem;color:var(--text3); }
-.mw-controls { display:flex;align-items:center;gap:4px;flex-shrink:0; }
-.mw-btn {
-  width:24px;height:24px;border-radius:5px;border:1px solid var(--border);
-  background:var(--surface2);color:var(--text2);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:0.65rem;
-  transition:all 0.12s;
-}
-.mw-btn:hover { color:var(--text); }
-.mw-close-btn { font-size:0.6rem; }
+/* ── 31. MINI WIDGET — removed, replaced by wncore-player.js ── */
 .no-select { user-select:none!important; }
 
 /* ── 32. VOTE BUTTONS ── */
@@ -4578,15 +4553,7 @@ header nav a.active::before {
    The page-wrap paddingBottom of 20px from JS is fine since body
    itself has the correct padding-bottom. No further action needed. */
 
-/* ── BUG 9: Mini-player z-index conflicts on mobile ────────────────
-   The draggable mini-widget can overlap the bottom nav.            */
-@media (max-width: 768px) {
-  #wncore-mini-widget {
-    bottom: calc(var(--player-h, 76px) + 56px + 8px) !important;
-    /* Prevent it from being dragged under the bottom nav */
-    max-height: calc(100dvh - var(--header-h, 56px) - var(--player-h, 76px) - 56px - 16px);
-  }
-}
+/* ── BUG 9: Mini-widget removed — replaced by wncore-player.js ── */
 
 /* ── BUG 10: Station modal on mobile needs bottom clearance ─────── */
 @media (max-width: 768px) {
