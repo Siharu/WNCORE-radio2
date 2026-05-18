@@ -651,6 +651,9 @@ function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
   // Stop current stream cleanly before switching
   audio.pause();
   audio.src = '';
+  // Changing audio.src detaches the MediaElementSourceNode on some browsers.
+  // Reset _eqConnected so initEQ() re-wires the graph on the next openEQPanel() call.
+  if (typeof _eqConnected !== 'undefined') _eqConnected = false;
 
   // If Live Music was active and this call is NOT coming from LM itself, reset LM UI
   if (lmIsPlaying && !_onSuccess) {
@@ -904,6 +907,11 @@ if (audio) {
     // Task 2.2: sync progress bar to actual audio state
     const fills = [document.getElementById('np-fill'), document.getElementById('pb-fill')];
     fills.forEach(f => { if(f){ f.classList.remove('buffering','paused'); f.classList.add('playing'); }});
+    // Sync top LM play icon — only flip to pause icon if LM is the active source
+    const iconEl = document.getElementById('lm-play-icon');
+    const npCard = document.getElementById('lm-np-card');
+    if (iconEl && lmIsPlaying) iconEl.setAttribute('d', 'M6 19h4V5H6v14zm8-14v14h4V5h-4z');
+    if (npCard && lmIsPlaying) npCard.classList.add('playing');
   });
   audio.addEventListener('pause', () => {
     isPlaying = false; window.isPlaying = false; setPlayIcon(false); stopProgressSync();
@@ -2525,7 +2533,21 @@ function lmUpdateUI(station, ch) {
 }
 
 function lmTogglePlay() {
-  if (!lmCurrentChannel) { lmPlayChannel('all'); return; }
+  // If audio is already playing (from any source), treat top button as a pause/resume toggle
+  if (!lmCurrentChannel) {
+    if (!audio.paused) {
+      // Audio is playing from bottom bar — just pause it
+      togglePlay();
+      const iconEl = document.getElementById('lm-play-icon');
+      const npCard = document.getElementById('lm-np-card');
+      if (iconEl) iconEl.setAttribute('d', 'M8 5v14l11-7z');
+      if (npCard) npCard.classList.remove('playing');
+    } else {
+      // Nothing playing — start LM
+      lmPlayChannel('all');
+    }
+    return;
+  }
   // Unified: delegate to global togglePlay — one audio element, one state
   togglePlay();
   // Sync LM-specific UI to whatever state togglePlay moved us to
@@ -3423,31 +3445,35 @@ function initEQ() {
   const au = document.getElementById('audio');
   if (!au || _eqConnected) return;
   try {
-    // CRITICAL: Reuse the shared audio context from main.js (window._sharedAudioCtx)
-    // to avoid InvalidStateError from calling createMediaElementSource() twice on the same element.
-    // main.js sets window._sharedAudioCtx and window._sharedSourceNode when it calls initAudioFX().
-    // If that hasn't happened yet, we create the context ourselves and expose it for main.js to reuse.
+    // Always resume any existing suspended context first — this is the #1 cause of
+    // audio going silent when the EQ panel is opened: the AudioContext is suspended
+    // until a user gesture, and connecting the source node to a suspended context
+    // silences the audio element without throwing any error.
+    if (window._sharedAudioCtx && window._sharedAudioCtx.state === 'suspended') {
+      window._sharedAudioCtx.resume();
+    }
+
     if (window._sharedAudioCtx && window._sharedSourceNode) {
       _audioCtx = window._sharedAudioCtx;
-      // Re-route: source → EQ chain → main.js gain → destination
+      // Build the filter chain BEFORE disconnecting anything so there is never
+      // a moment where the source node is disconnected with nowhere to go.
       _bassFilter   = _audioCtx.createBiquadFilter(); _bassFilter.type = 'lowshelf';  _bassFilter.frequency.value = 200;
       _midFilter    = _audioCtx.createBiquadFilter(); _midFilter.type = 'peaking';    _midFilter.frequency.value = 1000; _midFilter.Q.value = 1;
       _trebleFilter = _audioCtx.createBiquadFilter(); _trebleFilter.type = 'highshelf'; _trebleFilter.frequency.value = 4000;
       _distortionNode = _audioCtx.createWaveShaper();
-      // Disconnect existing source→destination, insert EQ chain before gainNode
-      try { window._sharedSourceNode.disconnect(); } catch(e) {}
-      window._sharedSourceNode.connect(_bassFilter);
+      const dest = window._sharedGainNode || _audioCtx.destination;
+      // Wire new chain first, THEN swap source — never leave source disconnected
       _bassFilter.connect(_midFilter);
       _midFilter.connect(_trebleFilter);
       _trebleFilter.connect(_distortionNode);
-      // Connect to main.js gainNode if available, else to destination
-      _distortionNode.connect(window._sharedGainNode || _audioCtx.destination);
+      _distortionNode.connect(dest);
+      try { window._sharedSourceNode.disconnect(); } catch(e) {}
+      window._sharedSourceNode.connect(_bassFilter);
     } else {
-      // main.js hasn't run initAudioFX yet — create context here and mark it as shared
+      // No shared context yet — create one. The EQ panel button IS a user gesture
+      // so AudioContext will start in 'running' state here.
       _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       let src;
-      // FIX: createMediaElementSource requires CORS headers from the stream.
-      // Most radio streams don't have them — catch and degrade gracefully.
       try {
         src = _audioCtx.createMediaElementSource(au);
       } catch(corsErr) {
@@ -3466,9 +3492,11 @@ function initEQ() {
       _midFilter.connect(_trebleFilter);
       _trebleFilter.connect(_distortionNode);
       _distortionNode.connect(_audioCtx.destination);
-      window._sharedGainNode = null; // will be wired by main.js when it runs
+      window._sharedGainNode = null;
     }
     _eqConnected = true;
+    // Final resume — belt and braces, ensures context is running after wiring
+    if (_audioCtx.state === 'suspended') _audioCtx.resume();
   } catch(e) { console.warn('[EQ] initEQ failed:', e); }
 }
 
@@ -3523,6 +3551,12 @@ function buildEQPanel() {
 function openEQPanel() {
   buildEQPanel();
   initEQ();
+  // Resume AudioContext here — this function is always called from a user gesture
+  // (button click), so browsers will allow resumption. This is the safest place
+  // to do it: after initEQ has wired the graph, before the panel is visible.
+  if (window._sharedAudioCtx && window._sharedAudioCtx.state === 'suspended') {
+    window._sharedAudioCtx.resume();
+  }
   document.getElementById('eq-panel').classList.add('open');
 }
 function closeEQPanel() {
@@ -8482,6 +8516,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const el = document.getElementById(id);
         if (el) el.classList.remove('playing');
       });
+      // If LM was active, trigger its retry logic so it advances to the next stream
+      // rather than leaving the top card stuck on 'Stream unavailable'
+      if (typeof lmIsPlaying !== 'undefined' && lmIsPlaying && typeof lmCurrentChannel !== 'undefined' && lmCurrentChannel) {
+        lmIsPlaying = false;
+        _lmRetries = (_lmRetries || 0) + 1;
+        const titleEl = document.getElementById('lm-np-title');
+        if (_lmRetries < Math.min(5, lmCurrentChannel.stations.length)) {
+          lmCurrentStationIdx = (lmCurrentStationIdx + 1) % lmCurrentChannel.stations.length;
+          if (titleEl) titleEl.textContent = 'Trying next stream…';
+          setTimeout(lmStartStation, 300);
+        } else {
+          _lmRetries = 0;
+          lmSetWaveformState(false);
+          if (titleEl) titleEl.textContent = 'Stream unavailable — try another channel';
+        }
+      }
       // Show retry affordance if we have a last-played station
       if (meta) {
         const station = window.currentStation;
