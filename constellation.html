@@ -356,6 +356,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 // ── Top-level globals (must exist before any handler fires, even if THREE fails)
 const constellationGroups = {}; // id → {group, starMeshes, lineMeshes, c}
+let spherical = {theta: 0, phi: Math.PI/2, r: 12}; // hoisted — used by sidebar click & _initThreeScene
+function updateCamera() {} // stub replaced once _initThreeScene runs
 
 /* ═══════════════════════════════════════════════════
    CONSTELLATION DATA
@@ -1032,14 +1034,15 @@ layoutConstellations();
 
 // ── Orbit controls (manual implementation — no OrbitControls import needed)
 let isDragging = false, lastMouse = {x:0, y:0};
-const spherical = {theta: 0, phi: Math.PI/2, r: 12};
+// spherical is declared at top-level scope; reset to defaults on init
+spherical.theta = 0; spherical.phi = Math.PI/2; spherical.r = 12;
 
-function updateCamera() {
+updateCamera = function() {
   camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
   camera.position.y = spherical.r * Math.cos(spherical.phi);
   camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
   camera.lookAt(0, 0, 0);
-}
+};
 updateCamera();
 
 canvas.addEventListener('mousedown', e => { isDragging=true; lastMouse={x:e.clientX,y:e.clientY}; });
