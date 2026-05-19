@@ -1042,179 +1042,170 @@ try {
 // ─── MINI PLAYER LAUNCHER ─────────────────────────────────────────────────
 // ─── MINI PLAYER ARG MORPH TRANSITION ────────────────────────────────────
 (function () {
-  // Inject styles once
   const STYLE_ID = '__mini-morph-style';
-  function _injectMorphStyles() {
+
+  function _injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     const s = document.createElement('style');
     s.id = STYLE_ID;
     s.textContent = `
 #mini-morph-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  background: #000;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  display: none; position: fixed; inset: 0; z-index: 99999;
+  background: #000; overflow: hidden;
   font-family: 'DM Mono', monospace;
-  overflow: hidden;
 }
-#mini-morph-overlay.active {
-  display: flex;
-  animation: __mmo-in 0.25s ease forwards;
-}
-@keyframes __mmo-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+#mini-morph-overlay.active { display: block; }
 
-/* scanlines */
+/* heavy scanlines */
 #mini-morph-overlay::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
   background: repeating-linear-gradient(
     to bottom,
-    transparent 0px,
-    transparent 2px,
-    rgba(200,71,42,0.04) 2px,
-    rgba(200,71,42,0.04) 4px
+    transparent 0px, transparent 3px,
+    rgba(0,0,0,0.55) 3px, rgba(0,0,0,0.55) 4px
   );
-  pointer-events: none;
-  z-index: 1;
-  animation: __mmo-scan 6s linear infinite;
+  animation: __mmo_scan 0.08s steps(1) infinite;
 }
-@keyframes __mmo-scan {
-  from { background-position: 0 0; }
-  to   { background-position: 0 100px; }
-}
-
-/* noise flicker */
-#mini-morph-overlay::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.18);
-  pointer-events: none;
-  z-index: 1;
-  animation: __mmo-flick 0.12s step-end infinite;
-}
-@keyframes __mmo-flick {
-  0%   { opacity: 0.0; }
-  25%  { opacity: 0.12; }
-  50%  { opacity: 0.0; }
-  75%  { opacity: 0.08; }
-  100% { opacity: 0.0; }
+@keyframes __mmo_scan {
+  0%  { transform: translateY(0px); }
+  25% { transform: translateY(1px); }
+  50% { transform: translateY(-1px); }
+  75% { transform: translateY(2px); }
 }
 
-/* red radial glow */
-#mini-morph-bg {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 70% 50% at 50% 40%, rgba(200,71,42,0.10) 0%, transparent 70%);
-  pointer-events: none;
+/* RGB split noise layer */
+#mini-morph-noise {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  mix-blend-mode: screen; opacity: 0.6;
+  animation: __mmo_noise 0.06s steps(1) infinite;
+}
+@keyframes __mmo_noise {
+  0%  { background: radial-gradient(ellipse 30% 8% at 20% 44%, rgba(200,71,42,0.35) 0%, transparent 100%),
+                    radial-gradient(ellipse 60% 3% at 70% 61%, rgba(200,71,42,0.15) 0%, transparent 100%); }
+  16% { background: radial-gradient(ellipse 80% 4% at 50% 23%, rgba(200,71,42,0.2) 0%, transparent 100%); }
+  33% { background: radial-gradient(ellipse 40% 6% at 10% 78%, rgba(200,71,42,0.3) 0%, transparent 100%),
+                    radial-gradient(ellipse 20% 2% at 90% 12%, rgba(200,71,42,0.1) 0%, transparent 100%); }
+  50% { background: radial-gradient(ellipse 100% 5% at 50% 55%, rgba(200,71,42,0.18) 0%, transparent 100%); }
+  66% { background: radial-gradient(ellipse 25% 10% at 80% 33%, rgba(200,71,42,0.28) 0%, transparent 100%); }
+  83% { background: radial-gradient(ellipse 70% 3% at 30% 88%, rgba(200,71,42,0.12) 0%, transparent 100%),
+                    radial-gradient(ellipse 15% 15% at 60% 5%, rgba(200,71,42,0.22) 0%, transparent 100%); }
+}
+
+/* horizontal glitch tear */
+#mini-morph-tear {
+  position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  animation: __mmo_tear 0.15s steps(1) infinite;
+}
+@keyframes __mmo_tear {
+  0%,20%,40%,60%,80% { box-shadow: none; }
+  10%  { box-shadow: inset 0 calc(30vh) 0 -1px rgba(200,71,42,0.5), inset 0 calc(30vh + 2px) 0 -1px rgba(0,0,0,0.8); }
+  30%  { box-shadow: inset 0 calc(67vh) 0 -1px rgba(200,71,42,0.3), inset 0 calc(67vh + 3px) 0 -1px rgba(0,0,0,0.9); }
+  50%  { box-shadow: inset 0 calc(15vh) 0 -1px rgba(200,71,42,0.6), inset 0 calc(15vh + 1px) 0 -1px rgba(0,0,0,0.7); }
+  70%  { box-shadow: inset 0 calc(82vh) 0 -1px rgba(200,71,42,0.25); }
+  90%  { box-shadow: inset 0 calc(48vh) 0 -1px rgba(200,71,42,0.45), inset 0 calc(48vh + 4px) 0 -1px rgba(0,0,0,0.85); }
 }
 
 /* terminal box */
 #mini-morph-term {
-  position: relative;
-  z-index: 2;
-  width: min(480px, 92vw);
-  border: 1px solid rgba(200,71,42,0.25);
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 0 40px rgba(200,71,42,0.08), 0 0 0 1px rgba(255,255,255,0.04);
-  animation: __mmo-term-in 0.35s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+  position: absolute; z-index: 3;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(420px, 90vw);
+  border: 1px solid rgba(200,71,42,0.4);
+  background: rgba(6,5,4,0.96);
+  box-shadow: 0 0 0 1px rgba(200,71,42,0.08),
+              0 0 30px rgba(200,71,42,0.12),
+              inset 0 0 20px rgba(0,0,0,0.6);
+  animation: __mmo_term_in 0.12s ease forwards,
+             __mmo_term_jitter 0.08s steps(1) infinite 0.15s;
 }
-@keyframes __mmo-term-in {
-  from { transform: scale(0.93) translateY(12px); opacity: 0; }
-  to   { transform: scale(1) translateY(0); opacity: 1; }
+@keyframes __mmo_term_in {
+  from { opacity: 0; transform: translate(-50%, -50%) scaleY(0.05); filter: brightness(3); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scaleY(1); filter: brightness(1); }
+}
+@keyframes __mmo_term_jitter {
+  0%  { transform: translate(-50%, -50%) translate(0,0); }
+  25% { transform: translate(-50%, -50%) translate(-1px, 0); }
+  50% { transform: translate(-50%, -50%) translate(0, 0); }
+  75% { transform: translate(-50%, -50%) translate(1px, 0); }
 }
 
-/* chrome bar */
+/* chrome */
 #mini-morph-chrome {
-  background: rgba(255,255,255,0.04);
-  border-bottom: 1px solid rgba(200,71,42,0.15);
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  padding: 7px 12px; display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(200,71,42,0.2);
+  background: rgba(200,71,42,0.04);
 }
-.mmc-dot {
-  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-}
+.mmc-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 #mini-morph-chrome-title {
-  font-size: 0.46rem;
-  letter-spacing: 2.5px;
-  color: rgba(200,71,42,0.5);
-  text-transform: uppercase;
-  flex: 1;
+  font-size: 0.44rem; letter-spacing: 2px; color: rgba(200,71,42,0.55);
+  text-transform: uppercase; flex: 1;
+  animation: __mmo_txt_glitch 0.2s steps(1) infinite;
 }
-#mini-morph-chrome-badge {
-  font-size: 0.4rem;
-  letter-spacing: 1.5px;
-  color: rgba(200,71,42,0.4);
-  border: 1px solid rgba(200,71,42,0.2);
-  padding: 2px 6px;
-  border-radius: 3px;
-  animation: __mmo-badge-pulse 1.4s step-end infinite;
+@keyframes __mmo_txt_glitch {
+  0%,85%  { clip-path: none; transform: none; }
+  88%     { clip-path: inset(30% 0 40% 0); transform: translateX(3px); color: rgba(200,71,42,0.9); }
+  92%     { clip-path: inset(60% 0 10% 0); transform: translateX(-2px); }
+  96%     { clip-path: none; transform: translateX(1px); }
 }
-@keyframes __mmo-badge-pulse {
-  0%,100% { opacity: 1; }
-  50%      { opacity: 0.3; }
+#mini-morph-badge {
+  font-size: 0.38rem; letter-spacing: 1.5px; color: rgba(200,71,42,0.5);
+  border: 1px solid rgba(200,71,42,0.25); padding: 2px 5px; border-radius: 2px;
+  animation: __mmo_blink 0.18s steps(1) infinite;
 }
+@keyframes __mmo_blink { 0%,49%{opacity:1} 50%,100%{opacity:0.2} }
 
-/* terminal body */
+/* body */
 #mini-morph-body {
-  background: rgba(10,9,8,0.97);
-  padding: 14px 18px;
-  min-height: 160px;
-  max-height: 55vh;
-  overflow: hidden;
-  font-size: 0.65rem;
-  line-height: 1.7;
-  letter-spacing: 0.5px;
+  padding: 10px 14px 12px; font-size: 0.6rem; line-height: 1.65;
+  letter-spacing: 0.3px; min-height: 80px;
 }
-#mini-morph-body > div {
-  animation: __mmo-line-in 0.18s ease forwards;
+.mml { display: block; }
+.mml.new {
+  animation: __mmo_line_in 0.05s steps(1) forwards;
 }
-@keyframes __mmo-line-in {
-  from { opacity: 0; transform: translateX(-6px); }
-  to   { opacity: 1; transform: translateX(0); }
+@keyframes __mmo_line_in {
+  from { opacity: 0; } to { opacity: 1; }
 }
-.mmt-dim   { color: rgba(240,237,232,0.3); }
-.mmt-ok    { color: rgba(34,197,94,0.8); }
-.mmt-warn  { color: rgba(234,179,8,0.8); }
-.mmt-red   { color: rgba(200,71,42,0.9); }
-.mmt-white { color: rgba(240,237,232,0.85); }
-.mmt-curs  { animation: __mmo-curs 0.9s step-end infinite; }
-@keyframes __mmo-curs { 0%,100%{opacity:1} 50%{opacity:0} }
+.mmt-dim   { color: rgba(240,237,232,0.28); }
+.mmt-ok    { color: rgba(50,220,100,0.8); }
+.mmt-warn  { color: rgba(234,179,8,0.85); }
+.mmt-red   { color: rgba(200,71,42,1); }
+.mmt-white { color: #f0ede8; }
+.mmt-glitch {
+  display: inline-block;
+  animation: __mmo_char_glitch 0.1s steps(1) infinite;
+}
+@keyframes __mmo_char_glitch {
+  0%,70%  { opacity:1; transform:none; color: rgba(200,71,42,1); }
+  72%     { opacity:0; }
+  74%     { opacity:1; transform:translateX(2px); color:#fff; }
+  78%     { transform:none; color: rgba(200,71,42,1); }
+}
 
 /* progress bar */
-#mini-morph-progress {
-  height: 2px;
-  background: rgba(255,255,255,0.04);
-  border-top: 1px solid rgba(200,71,42,0.12);
-  overflow: hidden;
+#mini-morph-bar {
+  height: 2px; background: rgba(255,255,255,0.03);
+  border-top: 1px solid rgba(200,71,42,0.1);
 }
-#mini-morph-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, rgba(200,71,42,0.6), rgba(200,71,42,1));
-  transition: width 0.08s linear;
-  box-shadow: 0 0 8px rgba(200,71,42,0.5);
+#mini-morph-bar-fill {
+  height: 100%; width: 0%;
+  background: rgba(200,71,42,0.9);
+  box-shadow: 0 0 6px rgba(200,71,42,0.8);
+  transition: width 0.06s linear;
 }
 
-/* morph-out flash */
-#mini-morph-overlay.morphing {
-  animation: __mmo-out 0.35s ease forwards;
+/* exit flash */
+#mini-morph-overlay.exit {
+  animation: __mmo_exit 0.25s steps(1) forwards;
 }
-@keyframes __mmo-out {
-  0%   { opacity: 1; filter: brightness(1); }
-  60%  { opacity: 1; filter: brightness(3) saturate(0); }
-  100% { opacity: 0; filter: brightness(0); }
+@keyframes __mmo_exit {
+  0%  { filter: brightness(1); opacity: 1; }
+  20% { filter: brightness(8) saturate(0); opacity: 1; }
+  40% { filter: brightness(0); opacity: 1; }
+  60% { filter: brightness(12) saturate(0) invert(1); opacity: 1; }
+  80% { filter: brightness(0); opacity: 1; }
+  100%{ filter: brightness(0); opacity: 0; }
 }
     `;
     document.head.appendChild(s);
@@ -1226,82 +1217,99 @@ try {
     el.id = 'mini-morph-overlay';
     el.setAttribute('aria-hidden', 'true');
     el.innerHTML = `
-      <div id="mini-morph-bg"></div>
+      <div id="mini-morph-noise"></div>
+      <div id="mini-morph-tear"></div>
       <div id="mini-morph-term">
         <div id="mini-morph-chrome">
           <div class="mmc-dot" style="background:#ff5f57"></div>
           <div class="mmc-dot" style="background:#febc2e"></div>
           <div class="mmc-dot" style="background:#28c840"></div>
-          <div id="mini-morph-chrome-title">WNCORE · SIGNAL REROUTE</div>
-          <div id="mini-morph-chrome-badge">⬤ LIVE</div>
+          <div id="mini-morph-chrome-title">WNCORE // SIGNAL_REROUTE</div>
+          <div id="mini-morph-badge">⬤ ACTIVE</div>
         </div>
         <div id="mini-morph-body"></div>
-        <div id="mini-morph-progress"><div id="mini-morph-progress-fill"></div></div>
+        <div id="mini-morph-bar"><div id="mini-morph-bar-fill"></div></div>
       </div>
     `;
     document.body.appendChild(el);
   }
 
-  async function _typeLines(body, fill, lines) {
-    for (const { t, d, p } of lines) {
-      await new Promise(r => setTimeout(r, d));
-      if (t !== null) {
-        const div = document.createElement('div');
-        div.innerHTML = t;
-        body.appendChild(div);
-        body.scrollTop = body.scrollHeight;
-      }
-      if (p != null && fill) {
-        fill.style.width = p + '%';
-      }
-    }
+  // Scramble a string with glitch chars mid-animation
+  const GLITCH_CHARS = '▓█▒░|/\\⚡◈◉⊗⊘';
+  function _scramble(str) {
+    return str.split('').map(c =>
+      (c !== ' ' && Math.random() < 0.4)
+        ? `<span class="mmt-glitch">${GLITCH_CHARS[Math.floor(Math.random()*GLITCH_CHARS.length)]}</span>`
+        : c
+    ).join('');
+  }
+
+  function _addLine(body, html) {
+    const d = document.createElement('span');
+    d.className = 'mml new';
+    d.innerHTML = html + '\n';
+    body.appendChild(d);
+    // Remove 'new' class after animation so it doesn't keep replaying
+    setTimeout(() => d.classList.remove('new'), 100);
   }
 
   window.launchMiniPlayer = async function launchMiniPlayer() {
-    _injectMorphStyles();
+    _injectStyles();
     _buildOverlay();
 
     const overlay = document.getElementById('mini-morph-overlay');
     const body    = document.getElementById('mini-morph-body');
-    const fill    = document.getElementById('mini-morph-progress-fill');
+    const fill    = document.getElementById('mini-morph-bar-fill');
 
     body.innerHTML = '';
-    fill.style.width = '0%';
     fill.style.transition = 'none';
-    overlay.classList.remove('morphing');
+    fill.style.width = '0%';
+    overlay.classList.remove('exit');
     overlay.classList.add('active');
-
-    // Prevent body scroll during transition
     document.body.style.overflow = 'hidden';
 
-    const LINES = [
-      { t: '<span class="mmt-dim">$ wncore_signal --reroute --target=node_mini</span>', d: 0,   p: 0 },
-      { t: '<span class="mmt-dim">Establishing secure channel...</span>',                d: 320, p: 8 },
-      { t: '<span class="mmt-ok">[ OK ] TLS handshake complete</span>',                 d: 680, p: 22 },
-      { t: '<span class="mmt-ok">[ OK ] Node authentication passed</span>',             d: 950, p: 36 },
-      { t: null,                                                                         d: 1080, p: null },
-      { t: '<span class="mmt-dim">Compressing signal stream...</span>',                 d: 1150, p: 50 },
-      { t: '<span class="mmt-warn">[ SYS ] Collapsing broadcast interface...</span>',  d: 1480, p: 64 },
-      { t: '<span class="mmt-red">[ NODE_MINI ] Pocket relay online</span>',            d: 1820, p: 78 },
-      { t: '<span class="mmt-dim">Rerouting... <span class="mmt-curs">█</span></span>', d: 2100, p: 90 },
-      { t: '<span class="mmt-white">ACCESS GRANTED — SWITCHING TO MINI MODE</span>',   d: 2480, p: 100 },
-    ];
+    const T = (ms) => new Promise(r => setTimeout(r, ms));
 
-    // Animate progress fill smoothly after first frame
-    setTimeout(() => { fill.style.transition = 'width 0.08s linear'; }, 50);
+    // Burst of garbled lines first — instant disorientation
+    await T(60);
+    _addLine(body, `<span class="mmt-dim">${_scramble('>> WNCORE_SIG --collapse --pipe=mini')}</span>`);
+    await T(80);
+    _addLine(body, `<span class="mmt-red">${_scramble('ERR 0x3A: UNEXPECTED CARRIER')}</span>`);
+    fill.style.transition = 'width 0.06s linear';
+    fill.style.width = '18%';
 
-    await _typeLines(body, fill, LINES);
+    await T(90);
+    _addLine(body, `<span class="mmt-dim">${_scramble('rerouting via node_09...')}</span>`);
+    fill.style.width = '35%';
 
-    // Brief pause at 100%, then morph-out flash and navigate
-    await new Promise(r => setTimeout(r, 320));
+    await T(100);
+    // Fake corruption burst
+    _addLine(body, `<span class="mmt-warn">▒▒ ${_scramble('AUTH BYPASS')} ▒▒</span>`);
+    fill.style.width = '52%';
 
-    overlay.classList.add('morphing');
-    await new Promise(r => setTimeout(r, 350));
+    await T(85);
+    _addLine(body, `<span class="mmt-ok">[ ACCESS GRANTED ]</span>`);
+    fill.style.width = '70%';
+
+    await T(110);
+    _addLine(body, `<span class="mmt-red"><span class="mmt-glitch">█</span> COLLAPSING INTERFACE <span class="mmt-glitch">█</span></span>`);
+    fill.style.width = '88%';
+
+    await T(120);
+    _addLine(body, `<span class="mmt-white">${_scramble('>> SWITCHING TO MINI MODE')}</span>`);
+    fill.style.width = '100%';
+
+    await T(180);
+
+    // Violent exit flash
+    overlay.classList.add('exit');
+    await T(260);
 
     document.body.style.overflow = '';
     window.location.href = '/radio-mini.html';
   };
 })();
+
 
 // ─── MOBILE MENU ──────────────────────────────────────────────────────────
 function toggleMobileMenu() {
