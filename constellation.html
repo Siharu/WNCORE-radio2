@@ -350,13 +350,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 </div>
 
 <!-- Three.js with fallback CDN -->
+<script>window._THREE_LOAD_ERROR = false;</script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"
+  onerror="window._THREE_CDN1_FAILED=true;"></script>
 <script>
-  window._THREE_LOAD_ERROR = false;
+// If jsDelivr failed, try unpkg
+if (typeof THREE === 'undefined') {
+  document.write('<script src="https://unpkg.com/three@0.165.0/build/three.min.js"><\/script>');
+}
 </script>
-<script src="https://unpkg.com/three@0.165.0/build/three.min.js"
-  onerror="window._THREE_LOAD_ERROR=true;var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js';document.head.appendChild(s);"></script>
 <script>
 'use strict';
+
+// ── Top-level globals (must exist before any handler fires, even if THREE fails)
+const constellationGroups = {}; // id → {group, starMeshes, lineMeshes, c}
 
 /* ═══════════════════════════════════════════════════
    CONSTELLATION DATA
@@ -938,7 +945,7 @@ function makeNebula() {
 makeNebula();
 
 // ── Constellation meshes
-const constellationGroups = {}; // id → {group, starMeshes, lineMeshes, labelSprites}
+const constellationGroups_UNUSED = null; // moved to top-level scope above
 const SCALE = 2.2; // scene scale factor for constellation positions
 
 // Star materials
@@ -1390,13 +1397,17 @@ function openPuzzle(c) {
   currentPuzzleConstellation = c;
   const modal = document.getElementById('puzzle-modal');
   const body  = document.getElementById('puzzle-body');
-  document.getElementById('lore-reveal').classList.remove('show');
-  document.getElementById('lore-reveal').style.display = 'none';
-  document.getElementById('puzzle-error').textContent = '';
+  if (!modal || !body) return; // DOM not ready (THREE failed to init)
+  const loreReveal = document.getElementById('lore-reveal');
+  const puzzleError = document.getElementById('puzzle-error');
+  if (loreReveal) { loreReveal.classList.remove('show'); loreReveal.style.display = 'none'; }
+  if (puzzleError) puzzleError.textContent = '';
   modal.classList.add('open');
 
-  document.getElementById('puzzle-title').textContent = c.name;
-  document.getElementById('puzzle-subtitle').textContent =
+  const titleEl = document.getElementById('puzzle-title');
+  const subtitleEl = document.getElementById('puzzle-subtitle');
+  if (titleEl) titleEl.textContent = c.name;
+  if (subtitleEl) subtitleEl.textContent =
     '— ' + (c.puzzle.type==='morse'?'DECODE THE MORSE TRANSMISSION':
              c.puzzle.type==='frequency'?'TUNE TO THE EXACT FREQUENCY':
              'DECODE THE HIDDEN WORD') + ' —';
