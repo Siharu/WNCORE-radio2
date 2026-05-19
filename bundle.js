@@ -1311,6 +1311,30 @@ try {
 })();
 
 
+// ─── NAV COLLAPSE ─────────────────────────────────────────────────────────
+function toggleNavCollapse() {
+  const collapsed = document.body.classList.toggle('nav-collapsed');
+  const icon = document.getElementById('nav-collapse-icon');
+  if (icon) {
+    // Swap icon: hamburger when expanded → left-arrow/close when collapsed
+    icon.innerHTML = collapsed
+      ? '<polyline points="15 18 9 12 15 6"/>'  // chevron-left = "expand"
+      : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>'; // hamburger = "collapse"
+  }
+  try { localStorage.setItem('wncore-nav-collapsed', collapsed ? '1' : '0'); } catch(e) {}
+}
+// Restore collapsed state on load
+try {
+  if (localStorage.getItem('wncore-nav-collapsed') === '1') {
+    document.body.classList.add('nav-collapsed');
+    document.addEventListener('DOMContentLoaded', () => {
+      const icon = document.getElementById('nav-collapse-icon');
+      if (icon) icon.innerHTML = '<polyline points="15 18 9 12 15 6"/>';
+    });
+  }
+} catch(e) {}
+window.toggleNavCollapse = toggleNavCollapse;
+
 // ─── MOBILE MENU ──────────────────────────────────────────────────────────
 function toggleMobileMenu() {
   mobileMenuOpen = !mobileMenuOpen;

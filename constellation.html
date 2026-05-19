@@ -349,16 +349,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <span id="hud-tip">listen to radio to unlock constellations</span>
 </div>
 
-<!-- Three.js with fallback CDN -->
-<script>window._THREE_LOAD_ERROR = false;</script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.min.js"
-  onerror="window._THREE_CDN1_FAILED=true;"></script>
-<script>
-// If jsDelivr failed, try unpkg
-if (typeof THREE === 'undefined') {
-  document.write('<script src="https://unpkg.com/three@0.165.0/build/three.min.js"><\/script>');
-}
-</script>
+<!-- Three.js — self-hosted, no CDN dependency -->
+<script src="/three.min.js"></script>
 <script>
 'use strict';
 

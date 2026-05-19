@@ -140,6 +140,32 @@ header{
   letter-spacing:1px;padding:2px 6px;border:1px solid var(--accent);border-radius:3px;
 }
 
+/* Nav collapse button — desktop only, sits right after logo */
+.nav-collapse-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; flex-shrink: 0;
+  background: none; border: 1px solid transparent; border-radius: 5px;
+  color: var(--text3, rgba(26,24,20,0.4)); cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  padding: 0;
+}
+.nav-collapse-btn svg { width: 14px; height: 14px; }
+.nav-collapse-btn:hover {
+  border-color: var(--border);
+  background: var(--surface2);
+  color: var(--text);
+}
+.nav-collapsed .nav-collapse-btn {
+  color: var(--accent);
+  border-color: rgba(200,71,42,0.25);
+}
+.nav-collapsed #main-nav {
+  display: none !important;
+}
+@media (max-width: 900px) {
+  .nav-collapse-btn { display: none !important; }
+}
+
 /* Nav — takes available space, shrinks and hides on narrow viewports */
 nav{display:flex;gap:1px;min-width:0;flex-shrink:1;overflow:hidden;}
 nav a{
