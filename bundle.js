@@ -1120,7 +1120,7 @@ try {
              __mmo_term_jitter 0.08s steps(1) infinite 0.15s;
 }
 @keyframes __mmo_term_in {
-  from { opacity: 0; transform: translate(-50%, -50%) scaleY(0.05); filter: brightness(3); }
+  from { opacity: 0; transform: translate(-50%, -50%) scaleY(0.05); filter: brightness(1.2); }
   to   { opacity: 1; transform: translate(-50%, -50%) scaleY(1); filter: brightness(1); }
 }
 @keyframes __mmo_term_jitter {
@@ -1195,16 +1195,14 @@ try {
   transition: width 0.06s linear;
 }
 
-/* exit flash */
+/* exit flash — quick glitchy cut, no eye-searing brightness */
 #mini-morph-overlay.exit {
-  animation: __mmo_exit 0.25s steps(1) forwards;
+  animation: __mmo_exit 0.2s steps(1) forwards;
 }
 @keyframes __mmo_exit {
   0%  { filter: brightness(1); opacity: 1; }
-  20% { filter: brightness(8) saturate(0); opacity: 1; }
-  40% { filter: brightness(0); opacity: 1; }
-  60% { filter: brightness(12) saturate(0) invert(1); opacity: 1; }
-  80% { filter: brightness(0); opacity: 1; }
+  30% { filter: brightness(1.4) saturate(0); opacity: 1; }
+  60% { filter: brightness(0); opacity: 1; }
   100%{ filter: brightness(0); opacity: 0; }
 }
     `;
