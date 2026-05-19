@@ -2925,18 +2925,23 @@ function updateBsbUptime() {
 }
 
 function injectBroadcastClock() {
-  const hdr = document.querySelector('.header-right');
-  if(!hdr || document.getElementById('header-clock')) return;
-  const clock = document.createElement('div');
-  clock.id = 'header-clock';
-  clock.className = 'header-clock minimal-hidden';
-  hdr.prepend(clock);
+  // Clock now lives in the bottom status bar next to uptime — not the header
+  const uptime = document.getElementById('bsb-uptime');
+  if (!uptime || document.getElementById('bsb-utc-clock')) return;
+  const sep = document.createElement('span');
+  sep.className = 'bsb-sep'; sep.textContent = '|';
+  const clockWrap = document.createElement('div');
+  clockWrap.className = 'bsb-text';
+  clockWrap.innerHTML = '<span id="bsb-utc-clock" class="bsb-accent">00:00:00 UTC</span>';
+  uptime.closest('.bsb-text').after(sep, clockWrap);
   function tick() {
+    const el = document.getElementById('bsb-utc-clock');
+    if (!el) return;
     const now = new Date();
     const h = String(now.getUTCHours()).padStart(2,'0');
     const m = String(now.getUTCMinutes()).padStart(2,'0');
     const s = String(now.getUTCSeconds()).padStart(2,'0');
-    clock.innerHTML = `<span>${h}:${m}:${s}</span> UTC`;
+    el.textContent = h+':'+m+':'+s+' UTC';
   }
   tick(); setInterval(tick, 1000);
 }
@@ -4446,7 +4451,9 @@ function injectNavItems() {
     favLink.id = 'nav-favorites-link';
     favLink.href = '#';
     favLink.setAttribute('onclick', "showPage('favorites',this);return false");
-    favLink.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="14" height="14"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg> Favourites`;
+    favLink.innerHTML = `<svg viewBox="0 0 24 24" fill="rgba(255,100,150,0.55)" stroke="rgba(255,100,150,0.7)" stroke-width="2" stroke-linecap="round" width="15" height="15" style="filter:drop-shadow(0 0 4px rgba(255,80,130,0.5));flex-shrink:0"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>`;
+    favLink.title = 'Favourites';
+    favLink.style.cssText = 'padding:6px 8px;display:flex;align-items:center;justify-content:center;';
     // Insert before About
     const aboutLink = Array.from(nav.querySelectorAll('a')).find(a => a.textContent.trim().startsWith('About'));
     if (aboutLink) nav.insertBefore(favLink, aboutLink);

@@ -1220,11 +1220,8 @@ body.dark-mode .bsb-sep { color:rgba(240,237,232,0.2); }
 }
 
 /* ── LEGITIMACY — BROADCAST CLOCK IN HEADER ── */
-.header-clock {
-  font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);
-  letter-spacing:0.5px;flex-shrink:0;
-}
-.header-clock span { color:var(--accent); }
+.header-clock { display:none !important; }
+.header-clock span { display:none !important; }
 
 /* ── MOBILE LIVE MUSIC ── */
 
