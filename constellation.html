@@ -946,6 +946,12 @@ const matStarUnlocked = new THREE.MeshBasicMaterial({color:0xffd4aa, transparent
 const matStarSelected = new THREE.MeshBasicMaterial({color:0xc8472a});
 const matStarSolved   = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
 
+// ── Touch detection + raycaster — must be before buildConstellationMesh
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+const raycaster = new THREE.Raycaster();
+raycaster.params.Points = {threshold: isTouchDevice ? 0.35 : 0.15};
+const mouse = new THREE.Vector2();
+
 function buildConstellationMesh(c, offset) {
   const group = new THREE.Group();
   group.position.set(offset.x, offset.y, offset.z);
@@ -1094,11 +1100,6 @@ canvas.addEventListener('touchend', e => {
   isDragging=false;
 }, {passive:true});
 
-// ── Raycasting — click detection
-const raycaster = new THREE.Raycaster();
-const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-raycaster.params.Points = {threshold: isTouchDevice ? 0.35 : 0.15};
-const mouse = new THREE.Vector2();
 let clickStart = {x:0, y:0};
 
 canvas.addEventListener('mousedown', e => { clickStart={x:e.clientX,y:e.clientY}; });
