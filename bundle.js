@@ -2145,7 +2145,7 @@ document.addEventListener('visibilitychange', ()=>{
   // and only at very high exposure, so casual visitors never get redirected
   if(document.hidden && horrorTriggered && exposure>50 && !isPlaying && !lmIsPlaying){
     const p=isDarkMode?0.12:0.04;
-    if(Math.random()<p){setTimeout(()=>{try{const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o))}catch(e){}},1400)}
+   if(Math.random()<p){setTimeout(()=>{try{(function(){const _origin={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};const _sig=btoa(JSON.stringify(_origin));window.location.href=_d+'?sig='+_sig;})()}catch(e){}},1400)}
   }
 });
 
@@ -2385,12 +2385,12 @@ exitBtn.addEventListener('click',()=>{
         ghuulVideo.play().catch(()=>{});
         // If video ends before timeout, redirect immediately
         ghuulVideo.addEventListener('ended',()=>{
-          (function(){const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o));})();
+          (function(){const _origin={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};const _sig=btoa(JSON.stringify(_origin));window.location.href=_d+'?sig='+_sig;})();
         },{once:true});
       }
     }
     // Hard redirect after 4s regardless (in case video is short or fails)
-    setTimeout(()=>{ const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o)); },4000);
+    setTimeout(()=>{ const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o)); },4000);setTimeout(()=>{(function(){const _origin={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};const _sig=btoa(JSON.stringify(_origin));window.location.href=_d+'?sig='+_sig;})();},4000);
   }, 5000);
 });
 
