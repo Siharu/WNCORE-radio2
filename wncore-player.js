@@ -101,6 +101,29 @@ const PLAYER_CSS = `
 #wncore-player-root.wp-visible {
   transform: translateY(0);
 }
+#wncore-player-root.wp-expanded {
+  height: 200px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  transition: height 0.3s cubic-bezier(0.16,1,0.3,1), transform 0.3s cubic-bezier(0.16,1,0.3,1);
+}
+#wncore-player-root.wp-expanded #wp-art {
+  width: 64px;
+  height: 64px;
+  transition: transform 0.3s;
+}
+#wncore-player-root.wp-expanded #wp-meta {
+  text-align: center;
+}
+#wncore-player-root.wp-expanded #wp-controls {
+  justify-content: center;
+}
+#wncore-player-root.wp-expanded #wp-vol-section {
+  display: none;
+}
 /* Safe area for iPhone home bar */
 @supports (padding-bottom: env(safe-area-inset-bottom)) {
   #wncore-player-root {

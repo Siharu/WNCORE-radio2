@@ -893,10 +893,11 @@ function togglePlay() {
 
 function updateMiniPlayerVisibility() {
   const miniPlayer = document.getElementById('mini-player');
-  const npPage = document.getElementById('page-np');
   if(!miniPlayer) return;
-  // Show mini-player if playing and now-playing page is NOT active
-  const showMini = isPlaying && npPage && !npPage.classList.contains('active');
+  // Show mini-player if playing (page-np doesn't exist; use wncore-player-root visibility instead)
+  const root = document.getElementById('wncore-player-root');
+  const playerExpanded = root && root.classList.contains('wp-visible') && root.classList.contains('wp-expanded');
+  const showMini = isPlaying && !playerExpanded;
   miniPlayer.setAttribute('data-visible', showMini ? 'true' : 'false');
 }
 
@@ -2144,7 +2145,7 @@ document.addEventListener('visibilitychange', ()=>{
   // and only at very high exposure, so casual visitors never get redirected
   if(document.hidden && horrorTriggered && exposure>50 && !isPlaying && !lmIsPlaying){
     const p=isDarkMode?0.12:0.04;
-    if(Math.random()<p){setTimeout(()=>{try{window.location.href=_d}catch(e){}},1400)}
+    if(Math.random()<p){setTimeout(()=>{try{const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o))}catch(e){}},1400)}
   }
 });
 
@@ -2384,12 +2385,12 @@ exitBtn.addEventListener('click',()=>{
         ghuulVideo.play().catch(()=>{});
         // If video ends before timeout, redirect immediately
         ghuulVideo.addEventListener('ended',()=>{
-          window.location.href=_d;
+          (function(){const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o));})();
         },{once:true});
       }
     }
     // Hard redirect after 4s regardless (in case video is short or fails)
-    setTimeout(()=>{ window.location.href=_d; },4000);
+    setTimeout(()=>{ const _o={token:'SIGNAL_KAGE',ts:Date.now(),node:'09',visits:parseInt(localStorage.getItem('siharu_visits')||'0')};window.location.href=_d+'?sig='+btoa(JSON.stringify(_o)); },4000);
   }, 5000);
 });
 
@@ -3033,11 +3034,11 @@ function initScrollHeader() {
       } catch(e) {}
     }
     
-    // Vertical swipe up — open now-playing page on mobile
+    // Vertical swipe up — open now-playing / expanded player on mobile
     if (isVertical && dy < 0 && duration < 600 && window.innerWidth <= 768) {
       try {
-        if (typeof window.showPage === 'function' && isPlaying) {
-          window.showPage('np');
+        if (isPlaying) {
+          if (typeof window.mbnOpenPlayer === 'function') window.mbnOpenPlayer(null);
         }
       } catch(e) {}
     }
@@ -4315,7 +4316,7 @@ function buildMobileBottomNav() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><rect x="2" y="8" width="20" height="14" rx="2"/><path d="M6 8V6a6 6 0 0112 0v2"/><circle cx="12" cy="15" r="3"/></svg>
       <span>Mini</span>
     </a>
-    <button class="mbn-btn" id="mbn-playing" onclick="mbnNav('home',this);scrollToPlayer()">
+    <button class="mbn-btn" id="mbn-playing" onclick="mbnOpenPlayer(this)">
       <div class="mbn-playing-dot" id="mbn-dot"></div>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
       <span>Playing</span>
@@ -4332,9 +4333,40 @@ function mbnNav(pageId, btn) {
 window.mbnNav = mbnNav;
 
 function scrollToPlayer() {
-  const bar = document.querySelector('.player-bar');
-  if (bar) bar.scrollIntoView({ behavior: 'smooth' });
+  // Legacy — kept for any external calls
+  mbnOpenPlayer(null);
 }
+
+function mbnOpenPlayer(btn) {
+  // Mark nav button active
+  document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  // Target: the universal player bar
+  const root = document.getElementById('wncore-player-root');
+  if (root && root.classList.contains('wp-visible')) {
+    // Player is active — toggle expanded now-playing view
+    const isExpanded = root.classList.toggle('wp-expanded');
+    if (isExpanded) {
+      // Pulse the art to signal "you're here"
+      const art = document.getElementById('wp-art');
+      if (art) { art.style.transform = 'scale(1.08)'; setTimeout(() => art.style.transform = '', 300); }
+    }
+    return;
+  }
+
+  // No universal player visible — fall back to home + player-bar
+  if (typeof showPage === 'function') showPage('home', null);
+  setTimeout(() => {
+    const bar = document.querySelector('.player-bar');
+    if (bar) {
+      bar.style.transition = 'box-shadow 0.3s';
+      bar.style.boxShadow = '0 0 0 2px var(--accent, #c8472a)';
+      setTimeout(() => bar.style.boxShadow = '', 800);
+    }
+  }, 300);
+}
+window.mbnOpenPlayer = mbnOpenPlayer;
 
 function updateMbnDot() {
   const dot = document.getElementById('mbn-dot');
