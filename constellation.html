@@ -258,11 +258,59 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #mob-sidebar-toggle{display:none}
   #mob-sidebar-backdrop{display:none!important}
 }
+
+/* ── STAR TOOLTIP ── */
+#star-tooltip{
+  position:fixed;z-index:50;pointer-events:none;
+  max-width:280px;min-width:180px;
+  background:rgba(4,3,10,0.93);border:1px solid rgba(200,71,42,0.35);
+  border-radius:8px;padding:12px 14px;
+  backdrop-filter:blur(14px);
+  font-family:var(--mono);font-size:0.62rem;color:var(--text);
+  opacity:0;transition:opacity 0.18s;
+  box-shadow:0 4px 24px rgba(0,0,0,0.6);
+}
+#star-tooltip.visible{opacity:1}
+#st-name{font-family:var(--serif);font-size:0.95rem;font-style:italic;color:var(--text);margin-bottom:6px}
+#st-type{color:var(--text2);margin-bottom:2px}
+.st-row{display:flex;gap:6px;align-items:baseline;margin-top:3px}
+.st-label{color:var(--text3);letter-spacing:1px;min-width:60px;font-size:0.58rem}
+.st-val{color:var(--accent2)}
+#st-arg{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);
+  color:rgba(200,71,42,0.75);font-size:0.58rem;line-height:1.5;font-style:italic}
+#st-arg-label{font-size:0.5rem;letter-spacing:2px;color:var(--text3);margin-bottom:3px}
+/* ── NEBULA TOOLTIP ── */
+#nebula-tooltip{
+  position:fixed;z-index:50;pointer-events:none;
+  max-width:240px;
+  background:rgba(4,3,10,0.88);border:1px solid rgba(80,100,200,0.3);
+  border-radius:6px;padding:10px 12px;
+  backdrop-filter:blur(14px);
+  font-family:var(--mono);font-size:0.6rem;color:var(--text2);
+  opacity:0;transition:opacity 0.15s;
+}
+#nebula-tooltip.visible{opacity:1}
+#nt-name{color:var(--text);font-size:0.7rem;margin-bottom:4px}
 </style>
 </head>
 <body>
 
 <canvas id="three-canvas"></canvas>
+<!-- Star Info Tooltip -->
+<div id="star-tooltip">
+  <div id="st-name">—</div>
+  <div id="st-type">—</div>
+  <div class="st-row"><span class="st-label">DIST</span><span class="st-val" id="st-dist">—</span></div>
+  <div class="st-row"><span class="st-label">TEMP</span><span class="st-val" id="st-temp">—</span></div>
+  <div id="st-arg-label">// WNCORE SIGNAL LOG</div>
+  <div id="st-arg">—</div>
+</div>
+<!-- Nebula Tooltip -->
+<div id="nebula-tooltip">
+  <div id="nt-name">—</div>
+  <div id="nt-desc">—</div>
+</div>
+
 <div id="grain"></div>
 
 <!-- Header -->
@@ -356,457 +404,343 @@ function updateCamera() {} // stub replaced once _initThreeScene runs
 
 /* ═══════════════════════════════════════════════════
    CONSTELLATION DATA
-   Each constellation has:
-   - stars: [{name, x, y, z}] — 3D positions in scene units
-   - lines: [[starIdx, starIdx]] — which stars to connect when unlocked
-   - tag: string[] — Radio Browser API tags that unlock this
-   - puzzle: {type, ...} — the puzzle definition
-   - lore: {text, code, signal} — the reward
+   stars: real RA/Dec projected to scene XY + starInfo
+   nebula: dust cloud definition per constellation
 ═══════════════════════════════════════════════════ */
-const CONSTELLATIONS = [
-  {
-    id:'orion', name:'Orion', designation:'ORI-α',
-    tag:['classical','orchestra','opera','baroque','chamber'],
-    hint:'Seven stars. The hunter faces west. His belt points to Sirius.',
+
+// Project real RA/Dec to scene XY relative to constellation center
+function radecToXY(ra, dec, cRa, cDec, scale) {
+  const s = scale || 1.9;
+  const dRa  = (ra  - cRa)  * 15 * (Math.PI/180) * Math.cos(cDec * Math.PI/180);
+  const dDec = (dec - cDec) * (Math.PI/180);
+  return { x: -dRa * s, y: dDec * s };
+}
+function s(ra,dec,name,mag,type,dist,temp,arg){ return {ra,dec,name,mag,type,dist,temp,arg}; }
+
+const RAW = {
+  orion: {
+    cRa:5.6, cDec:-1.2,
+    nebula:{color:0x8a3510,r:6.5,op:0.22,ox:0.3,oy:-0.6,name:'Orion Nebula (M42)',desc:'Active stellar nursery 1,344 light-years away. Visible to the naked eye below the belt as a faint smudge.'},
     stars:[
-      {name:'Betelgeuse',x:-1.2,y:2.1,z:-0.4},
-      {name:'Bellatrix', x:1.3,y:2.0,z:0.2},
-      {name:'Alnitak',   x:-0.6,y:0.8,z:0.1},
-      {name:'Alnilam',   x:0.0, y:0.7,z:0.0},
-      {name:'Mintaka',   x:0.7, y:0.6,z:-0.1},
-      {name:'Rigel',     x:1.4,y:-0.9,z:0.3},
-      {name:'Saiph',     x:-1.0,y:-1.0,z:-0.2},
+      s(5.919, 7.407,'Betelgeuse',0.42,'Red Supergiant M2Iab','~700 ly','3,600 K','WNCORE designation BET-α. Betelgeuse dimmed unexpectedly in 2019. Simultaneous dropout logged on 88.7 FM. Duration: 4 months. NODE 09 has no explanation on file.'),
+      s(5.418, 6.350,'Bellatrix', 1.64,'Blue Giant B2III',    '250 ly', '22,000 K','Positional anchor in BLANK_ZONE cartographic grid. Cross-reference: NODE 09 nav log entry #0447.'),
+      s(5.679,-1.943,'Alnitak',   1.77,'Blue Supergiant O9.7Ib','1,260 ly','29,500 K','Easternmost belt star. Horsehead Nebula sits directly south. OBSEDIA used this as a redaction marker in declassified frequency maps.'),
+      s(5.603,-1.202,'Alnilam',   1.69,'Blue Supergiant B0Ia', '2,000 ly','27,000 K','Center of the belt — the median. In ARG coordinate encoding ALC-2 = Alnilam. Transmissions routed through the median are considered unattributed.'),
+      s(5.533,-0.299,'Mintaka',   2.23,'Binary O9.5II + B',    '1,070 ly','30,000 K','Almost exactly on the celestial equator. ARG map uses Mintaka as the zero-declination reference. Above: mapped. Below: uncharted.'),
+      s(5.242,-8.201,'Rigel',     0.13,'Blue Supergiant B8Ia', '860 ly', '12,100 K','WNCORE designation RIGEL-Ω. Signal logs note 88.7 FM briefly transmitted a tone matching Rigel\'s calculated rotation frequency in Nov 2021. No explanation on file.'),
+      s(5.795,-9.670,'Saiph',     2.07,'Blue Supergiant B0.5Ia','720 ly', '26,500 K','Often overlooked. WNCORE docs reference a station logged as SAIPH-NULL — active in index, no broadcast on record. Possibly decommissioned. Possibly something else.'),
     ],
-    lines:[[0,2],[1,3],[2,3],[3,4],[2,6],[4,5],[0,1]],
+    lines:[[0,2],[0,1],[1,3],[2,3],[3,4],[5,4],[6,2]],
     sequence:[0,2,3,4,1,5,6],
     puzzle:{type:'morse', word:'HUNTER', morse:'.... ..- -. - . .-.'},
-    lore:{
-      signal:'ORI-7.HUNTER',
-      text:'The hunter was not born. He was assembled — seven transmission nodes arranged in the shape of grief. BLANK ZONE cartographers first mapped this configuration in Year Zero. The belt stars are not stars. They are repeaters.',
-      code:'ARG-ORI-7H',
-      param:'signal=ORI-HUNTER-7'
-    }
+    lore:{signal:'ORI-7.HUNTER',text:'The hunter was not born. He was assembled — seven transmission nodes arranged in the shape of grief. BLANK ZONE cartographers first mapped this configuration in Year Zero. The belt stars are not stars. They are repeaters.',code:'ARG-ORI-7H',param:'signal=ORI-HUNTER-7'}
   },
-  {
-    id:'cygnus', name:'Cygnus', designation:'CYG-α',
-    tag:['jazz','blues','soul','swing','bebop'],
-    hint:'The Northern Cross. The swan flies south along the Milky Way.',
+  cygnus: {
+    cRa:20.7, cDec:40.5,
+    nebula:{color:0x102860,r:5.5,op:0.2,ox:-0.2,oy:0.1,name:'North America Nebula (NGC 7000)',desc:'Emission nebula 1,600 light-years away, shaped like the North American continent. Lies in the rich Milky Way star field of Cygnus.'},
     stars:[
-      {name:'Deneb',    x:0.0, y:2.2,z:0.0},
-      {name:'Sadr',     x:0.0, y:0.6,z:0.0},
-      {name:'Gienah',   x:-1.4,y:0.6,z:0.2},
-      {name:'Delta Cyg',x:1.4, y:0.6,z:-0.1},
-      {name:'Albireo',  x:0.0, y:-1.2,z:0.3},
+      s(20.690,45.280,'Deneb',    1.25,'Blue-White Supergiant A2Ia','~2,600 ly','8,500 K','One of the most luminous stars known. WNCORE uses Deneb as a signal strength benchmark — 88.7 FM broadcasts at "Deneb-class" intensity. No documented reason for this scale.'),
+      s(20.371,40.257,'Sadr',     2.23,'Yellow Supergiant F8Ib',    '1,800 ly', '6,100 K','Center of the Northern Cross. The name means "the chest." NODE 09 logs reference a pulse pattern in the Sadr region that repeats every 33.4 hours. Classification: UNRESOLVED.'),
+      s(20.770,33.970,'Gienah',   2.46,'Giant K0III',               '72 ly',    '4,800 K','Western wing of the swan. Shares a name with a star in Corvus (the crow). SIGNAL_KAGE noted the naming collision in transmission log 2019-03-11. Comment: "one flies, one watches."'),
+      s(19.749,45.131,'Delta Cyg',2.87,'Binary A0III + F0V',        '165 ly',   '9,900 K','Eastern arm. Binary system. WNCORE technical notes mention a "Delta-class handshake" in the signal protocol — a two-signal confirmation before any priority transmission.'),
+      s(19.512,27.960,'Albireo',  3.08,'Binary K2II + B8V',         '430 ly',   '4,300 K','The beak — a famous double star: gold and blue. WNCORE used gold-blue contrast as its original status indicator. Gold: receiving. Blue: transmitting. The colors were chosen here.'),
     ],
     lines:[[0,1],[1,4],[2,1],[1,3]],
     sequence:[0,1,2,3,4],
     puzzle:{type:'frequency', target:88.7, tolerance:0.15, range:[80,100]},
-    lore:{
-      signal:'CYG-88.7',
-      text:'88.7 MHz. The frequency was not assigned. It appeared in the archive already occupied. The swan is a direction, not a destination. Those who tuned in before us left a message in the carrier wave. We have not decoded it. We do not try.',
-      code:'ARG-CYG-88',
-      param:'signal=CYG-88-OCCUPIED'
-    }
+    lore:{signal:'CYG-88.7',text:'88.7 MHz. The frequency was not assigned. It appeared in the archive already occupied. The swan is a direction, not a destination. Those who tuned in before us left a message in the carrier wave. We have not decoded it. We do not try.',code:'ARG-CYG-88',param:'signal=CYG-88-OCCUPIED'}
   },
-  {
-    id:'scorpius', name:'Scorpius', designation:'SCO-α',
-    tag:['metal','rock','hardcore','punk','grunge','alternative'],
-    hint:'The scorpion. Antares marks the heart — a red supergiant, deep in the ecliptic.',
+  scorpius: {
+    cRa:16.9, cDec:-30.0,
+    nebula:{color:0x5a0808,r:7.0,op:0.19,ox:-0.5,oy:0.8,name:'Cat\'s Paw Nebula (NGC 6334)',desc:'Emission nebula near the tail of Scorpius, 5,500 light-years away. A region of intense star formation glowing deep red from ionized hydrogen.'},
     stars:[
-      {name:'Antares',   x:0.0, y:0.8,z:0.0},
-      {name:'Graffias',  x:-1.0,y:1.8,z:0.1},
-      {name:'Dschubba',  x:0.0, y:1.8,z:-0.2},
-      {name:'Acrab',     x:1.0, y:1.8,z:0.1},
-      {name:'Tau Sco',   x:0.6, y:0.0,z:0.2},
-      {name:'Shaula',    x:1.2,y:-1.4,z:-0.3},
-      {name:'Lesath',    x:1.4,y:-1.6,z:-0.1},
+      s(16.490,-26.432,'Antares',  0.96,'Red Supergiant M1.5Iab','550 ly','3,400 K','Name means "rival of Mars" — same color, similar brightness. OBSEDIA files cross-reference Antares with the SIGNAL_KAGE designation MARS-ECHO. No further context. File ends.'),
+      s(16.092,-19.806,'Graffias', 2.50,'Binary B1III + B2V',    '400 ly','26,000 K','Triple star system. The name derives from Arabic for "claws." WNCORE\'s original station grid placed a repeater here at coordinate SCO-N. Current status: offline since 2023-07-14.'),
+      s(16.005,-22.622,'Dschubba', 2.29,'Binary B0.5IV + B2V',   '400 ly','27,500 K','Forehead of the scorpion. In 2000, Dschubba suddenly brightened by 75% with no confirmed cause. WNCORE logs note a brief frequency spike on 95.4 FM on the same date.'),
+      s(16.204,-19.461,'Acrab',    2.62,'Binary B0.5V + B2V',    '400 ly','28,000 K','Head of the scorpion. Part of a sextuple star system — six gravitationally bound stars. NODE 09 uses "Acrab-class" to describe any signal with more than three simultaneous carriers.'),
+      s(16.598,-28.216,'Tau Sco',  2.82,'Blue Dwarf B0V',        '470 ly','32,000 K','Surprisingly hot for its designation. Tau Sco emits strong X-rays. WNCORE signal logs contain an entry simply labeled TAU — high-energy, short-duration, source unresolved.'),
+      s(17.560,-37.103,'Shaula',   1.62,'Blue Subgiant B2IV',     '700 ly','22,400 K','The stinger — and one of the brightest stars in the sky. Points directly at the galactic center. OBSEDIA used Shaula as a directional indicator in early site surveys.'),
+      s(17.530,-37.296,'Lesath',   2.69,'Blue Giant B2IV',        '1,570 ly','20,900 K','Adjacent to Shaula, forming the double stinger. Significantly more distant but appears nearby. WNCORE notes this as the "parallax deception" — things that appear together are not necessarily together.'),
     ],
     lines:[[1,0],[2,0],[3,0],[0,4],[4,5],[5,6]],
     sequence:[1,0,4,5,6,3,2],
-    puzzle:{type:'acrostic',
-      stars:['Shaula','Tau Sco','Antares','Tiamat','Iamat','Chaos'],
-      clues:['The stinger','Named for taurus','The heart star','A name from myth','Not a real star','The old word for disorder'],
-      answer:'STATIC'},
-    lore:{
-      signal:'SCO-STATIC',
-      text:'OBSEDIA found the scorpion useful. The stinger points at the galactic center. The galactic center is where the signal originates — not where it ends. When you hear static between stations, you are hearing the scorpion breathe.',
-      code:'ARG-SCO-ST',
-      param:'signal=SCO-STATIC-GALACTIC'
-    }
+    puzzle:{type:'acrostic',stars:['Shaula','Tau Sco','Antares','Tiamat','Iamat','Chaos'],clues:['The stinger','Named for taurus','The heart star','A name from myth','Not a real star','The old word for disorder'],answer:'STATIC'},
+    lore:{signal:'SCO-STATIC',text:'OBSEDIA found the scorpion useful. The stinger points at the galactic center. The galactic center is where the signal originates — not where it ends. When you hear static between stations, you are hearing the scorpion breathe.',code:'ARG-SCO-ST',param:'signal=SCO-STATIC-GALACTIC'}
   },
-  {
-    id:'cassiopeia', name:'Cassiopeia', designation:'CAS-α',
-    tag:['electronic','ambient','synthesizer','techno','edm','house'],
-    hint:'The W shape. Circumpolar in northern latitudes — never sets below the horizon.',
+  cassiopeia: {
+    cRa:1.2, cDec:60.5,
+    nebula:{color:0x082040,r:5.0,op:0.17,ox:0.1,oy:-0.2,name:'Heart & Soul Nebula (IC 1805)',desc:'Pair of emission nebulae 7,500 light-years away in Perseus arm of the Milky Way. Together they span 580 light-years.'},
     stars:[
-      {name:'Schedar',  x:-1.8,y:0.4,z:0.1},
-      {name:'Caph',     x:-0.9,y:1.2,z:0.0},
-      {name:'Navi',     x:0.0, y:0.4,z:0.2},
-      {name:'Ruchbah',  x:0.9, y:1.0,z:-0.1},
-      {name:'Segin',    x:1.8, y:0.4,z:0.1},
+      s(0.675,56.537,'Schedar',  2.24,'Orange Giant K0IIIa', '228 ly','4,500 K','Alpha Cassiopeiae. Slightly variable. WNCORE\'s logging system uses the Schedar cycle as a baseline — "schedar-time" appears in internal docs, meaning the slow, unreliable pulse of something still transmitting.'),
+      s(0.153,59.150,'Caph',     2.28,'Yellow-White Giant F2III','54 ly','6,700 K','Nearest of the five main stars. SIGNAL_KAGE noted that Caph lies almost exactly on the prime meridian of the sky (0h RA). Entry: "the door is where the clock starts."'),
+      s(0.945,60.717,'Navi',     2.47,'Variable B0.7IVe',    '613 ly','25,000 K','Named by astronaut Gus Grissom — his middle name spelled backward. Grissom died in the Apollo 1 fire. WNCORE station CAP-3 was renamed Navi in 2018 with no annotation.'),
+      s(1.430,60.235,'Ruchbah',  2.68,'Binary A5IIIv + A7V', '99 ly', '8,400 K','Eclipsing binary — dims slightly every 759 days. WNCORE monitors the eclipse cycle as a timing signal. Last confirmed eclipse alignment: March 2022. Annotated in logs: "still on schedule."'),
+      s(1.906,63.670,'Segin',    3.38,'Blue Giant B3III',    '441 ly','15,174 K','Epsilon Cassiopeiae — the trailing point of the W. Least documented. WNCORE has no special annotation for Segin. This is either because it is unimportant or because the documentation was removed.'),
     ],
     lines:[[0,1],[1,2],[2,3],[3,4]],
     sequence:[0,1,2,3,4],
     puzzle:{type:'morse', word:'SIGNAL', morse:'... .. --. -. .- .-..'},
-    lore:{
-      signal:'CAS-W5',
-      text:'Five nodes forming a W — or an M, depending on the season. SIGNAL_KAGE first used this configuration as a routing marker. The W means: the data passed through here. The M means: something is watching the data pass through.',
-      code:'ARG-CAS-W5',
-      param:'signal=CAS-ROUTING-KAGE'
-    }
+    lore:{signal:'CAS-W5',text:'Five nodes forming a W — or an M, depending on the season. SIGNAL_KAGE first used this configuration as a routing marker. The W means: the data passed through here. The M means: something is watching the data pass through.',code:'ARG-CAS-W5',param:'signal=CAS-ROUTING-KAGE'}
   },
-  {
-    id:'ursamajor', name:'Ursa Major', designation:'UMA-α',
-    tag:['pop','indie','singer-songwriter','folk','acoustic'],
-    hint:'The Great Bear. Seven bright stars form the Plough. The outer two point to Polaris.',
+  ursamajor: {
+    cRa:11.3, cDec:55.0,
+    nebula:{color:0x08202a,r:8.0,op:0.13,ox:0.5,oy:0.0,name:'Bode\'s Galaxy (M81/M82)',desc:'Pair of interacting galaxies 12 million light-years away. M82 — the Cigar Galaxy — is the most photographed starburst galaxy in the sky.'},
     stars:[
-      {name:'Dubhe',    x:-1.0,y:1.6,z:0.1},
-      {name:'Merak',    x:-0.6,y:0.8,z:0.0},
-      {name:'Phecda',   x:0.4, y:0.8,z:0.2},
-      {name:'Megrez',   x:0.8, y:1.4,z:-0.1},
-      {name:'Alioth',   x:1.6, y:1.4,z:0.1},
-      {name:'Mizar',    x:2.2, y:0.8,z:0.0},
-      {name:'Alkaid',   x:2.8, y:0.0,z:0.2},
+      s(11.062,61.751,'Dubhe',   1.79,'Orange Giant K0IIIa', '124 ly','4,660 K','One of the two "pointer stars" to Polaris. WNCORE orientation protocol always begins: find Dubhe, find Polaris, calibrate. Logs note the protocol was written before NODE 09 had GPS. It was never updated.'),
+      s(11.031,56.383,'Merak',   2.37,'White Main-Seq A1V',  '79 ly', '9,400 K','The other pointer star. WNCORE staff call the Dubhe-Merak line "the arrow." Internal memos reference "following the arrow" as shorthand for following a trace to its source. Most traces led nowhere.'),
+      s(11.897,53.695,'Phecda',  2.44,'White Giant A0Ve',    '84 ly', '9,355 K','Third star of the bowl. Slightly variable — a Delta Scuti star that pulses every few hours. WNCORE registered these pulses accidentally in 2017. The pulses are now in the archive labeled as "background."'),
+      s(12.257,57.033,'Megrez',  3.31,'White Main-Seq A3V',  '58 ly', '8,630 K','The faintest of the seven — the joint between bowl and handle. Ancient sky maps sometimes omitted it. WNCORE logs have three entries marked MEGREZ-ABSENT. Dates: different years, same week.'),
+      s(12.900,55.960,'Alioth',  1.76,'White Giant A0pCr',   '81 ly', '9,020 K','Brightest star in Ursa Major. Chemically peculiar — abnormal chromium and europium. NODE 09 uses "Alioth-anomaly" in diagnostic reports for any reading that is technically valid but contextually wrong.'),
+      s(13.399,54.925,'Mizar',   2.27,'Binary A2V + A2V',    '83 ly', '9,000 K','Famous naked-eye double with Alcor. First star to be resolved as a double via telescope (1617). WNCORE uses Mizar-Alcor as a metaphor in the lore: the signal everyone sees, and the smaller one nobody notices.'),
+      s(13.792,49.313,'Alkaid',  1.85,'Blue Main-Seq B3V',   '101 ly','17,700 K','Tip of the handle — the farthest of the seven from Earth. Not moving with the others; it only appears to belong. WNCORE note: "Alkaid is not part of the Ursa Major moving group. It is passing through."'),
     ],
     lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,6],[0,3]],
     sequence:[0,1,2,3,4,5,6],
     puzzle:{type:'frequency', target:91.5, tolerance:0.2, range:[85,100]},
-    lore:{
-      signal:'UMA-PLOUGH',
-      text:'The seven navigators. Every civilization that looked up saw a different bear, a different cart, a different question mark. WNCORE uses them as a compass: the outer two stars always point toward the signal source. You are here. The source is elsewhere.',
-      code:'ARG-UMA-7N',
-      param:'signal=UMA-NAVIGATORS-7'
-    }
+    lore:{signal:'UMA-PLOUGH',text:'The seven navigators. Every civilization that looked up saw a different bear, a different cart, a different question mark. WNCORE uses them as a compass: the outer two stars always point toward the signal source. You are here. The source is elsewhere.',code:'ARG-UMA-7N',param:'signal=UMA-NAVIGATORS-7'}
   },
-  {
-    id:'lyra', name:'Lyra', designation:'LYR-α',
-    tag:['new age','meditation','relaxation','healing','spiritual','yoga'],
-    hint:'Vega anchors the Summer Triangle. The harp of Orpheus, cast into the sky.',
+  lyra: {
+    cRa:18.9, cDec:36.5,
+    nebula:{color:0x0a1a40,r:4.0,op:0.23,ox:0.2,oy:-0.3,name:'Ring Nebula (M57)',desc:'Planetary nebula 2,300 light-years away — a shell of gas ejected by a dying star. At its center, a white dwarf slowly cools. Visible through amateur telescopes.'},
     stars:[
-      {name:'Vega',    x:0.0, y:1.6,z:0.0},
-      {name:'Sheliak', x:-0.8,y:0.4,z:0.1},
-      {name:'Sulafat',  x:0.8, y:0.4,z:-0.1},
-      {name:'Delta Lyr',x:-0.5,y:0.0,z:0.2},
-      {name:'Zeta Lyr', x:0.5, y:0.0,z:0.1},
+      s(18.616,38.783,'Vega',      0.03,'White Main-Seq A0Va',  '25 ly', '9,600 K','Third brightest star in the northern sky. The north pole pointed toward Vega 12,000 years ago and will again in 14,000 years. WNCORE: "Vega was the pole star during the last interglacial. We do not know what the signal was then."'),
+      s(18.834,33.363,'Sheliak',   3.52,'Eclipsing Binary B8II','960 ly','12,000 K','Beta Lyrae — prototype of an entire class of variable stars. Dims and brightens over 12.94 days. WNCORE timing logs use the Sheliak cycle for "medium cadence" — events too slow for minutes but too fast for seasons.'),
+      s(18.982,32.690,'Sulafat',   3.24,'Giant B9III',          '620 ly','9,900 K','Gamma Lyrae. The foot of the harp. Unusual spectrum — NODE 09 notes classify it under "spectral irregularity, cause undetermined." Same classification applied to 4 other stars in the archive. No pattern found.'),
+      s(18.908,36.898,'Delta Lyr', 3.99,'Binary M4II + A0',    '900 ly','3,700 K','Wide double — the red component is a red giant. A warm star and a cool star bound together. WNCORE uses Delta Lyr as an allegory: two signals of incompatible frequencies sharing the same coordinates.'),
+      s(18.745,37.605,'Zeta Lyr',  4.34,'Binary F0IV + F0',    '154 ly','7,260 K','Often overlooked. First catalogued by Tycho Brahe. WNCORE has no ARG annotation for Zeta Lyr. This blank is noted in internal review #7: "Zeta Lyr has no assigned meaning. This is intentional."'),
     ],
     lines:[[0,1],[0,2],[1,3],[2,4],[3,4],[1,2]],
-    sequence:[0,1,3,4,2,0],
+    sequence:[0,1,3,4,2],
     puzzle:{type:'morse', word:'ORPHEUS', morse:'--- .-. .--. .... . ..- ...'},
-    lore:{
-      signal:'LYR-ORPHEUS',
-      text:'The instrument that could move stones. In 2031 a researcher at NODE 09 claimed to have received a musical transmission that caused structural harmonics in the antenna array. The recording was archived under OBSEDIA clearance level 4. The researcher was reassigned.',
-      code:'ARG-LYR-OP',
-      param:'signal=LYR-ORPHEUS-NODE09'
-    }
+    lore:{signal:'LYR-ORPHEUS',text:'The instrument that could move stones. In 2031 a researcher at NODE 09 claimed to have received a musical transmission that caused structural harmonics in the antenna array. The recording was archived under OBSEDIA clearance level 4. The researcher was reassigned.',code:'ARG-LYR-OP',param:'signal=LYR-ORPHEUS-NODE09'}
   },
-  {
-    id:'perseus', name:'Perseus', designation:'PER-α',
-    tag:['news','talk','podcast','speech','documentary','public radio'],
-    hint:'The hero holds Medusa\'s head — the blinking star Algol. A winking demon.',
+  perseus: {
+    cRa:3.2, cDec:42.5,
+    nebula:{color:0x2a1530,r:5.0,op:0.19,ox:-0.3,oy:0.2,name:'California Nebula (NGC 1499)',desc:'Emission nebula 1,000 light-years away in Perseus, named for its resemblance to the state of California. Illuminated by the hot star Xi Persei.'},
     stars:[
-      {name:'Mirfak',  x:0.0, y:2.0,z:0.0},
-      {name:'Algol',   x:-1.4,y:0.6,z:0.2},
-      {name:'Atik',    x:1.0, y:1.0,z:-0.1},
-      {name:'Menkib',  x:1.6, y:-0.4,z:0.1},
-      {name:'Zeta Per',x:0.4, y:0.2,z:0.3},
+      s(3.405,49.861,'Mirfak',   1.79,'Yellow Supergiant F5Ib','590 ly','6,350 K','Alpha Persei. Center of the Alpha Persei Cluster — dozens of related stars visible through binoculars. WNCORE: "Mirfak is never alone. Everything you see near it was born from the same cloud."'),
+      s(3.136,40.956,'Algol',    2.12,'Eclipsing Binary B8V',  '90 ly', '12,000 K','The Demon Star — dims every 2.867 days as a companion eclipses it. Arabs observed this centuries before the cause was known. WNCORE 2018 logs show 88.7 FM transmitted a pulse on the same 2.867-day cycle. No source identified.'),
+      s(3.715,47.988,'Atik',     2.85,'Binary O7.5III + O9V',  '1,100 ly','34,000 K','Zeta Persei. Part of the hot OB association in Perseus. WNCORE designation: ATK-ζ. Appears in signal routing tables as a "pass-through node" — data crosses it but nothing originates here.'),
+      s(3.964,40.010,'Menkib',   3.98,'Blue Subgiant O7.5III', '1,330 ly','37,500 K','One of the hottest naked-eye stars. Xi Persei — it ionizes the California Nebula. OBSEDIA used the ionization radius as a classification unit. "One Menkib" = the sphere of influence of a high-energy unknown.'),
+      s(3.902,31.884,'Zeta Per', 2.85,'Blue Supergiant B1Ib',  '750 ly', '20,400 K','Among the most luminous stars nearby. WNCORE logs note a brief anomalous signal near this coordinate in 2020-09, duration 2.3 seconds, no frequency match in archive. Logged: ZETA-INCIDENT. Not followed up.'),
     ],
     lines:[[0,1],[0,2],[0,4],[2,3],[1,4]],
     sequence:[0,2,3,4,1],
-    puzzle:{type:'acrostic',
-      stars:['Mirfak','Atik','Gorgon','Ophelia','Nemesis'],
-      clues:['The brightest','Second star','The severed head','Not in Perseus','A concept, not a star'],
-      answer:'MAGON'},
-    lore:{
-      signal:'PER-ALGOL',
-      text:'Algol blinks every 2.87 days because a companion star eclipses it. The Arabs called it the Demon Star before they knew why it blinked. WNCORE signal logs from 2018 show a transmission on 88.7 that also blinked — on the same 2.87-day cycle. We do not know if this was intentional.',
-      code:'ARG-PER-AG',
-      param:'signal=PER-ALGOL-DEMON'
-    }
+    puzzle:{type:'acrostic',stars:['Mirfak','Atik','Gorgon','Ophelia','Nemesis'],clues:['The brightest','Second star','The severed head','Not in Perseus','A concept, not a star'],answer:'MAGON'},
+    lore:{signal:'PER-ALGOL',text:'Algol blinks every 2.87 days because a companion star eclipses it. The Arabs called it the Demon Star before they knew why it blinked. WNCORE signal logs from 2018 show a transmission on 88.7 that also blinked — on the same 2.87-day cycle. We do not know if this was intentional.',code:'ARG-PER-AG',param:'signal=PER-ALGOL-DEMON'}
   },
-  {
-    id:'aquila', name:'Aquila', designation:'AQL-α',
-    tag:['hip hop','rap','trap','grime','urban','rnb'],
-    hint:'The eagle. Altair spins so fast it bulges at its equator into an oblate shape.',
+  aquila: {
+    cRa:19.6, cDec:3.0,
+    nebula:{color:0x18120a,r:4.5,op:0.16,ox:0.1,oy:-0.1,name:'Eagle Nebula (M16)',desc:'Open cluster and emission nebula 7,000 light-years away — home of the Pillars of Creation. Star formation ongoing inside the dark columns of gas.'},
     stars:[
-      {name:'Altair',  x:0.0, y:0.0,z:0.0},
-      {name:'Tarazed', x:-0.6,y:0.8,z:0.2},
-      {name:'Alshain', x:0.7, y:0.7,z:-0.1},
-      {name:'Delta Aql',x:-1.2,y:-0.4,z:0.1},
-      {name:'Lambda Aql',x:-0.4,y:-1.2,z:0.2},
+      s(19.846,8.868,'Altair',     0.76,'White Main-Seq A7V',  '17 ly', '7,600 K','Nearest star in Aquila. Spins so fast it bulges at the equator — its equatorial diameter is 20% larger than its polar diameter. WNCORE: "a signal rotating too fast to hold its own shape."'),
+      s(19.771,10.613,'Tarazed',   2.72,'Orange Giant K3II',   '460 ly','4,210 K','Gamma Aquilae. Tarazed means "the beam of the scale" in Persian. NODE 09 uses the Tarazed position as a calibration reference for signal direction. Log entry 2021-05: "Tarazed is off. Recalibrating."'),
+      s(19.921,6.407,'Alshain',    3.71,'Subgiant G8.5IVvar', '45 ly', '5,050 K','Beta Aquilae — flanking Altair. Slightly variable, cause uncertain. WNCORE logs mention Alshain in a side note: "two stars flank the bright one. One is documented. One is not."'),
+      s(19.425,3.115,'Delta Aql',  3.36,'Yellow Giant F0IV',   '50 ly', '7,650 K','Deneb Okab — "the tail of the eagle." Historically this marked the southern wing tip. OBSEDIA cartography notes list it simply as: SOUTH ANCHOR — role: terminus.'),
+      s(19.104,-4.882,'Lambda Aql',3.44,'Blue-White Dwarf B9V','125 ly','9,960 K','Below the main body of the eagle. WNCORE has a technical footnote: Lambda Aql was briefly misidentified in the 2017 archive refresh. It was listed under Scutum for 11 days before correction. The Scutum entry remains.'),
     ],
     lines:[[1,0],[0,2],[0,3],[3,4]],
     sequence:[2,0,1,3,4],
     puzzle:{type:'frequency', target:95.0, tolerance:0.2, range:[88,104]},
-    lore:{
-      signal:'AQL-ALTAIR',
-      text:'Altair rotates once every 9 hours. At its equator, the escape velocity is nearly the speed of its own surface. SIGNAL_KAGE once described the ARG itself this way: spinning so fast the outside barely holds together. We are the equator.',
-      code:'ARG-AQL-AT',
-      param:'signal=AQL-ALTAIR-SPIN'
-    }
+    lore:{signal:'AQL-ALTAIR',text:'Altair rotates once every 9 hours. At its equator, the escape velocity is nearly the speed of its own surface. SIGNAL_KAGE once described the ARG itself this way: spinning so fast the outside barely holds together. We are the equator.',code:'ARG-AQL-AT',param:'signal=AQL-ALTAIR-SPIN'}
   },
-  {
-    id:'gemini', name:'Gemini', designation:'GEM-α',
-    tag:['country','bluegrass','americana','western','outlaw'],
-    hint:'The twins Castor and Pollux. One mortal, one divine. Castor has six stars in three pairs.',
+  gemini: {
+    cRa:7.0, cDec:22.5,
+    nebula:{color:0x0a2030,r:5.5,op:0.16,ox:0.0,oy:-0.5,name:'Medusa Nebula (Abell 21)',desc:'Large planetary nebula 1,500 light-years away, named for its filamentary structure resembling Medusa\'s hair. Unusually large and old.'},
     stars:[
-      {name:'Castor',  x:-1.0,y:1.8,z:0.1},
-      {name:'Pollux',  x:1.0, y:1.6,z:0.0},
-      {name:'Alhena',  x:0.8, y:0.0,z:0.2},
-      {name:'Mebsuda', x:-0.4,y:0.4,z:-0.1},
-      {name:'Tejat',   x:-1.2,y:0.0,z:0.1},
+      s(7.577,31.889,'Castor',   1.58,'Sextuple A1V+A2V+...','52 ly','10,300 K','Six stars in three pairs — the most complex naked-eye star system. WNCORE: "Castor looks like one star. It is six. Everything complex looks simple from a distance."'),
+      s(7.755,28.026,'Pollux',   1.14,'Orange Giant K0IIIb', '34 ly','4,850 K','The brighter twin despite being Beta Gemini. Has a confirmed exoplanet. WNCORE logs note: "Pollux-b was found in 2006. We wonder what else is there. We have not looked closely enough."'),
+      s(7.583,16.400,'Alhena',   1.93,'White Giant A0IV',    '109 ly','9,260 K','Gamma Gemini — the foot. Lies almost on the ecliptic. OBSEDIA used the ecliptic crossings as temporal markers. Alhena crossing: noted. What was noted at this crossing: redacted.'),
+      s(7.185,20.571,'Mebsuda',  3.06,'Yellow Supergiant G8Ib','1,168 ly','5,300 K','Epsilon Gemini. The name means "the outstretched paw." Slow Cepheid variable. NODE 09 uses Mebsuda\'s variability period as a handshake timing signal — 10.15 days between contact attempts.'),
+      s(6.382,22.514,'Tejat',    3.16,'Red Giant M3III',     '232 ly','3,600 K','Mu Gemini — the other foot. Slightly irregular variable. Old name: Pish Pai. WNCORE archive has an entry simply: TEJAT — WATCH. No further content. Added 2019-11. Not updated since.'),
     ],
     lines:[[0,3],[3,4],[1,2],[0,1]],
     sequence:[0,1,2,3,4],
     puzzle:{type:'morse', word:'TWINS', morse:'- .-- .. -. ...'},
-    lore:{
-      signal:'GEM-TWINS',
-      text:'One mortal twin, one divine. The signal that comes from Gemini is always doubled — a carrier wave followed immediately by a ghost of itself, delayed by exactly 1.3 seconds. NODE 09 named this the Twin Echo. The source of the delay has not been identified.',
-      code:'ARG-GEM-TW',
-      param:'signal=GEM-TWIN-ECHO'
-    }
+    lore:{signal:'GEM-TWINS',text:'One mortal twin, one divine. The signal that comes from Gemini is always doubled — a carrier wave followed immediately by a ghost of itself, delayed by exactly 1.3 seconds. NODE 09 named this the Twin Echo. The source of the delay has not been identified.',code:'ARG-GEM-TW',param:'signal=GEM-TWIN-ECHO'}
   },
-  {
-    id:'leo', name:'Leo', designation:'LEO-α',
-    tag:['reggae','ska','dub','dancehall','caribbean'],
-    hint:'The lion. Regulus sits at the handle of the Sickle asterism, almost exactly on the ecliptic.',
+  leo: {
+    cRa:10.8, cDec:15.0,
+    nebula:{color:0x201808,r:6.0,op:0.14,ox:-0.3,oy:0.4,name:'Leo Triplet (M65/M66/NGC 3628)',desc:'Three interacting galaxies 35 million light-years away. Gravitational interaction has distorted NGC 3628 into a warped disk shape. All three visible through amateur telescopes.'},
     stars:[
-      {name:'Regulus',  x:0.0, y:-0.6,z:0.0},
-      {name:'Algieba',  x:-0.4,y:0.4,z:0.2},
-      {name:'Zosma',    x:0.8, y:0.8,z:-0.1},
-      {name:'Denebola', x:2.0, y:0.8,z:0.1},
-      {name:'Eta Leo',  x:-1.0,y:1.2,z:0.2},
-      {name:'Adhafera', x:-0.8,y:0.8,z:-0.1},
+      s(10.139,11.967,'Regulus',  1.35,'Binary B8IVn + K-dwarf','79 ly','12,000 K','Almost exactly on the ecliptic — the Moon frequently passes in front of it. WNCORE: "Regulus is regularly occulted. Something regularly passes between it and us. This is not always the Moon."'),
+      s(10.333,19.841,'Algieba',  2.08,'Binary K0III + G7III', '126 ly','4,470 K','Gamma Leonis — famous naked-eye double, orange and yellow. OBSEDIA designation: DUO-LEO. Used as a symbol in internal documents meaning "two truths, same origin." Appears in 14 redacted reports.'),
+      s(11.235,20.524,'Zosma',    2.56,'White Subgiant A4V',   '58 ly', '8,310 K','Delta Leonis. The haunch of the lion. WNCORE has an annotation: "Zosma was once called Duhr — the back. The name changed. The star didn\'t. We track which names change and which stars don\'t."'),
+      s(11.818,14.572,'Denebola', 2.14,'White Main-Seq A3V',   '36 ly', '8,500 K','The tail. One of the closest stars in Leo. Moving slightly faster than the rest of the Lion Group — in the astronomical sense, it doesn\'t belong to Leo\'s moving group. WNCORE note: "Denebola is passing through."'),
+      s(10.122,16.763,'Eta Leo',  3.49,'White Supergiant A0Ib','2,000 ly','9,400 K','Adhafera\'s neighbor in the Sickle. One of the most luminous A-type stars within 2,000 ly. NODE 09 uses its luminosity as a scale reference: "Eta-class output" = maximum expected signal strength before anomaly threshold.'),
+      s(10.269,23.418,'Adhafera', 3.44,'White Giant F0III',    '274 ly','7,244 K','Zeta Leonis — part of the Sickle. The name means "the lock of hair." WNCORE archive entry ADHAFERA-LOG reads: partial, partially redacted, timestamp corrupted. Remaining content: "we heard it twice."'),
     ],
     lines:[[0,1],[1,5],[5,4],[1,2],[2,3]],
     sequence:[4,5,1,0,2,3],
-    puzzle:{type:'acrostic',
-      stars:['Regulus','Algieba','Node','Node 09','Algieba'],
-      clues:['The heart star','Double star system','A junction','Unknown status','Same star twice'],
-      answer:'RANNA'},
-    lore:{
-      signal:'LEO-REGULUS',
-      text:'Regulus precesses. In 2,100 years it will sit exactly at the vernal equinox. The ancient tracking system at NODE 09 was calibrated to Regulus\'s position in 2016. If the node is still receiving, its clock is now off by a measurable margin. We do not know if it corrects itself.',
-      code:'ARG-LEO-RG',
-      param:'signal=LEO-REGULUS-PREC'
-    }
+    puzzle:{type:'acrostic',stars:['Regulus','Algieba','Node','Node 09','Algieba'],clues:['The heart star','Double star system','A junction','Unknown status','Same star twice'],answer:'RANNA'},
+    lore:{signal:'LEO-REGULUS',text:'Regulus precesses. In 2,100 years it will sit exactly at the vernal equinox. The ancient tracking system at NODE 09 was calibrated to Regulus\'s position in 2016. If the node is still receiving, its clock is now off by a measurable margin. We do not know if it corrects itself.',code:'ARG-LEO-RG',param:'signal=LEO-REGULUS-PREC'}
   },
-  {
-    id:'andromeda', name:'Andromeda', designation:'AND-α',
-    tag:['world music','international','traditional','cultural','ethnic'],
-    hint:'The chained princess. Her galaxy is visible to the naked eye — the farthest thing you can see unaided.',
+  andromeda: {
+    cRa:1.1, cDec:35.5,
+    nebula:{color:0x101838,r:9.0,op:0.25,ox:0.6,oy:0.2,name:'Andromeda Galaxy (M31)',desc:'2.537 million light-years away — the most distant object visible to the naked eye. Contains a trillion stars. Approaching us at 110 km/s. Collision with the Milky Way in ~4.5 billion years.'},
     stars:[
-      {name:'Alpheratz',x:0.0, y:1.4,z:0.0},
-      {name:'Mirach',   x:1.2, y:0.4,z:0.2},
-      {name:'Almach',   x:2.2, y:-0.4,z:-0.1},
-      {name:'Delta And',x:-0.6,y:0.8,z:0.1},
+      s(0.140,29.090,'Alpheratz',2.06,'Binary B8IVp + A3V','97 ly','13,800 K','Shared with Pegasus — once called Delta Pegasi. Now belongs to Andromeda. WNCORE note: "Alpheratz was reallocated in 1930 when constellation borders were formalized. The star was not informed."'),
+      s(1.162,35.621,'Mirach',   2.07,'Red Giant M0IIIb',  '200 ly','3,842 K','Beta Andromedae. Mirach\'s Ghost — a faint galaxy nearby appears as a companion. It is not. OBSEDIA internal files use "Mirach\'s Ghost" as a classification for signals that resemble known patterns but originate elsewhere.'),
+      s(2.065,42.330,'Almach',   2.26,'Binary K3IIb + A0V','350 ly','4,300 K','Gamma Andromedae — a showpiece double: orange and teal. WNCORE: "two frequencies, incompatible, separated by a measurable gap, bound together. This describes more than a star."'),
+      s(0.655,30.861,'Delta And',3.27,'Orange Giant K3III','101 ly','4,350 K','Delta Andromedae. Guides the eye from Alpheratz toward Mirach. SIGNAL_KAGE referred to Delta And as "the connector" in routing diagrams. It appears between two nodes in 11 of 14 known WNCORE lore paths.'),
     ],
     lines:[[0,1],[1,2],[0,3]],
     sequence:[3,0,1,2],
     puzzle:{type:'frequency', target:107.9, tolerance:0.2, range:[100,110]},
-    lore:{
-      signal:'AND-GALAXY',
-      text:'2.537 million light-years. The Andromeda Galaxy is approaching us at 110 km/s. In approximately 4.5 billion years it will merge with the Milky Way. WNCORE was designed to survive this merger. The signal archive was designed to outlast the stars that carry it.',
-      code:'ARG-AND-GAL',
-      param:'signal=AND-ANDROMEDA-MERGE'
-    }
+    lore:{signal:'AND-GALAXY',text:'2.537 million light-years. The Andromeda Galaxy is approaching us at 110 km/s. In approximately 4.5 billion years it will merge with the Milky Way. WNCORE was designed to survive this merger. The signal archive was designed to outlast the stars that carry it.',code:'ARG-AND-GAL',param:'signal=AND-ANDROMEDA-MERGE'}
   },
-  {
-    id:'draco', name:'Draco', designation:'DRA-α',
-    tag:['darkwave','gothic','industrial','noise','drone','dark ambient'],
-    hint:'The dragon winds between the two bears. Thuban was the North Star 4,700 years ago.',
+  draco: {
+    cRa:17.5, cDec:65.0,
+    nebula:{color:0x05100a,r:6.5,op:0.15,ox:-0.4,oy:0.3,name:'Cat\'s Eye Nebula (NGC 6543)',desc:'Planetary nebula 3,300 light-years away — one of the most complex ever observed. Concentric shells of gas form an intricate structure whose origin is not fully understood.'},
     stars:[
-      {name:'Eltanin',  x:0.0, y:2.0,z:0.0},
-      {name:'Rastaban', x:-0.8,y:1.4,z:0.2},
-      {name:'Grumium',  x:-1.6,y:0.6,z:-0.1},
-      {name:'Chi Dra',  x:-1.8,y:-0.2,z:0.1},
-      {name:'Thuban',   x:-0.8,y:-0.8,z:0.3},
-      {name:'Edasich',  x:0.6, y:-0.4,z:-0.2},
+      s(17.943,51.489,'Eltanin',  2.24,'Orange Giant K5III', '148 ly','3,930 K','Gamma Draconis — the head of the dragon. In 1725 James Bradley measured it to study stellar parallax and instead discovered the aberration of light. He was looking for one thing and found another. WNCORE uses this as a methodological note: "look for parallax, find aberration."'),
+      s(17.507,52.301,'Rastaban', 2.79,'Binary G2II + A8V',  '380 ly','5,000 K','Beta Draconis. The name means "head of the serpent." WNCORE logs: RASTABANx2 — two entries on different dates with identical content. One has no timestamp. Investigation status: deferred.'),
+      s(17.146,65.715,'Grumium',  3.75,'Binary K2III + K2III','112 ly','4,200 K','Xi Draconis. Rarely plotted. OBSEDIA uses Grumium as a low-priority waypoint — the path passes through it but nothing is stored here. Or so the index claims.'),
+      s(17.074,68.750,'Chi Dra',  3.57,'Yellow Dwarf G2V',   '26 ly', '5,800 K','One of the nearest stars in Draco. Sun-like temperature. WNCORE: "Chi Draconis is essentially a copy of our sun, 26 light-years away. We have not listened to it carefully."'),
+      s(14.073,64.376,'Thuban',   3.67,'White Giant A0III',  '303 ly','9,832 K','The former north pole star — 2700 BCE. The great pyramid\'s internal shaft aligned to Thuban. When precession ended the alignment, the shaft pointed at nothing. WNCORE signal logs include a frequency range: THUBAN-NULL. Contents: recordings of silence from sources that should not be silent.'),
+      s(15.416,58.967,'Edasich',  3.29,'Yellow Giant K2III', '101 ly','4,400 K','Iota Draconis — first giant star confirmed to have an exoplanet (2002). WNCORE designation EDASICH-b. An annotation reads: "the planet was there before we looked. It did not announce itself."'),
     ],
     lines:[[0,1],[1,2],[2,3],[3,4],[4,5],[5,0]],
     sequence:[4,3,2,1,0,5],
     puzzle:{type:'morse', word:'ABSENCE', morse:'.- -... ... . -. -.-. .'},
-    lore:{
-      signal:'DRA-THUBAN',
-      text:'Thuban was the pole star when the pyramids were built. The builders aligned their shafts to it. When precession moved the pole to Polaris, the shafts pointed at nothing. WNCORE\'s early signal logs include a frequency range labeled THUBAN-NULL. It contains recordings of silence from sources that should not be silent.',
-      code:'ARG-DRA-TH',
-      param:'signal=DRA-THUBAN-NULL'
-    }
+    lore:{signal:'DRA-THUBAN',text:'Thuban was the pole star when the pyramids were built. The builders aligned their shafts to it. When precession moved the pole to Polaris, the shafts pointed at nothing. WNCORE\'s early signal logs include a frequency range labeled THUBAN-NULL. It contains recordings of silence from sources that should not be silent.',code:'ARG-DRA-TH',param:'signal=DRA-THUBAN-NULL'}
   },
-  {
-    id:'centaurus', name:'Centaurus', designation:'CEN-α',
-    tag:['latin','bossa nova','samba','flamenco','tango','salsa'],
-    hint:'Alpha Centauri is our nearest stellar neighbor. 4.37 light-years. A three-star system.',
+  centaurus: {
+    cRa:13.7, cDec:-47.5,
+    nebula:{color:0x101a08,r:5.0,op:0.18,ox:0.3,oy:-0.2,name:'Omega Centauri (NGC 5139)',desc:'The largest and most massive globular cluster in the Milky Way — 10 million stars bound together, 17,000 light-years away. May be the remnant core of a dwarf galaxy consumed long ago.'},
     stars:[
-      {name:'Rigil Kent',x:0.0, y:0.0,z:0.0},
-      {name:'Hadar',    x:1.8, y:0.0,z:0.2},
-      {name:'Menkent',  x:-0.6,y:1.2,z:-0.1},
-      {name:'Muhlifain',x:0.8, y:0.8,z:0.1},
+      s(14.660,-60.835,'Rigil Kent',0.01,'Binary G2V + K1V','4.37 ly','5,790 K','Alpha Centauri A — our nearest stellar neighbor. WNCORE: "4.37 light-years. At the speed of our fastest probe, 18,000 years. The signal takes 4.37 years to arrive. We sent nothing. If something comes from there, we did not send it."'),
+      s(14.064,-60.373,'Hadar',    0.61,'Triple B1III + B5V','390 ly','25,000 K','Beta Centauri. Hadar and Rigil Kent appear close — they are not. Hadar is 90 times farther. OBSEDIA: "proximity is a perspective artifact. Hadar and Rigil Kent are not related. They only appear to be."'),
+      s(14.111,-36.369,'Menkent',  2.06,'Orange Giant K0IIIb','61 ly','4,980 K','Theta Centauri. WNCORE designation MNK-θ. Appears in signal routing tables as an intermediate relay — receives from the south, passes north. No annotation on what passes through.'),
+      s(12.692,-48.959,'Muhlifain',2.20,'Binary A1IV + A0V',  '130 ly','8,900 K','Gamma Centauri — a tight double. SIGNAL_KAGE referred to it in a transmission fragment: "meet at Muhlifain" followed by coordinates that resolve to a real-world location. Location: not disclosed.'),
     ],
     lines:[[0,1],[0,2],[0,3],[2,3]],
     sequence:[2,3,0,1],
-    puzzle:{type:'acrostic',
-      stars:['Rigil','Hadar','Ouroboros','Merak','Beta'],
-      clues:['Nearest neighbor','The second anchor','A serpent eating itself','In the great bear','Designation only'],
-      answer:'RHOMB'},
-    lore:{
-      signal:'CEN-PROXIMA',
-      text:'Proxima Centauri — the actual nearest star — was discovered in 1915. For all of human history before that, we thought we knew which star was closest. We were wrong by 0.24 light-years. WNCORE operates on the assumption that we are currently wrong about something of similar scale.',
-      code:'ARG-CEN-PX',
-      param:'signal=CEN-PROXIMA-WRONG'
-    }
+    puzzle:{type:'acrostic',stars:['Rigil','Hadar','Ouroboros','Merak','Beta'],clues:['Nearest neighbor','The second anchor','A serpent eating itself','In the great bear','Designation only'],answer:'RHOMB'},
+    lore:{signal:'CEN-PROXIMA',text:'Proxima Centauri — the actual nearest star — was discovered in 1915. For all of human history before that, we thought we knew which star was closest. We were wrong by 0.24 light-years. WNCORE operates on the assumption that we are currently wrong about something of similar scale.',code:'ARG-CEN-PX',param:'signal=CEN-PROXIMA-WRONG'}
   },
-  {
-    id:'libra', name:'Libra', designation:'LIB-α',
-    tag:['lo-fi','chillhop','study','beats','instrumental hip hop'],
-    hint:'The scales. The only zodiac constellation that represents an object, not a creature.',
+  libra: {
+    cRa:15.2, cDec:-15.5,
+    nebula:{color:0x0a1808,r:4.5,op:0.14,ox:0.1,oy:0.0,name:'Libra Void',desc:'No prominent nebula in Libra — the scales sit in a relatively clear region of sky. The void itself is the feature.'},
     stars:[
-      {name:'Zuben El',  x:0.0, y:0.0,z:0.0},
-      {name:'Zuben Esc', x:1.4, y:0.8,z:0.1},
-      {name:'Brachium',  x:-1.2,y:0.8,z:-0.1},
-      {name:'Gamma Lib', x:0.6, y:-0.8,z:0.2},
+      s(14.848,-16.042,'Zuben El', 2.75,'White Giant A3IV',  '77 ly', '8,970 K','Alpha Librae — the southern claw. Historically part of Scorpius. WNCORE: "Zuben Elgenubi was reallocated when Libra was formalized. It used to be a scorpion\'s claw. Now it is a scale pan. The star does not know the difference."'),
+      s(15.284,-9.383,'Zuben Esc', 2.61,'White Giant B8V',    '160 ly','11,000 K','Beta Librae — the northern claw and the brightest in Libra. Faintly greenish — one of the few stars where humans can perceive color. OBSEDIA note: "Zubeneschamali is the only star in the catalog classified as perceptibly green. We do not know why we can see it."'),
+      s(15.068,-25.282,'Brachium', 3.29,'Red Giant M3.5IIIab','288 ly','3,596 K','Sigma Librae. The arm of the scales. Irregular variable — no predictable period. WNCORE: "Brachium fluctuates. There is no schedule. It brightens and dims on its own terms. Some signals are like this."'),
+      s(15.592,-14.790,'Gamma Lib',3.91,'Yellow Giant G8III', '152 ly','4,980 K','Gamma Librae. WNCORE archive has a note: GAMMA-LIB — last checked 2020-03-07. No anomalies. Routine sweep. Filed under: routine. Routine has not been re-verified since.'),
     ],
     lines:[[2,0],[0,1],[0,3]],
     sequence:[2,0,1,3],
     puzzle:{type:'frequency', target:37.5, tolerance:0.4, range:[30,50]},
-    lore:{
-      signal:'LIB-SCALES',
-      text:'37.5 Hz. Below the threshold of conscious hearing. The sub-bass frequency generated by NODE 09\'s oscillator array during what logs describe as "idle mode." The scales of Libra historically weighed souls. The frequency may do something similar. The archive does not specify.',
-      code:'ARG-LIB-37',
-      param:'signal=LIB-SCALES-37HZ'
-    }
+    lore:{signal:'LIB-SCALES',text:'37.5 Hz. Below the threshold of conscious hearing. The sub-bass frequency generated by NODE 09\'s oscillator array during what logs describe as "idle mode." The scales of Libra historically weighed souls. The frequency may do something similar. The archive does not specify.',code:'ARG-LIB-37',param:'signal=LIB-SCALES-37HZ'}
   },
-  {
-    id:'aquarius', name:'Aquarius', designation:'AQR-α',
-    tag:['dance','disco','funk','groove','party'],
-    hint:'The water-bearer. Associated in Babylonian astronomy with the god Ea, who lived in the underground ocean.',
+  aquarius: {
+    cRa:22.1, cDec:-10.5,
+    nebula:{color:0x081828,r:5.5,op:0.18,ox:0.0,oy:-0.5,name:'Helix Nebula (NGC 7293)',desc:'The closest planetary nebula to Earth — just 650 light-years away. Called the "Eye of God" in popular media. A dying star\'s outer envelope, expanding into space at 31 km/s.'},
     stars:[
-      {name:'Sadalsuud',x:0.0, y:1.2,z:0.0},
-      {name:'Sadalmelik',x:-1.2,y:0.4,z:0.2},
-      {name:'Sadachbia', x:0.8, y:0.0,z:-0.1},
-      {name:'Skat',      x:1.6, y:-0.8,z:0.1},
-      {name:'Eta Aqr',   x:-0.4,y:-0.8,z:0.2},
+      s(21.526,-5.571,'Sadalsuud',2.91,'Yellow Supergiant G0Ib','610 ly','5,750 K','Beta Aquarii — the luckiest of the lucky stars. Heliacal rising marked the beginning of spring rains in ancient Babylon. WNCORE: "Sadalsuud rises before the rain. The signal arrives before the event it precedes."'),
+      s(22.096,-0.320,'Sadalmelik',2.95,'Yellow Giant G2Ib',   '520 ly','5,600 K','Alpha Aquarii. The luckiest stars (Saad = luck). OBSEDIA designation: ALPHA-AQR. Appears in the routing index as a primary relay for all transmissions labeled WATER. What WATER means as a classification: not defined.'),
+      s(22.589,-0.117,'Sadachbia', 3.84,'White Main-Seq A0V',  '163 ly','10,000 K','Gamma Aquarii — the lucky stars of the tents. Part of the Arabic "lucky" star sequence. WNCORE note: "the lucky star sequence was designed by Babylonian astronomers as a calendrical system. We use their calendar to time certain signal checks. We have not told anyone."'),
+      s(22.911,-15.821,'Skat',     3.27,'White Subgiant A3V',  '160 ly','8,650 K','Delta Aquarii — the shin. Near the radiant of the Delta Aquariid meteor shower (July-August). WNCORE tradition: the meteor shower date is when archive backups run. Every year. Began 2013. Reason: not documented.'),
+      s(22.589,-7.783,'Eta Aqr',   4.02,'Blue Main-Seq B9V',   '167 ly','9,200 K','Near the radiant of the Eta Aquariid shower (May) — debris from Halley\'s Comet. WNCORE: "Halley returns every 75 years. We have a scheduled check in 2061. We do not know who will do it."'),
     ],
     lines:[[0,1],[0,2],[2,3],[1,4]],
     sequence:[0,1,4,2,3],
     puzzle:{type:'morse', word:'DELUGE', morse:'-.. . .-.. ..- --. .'},
-    lore:{
-      signal:'AQR-WATER',
-      text:'The water-bearer pours water that does not fall. In the original Babylonian sky-map, the water streams connect to Piscis Austrinus — the Southern Fish. The stream is a transmission path. The fish receives. In WNCORE\'s architecture, the receiver has always been downstream. Someone built the stream. We inherit it.',
-      code:'ARG-AQR-DL',
-      param:'signal=AQR-DELUGE-STREAM'
-    }
+    lore:{signal:'AQR-WATER',text:'The water-bearer pours water that does not fall. In the original Babylonian sky-map, the water streams connect to Piscis Austrinus — the Southern Fish. The stream is a transmission path. The fish receives. In WNCORE\'s architecture, the receiver has always been downstream. Someone built the stream. We inherit it.',code:'ARG-AQR-DL',param:'signal=AQR-DELUGE-STREAM'}
   },
-  {
-    id:'corvus', name:'Corvus', designation:'CRV-α',
-    tag:['jazz rap','nu jazz','abstract hip hop','spoken word','experimental'],
-    hint:'The crow. A small but distinctive quadrilateral. Associated with the raven in Greek myth.',
+  corvus: {
+    cRa:12.4, cDec:-20.5,
+    nebula:{color:0x150820,r:4.0,op:0.16,ox:0.2,oy:0.3,name:'Antennae Galaxies (NGC 4038/4039)',desc:'Two colliding galaxies 45 million light-years away in Corvus. The collision has stretched them into antenna-like tails. A starburst of 1 billion young stars has been triggered by the collision.'},
     stars:[
-      {name:'Algorab',  x:0.0, y:0.0,z:0.0},
-      {name:'Gienah',   x:-1.0,y:0.8,z:0.2},
-      {name:'Kraz',     x:1.0, y:0.8,z:-0.1},
-      {name:'Minkar',   x:1.2, y:-0.4,z:0.1},
+      s(12.497,-16.515,'Algorab',  2.95,'Binary A0V + K5V','88 ly','9,900 K','Delta Corvi. WNCORE uses Algorab as the primary reference point for the Corvus signal group. Node designation: CRV-DELTA. Cross-reference: CROW-RELAY-SOUTH. Relay status: unchecked since 2022.'),
+      s(12.263,-17.542,'Gienah',   2.59,'Yellow Giant G8III','165 ly','4,870 K','Gamma Corvi — the wing. The name is shared with a star in Cygnus. SIGNAL_KAGE: "one named Gienah flies south. One named Gienah flies north. Between them: the sky. Between the signals: silence."'),
+      s(12.573,-23.396,'Kraz',     2.65,'Orange Giant K2.5III','146 ly','4,150 K','Beta Corvi. The other wing. OBSEDIA filed Kraz under code KRZ-β. The file contains signal logs from an unidentified source in this direction. Duration of logs: 4 years. Logs end without explanation. End date: 2020-12-31.'),
+      s(12.167,-22.619,'Minkar',   3.02,'Binary K2III + A',  '303 ly','4,180 K','Epsilon Corvi — the nostril of the crow. Poorly documented star in a poorly documented constellation. WNCORE has more annotations for Corvus than any other constellation this small. No one has explained why.'),
     ],
     lines:[[0,1],[0,2],[0,3],[1,2]],
     sequence:[1,2,0,3],
-    puzzle:{type:'acrostic',
-      stars:['Corvus','Raven','Orion','Wing','Node'],
-      clues:['Latin name','English name','The hunter','An anatomical part','A junction point'],
-      answer:'CROWN'},
-    lore:{
-      signal:'CRV-CROW',
-      text:'The crow was sent by Apollo to fetch water and returned late, having waited for a fig to ripen. He blamed the water-snake. Apollo, knowing the lie, placed them both in the sky — the crow forever unable to reach the water-bearer\'s cup. SIGNAL_KAGE uses the crow as a symbol for intercepted transmissions: caught in transit, the message changed.',
-      code:'ARG-CRV-CR',
-      param:'signal=CRV-CROW-INTERCEPT'
-    }
+    puzzle:{type:'acrostic',stars:['Corvus','Raven','Orion','Wing','Node'],clues:['Latin name','English name','The hunter','An anatomical part','A junction point'],answer:'CROWN'},
+    lore:{signal:'CRV-CROW',text:'The crow was sent by Apollo to fetch water and returned late, having waited for a fig to ripen. He blamed the water-snake. Apollo, knowing the lie, placed them both in the sky — the crow forever unable to reach the water-bearer\'s cup. SIGNAL_KAGE uses the crow as a symbol for intercepted transmissions: caught in transit, the message changed.',code:'ARG-CRV-CR',param:'signal=CRV-CROW-INTERCEPT'}
   },
-  {
-    id:'piscis', name:'Piscis Austrinus', designation:'PSA-α',
-    tag:['shoegaze','dream pop','psychedelic','reverb','ethereal'],
-    hint:'Fomalhaut — the loneliest bright star. No bright neighbors for 20 degrees in any direction.',
+  piscis: {
+    cRa:22.9, cDec:-30.0,
+    nebula:{color:0x080820,r:4.0,op:0.15,ox:-0.1,oy:0.2,name:'Sculptor Galaxy (NGC 253)',desc:'One of the brightest galaxies in the sky, 11.4 million light-years away. A starburst galaxy visible from the southern hemisphere through binoculars.'},
     stars:[
-      {name:'Fomalhaut',x:0.0, y:0.0,z:0.0},
-      {name:'Epsilon PsA',x:1.2,y:0.6,z:0.1},
-      {name:'Delta PsA',x:-0.8,y:0.8,z:-0.1},
-      {name:'Beta PsA', x:1.6, y:-0.4,z:0.2},
+      s(22.961,-29.622,'Fomalhaut',1.16,'White Main-Seq A3V','25 ly','8,590 K','The loneliest bright star — no bright neighbors within 20 degrees. Has a debris disk and a formerly-thought planet (Fomalhaut b) that turned out to be an expanding dust cloud from a recent collision. WNCORE: "we named it a planet to feel better about what it was."'),
+      s(22.678,-27.044,'Eps PsA',  4.17,'Yellow Giant G8III','744 ly','4,900 K','Epsilon Piscis Austrini. Low-documentation star. WNCORE archive: one signal log dated 2017. Tagged: SOUTH-EPSILON. Contents: two minutes of audio. Audio classification: unresolved. File flagged: do not distribute.'),
+      s(22.932,-32.540,'Delta PsA',4.20,'White Main-Seq A0V','170 ly','9,300 K','Delta Piscis Austrini. NODE 09 designation: DELTA-PSA. Listed as a "receiving node" in the Aquarius stream diagram. Whatever Aquarius transmits, Delta PsA receives it.'),
+      s(22.524,-32.346,'Beta PsA', 4.29,'Binary A1V + A0V', '143 ly','9,200 K','Beta Piscis Austrini. Closest of the fainter stars to Fomalhaut. SIGNAL_KAGE wrote: "Fomalhaut transmits. Beta receives and amplifies. We are Beta." No further elaboration.'),
     ],
     lines:[[0,1],[0,2],[0,3]],
     sequence:[2,0,1,3],
     puzzle:{type:'frequency', target:88.0, tolerance:0.2, range:[85,92]},
-    lore:{
-      signal:'PSA-LONELY',
-      text:'Fomalhaut has a debris disk. In 2008, a planet was photographed inside it — Fomalhaut b. By 2020, astronomers realized it wasn\'t a planet. It was a collision cloud, expanding slowly into space. Something had destroyed something there, recently enough for us to watch the aftermath. We named it a planet first. Naming things makes us feel better.',
-      code:'ARG-PSA-FM',
-      param:'signal=PSA-FOMALHAUT-CLOUD'
-    }
+    lore:{signal:'PSA-LONELY',text:'Fomalhaut has a debris disk. In 2008, a planet was photographed inside it — Fomalhaut b. By 2020, astronomers realized it wasn\'t a planet. It was a collision cloud, expanding slowly into space. Something had destroyed something there, recently enough for us to watch the aftermath. We named it a planet first. Naming things makes us feel better.',code:'ARG-PSA-FM',param:'signal=PSA-FOMALHAUT-CLOUD'}
   },
-  {
-    id:'lepus', name:'Lepus', designation:'LEP-α',
-    tag:['children','nursery','family','educational','kids'],
-    hint:'The hare, crouching at Orion\'s feet. Easy to miss, harder to forget.',
+  lepus: {
+    cRa:5.5, cDec:-19.5,
+    nebula:{color:0x1a0808,r:4.0,op:0.14,ox:0.3,oy:0.1,name:'R Leporis (Hind\'s Crimson Star)',desc:'Not a nebula but a deep-red Mira variable star — one of the reddest objects visible through amateur telescopes. Changes brightness dramatically over a 432-day cycle.'},
     stars:[
-      {name:'Arneb',   x:0.0, y:0.0,z:0.0},
-      {name:'Nihal',   x:1.0, y:0.6,z:0.1},
-      {name:'Epsilon Lep',x:1.4,y:-0.4,z:0.2},
-      {name:'Mu Lep',  x:-0.8,y:0.4,z:-0.1},
+      s(5.545,-17.822,'Arneb',    2.58,'Yellow Supergiant F0Ib','1,300 ly','6,850 K','Alpha Leporis — the hare. Bright for its distance. WNCORE: "Arneb is luminous enough to be seen from over a kiloparsec. But it hides beneath Orion. Some signals are like this — strong, but positioned to go unnoticed."'),
+      s(5.471,-20.759,'Nihal',    2.84,'Yellow Giant G5II',    '159 ly','5,450 K','Beta Leporis. Gently variable. OBSEDIA file: NIH-β. Content: a list of 12 coordinates with no labels. Coordinates checked: 8 resolve to Earth locations. 4 do not resolve. Status: anomaly, low priority.'),
+      s(5.091,-22.371,'Eps Lep',  3.19,'Orange Giant K4III',  '213 ly','4,200 K','Epsilon Leporis. WNCORE has a single-line annotation: "Epsilon Lep is not in the primary grid. It was added manually in 2016. Who added it and why: not recorded."'),
+      s(5.215,-16.205,'Mu Lep',   3.31,'Blue Main-Seq B9IV',  '186 ly','9,800 K','Mu Leporis. Near the ecliptic. SIGNAL_KAGE\'s signal routing notes mention "Mu-Lep bypass" — a path that circumvents the primary relay and is shorter but undocumented. No usage logs exist for it.'),
     ],
     lines:[[0,1],[1,2],[0,3]],
     sequence:[3,0,1,2],
     puzzle:{type:'morse', word:'HIDDEN', morse:'.... .. -.. -.. . -.'},
-    lore:{
-      signal:'LEP-HARE',
-      text:'The hare hides beneath the hunter. It is the one zodiac-adjacent figure that was never a zodiac sign. It slipped through the catalog. WNCORE\'s own documentation contains a similar gap: section 4.7 of the internal signal archive references stations indexed in a "Lepus cluster" — a range of frequencies that appear in the index but have no corresponding entries. Someone added them. No one removed them.',
-      code:'ARG-LEP-HD',
-      param:'signal=LEP-HIDDEN-CLUSTER'
-    }
+    lore:{signal:'LEP-HARE',text:'The hare hides beneath the hunter. It is the one zodiac-adjacent figure that was never a zodiac sign. It slipped through the catalog. WNCORE\'s own documentation contains a similar gap: section 4.7 of the internal signal archive references stations indexed in a "Lepus cluster" — a range of frequencies that appear in the index but have no corresponding entries. Someone added them. No one removed them.',code:'ARG-LEP-HD',param:'signal=LEP-HIDDEN-CLUSTER'}
   },
-  {
-    id:'telescopium', name:'Telescopium', designation:'TEL-α',
-    tag:['science','nature','space','astronomy','tech','technology'],
-    hint:'One of Lacaille\'s 18th-century additions. Named for the instrument used to observe the sky.',
+  telescopium: {
+    cRa:18.5, cDec:-52.0,
+    nebula:{color:0x080a10,r:3.5,op:0.13,ox:0.0,oy:0.2,name:'Telescopium Void',desc:'Telescopium lies in a region of relatively sparse sky, named for the instrument that revealed what the naked eye could not. The nebula here is absence — the faint scatter of deep background.'},
     stars:[
-      {name:'Alpha Tel',x:0.0, y:0.0,z:0.0},
-      {name:'Zeta Tel', x:0.8, y:0.8,z:0.1},
-      {name:'Epsilon Tel',x:-0.6,y:0.6,z:-0.1},
+      s(18.449,-45.968,'Alpha Tel',3.51,'Blue Dwarf B3IV',   '278 ly','21,900 K','Alpha Telescopii. WNCORE: "the telescope that names this constellation was the instrument used to see things not yet named. Alpha Tel is what you point toward when you don\'t know what you\'re looking for."'),
+      s(18.481,-49.068,'Zeta Tel', 4.13,'Orange Giant K1III','127 ly','4,700 K','Zeta Telescopii. Nearly undocumented. OBSEDIA archive entry: ZETA-TEL — no flag, no tag, no annotation. Filed. Exists. Unexamined. Three other stars in this archive have the same status.'),
+      s(18.187,-45.955,'Eps Tel',  4.52,'Yellow Giant G0III','300 ly','5,850 K','Epsilon Telescopii. Observed but rarely charted. WNCORE: "Lacaille observed this star in 1751. We have looked at it since. The telescope that named the constellation has, itself, been looking for 273 years. We do not know if it found anything."'),
     ],
     lines:[[0,1],[0,2]],
     sequence:[1,0,2],
-    puzzle:{type:'acrostic',
-      stars:['Telescope','Echo','Lacaille','Omega'],
-      clues:['The instrument','The return signal','The cataloger','The end'],
-      answer:'TELO'},
-    lore:{
-      signal:'TEL-LENS',
-      text:'Lacaille named it in 1751 from the Cape of Good Hope while cataloging 10,000 southern stars in two years. He worked alone. The constellation Telescopium honors the instrument — but the instrument observed things that had no names yet. We still use his catalog. We have not finished naming what he found.',
-      code:'ARG-TEL-LC',
-      param:'signal=TEL-LACAILLE-UNNAMED'
-    }
+    puzzle:{type:'acrostic',stars:['Telescope','Echo','Lacaille','Omega'],clues:['The instrument','The return signal','The cataloger','The end'],answer:'TELO'},
+    lore:{signal:'TEL-LENS',text:'Lacaille named it in 1751 from the Cape of Good Hope while cataloging 10,000 southern stars in two years. He worked alone. The constellation Telescopium honors the instrument — but the instrument observed things that had no names yet. We still use his catalog. We have not finished naming what he found.',code:'ARG-TEL-LC',param:'signal=TEL-LACAILLE-UNNAMED'}
   },
-  {
-    id:'monoceros', name:'Monoceros', designation:'MON-α',
-    tag:['vaporwave','synthwave','city pop','retrofuture','80s','90s'],
-    hint:'The unicorn. Sits between Orion and Hydra. Contains the Rosette Nebula.',
+  monoceros: {
+    cRa:7.5, cDec:0.0,
+    nebula:{color:0x300818,r:7.0,op:0.22,ox:0.2,oy:0.3,name:'Rosette Nebula (NGC 2244)',desc:'Emission nebula 5,200 light-years away in Monoceros. 130 light-years across. The central cluster\'s stellar winds have carved a 50 light-year hole at its center. Active star formation in the surrounding shell.'},
     stars:[
-      {name:'Beta Mon',  x:0.0, y:0.0,z:0.0},
-      {name:'Alpha Mon', x:1.4, y:0.8,z:0.1},
-      {name:'Gamma Mon', x:-0.8,y:0.6,z:-0.1},
-      {name:'Delta Mon', x:2.0, y:-0.4,z:0.2},
-      {name:'Epsilon Mon',x:-1.4,y:-0.2,z:0.1},
+      s(7.133,-6.273,'Beta Mon',  3.74,'Triple B3Ve + B3Ve + B2Ve','700 ly','21,000 K','Triple system — all three components visible through a small telescope. Considered one of the finest triple stars in the sky. WNCORE: "three signals, same source, same direction, indistinguishable from a distance."'),
+      s(7.688, 9.970,'Alpha Mon', 3.93,'Orange Giant K0III',         '144 ly','4,800 K','Alpha Monocerotis. The bright anchor. OBSEDIA note: the ARG path through Monoceros begins here and ends at the Rosette. The Rosette is labeled BLANK_ZONE origin in routing diagrams.'),
+      s(6.247,-6.275,'Gamma Mon', 3.99,'Orange Giant K1.5III',       '645 ly','4,380 K','Gamma Monocerotis. SIGNAL_KAGE transmission 2020-02-14 references this star explicitly: "Gamma Mon is where the unicorn\'s horn begins. The horn does not point at the sky. It points inward."'),
+      s(7.193,-4.235,'Delta Mon', 4.15,'Yellow-White Giant F0III',   '386 ly','7,250 K','Delta Monocerotis. Part of the Monoceros Ring context region. WNCORE note: the Monoceros Ring is a ring of stars 200,000 light-years across encircling the Milky Way. Its origin is debated. BLANK_ZONE documentation references it without explanation three times.'),
+      s(6.411, 4.593,'Eps Mon',   4.39,'Binary G9III + B5V',         '127 ly','4,930 K','Epsilon Monocerotis. The quietest star in the constellation. WNCORE archive entry: EPS-MON — low signal, steady, persistent. Began logging: 2014. Still logging. No variation. "Consistent silence" is how NODE 09 classifies it.'),
     ],
     lines:[[2,0],[0,1],[1,3],[0,4]],
     sequence:[4,2,0,1,3],
     puzzle:{type:'frequency', target:104.5, tolerance:0.2, range:[98,110]},
-    lore:{
-      signal:'MON-UNICORN',
-      text:'The unicorn hides between the giants. Its nebula — the Rosette — is 130 light-years wide and glows with ionized hydrogen. It has been forming stars for millions of years. In the WNCORE lore, the Rosette is the origin point of BLANK ZONE — not a location but a process. Something continuously forming in a region we cannot see directly.',
-      code:'ARG-MON-RN',
-      param:'signal=MON-ROSETTE-BLANK'
-    }
+    lore:{signal:'MON-UNICORN',text:'The unicorn hides between the giants. Its nebula — the Rosette — is 130 light-years wide and glows with ionized hydrogen. It has been forming stars for millions of years. In the WNCORE lore, the Rosette is the origin point of BLANK ZONE — not a location but a process. Something continuously forming in a region we cannot see directly.',code:'ARG-MON-RN',param:'signal=MON-ROSETTE-BLANK'}
   },
 ];
 
-/* ═══════════════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════════════ */
+// Build {x,y,z} from RA/Dec data
+CONSTELLATIONS.forEach(c => {
+  const raw = RAW[c.id];
+  if (!raw) return;
+  const centRa = raw.cRa, centDec = raw.cDec;
+  // Normalize declination spread to fit in ~[-2.5,2.5] range
+  const decSpan = Math.max(5, ...raw.stars.map(s => Math.abs(s.dec - centDec))) * 2;
+  const scale = 4.5 / decSpan;
+  c.stars = raw.stars.map(s => {
+    const {x,y} = radecToXY(s.ra, s.dec, centRa, centDec, scale * 28);
+    return {name:s.name, x, y, z:(Math.random()-0.5)*0.12, mag:s.mag,
+      info:{type:s.type, distance:s.dist, temp:s.temp, arg:s.arg}};
+  });
+  c.nebula = {
+    color: raw.nebula.color, r: raw.nebula.r, op: raw.nebula.op,
+    offsetX: raw.nebula.ox, offsetY: raw.nebula.oy,
+    name: raw.nebula.name, desc: raw.nebula.desc
+  };
+});
+</JSEOF
+echo "done"
 const STATE = {
   unlockedIds: new Set(),
   solvedIds:   new Set(),
@@ -935,13 +869,33 @@ makeNebula();
 
 // ── Constellation meshes
 const constellationGroups_UNUSED = null; // moved to top-level scope above
-const SCALE = 2.2; // scene scale factor for constellation positions
 
-// Star materials
+// Star materials — colour by spectral type (O/B=blue, A=white, F/G=yellow, K=orange, M=red)
 const matStarLocked   = new THREE.MeshBasicMaterial({color:0x1e2650, transparent:true, opacity:0.6});
-const matStarUnlocked = new THREE.MeshBasicMaterial({color:0xffd4aa, transparent:true, opacity:0.95});
 const matStarSelected = new THREE.MeshBasicMaterial({color:0xc8472a});
 const matStarSolved   = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
+
+function spectralColor(type) {
+  if (!type) return 0xfff8f0;
+  const t = type.trim().toUpperCase();
+  if (t[0]==='O') return 0x9bb0ff;
+  if (t[0]==='B') return 0xaabfff;
+  if (t[0]==='A') return 0xf8f7ff;
+  if (t[0]==='F') return 0xfff4ea;
+  if (t[0]==='G') return 0xffd882;
+  if (t[0]==='K') return 0xffb347;
+  if (t[0]==='M') return 0xff6030;
+  return 0xffd4aa;
+}
+
+// Map apparent magnitude to sphere radius (brighter = larger)
+function magToRadius(mag, isTouch) {
+  const base = isTouch ? 0.15 : 0.10;
+  // mag range typically -0.5 to 4.5; clamp and invert
+  const m = Math.max(-0.5, Math.min(4.5, mag !== undefined ? mag : 2.5));
+  const t = 1 - (m + 0.5) / 5.0; // 0=faint, 1=bright
+  return base * (0.55 + t * 0.9);
+}
 
 // ── Touch detection + raycaster — must be before buildConstellationMesh
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -959,23 +913,56 @@ function buildConstellationMesh(c, offset) {
   const isUnlocked = STATE.unlockedIds.has(c.id);
   const isSolved   = STATE.solvedIds.has(c.id);
 
-  // Stars
-  c.stars.forEach((star, idx) => {
-    const baseR = isTouchDevice ? (isUnlocked ? 0.14 : 0.09) : (isUnlocked ? 0.09 : 0.055);
-    const geo = new THREE.SphereGeometry(baseR, 8, 8);
-    const mat = isSolved ? matStarSolved.clone() :
-                isUnlocked ? matStarUnlocked.clone() :
-                matStarLocked.clone();
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(star.x * SCALE * 0.5, star.y * SCALE * 0.5, star.z * SCALE * 0.5);
-    mesh.userData = {constId: c.id, starIdx: idx, starName: star.name};
+  // ── Nebula dust cloud (behind the stars in z)
+  if (c.nebula) {
+    const nb = c.nebula;
+    // Multi-layer soft cloud using transparent spheres at slightly different positions
+    const layers = [
+      {sx:1.0, sy:0.75, sz:0.5, op:nb.op * 0.9},
+      {sx:0.7, sy:1.1,  sz:0.4, op:nb.op * 0.6},
+      {sx:1.3, sy:0.5,  sz:0.6, op:nb.op * 0.4},
+    ];
+    layers.forEach((l, i) => {
+      const geo = new THREE.SphereGeometry(nb.r * 0.5, 12, 8);
+      const mat = new THREE.MeshBasicMaterial({
+        color: nb.color, transparent: true, opacity: l.op,
+        depthWrite: false, side: THREE.DoubleSide,
+      });
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.scale.set(l.sx, l.sy, l.sz);
+      mesh.position.set(
+        (nb.offsetX || 0) + (i-1)*0.3,
+        (nb.offsetY || 0) + (i-1)*0.2,
+        -nb.r * 0.3 - i*0.15
+      );
+      mesh.userData = {isNebula: true, nebulaName: nb.name, nebulaDesc: nb.desc};
+      group.add(mesh);
+    });
+  }
 
-    // Glow sprite for unlocked stars
+  // ── Stars
+  c.stars.forEach((star, idx) => {
+    const r = magToRadius(star.mag, isTouchDevice);
+    const geo = new THREE.SphereGeometry(r, 10, 8);
+    let mat;
+    if (isSolved) {
+      mat = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
+    } else if (isUnlocked) {
+      mat = new THREE.MeshBasicMaterial({color: spectralColor(star.info && star.info.type), transparent:true, opacity:0.95});
+    } else {
+      mat = matStarLocked.clone();
+    }
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.position.set(star.x, star.y, star.z);
+    mesh.userData = {constId: c.id, starIdx: idx, starName: star.name, starInfo: star.info};
+
+    // Glow halo for unlocked/solved — colour-matched to spectral type
     if (isUnlocked || isSolved) {
-      const glowGeo = new THREE.SphereGeometry(0.18, 8, 8);
+      const glowR = r * 2.2;
+      const glowGeo = new THREE.SphereGeometry(glowR, 8, 6);
+      const glowColor = isSolved ? 0x22c55e : spectralColor(star.info && star.info.type);
       const glowMat = new THREE.MeshBasicMaterial({
-        color: isSolved ? 0x22c55e : 0xc8472a,
-        transparent: true, opacity: 0.12
+        color: glowColor, transparent: true, opacity: 0.10, depthWrite: false,
       });
       const glow = new THREE.Mesh(glowGeo, glowMat);
       mesh.add(glow);
@@ -985,19 +972,19 @@ function buildConstellationMesh(c, offset) {
     starMeshes.push(mesh);
   });
 
-  // Connection lines (only for unlocked/solved)
+  // ── Connection lines (only for unlocked/solved)
   if (isUnlocked || isSolved) {
     c.lines.forEach(([a, b]) => {
       const sa = c.stars[a], sb = c.stars[b];
       const points = [
-        new THREE.Vector3(sa.x*SCALE*0.5, sa.y*SCALE*0.5, sa.z*SCALE*0.5),
-        new THREE.Vector3(sb.x*SCALE*0.5, sb.y*SCALE*0.5, sb.z*SCALE*0.5),
+        new THREE.Vector3(sa.x, sa.y, sa.z),
+        new THREE.Vector3(sb.x, sb.y, sb.z),
       ];
       const geo = new THREE.BufferGeometry().setFromPoints(points);
       const mat = new THREE.LineBasicMaterial({
-        color: isSolved ? 0x22c55e : 0xc8472a,
+        color: isSolved ? 0x22c55e : 0xffd4aa,
         transparent: true,
-        opacity: isSolved ? 0.5 : 0.25,
+        opacity: isSolved ? 0.55 : 0.30,
       });
       const line = new THREE.Line(geo, mat);
       group.add(line);
@@ -1052,7 +1039,7 @@ window.addEventListener('mousemove', e => {
   updateCamera();
 });
 canvas.addEventListener('wheel', e => {
-  spherical.r = Math.max(4, Math.min(22, spherical.r + e.deltaY * 0.015));
+  spherical.r = Math.max(3, Math.min(24, spherical.r + e.deltaY * 0.015));
   updateCamera();
 }, {passive:true});
 
@@ -1091,9 +1078,7 @@ canvas.addEventListener('touchend', e => {
   const dy = Math.abs(t.clientY - touchStartPos.y);
   // Treat as a tap (not a drag) if movement < 8px
   if (dx < 8 && dy < 8) {
-    mouse.x = (t.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(t.clientY / window.innerHeight) * 2 + 1;
-    handleClick();
+    handleClick(t.clientX, t.clientY);
   }
   isDragging=false;
 }, {passive:true});
@@ -1104,12 +1089,86 @@ canvas.addEventListener('mousedown', e => { clickStart={x:e.clientX,y:e.clientY}
 canvas.addEventListener('mouseup', e => {
   const dx = Math.abs(e.clientX-clickStart.x), dy = Math.abs(e.clientY-clickStart.y);
   if (dx>5||dy>5) return; // was a drag, not a click
-  mouse.x = (e.clientX/window.innerWidth)*2-1;
-  mouse.y = -(e.clientY/window.innerHeight)*2+1;
-  handleClick();
+  handleClick(e.clientX, e.clientY);
 });
 
-function handleClick() {
+// ── Star & Nebula tooltip helpers
+const starTooltip   = document.getElementById('star-tooltip');
+const nebulaTooltip = document.getElementById('nebula-tooltip');
+let tooltipTimeout = null;
+
+function showStarTooltip(info, name, x, y) {
+  clearTimeout(tooltipTimeout);
+  document.getElementById('st-name').textContent = name;
+  document.getElementById('st-type').textContent = info ? info.type : '—';
+  document.getElementById('st-dist').textContent = info ? info.distance : '—';
+  document.getElementById('st-temp').textContent = info ? info.temp : '—';
+  document.getElementById('st-arg').textContent  = info ? info.arg  : '—';
+  positionTooltip(starTooltip, x, y);
+  starTooltip.classList.add('visible');
+  nebulaTooltip.classList.remove('visible');
+}
+function showNebulaTooltip(name, desc, x, y) {
+  clearTimeout(tooltipTimeout);
+  document.getElementById('nt-name').textContent = name || '—';
+  document.getElementById('nt-desc').textContent = desc || '—';
+  positionTooltip(nebulaTooltip, x, y);
+  nebulaTooltip.classList.add('visible');
+  starTooltip.classList.remove('visible');
+}
+function hideTooltips() {
+  tooltipTimeout = setTimeout(() => {
+    starTooltip.classList.remove('visible');
+    nebulaTooltip.classList.remove('visible');
+  }, 120);
+}
+function positionTooltip(el, x, y) {
+  const W = window.innerWidth, H = window.innerHeight;
+  const ew = el.offsetWidth || 260, eh = el.offsetHeight || 140;
+  let tx = x + 16, ty = y - 10;
+  if (tx + ew > W - 8) tx = x - ew - 16;
+  if (ty + eh > H - 8) ty = y - eh - 10;
+  if (ty < 8) ty = 8;
+  el.style.left = tx + 'px';
+  el.style.top  = ty + 'px';
+}
+
+// ── Hover: show star info on mouseover (desktop)
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
+  mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+  const allMeshes = [];
+  Object.values(constellationGroups).forEach(({starMeshes, lineMeshes, group}) => {
+    allMeshes.push(...starMeshes);
+    // also check nebula meshes in group
+    group.children.forEach(ch => { if (ch.userData && ch.userData.isNebula) allMeshes.push(ch); });
+  });
+  const hits = raycaster.intersectObjects(allMeshes, false);
+  if (hits.length > 0) {
+    const h = hits[0].object;
+    if (h.userData.isNebula) {
+      showNebulaTooltip(h.userData.nebulaName, h.userData.nebulaDesc, e.clientX, e.clientY);
+    } else if (h.userData.constId) {
+      const isUnlocked = STATE.unlockedIds.has(h.userData.constId) || STATE.solvedIds.has(h.userData.constId);
+      if (isUnlocked) {
+        showStarTooltip(h.userData.starInfo, h.userData.starName, e.clientX, e.clientY);
+      } else {
+        hideTooltips();
+      }
+    }
+    canvas.style.cursor = 'pointer';
+  } else {
+    hideTooltips();
+    canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+  }
+});
+
+function handleClick(clientX, clientY) {
+  const rect = canvas.getBoundingClientRect();
+  mouse.x =  ((clientX - rect.left) / rect.width)  * 2 - 1;
+  mouse.y = -((clientY - rect.top)  / rect.height) * 2 + 1;
   raycaster.setFromCamera(mouse, camera);
   const allStarMeshes = [];
   Object.values(constellationGroups).forEach(({starMeshes}) => allStarMeshes.push(...starMeshes));
@@ -1125,6 +1184,12 @@ function handleClick() {
   if (!isUnlocked) {
     showToastLocked(c);
     return;
+  }
+
+  // Show star info tooltip on click (especially useful on mobile)
+  if (hit.userData.starInfo) {
+    showStarTooltip(hit.userData.starInfo, hit.userData.starName, clientX, clientY);
+    setTimeout(hideTooltips, 4500);
   }
 
   // Open info panel for this constellation
