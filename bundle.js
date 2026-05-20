@@ -1508,17 +1508,75 @@ function loadAnimePage() {
   refreshAnimeImages();
   loadAnimeStationsLive();
 }
-function refreshAnimeImages() {
+async function refreshAnimeImages() {
   const strip = document.getElementById('anime-img-strip');
-  const shuffled = [...ANIME_IMGS].sort(()=>Math.random()-0.5);
-  strip.innerHTML='';
-  shuffled.forEach(src => {
-    const img=document.createElement('img'); img.className='anime-img-real';
-    img.src=src; img.alt=''; img.loading='lazy';
-    img.onerror=function(){this.style.display='none'};
-    img.onclick=()=>{document.getElementById('anime-banner-img').src=src};
+  if (!strip) return;
+
+  // Show loading state
+  strip.innerHTML = '<div style="color:var(--text3);font-size:0.75rem;font-family:\'DM Mono\',monospace;padding:12px;letter-spacing:1px">SCANNING FREQUENCIES...</div>';
+
+  // Which source to use — rotates each call
+  const _sourceKey = 'wncore_anime_img_source';
+  const sourceIdx = (parseInt(sessionStorage.getItem(_sourceKey) || '0') + 1) % 3;
+  sessionStorage.setItem(_sourceKey, sourceIdx);
+
+  let urls = [];
+
+  try {
+    if (sourceIdx === 0) {
+      // Waifu.pics
+      const types = ['waifu','neko','shinobu','megumin','bully','cuddle','hug','kiss'];
+      const results = await Promise.allSettled(
+        types.map(t =>
+          fetch(`https://api.waifu.pics/sfw/${t}`)
+            .then(r => r.json()).then(d => d.url)
+        )
+      );
+      urls = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+
+    } else if (sourceIdx === 1) {
+      // Nekos.best
+      const r = await fetch('https://nekos.best/api/v2/waifu?amount=8');
+      const d = await r.json();
+      urls = d.results.map(x => x.url);
+
+    } else {
+      // Waifu.im
+      const r = await fetch('https://api.waifu.im/search/?included_tags=waifu&many=true&full=true&limit=8');
+      const d = await r.json();
+      urls = d.images.map(x => x.url);
+    }
+  } catch (e) {
+    // Any API fails — fall back to next source silently
+    urls = [];
+  }
+
+  // If the chosen source returned nothing, fall back to static Unsplash
+  if (!urls.length) {
+    urls = ANIME_IMGS.sort(() => Math.random() - 0.5);
+  }
+
+  strip.innerHTML = '';
+  urls.forEach(src => {
+    const img = document.createElement('img');
+    img.className = 'anime-img-real';
+    img.src = src;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.onerror = function() { this.style.display = 'none'; };
+    img.onclick = () => {
+      const banner = document.getElementById('anime-banner-img');
+      if (banner) banner.src = src;
+    };
     strip.appendChild(img);
   });
+
+  // Show which source is active (subtle lore-friendly label)
+  const sourceNames = ['WAIFU.PICS', 'NEKOS.BEST', 'WAIFU.IM'];
+  const label = document.createElement('div');
+  label.style.cssText = 'width:100%;font-size:0.55rem;color:var(--text3);font-family:"DM Mono",monospace;letter-spacing:2px;padding:6px 0 2px;opacity:0.5;text-align:right';
+  label.textContent = 'SOURCE: ' + sourceNames[sourceIdx];
+  strip.appendChild(label);
 }
 function playAnimeStation(idx) {
   const s = ANIME_STATIONS[idx];
