@@ -26,22 +26,14 @@
   --serif:'Playfair Display',serif;
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono)}
-
-/* ── CANVAS ── */
 #three-canvas{position:fixed;inset:0;z-index:0}
-
-/* ── GRAIN OVERLAY ── */
 #grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.035;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:256px}
-
-/* ── HEADER ── */
 #hd{position:fixed;top:0;left:0;right:0;z-index:10;
   display:flex;align-items:center;justify-content:space-between;
-  padding:16px 24px;
-  border-bottom:1px solid var(--border);
-  background:rgba(4,3,10,0.8);
-  backdrop-filter:blur(12px)}
+  padding:16px 24px;border-bottom:1px solid var(--border);
+  background:rgba(4,3,10,0.8);backdrop-filter:blur(12px)}
 #hd-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
 #hd-logo-mark{font-family:var(--serif);font-size:1.1rem;color:var(--text);letter-spacing:-0.5px}
 #hd-logo-sep{width:1px;height:14px;background:var(--border)}
@@ -51,12 +43,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #hd-back{font-size:0.6rem;letter-spacing:1.5px;color:var(--text3);text-decoration:none;
   padding:5px 10px;border:1px solid var(--border);border-radius:4px;transition:all 0.15s}
 #hd-back:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
-
-/* ── SIDEBAR — constellation list ── */
 #sidebar{position:fixed;left:0;top:57px;bottom:0;width:220px;z-index:9;
-  border-right:1px solid var(--border);
-  background:rgba(4,3,10,0.7);
-  backdrop-filter:blur(12px);
+  border-right:1px solid var(--border);background:rgba(4,3,10,0.7);backdrop-filter:blur(12px);
   overflow-y:auto;display:flex;flex-direction:column;
   scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 #sidebar::-webkit-scrollbar{width:3px}
@@ -64,8 +52,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #sidebar::-webkit-scrollbar-thumb{background:var(--border)}
 #sb-title{padding:16px 16px 8px;font-size:0.55rem;letter-spacing:2px;color:var(--text3);border-bottom:1px solid var(--border)}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;
-  border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.15s;
-  font-size:0.7rem;letter-spacing:0.5px}
+  border-bottom:1px solid rgba(255,255,255,0.03);transition:background 0.15s;font-size:0.7rem;letter-spacing:0.5px}
 .sb-item:hover{background:rgba(255,255,255,0.04)}
 .sb-item.active{background:rgba(200,71,42,0.08);border-right:2px solid var(--accent)}
 .sb-item.locked .sb-dot{background:var(--locked);box-shadow:none}
@@ -80,12 +67,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .sb-badge.locked-badge{background:rgba(255,255,255,0.04);color:var(--text3)}
 .sb-badge.unlocked-badge{background:rgba(200,71,42,0.15);color:var(--accent)}
 .sb-badge.solved-badge{background:rgba(34,197,94,0.12);color:#22c55e}
-
-/* ── INFO PANEL — right side ── */
 #info-panel{position:fixed;right:0;top:57px;bottom:0;width:260px;z-index:9;
-  border-left:1px solid var(--border);
-  background:rgba(4,3,10,0.7);
-  backdrop-filter:blur(12px);
+  border-left:1px solid var(--border);background:rgba(4,3,10,0.7);backdrop-filter:blur(12px);
   display:flex;flex-direction:column;overflow:hidden;
   transform:translateX(100%);transition:transform 0.3s cubic-bezier(0.16,1,0.3,1)}
 #info-panel.open{transform:translateX(0)}
@@ -113,8 +96,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   border:1px solid rgba(200,71,42,0.3);border-radius:6px;color:var(--accent);
   font-family:var(--mono);font-size:0.65rem;letter-spacing:1.5px;cursor:pointer;transition:all 0.2s}
 #ip-action-btn:hover{background:rgba(200,71,42,0.2)}
-
-/* ── UNLOCK TOAST ── */
 #unlock-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
   z-index:20;opacity:0;transition:all 0.4s;pointer-events:none;
   background:rgba(4,3,10,0.95);border:1px solid var(--accent);
@@ -122,11 +103,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #unlock-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #unlock-toast-name{font-family:var(--serif);font-style:italic;font-size:1rem;color:var(--text);margin-bottom:4px}
 #unlock-toast-sub{font-size:0.6rem;letter-spacing:1.5px;color:var(--accent)}
-
-/* ── PUZZLE MODAL ── */
 #puzzle-modal{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
-  background:rgba(4,3,10,0.92);backdrop-filter:blur(8px);
-  opacity:0;pointer-events:none;transition:opacity 0.3s}
+  background:rgba(4,3,10,0.92);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity 0.3s}
 #puzzle-modal.open{opacity:1;pointer-events:all}
 #puzzle-box{background:#07060f;border:1px solid var(--border);border-radius:12px;
   width:min(520px,90vw);max-height:85vh;overflow-y:auto;padding:28px;position:relative}
@@ -136,11 +114,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #puzzle-title{font-family:var(--serif);font-size:1.3rem;margin-bottom:4px}
 #puzzle-subtitle{font-size:0.62rem;letter-spacing:1.5px;color:var(--accent);margin-bottom:20px}
 #puzzle-body{display:flex;flex-direction:column;gap:16px}
-
-/* Morse puzzle */
 #morse-display{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;
-  min-height:60px;padding:16px;background:rgba(255,255,255,0.02);border-radius:8px;
-  border:1px solid var(--border)}
+  min-height:60px;padding:16px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid var(--border)}
 .morse-flash{width:12px;height:12px;border-radius:50%;background:var(--text3);flex-shrink:0;transition:background 0.08s}
 .morse-flash.dit{width:8px}
 .morse-flash.dah{width:20px;border-radius:4px}
@@ -152,21 +127,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #morse-input:focus{border-color:rgba(200,71,42,0.4)}
 #morse-input.correct{border-color:#22c55e;color:#22c55e}
 #morse-input.wrong{border-color:#ef4444;animation:shake 0.3s}
-
-/* Frequency puzzle */
-#freq-display{text-align:center;padding:20px;background:rgba(255,255,255,0.02);
-  border-radius:8px;border:1px solid var(--border)}
-#freq-value{font-family:var(--serif);font-size:2.2rem;color:var(--accent);
-  font-variant-numeric:tabular-nums;letter-spacing:-1px}
+#freq-display{text-align:center;padding:20px;background:rgba(255,255,255,0.02);border-radius:8px;border:1px solid var(--border)}
+#freq-value{font-family:var(--serif);font-size:2.2rem;color:var(--accent);font-variant-numeric:tabular-nums;letter-spacing:-1px}
 #freq-unit{font-size:0.6rem;letter-spacing:2px;color:var(--text3);margin-top:2px}
 #freq-bar-wrap{position:relative;margin:12px 0}
-#freq-slider{width:100%;appearance:none;background:rgba(255,255,255,0.06);
-  border-radius:2px;height:3px;outline:none;cursor:pointer}
-#freq-slider::-webkit-slider-thumb{appearance:none;width:16px;height:16px;
-  border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(200,71,42,0.5)}
+#freq-slider{width:100%;appearance:none;background:rgba(255,255,255,0.06);border-radius:2px;height:3px;outline:none;cursor:pointer}
+#freq-slider::-webkit-slider-thumb{appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(200,71,42,0.5)}
 #freq-indicator{font-size:0.6rem;letter-spacing:1px;color:var(--text3);text-align:center;margin-top:6px;height:16px}
-
-/* Acrostic puzzle */
 #acrostic-wrap{display:flex;flex-direction:column;gap:6px}
 .acrostic-row{display:flex;align-items:center;gap:10px;font-size:0.68rem}
 .acrostic-letter{width:24px;height:24px;border-radius:4px;background:rgba(200,71,42,0.1);
@@ -181,15 +148,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #acrostic-answer:focus{border-color:rgba(200,71,42,0.4)}
 #acrostic-answer.correct{border-color:#22c55e;color:#22c55e}
 #acrostic-answer.wrong{border-color:#ef4444;animation:shake 0.3s}
-
-/* Submit */
 #puzzle-submit{width:100%;padding:12px;background:rgba(200,71,42,0.1);
   border:1px solid rgba(200,71,42,0.3);border-radius:6px;color:var(--accent);
   font-family:var(--mono);font-size:0.7rem;letter-spacing:1.5px;cursor:pointer;transition:all 0.2s}
 #puzzle-submit:hover{background:rgba(200,71,42,0.2)}
 #puzzle-error{font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px;letter-spacing:0.5px}
-
-/* Lore reveal */
 #lore-reveal{display:none;flex-direction:column;gap:14px}
 #lore-reveal.show{display:flex}
 #lore-signal{font-size:0.55rem;letter-spacing:2px;color:var(--accent);margin-bottom:2px}
@@ -203,8 +166,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.25);
   border-radius:6px;color:var(--accent);font-size:0.65rem;letter-spacing:1.5px;transition:all 0.2s}
 #lore-link:hover{background:rgba(200,71,42,0.15)}
-
-/* ── BOTTOM HUD ── */
 #hud{position:fixed;bottom:0;left:220px;right:260px;z-index:10;
   padding:12px 20px;border-top:1px solid var(--border);
   background:rgba(4,3,10,0.8);backdrop-filter:blur(12px);
@@ -216,90 +177,45 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .seq-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,0.1);transition:all 0.2s}
 .seq-dot.filled{background:var(--accent);box-shadow:0 0 4px rgba(200,71,42,0.6)}
 .seq-dot.wrong{background:#ef4444}
-
-/* ── ANIMATIONS ── */
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
 @keyframes pulse-ring{0%{transform:scale(1);opacity:1}100%{transform:scale(2.5);opacity:0}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── DRAG HANDLE (mobile info panel) ── */
-#ip-drag-handle{
-  display:none;
-  width:100%;padding:8px 0 4px;
-  cursor:grab;touch-action:none;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-#ip-drag-handle-bar{
-  width:36px;height:4px;border-radius:2px;
-  background:rgba(255,255,255,0.15);
-}
-
-/* ── MOBILE ── */
+#ip-drag-handle{width:100%;padding:8px 0 4px;cursor:grab;touch-action:none;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+#ip-drag-handle-bar{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,0.15)}
 @media(max-width:768px){
-  /* Header: hide status text, keep logo + back */
   #hd-status{display:none}
   #hd{padding:10px 14px}
-
-  #sidebar{
-    transform:translateX(-100%);
-    transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);
-    width:240px;
-    top:50px;
-  }
+  #sidebar{transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);width:240px;top:50px}
   #sidebar.mob-open{transform:translateX(0)}
-
-  /* Bigger tap targets in sidebar */
   .sb-item{padding:14px 16px;min-height:48px}
-
-  /* Info panel: 40vh sheet from bottom with drag handle */
-  #info-panel{
-    width:100%;right:0;top:auto;bottom:0;
-    height:40vh;min-height:220px;
-    border-left:none;border-top:1px solid var(--border);
-    transform:translateY(100%);
-    transition:transform 0.3s cubic-bezier(0.16,1,0.3,1), height 0s;
-  }
+  #info-panel{width:100%;right:0;top:auto;bottom:0;height:40vh;min-height:220px;
+    border-left:none;border-top:1px solid var(--border);transform:translateY(100%);
+    transition:transform 0.3s cubic-bezier(0.16,1,0.3,1), height 0s}
   #info-panel.open{transform:translateY(0)}
-  #ip-drag-handle{display:flex}
-
-  /* HUD: minimal single-line strip */
   #hud{left:0;right:0;font-size:0.5rem;padding:5px 10px;gap:8px}
   #hud-tip{display:none}
-  #mob-sidebar-toggle{
-    display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:50px;left:12px;z-index:20;
-    width:42px;height:42px;border-radius:50%;
+  #mob-sidebar-toggle{display:flex;align-items:center;justify-content:center;
+    position:fixed;bottom:50px;left:12px;z-index:20;width:42px;height:42px;border-radius:50%;
     background:rgba(4,3,10,0.92);border:1px solid rgba(200,71,42,0.4);
     color:var(--accent);font-size:0.75rem;cursor:pointer;
     box-shadow:0 0 14px rgba(200,71,42,0.15);
-    transition:background 0.15s, bottom 0.3s cubic-bezier(0.16,1,0.3,1);
-  }
+    transition:background 0.15s, bottom 0.3s cubic-bezier(0.16,1,0.3,1)}
   #mob-sidebar-toggle:hover{background:rgba(200,71,42,0.12)}
   #mob-sidebar-toggle.panel-up{bottom:calc(40vh + 8px)}
-  #mob-sidebar-backdrop{
-    display:none;position:fixed;inset:0;z-index:8;
-    background:rgba(0,0,0,0.5);
-  }
+  #mob-sidebar-backdrop{display:none;position:fixed;inset:0;z-index:8;background:rgba(0,0,0,0.5)}
   #mob-sidebar-backdrop.show{display:block}
 }
 @media(min-width:769px){
   #mob-sidebar-toggle{display:none}
   #mob-sidebar-backdrop{display:none!important}
+  #ip-drag-handle{display:none}
 }
-
-/* ── STAR TOOLTIP ── */
-#star-tooltip{
-  position:fixed;z-index:50;pointer-events:none;
-  max-width:280px;min-width:180px;
-  background:rgba(4,3,10,0.93);border:1px solid rgba(200,71,42,0.35);
-  border-radius:8px;padding:12px 14px;
-  backdrop-filter:blur(14px);
-  font-family:var(--mono);font-size:0.62rem;color:var(--text);
-  opacity:0;transition:opacity 0.18s;
-  box-shadow:0 4px 24px rgba(0,0,0,0.6);
-}
+#star-tooltip{position:fixed;z-index:50;pointer-events:none;max-width:280px;min-width:180px;
+  background:rgba(4,3,10,0.93);border:1px solid rgba(200,71,42,0.35);border-radius:8px;
+  padding:12px 14px;backdrop-filter:blur(14px);font-family:var(--mono);font-size:0.62rem;
+  color:var(--text);opacity:0;transition:opacity 0.18s;box-shadow:0 4px 24px rgba(0,0,0,0.6)}
 #star-tooltip.visible{opacity:1}
 #st-name{font-family:var(--serif);font-size:0.95rem;font-style:italic;color:var(--text);margin-bottom:6px}
 #st-type{color:var(--text2);margin-bottom:2px}
@@ -309,16 +225,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #st-arg{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);
   color:rgba(200,71,42,0.75);font-size:0.58rem;line-height:1.5;font-style:italic}
 #st-arg-label{font-size:0.5rem;letter-spacing:2px;color:var(--text3);margin-bottom:3px}
-/* ── NEBULA TOOLTIP ── */
-#nebula-tooltip{
-  position:fixed;z-index:50;pointer-events:none;
-  max-width:240px;
-  background:rgba(4,3,10,0.88);border:1px solid rgba(80,100,200,0.3);
-  border-radius:6px;padding:10px 12px;
-  backdrop-filter:blur(14px);
-  font-family:var(--mono);font-size:0.6rem;color:var(--text2);
-  opacity:0;transition:opacity 0.15s;
-}
+#nebula-tooltip{position:fixed;z-index:50;pointer-events:none;max-width:240px;
+  background:rgba(4,3,10,0.88);border:1px solid rgba(80,100,200,0.3);border-radius:6px;
+  padding:10px 12px;backdrop-filter:blur(14px);font-family:var(--mono);font-size:0.6rem;
+  color:var(--text2);opacity:0;transition:opacity 0.15s}
 #nebula-tooltip.visible{opacity:1}
 #nt-name{color:var(--text);font-size:0.7rem;margin-bottom:4px}
 </style>
@@ -326,7 +236,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <body>
 
 <canvas id="three-canvas"></canvas>
-<!-- Star Info Tooltip -->
 <div id="star-tooltip">
   <div id="st-name">—</div>
   <div id="st-type">—</div>
@@ -335,15 +244,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div id="st-arg-label">// WNCORE SIGNAL LOG</div>
   <div id="st-arg">—</div>
 </div>
-<!-- Nebula Tooltip -->
 <div id="nebula-tooltip">
   <div id="nt-name">—</div>
   <div id="nt-desc">—</div>
 </div>
-
 <div id="grain"></div>
 
-<!-- Header -->
 <header id="hd">
   <a id="hd-logo" href="/">
     <span id="hd-logo-mark">WNCORE</span>
@@ -354,17 +260,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <a id="hd-back" href="/">← Return to Array</a>
 </header>
 
-<!-- Sidebar -->
 <nav id="sidebar">
   <div id="sb-title">CONSTELLATION ARCHIVE</div>
   <div id="sb-list"></div>
 </nav>
 
-<!-- Mobile sidebar toggle (visible on screens ≤768px) -->
 <div id="mob-sidebar-backdrop"></div>
 <button id="mob-sidebar-toggle" aria-label="Toggle constellation list">☰</button>
 
-<!-- Info Panel -->
 <aside id="info-panel">
   <div id="ip-drag-handle"><div id="ip-drag-handle-bar"></div></div>
   <div id="ip-header">
@@ -393,13 +296,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
 </aside>
 
-<!-- Unlock Toast -->
 <div id="unlock-toast">
   <div id="unlock-toast-name"></div>
   <div id="unlock-toast-sub">CONSTELLATION UNLOCKED — SIGNAL RECEIVED</div>
 </div>
 
-<!-- Puzzle Modal -->
 <div id="puzzle-modal">
   <div id="puzzle-box">
     <button id="puzzle-close">✕</button>
@@ -415,7 +316,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
 </div>
 
-<!-- Bottom HUD -->
 <div id="hud">
   <span>DRAG TO ROTATE · SCROLL TO ZOOM</span>
   <span id="hd-unlocked-count-hud"><span id="hud-unlocked">0</span> SIGNALS MAPPED</span>
@@ -423,23 +323,50 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <span id="hud-tip">listen to radio to unlock constellations</span>
 </div>
 
-<!-- Three.js — self-hosted, no CDN dependency -->
 <script src="/three.min.js"></script>
 <script>
 'use strict';
 
-// ── Top-level globals (must exist before any handler fires, even if THREE fails)
-const constellationGroups = {}; // id → {group, starMeshes, lineMeshes, c}
-let spherical = {theta: 0, phi: Math.PI/2, r: 12}; // hoisted — used by sidebar click & _initThreeScene
-function updateCamera() {} // stub replaced once _initThreeScene runs
+/* ═══════════════════════════════════════════════════
+   FIX 1: CONSTELLATIONS defined at top level BEFORE use
+   FIX 3: scene hoisted to top level scope
+═══════════════════════════════════════════════════ */
+const constellationGroups = {};
+let scene = null; // FIX 3: hoisted — used in 30s interval outside _initThreeScene
+let spherical = {theta: 0, phi: Math.PI/2, r: 12};
+function updateCamera() {}
 
 /* ═══════════════════════════════════════════════════
-   CONSTELLATION DATA
-   stars: real RA/Dec projected to scene XY + starInfo
-   nebula: dust cloud definition per constellation
+   FIX 1: CONSTELLATIONS array — defined before RAW
+   Each entry has id, name, designation, tag[], hint
+   Stars and nebula are populated after RAW is defined
 ═══════════════════════════════════════════════════ */
+const CONSTELLATIONS = [
+  {id:'orion',       name:'Orion',         designation:'α ORI — THE HUNTER',        tag:['ambient','drone','classical','space','orchestral'], hint:'Seven nodes assembled in the shape of grief. The belt stars are repeaters, not stars.'},
+  {id:'cygnus',      name:'Cygnus',         designation:'α CYG — THE SWAN',          tag:['indie','folk','acoustic','ethereal','singer-songwriter'], hint:'88.7 MHz appeared in the archive already occupied. The swan is a direction, not a destination.'},
+  {id:'scorpius',    name:'Scorpius',       designation:'α SCO — THE SCORPION',      tag:['dark','industrial','noise','heavy','metal'], hint:'The stinger points at the galactic center. That is where the signal originates.'},
+  {id:'cassiopeia',  name:'Cassiopeia',     designation:'α CAS — THE QUEEN',         tag:['electronic','synth','pop','lo-fi','chillwave'], hint:'Five nodes forming a W or an M. One means data passed through. The other means something is watching.'},
+  {id:'ursamajor',   name:'Ursa Major',     designation:'α UMA — THE GREAT BEAR',    tag:['jazz','blues','soul','r&b','funk'], hint:'Seven navigators. The outer two always point toward the signal source.'},
+  {id:'lyra',        name:'Lyra',           designation:'α LYR — THE HARP',          tag:['classical','chamber','baroque','minimalist','piano'], hint:'The instrument that could move stones. The recording was archived under OBSEDIA clearance level 4.'},
+  {id:'perseus',     name:'Perseus',        designation:'α PER — THE HERO',          tag:['rock','alternative','post-rock','shoegaze','grunge'], hint:'Algol blinks every 2.87 days. A transmission on 88.7 blinked on the same cycle. No source identified.'},
+  {id:'aquila',      name:'Aquila',         designation:'α AQL — THE EAGLE',         tag:['hip-hop','rap','trap','electronic','beats'], hint:'Altair rotates so fast it bulges at the equator. The ARG spins the same way.'},
+  {id:'gemini',      name:'Gemini',         designation:'α GEM — THE TWINS',         tag:['pop','dance','edm','house','techno'], hint:'Every signal from Gemini is doubled — a carrier wave and its ghost, delayed by 1.3 seconds.'},
+  {id:'leo',         name:'Leo',            designation:'α LEO — THE LION',          tag:['reggae','ska','dub','world','afrobeat'], hint:'Regulus is regularly occulted. Something regularly passes between it and us. Not always the Moon.'},
+  {id:'andromeda',   name:'Andromeda',      designation:'α AND — THE CHAINED',       tag:['post-punk','goth','darkwave','new-wave','coldwave'], hint:'2.537 million light-years. The signal archive was designed to outlast the stars that carry it.'},
+  {id:'draco',       name:'Draco',          designation:'α DRA — THE DRAGON',        tag:['metal','doom','black-metal','sludge','stoner'], hint:'THUBAN-NULL: recordings of silence from sources that should not be silent.'},
+  {id:'centaurus',   name:'Centaurus',      designation:'α CEN — THE CENTAUR',       tag:['country','bluegrass','americana','roots','western'], hint:'We operate on the assumption that we are currently wrong about something of similar scale.'},
+  {id:'libra',       name:'Libra',          designation:'α LIB — THE SCALES',        tag:['meditation','healing','new-age','spiritual','binaural'], hint:'37.5 Hz — below conscious hearing. Generated during NODE 09 idle mode.'},
+  {id:'aquarius',    name:'Aquarius',       designation:'α AQR — THE WATER-BEARER',  tag:['rnb','neo-soul','smooth','quiet-storm','contemporary'], hint:'The water streams are a transmission path. The receiver has always been downstream.'},
+  {id:'corvus',      name:'Corvus',         designation:'α CRV — THE CROW',          tag:['experimental','avant-garde','noise','free-jazz','abstract'], hint:'WNCORE has more annotations for Corvus than any other constellation this small. No one has explained why.'},
+  {id:'piscis',      name:'Piscis Austrinus',designation:'α PSA — THE SOUTHERN FISH',tag:['chillout','trip-hop','downtempo','ambient','lounge'], hint:'Something had destroyed something near Fomalhaut recently enough for us to watch the aftermath.'},
+  {id:'lepus',       name:'Lepus',          designation:'α LEP — THE HARE',          tag:['indie-pop','dream-pop','shoegaze','slowcore','sadcore'], hint:'Frequencies that appear in the index but have no corresponding entries. Someone added them.'},
+  {id:'telescopium', name:'Telescopium',    designation:'α TEL — THE TELESCOPE',     tag:['field-recording','sound-art','musique-concrete','electroacoustic','drone'], hint:'The instrument observed things that had no names yet. We still use his catalog.'},
+  {id:'monoceros',   name:'Monoceros',      designation:'α MON — THE UNICORN',       tag:['vaporwave','synthwave','retrowave','city-pop','future-funk'], hint:'The Rosette is the origin point of BLANK ZONE — not a location but a process.'},
+];
 
-// Project real RA/Dec to scene XY relative to constellation center
+/* ═══════════════════════════════════════════════════
+   STAR DATA
+═══════════════════════════════════════════════════ */
 function radecToXY(ra, dec, cRa, cDec, scale) {
   const s = scale || 1.9;
   const dRa  = (ra  - cRa)  * 15 * (Math.PI/180) * Math.cos(cDec * Math.PI/180);
@@ -751,12 +678,11 @@ const RAW = {
   },
 };
 
-// Build {x,y,z} from RA/Dec data
+// Populate CONSTELLATIONS[].stars and .nebula from RAW
 CONSTELLATIONS.forEach(c => {
   const raw = RAW[c.id];
   if (!raw) return;
   const centRa = raw.cRa, centDec = raw.cDec;
-  // Normalize declination spread to fit in ~[-2.5,2.5] range
   const decSpan = Math.max(5, ...raw.stars.map(s => Math.abs(s.dec - centDec))) * 2;
   const scale = 4.5 / decSpan;
   c.stars = raw.stars.map(s => {
@@ -765,12 +691,19 @@ CONSTELLATIONS.forEach(c => {
       info:{type:s.type, distance:s.dist, temp:s.temp, arg:s.arg}};
   });
   c.nebula = {
-    color: raw.nebula.color, r: raw.nebula.r, op: raw.nebula.op,
-    offsetX: raw.nebula.ox, offsetY: raw.nebula.oy,
-    name: raw.nebula.name, desc: raw.nebula.desc
+    color:raw.nebula.color, r:raw.nebula.r, op:raw.nebula.op,
+    offsetX:raw.nebula.ox, offsetY:raw.nebula.oy,
+    name:raw.nebula.name, desc:raw.nebula.desc
   };
+  c.lines    = raw.lines;
+  c.sequence = raw.sequence;
+  c.puzzle   = raw.puzzle;
+  c.lore     = raw.lore;
 });
 
+/* ═══════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════ */
 const STATE = {
   unlockedIds: new Set(),
   solvedIds:   new Set(),
@@ -779,9 +712,7 @@ const STATE = {
   sequence: [],
 };
 
-// Load from WNCORE's listening history
 function loadUnlockState() {
-  // Check WNCORE history for listened tags
   try {
     const hist = JSON.parse(localStorage.getItem('wncore-history-v2') || '[]');
     const listenedTags = new Set();
@@ -789,27 +720,20 @@ function loadUnlockState() {
       if (st.tags) st.tags.split(',').forEach(t => listenedTags.add(t.trim().toLowerCase()));
       if (st.name) listenedTags.add(st.name.toLowerCase());
     });
-    // Also check genre history
     const genHist = JSON.parse(localStorage.getItem('wncore-genre-history') || '[]');
     genHist.forEach(g => listenedTags.add(g.toLowerCase()));
-
     CONSTELLATIONS.forEach(c => {
       const unlocked = c.tag.some(t =>
         listenedTags.has(t.toLowerCase()) ||
-        // Also match partial — "classical" matches "classical music"
         [...listenedTags].some(lt => lt.includes(t.toLowerCase()) || t.toLowerCase().includes(lt))
       );
       if (unlocked) STATE.unlockedIds.add(c.id);
     });
   } catch(e) {}
-
-  // Load solved
   try {
     const solved = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
     solved.forEach(id => STATE.solvedIds.add(id));
   } catch(e) {}
-
-  // If nothing unlocked (new user or cleared history), give them 2 starter constellations
   if (STATE.unlockedIds.size === 0) {
     STATE.unlockedIds.add('orion');
     STATE.unlockedIds.add('cygnus');
@@ -819,8 +743,7 @@ function loadUnlockState() {
 function saveSolved(id) {
   STATE.solvedIds.add(id);
   try {
-    localStorage.setItem('wncore-constellation-solved',
-      JSON.stringify([...STATE.solvedIds]));
+    localStorage.setItem('wncore-constellation-solved', JSON.stringify([...STATE.solvedIds]));
   } catch(e) {}
 }
 
@@ -829,476 +752,362 @@ function saveSolved(id) {
 ═══════════════════════════════════════════════════ */
 function _initThreeScene() {
   if (typeof THREE === 'undefined') {
-    // THREE not loaded yet (CDN delay/fallback in progress) — retry briefly
     var _retries = (window._threeRetries = (window._threeRetries || 0) + 1);
     if (_retries < 30) { setTimeout(_initThreeScene, 100); }
-    else { console.warn('[WNCORE] THREE.js failed to load — constellation 3D view unavailable'); }
+    else { console.warn('[WNCORE] THREE.js failed to load'); }
     return;
   }
-const canvas = document.getElementById('three-canvas');
-const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setClearColor(0x04030a, 1);
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
-camera.position.set(0, 0, 12);
+  const canvas = document.getElementById('three-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setClearColor(0x04030a, 1);
 
-// ── Deep space background stars (ambient, non-interactive)
-function makeBackgroundStars() {
-  const count = 2000;
-  const geo = new THREE.BufferGeometry();
-  const pos = new Float32Array(count * 3);
-  const col = new Float32Array(count * 3);
-  const sizes = new Float32Array(count);
-  for (let i = 0; i < count; i++) {
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    const r = 80 + Math.random() * 40;
-    pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-    pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-    pos[i*3+2] = r * Math.cos(phi);
-    const bright = 0.15 + Math.random() * 0.6;
-    const tint = Math.random();
-    col[i*3]   = bright * (tint > 0.7 ? 1.0 : tint > 0.4 ? 0.85 : 0.75);
-    col[i*3+1] = bright * (tint > 0.7 ? 0.9 : tint > 0.4 ? 0.95 : 0.85);
-    col[i*3+2] = bright * (tint > 0.7 ? 0.8 : 1.0);
-    sizes[i] = Math.random() < 0.05 ? 2.5 : Math.random() < 0.2 ? 1.5 : 1.0;
-  }
-  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-  geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
-  const mat = new THREE.PointsMaterial({
-    vertexColors: true,
-    sizeAttenuation: true,
-    size: 0.15,
-    transparent: true,
-    opacity: 0.8,
-  });
-  scene.add(new THREE.Points(geo, mat));
-}
-makeBackgroundStars();
+  // FIX 3: assign to hoisted top-level scene variable
+  scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth/window.innerHeight, 0.1, 1000);
+  camera.position.set(0, 0, 12);
 
-// ── Nebula — subtle colored cloud (sprite planes)
-function makeNebula() {
-  const colors = [0x1a0a2e, 0x0a1a2e, 0x2e0a1a];
-  colors.forEach((col, i) => {
-    const geo = new THREE.PlaneGeometry(60, 60);
-    const mat = new THREE.MeshBasicMaterial({
-      color: col, transparent: true, opacity: 0.08 + i * 0.03,
-      depthWrite: false, side: THREE.DoubleSide,
-    });
-    const mesh = new THREE.Mesh(geo, mat);
+  // Background stars
+  (function makeBackgroundStars() {
+    const count = 2000;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    const sizes = new Float32Array(count);
+    for (let i = 0; i < count; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 80 + Math.random() * 40;
+      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+      pos[i*3+2] = r * Math.cos(phi);
+      const bright = 0.15 + Math.random() * 0.6;
+      const tint = Math.random();
+      col[i*3]   = bright * (tint > 0.7 ? 1.0 : tint > 0.4 ? 0.85 : 0.75);
+      col[i*3+1] = bright * (tint > 0.7 ? 0.9 : tint > 0.4 ? 0.95 : 0.85);
+      col[i*3+2] = bright * (tint > 0.7 ? 0.8 : 1.0);
+      sizes[i] = Math.random() < 0.05 ? 2.5 : Math.random() < 0.2 ? 1.5 : 1.0;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
+      vertexColors:true, sizeAttenuation:true, size:0.15, transparent:true, opacity:0.8
+    })));
+  })();
+
+  // Background nebula
+  [0x1a0a2e, 0x0a1a2e, 0x2e0a1a].forEach((col, i) => {
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(60, 60),
+      new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.08+i*0.03, depthWrite:false, side:THREE.DoubleSide})
+    );
     mesh.position.set((i-1)*15, (i-1)*10, -60);
     mesh.rotation.z = i * 0.4;
     scene.add(mesh);
   });
-}
-makeNebula();
 
-// ── Constellation meshes
-const constellationGroups_UNUSED = null; // moved to top-level scope above
+  // Star materials
+  const matStarLocked   = new THREE.MeshBasicMaterial({color:0x1e2650, transparent:true, opacity:0.6});
+  const matStarSelected = new THREE.MeshBasicMaterial({color:0xc8472a});
+  const matStarSolved   = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
+  // FIX 2: matStarUnlocked defined here, accessible to registerStarClick via closure
+  const matStarUnlocked = new THREE.MeshBasicMaterial({color:0xffd4aa, transparent:true, opacity:0.95});
 
-// Star materials — colour by spectral type (O/B=blue, A=white, F/G=yellow, K=orange, M=red)
-const matStarLocked   = new THREE.MeshBasicMaterial({color:0x1e2650, transparent:true, opacity:0.6});
-const matStarSelected = new THREE.MeshBasicMaterial({color:0xc8472a});
-const matStarSolved   = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
-
-function spectralColor(type) {
-  if (!type) return 0xfff8f0;
-  const t = type.trim().toUpperCase();
-  if (t[0]==='O') return 0x9bb0ff;
-  if (t[0]==='B') return 0xaabfff;
-  if (t[0]==='A') return 0xf8f7ff;
-  if (t[0]==='F') return 0xfff4ea;
-  if (t[0]==='G') return 0xffd882;
-  if (t[0]==='K') return 0xffb347;
-  if (t[0]==='M') return 0xff6030;
-  return 0xffd4aa;
-}
-
-// Map apparent magnitude to sphere radius (brighter = larger)
-function magToRadius(mag, isTouch) {
-  const base = isTouch ? 0.15 : 0.10;
-  // mag range typically -0.5 to 4.5; clamp and invert
-  const m = Math.max(-0.5, Math.min(4.5, mag !== undefined ? mag : 2.5));
-  const t = 1 - (m + 0.5) / 5.0; // 0=faint, 1=bright
-  return base * (0.55 + t * 0.9);
-}
-
-// ── Touch detection + raycaster — must be before buildConstellationMesh
-const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-const raycaster = new THREE.Raycaster();
-raycaster.params.Points = {threshold: isTouchDevice ? 0.35 : 0.15};
-const mouse = new THREE.Vector2();
-
-function buildConstellationMesh(c, offset) {
-  const group = new THREE.Group();
-  group.position.set(offset.x, offset.y, offset.z);
-
-  const starMeshes = [];
-  const lineMeshes = [];
-
-  const isUnlocked = STATE.unlockedIds.has(c.id);
-  const isSolved   = STATE.solvedIds.has(c.id);
-
-  // ── Nebula dust cloud (behind the stars in z)
-  if (c.nebula) {
-    const nb = c.nebula;
-    // Multi-layer soft cloud using transparent spheres at slightly different positions
-    const layers = [
-      {sx:1.0, sy:0.75, sz:0.5, op:nb.op * 0.9},
-      {sx:0.7, sy:1.1,  sz:0.4, op:nb.op * 0.6},
-      {sx:1.3, sy:0.5,  sz:0.6, op:nb.op * 0.4},
-    ];
-    layers.forEach((l, i) => {
-      const geo = new THREE.SphereGeometry(nb.r * 0.5, 12, 8);
-      const mat = new THREE.MeshBasicMaterial({
-        color: nb.color, transparent: true, opacity: l.op,
-        depthWrite: false, side: THREE.DoubleSide,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.scale.set(l.sx, l.sy, l.sz);
-      mesh.position.set(
-        (nb.offsetX || 0) + (i-1)*0.3,
-        (nb.offsetY || 0) + (i-1)*0.2,
-        -nb.r * 0.3 - i*0.15
-      );
-      mesh.userData = {isNebula: true, nebulaName: nb.name, nebulaDesc: nb.desc};
-      group.add(mesh);
-    });
+  function spectralColor(type) {
+    if (!type) return 0xfff8f0;
+    const t = type.trim().toUpperCase();
+    if (t[0]==='O') return 0x9bb0ff;
+    if (t[0]==='B') return 0xaabfff;
+    if (t[0]==='A') return 0xf8f7ff;
+    if (t[0]==='F') return 0xfff4ea;
+    if (t[0]==='G') return 0xffd882;
+    if (t[0]==='K') return 0xffb347;
+    if (t[0]==='M') return 0xff6030;
+    return 0xffd4aa;
   }
 
-  // ── Stars
-  c.stars.forEach((star, idx) => {
-    const r = magToRadius(star.mag, isTouchDevice);
-    const geo = new THREE.SphereGeometry(r, 10, 8);
-    let mat;
-    if (isSolved) {
-      mat = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
-    } else if (isUnlocked) {
-      mat = new THREE.MeshBasicMaterial({color: spectralColor(star.info && star.info.type), transparent:true, opacity:0.95});
-    } else {
-      mat = matStarLocked.clone();
-    }
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.position.set(star.x, star.y, star.z);
-    mesh.userData = {constId: c.id, starIdx: idx, starName: star.name, starInfo: star.info};
-
-    // Glow halo for unlocked/solved — colour-matched to spectral type
-    if (isUnlocked || isSolved) {
-      const glowR = r * 2.2;
-      const glowGeo = new THREE.SphereGeometry(glowR, 8, 6);
-      const glowColor = isSolved ? 0x22c55e : spectralColor(star.info && star.info.type);
-      const glowMat = new THREE.MeshBasicMaterial({
-        color: glowColor, transparent: true, opacity: 0.10, depthWrite: false,
-      });
-      const glow = new THREE.Mesh(glowGeo, glowMat);
-      mesh.add(glow);
-    }
-
-    group.add(mesh);
-    starMeshes.push(mesh);
-  });
-
-  // ── Connection lines (only for unlocked/solved)
-  if (isUnlocked || isSolved) {
-    c.lines.forEach(([a, b]) => {
-      const sa = c.stars[a], sb = c.stars[b];
-      const points = [
-        new THREE.Vector3(sa.x, sa.y, sa.z),
-        new THREE.Vector3(sb.x, sb.y, sb.z),
-      ];
-      const geo = new THREE.BufferGeometry().setFromPoints(points);
-      const mat = new THREE.LineBasicMaterial({
-        color: isSolved ? 0x22c55e : 0xffd4aa,
-        transparent: true,
-        opacity: isSolved ? 0.55 : 0.30,
-      });
-      const line = new THREE.Line(geo, mat);
-      group.add(line);
-      lineMeshes.push(line);
-    });
+  function magToRadius(mag, isTouch) {
+    const base = isTouch ? 0.15 : 0.10;
+    const m = Math.max(-0.5, Math.min(4.5, mag !== undefined ? mag : 2.5));
+    const t = 1 - (m + 0.5) / 5.0;
+    return base * (0.55 + t * 0.9);
   }
 
-  scene.add(group);
-  constellationGroups[c.id] = {group, starMeshes, lineMeshes, c};
-}
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  const raycaster = new THREE.Raycaster();
+  raycaster.params.Points = {threshold: isTouchDevice ? 0.35 : 0.15};
+  const mouse = new THREE.Vector2();
 
-// Distribute constellations across a sphere
-function layoutConstellations() {
-  const n = CONSTELLATIONS.length;
-  CONSTELLATIONS.forEach((c, i) => {
-    // Fibonacci sphere distribution
-    const phi = Math.acos(1 - 2*(i+0.5)/n);
-    const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-    const r = 5;
-    const offset = {
-      x: r * Math.sin(phi) * Math.cos(theta),
-      y: r * Math.cos(phi),
-      z: r * Math.sin(phi) * Math.sin(theta),
-    };
-    buildConstellationMesh(c, offset);
-  });
-}
-layoutConstellations();
-
-// ── Orbit controls (manual implementation — no OrbitControls import needed)
-let isDragging = false, lastMouse = {x:0, y:0};
-// spherical is declared at top-level scope; reset to defaults on init
-spherical.theta = 0; spherical.phi = Math.PI/2;
-spherical.r = isTouchDevice ? 8 : 12;
-
-updateCamera = function() {
-  camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-  camera.position.y = spherical.r * Math.cos(spherical.phi);
-  camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
-  camera.lookAt(0, 0, 0);
-};
-updateCamera();
-
-canvas.addEventListener('mousedown', e => { isDragging=true; lastMouse={x:e.clientX,y:e.clientY}; });
-window.addEventListener('mouseup', () => { isDragging=false; });
-window.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  const dx = e.clientX - lastMouse.x;
-  const dy = e.clientY - lastMouse.y;
-  spherical.theta -= dx * 0.008;
-  spherical.phi = Math.max(0.1, Math.min(Math.PI-0.1, spherical.phi + dy * 0.006));
-  lastMouse = {x:e.clientX, y:e.clientY};
-  updateCamera();
-});
-canvas.addEventListener('wheel', e => {
-  spherical.r = Math.max(3, Math.min(24, spherical.r + e.deltaY * 0.015));
-  updateCamera();
-}, {passive:true});
-
-// Touch support
-let lastTouchDist = 0;
-let touchStartPos = {x:0, y:0};
-canvas.addEventListener('touchstart', e => {
-  if (e.touches.length === 1) {
-    isDragging=true;
-    lastMouse={x:e.touches[0].clientX,y:e.touches[0].clientY};
-    touchStartPos={x:e.touches[0].clientX,y:e.touches[0].clientY};
-  }
-  if (e.touches.length === 2) {
-    isDragging=false;
-    const dx=e.touches[0].clientX-e.touches[1].clientX;
-    const dy=e.touches[0].clientY-e.touches[1].clientY;
-    lastTouchDist = Math.sqrt(dx*dx+dy*dy);
-  }
-}, {passive:true});
-canvas.addEventListener('touchmove', e => {
-  if (e.touches.length === 1 && isDragging) {
-    const dx=e.touches[0].clientX-lastMouse.x, dy=e.touches[0].clientY-lastMouse.y;
-    spherical.theta-=dx*0.008; spherical.phi=Math.max(0.1,Math.min(Math.PI-0.1,spherical.phi+dy*0.006));
-    lastMouse={x:e.touches[0].clientX,y:e.touches[0].clientY}; updateCamera();
-  }
-  if (e.touches.length===2) {
-    const dx=e.touches[0].clientX-e.touches[1].clientX, dy=e.touches[0].clientY-e.touches[1].clientY;
-    const dist=Math.sqrt(dx*dx+dy*dy);
-    // positive delta = fingers moving apart = zoom in (r decreases)
-    spherical.r=Math.max(4,Math.min(22,spherical.r-(dist-lastTouchDist)*0.04));
-    lastTouchDist=dist; updateCamera();
-  }
-}, {passive:true});
-canvas.addEventListener('touchend', e => {
-  const t = e.changedTouches[0];
-  const dx = Math.abs(t.clientX - touchStartPos.x);
-  const dy = Math.abs(t.clientY - touchStartPos.y);
-  // Treat as a tap (not a drag) if movement < 8px
-  if (dx < 8 && dy < 8) {
-    handleClick(t.clientX, t.clientY);
-  }
-  isDragging=false;
-}, {passive:true});
-
-let clickStart = {x:0, y:0};
-
-canvas.addEventListener('mousedown', e => { clickStart={x:e.clientX,y:e.clientY}; });
-canvas.addEventListener('mouseup', e => {
-  const dx = Math.abs(e.clientX-clickStart.x), dy = Math.abs(e.clientY-clickStart.y);
-  if (dx>5||dy>5) return; // was a drag, not a click
-  handleClick(e.clientX, e.clientY);
-});
-
-// ── Star & Nebula tooltip helpers
-const starTooltip   = document.getElementById('star-tooltip');
-const nebulaTooltip = document.getElementById('nebula-tooltip');
-let tooltipTimeout = null;
-
-function showStarTooltip(info, name, x, y) {
-  clearTimeout(tooltipTimeout);
-  document.getElementById('st-name').textContent = name;
-  document.getElementById('st-type').textContent = info ? info.type : '—';
-  document.getElementById('st-dist').textContent = info ? info.distance : '—';
-  document.getElementById('st-temp').textContent = info ? info.temp : '—';
-  document.getElementById('st-arg').textContent  = info ? info.arg  : '—';
-  positionTooltip(starTooltip, x, y);
-  starTooltip.classList.add('visible');
-  nebulaTooltip.classList.remove('visible');
-}
-function showNebulaTooltip(name, desc, x, y) {
-  clearTimeout(tooltipTimeout);
-  document.getElementById('nt-name').textContent = name || '—';
-  document.getElementById('nt-desc').textContent = desc || '—';
-  positionTooltip(nebulaTooltip, x, y);
-  nebulaTooltip.classList.add('visible');
-  starTooltip.classList.remove('visible');
-}
-function hideTooltips() {
-  tooltipTimeout = setTimeout(() => {
-    starTooltip.classList.remove('visible');
-    nebulaTooltip.classList.remove('visible');
-  }, 120);
-}
-function positionTooltip(el, x, y) {
-  if (isTouchDevice) {
-    // On mobile: anchor to top-center of viewport, below header
-    el.style.left = '50%';
-    el.style.transform = 'translateX(-50%)';
-    el.style.top = '62px';
-    el.style.right = 'auto';
-    return;
-  }
-  el.style.transform = '';
-  const W = window.innerWidth, H = window.innerHeight;
-  const ew = el.offsetWidth || 260, eh = el.offsetHeight || 140;
-  let tx = x + 16, ty = y - 10;
-  if (tx + ew > W - 8) tx = x - ew - 16;
-  if (ty + eh > H - 8) ty = y - eh - 10;
-  if (ty < 8) ty = 8;
-  el.style.left = tx + 'px';
-  el.style.top  = ty + 'px';
-}
-
-// ── Hover: show star info on mouseover (desktop)
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  mouse.x =  ((e.clientX - rect.left) / rect.width)  * 2 - 1;
-  mouse.y = -((e.clientY - rect.top)  / rect.height) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const allMeshes = [];
-  Object.values(constellationGroups).forEach(({starMeshes, lineMeshes, group}) => {
-    allMeshes.push(...starMeshes);
-    // also check nebula meshes in group
-    group.children.forEach(ch => { if (ch.userData && ch.userData.isNebula) allMeshes.push(ch); });
-  });
-  const hits = raycaster.intersectObjects(allMeshes, false);
-  if (hits.length > 0) {
-    const h = hits[0].object;
-    if (h.userData.isNebula) {
-      showNebulaTooltip(h.userData.nebulaName, h.userData.nebulaDesc, e.clientX, e.clientY);
-    } else if (h.userData.constId) {
-      const isUnlocked = STATE.unlockedIds.has(h.userData.constId) || STATE.solvedIds.has(h.userData.constId);
-      if (isUnlocked) {
-        showStarTooltip(h.userData.starInfo, h.userData.starName, e.clientX, e.clientY);
-      } else {
-        hideTooltips();
-      }
-    }
-    canvas.style.cursor = 'pointer';
-  } else {
-    hideTooltips();
-    canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
-  }
-});
-
-function handleClick(clientX, clientY) {
-  const rect = canvas.getBoundingClientRect();
-  mouse.x =  ((clientX - rect.left) / rect.width)  * 2 - 1;
-  mouse.y = -((clientY - rect.top)  / rect.height) * 2 + 1;
-  raycaster.setFromCamera(mouse, camera);
-  const allStarMeshes = [];
-  Object.values(constellationGroups).forEach(({starMeshes}) => allStarMeshes.push(...starMeshes));
-  const hits = raycaster.intersectObjects(allStarMeshes);
-  if (hits.length === 0) return;
-  const hit = hits[0].object;
-  const constId = hit.userData.constId;
-  const starIdx = hit.userData.starIdx;
-  const c = CONSTELLATIONS.find(x=>x.id===constId);
-  if (!c) return;
-
-  const isUnlocked = STATE.unlockedIds.has(c.id);
-  if (!isUnlocked) {
-    showToastLocked(c);
-    return;
-  }
-
-  // Show star info tooltip on click (especially useful on mobile)
-  if (hit.userData.starInfo) {
-    showStarTooltip(hit.userData.starInfo, hit.userData.starName, clientX, clientY);
-    setTimeout(hideTooltips, 4500);
-  }
-
-  // Open info panel for this constellation
-  if (STATE.selectedConstellation !== constId) {
-    STATE.selectedConstellation = constId;
-    STATE.selectedStars = [];
-    openInfoPanel(c);
-  }
-
-  // Register star in sequence
-  registerStarClick(c, starIdx, hit);
-}
-
-// ── Render loop
-let time = 0;
-function animate() {
-  requestAnimationFrame(animate);
-  time += 0.008;
-
-  // Gentle auto-rotate when not dragging
-  if (!isDragging) {
-    spherical.theta += 0.0008;
-    updateCamera();
-  }
-
-  // Pulse glow on unlocked stars
-  Object.values(constellationGroups).forEach(({starMeshes, c}) => {
+  function buildConstellationMesh(c, offset) {
+    const group = new THREE.Group();
+    group.position.set(offset.x, offset.y, offset.z);
+    const starMeshes = [];
+    const lineMeshes = [];
     const isUnlocked = STATE.unlockedIds.has(c.id);
-    if (!isUnlocked) return;
-    starMeshes.forEach((mesh, i) => {
-      if (mesh.children[0]) {
-        mesh.children[0].material.opacity = 0.08 + 0.06 * Math.sin(time * 1.5 + i * 0.8);
+    const isSolved   = STATE.solvedIds.has(c.id);
+
+    // Nebula cloud
+    if (c.nebula) {
+      const nb = c.nebula;
+      [{sx:1.0,sy:0.75,sz:0.5,op:nb.op*0.9},{sx:0.7,sy:1.1,sz:0.4,op:nb.op*0.6},{sx:1.3,sy:0.5,sz:0.6,op:nb.op*0.4}]
+        .forEach((l, i) => {
+          const mesh = new THREE.Mesh(
+            new THREE.SphereGeometry(nb.r*0.5, 12, 8),
+            new THREE.MeshBasicMaterial({color:nb.color, transparent:true, opacity:l.op, depthWrite:false, side:THREE.DoubleSide})
+          );
+          mesh.scale.set(l.sx, l.sy, l.sz);
+          mesh.position.set((nb.offsetX||0)+(i-1)*0.3, (nb.offsetY||0)+(i-1)*0.2, -nb.r*0.3-i*0.15);
+          mesh.userData = {isNebula:true, nebulaName:nb.name, nebulaDesc:nb.desc};
+          group.add(mesh);
+        });
+    }
+
+    // Stars
+    c.stars.forEach((star, idx) => {
+      const r = magToRadius(star.mag, isTouchDevice);
+      let mat;
+      if (isSolved)   mat = new THREE.MeshBasicMaterial({color:0x22c55e, transparent:true, opacity:0.95});
+      else if (isUnlocked) mat = new THREE.MeshBasicMaterial({color:spectralColor(star.info && star.info.type), transparent:true, opacity:0.95});
+      else            mat = matStarLocked.clone();
+      const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), mat);
+      mesh.position.set(star.x, star.y, star.z);
+      mesh.userData = {constId:c.id, starIdx:idx, starName:star.name, starInfo:star.info};
+      if (isUnlocked || isSolved) {
+        const glowColor = isSolved ? 0x22c55e : spectralColor(star.info && star.info.type);
+        const glow = new THREE.Mesh(
+          new THREE.SphereGeometry(r*2.2, 8, 6),
+          new THREE.MeshBasicMaterial({color:glowColor, transparent:true, opacity:0.10, depthWrite:false})
+        );
+        mesh.add(glow);
       }
+      group.add(mesh);
+      starMeshes.push(mesh);
     });
+
+    // Lines
+    if (isUnlocked || isSolved) {
+      c.lines.forEach(([a, b]) => {
+        const sa = c.stars[a], sb = c.stars[b];
+        const geo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(sa.x,sa.y,sa.z), new THREE.Vector3(sb.x,sb.y,sb.z)
+        ]);
+        const line = new THREE.Line(geo, new THREE.LineBasicMaterial({
+          color:isSolved?0x22c55e:0xffd4aa, transparent:true, opacity:isSolved?0.55:0.30
+        }));
+        group.add(line);
+        lineMeshes.push(line);
+      });
+    }
+
+    scene.add(group);
+    constellationGroups[c.id] = {group, starMeshes, lineMeshes, c};
+  }
+
+  function layoutConstellations() {
+    const n = CONSTELLATIONS.length;
+    CONSTELLATIONS.forEach((c, i) => {
+      const phi   = Math.acos(1 - 2*(i+0.5)/n);
+      const theta = Math.PI * (1 + Math.sqrt(5)) * i;
+      const r = 5;
+      buildConstellationMesh(c, {
+        x: r * Math.sin(phi) * Math.cos(theta),
+        y: r * Math.cos(phi),
+        z: r * Math.sin(phi) * Math.sin(theta),
+      });
+    });
+  }
+  layoutConstellations();
+
+  // Orbit controls
+  let isDragging = false, lastMouse = {x:0, y:0};
+  spherical.theta = 0; spherical.phi = Math.PI/2;
+  spherical.r = isTouchDevice ? 8 : 12;
+
+  updateCamera = function() {
+    camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+    camera.position.y = spherical.r * Math.cos(spherical.phi);
+    camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+    camera.lookAt(0, 0, 0);
+  };
+  updateCamera();
+
+  canvas.addEventListener('mousedown', e => { isDragging=true; lastMouse={x:e.clientX,y:e.clientY}; });
+  window.addEventListener('mouseup', () => { isDragging=false; });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    spherical.theta -= (e.clientX-lastMouse.x)*0.008;
+    spherical.phi = Math.max(0.1, Math.min(Math.PI-0.1, spherical.phi+(e.clientY-lastMouse.y)*0.006));
+    lastMouse = {x:e.clientX,y:e.clientY};
+    updateCamera();
+  });
+  canvas.addEventListener('wheel', e => {
+    spherical.r = Math.max(3, Math.min(24, spherical.r+e.deltaY*0.015));
+    updateCamera();
+  }, {passive:true});
+
+  let lastTouchDist = 0, touchStartPos = {x:0,y:0};
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length===1) { isDragging=true; lastMouse={x:e.touches[0].clientX,y:e.touches[0].clientY}; touchStartPos={x:e.touches[0].clientX,y:e.touches[0].clientY}; }
+    if (e.touches.length===2) { isDragging=false; const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY; lastTouchDist=Math.sqrt(dx*dx+dy*dy); }
+  },{passive:true});
+  canvas.addEventListener('touchmove', e => {
+    if (e.touches.length===1&&isDragging) {
+      const dx=e.touches[0].clientX-lastMouse.x,dy=e.touches[0].clientY-lastMouse.y;
+      spherical.theta-=dx*0.008; spherical.phi=Math.max(0.1,Math.min(Math.PI-0.1,spherical.phi+dy*0.006));
+      lastMouse={x:e.touches[0].clientX,y:e.touches[0].clientY}; updateCamera();
+    }
+    if (e.touches.length===2) {
+      const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      spherical.r=Math.max(4,Math.min(22,spherical.r-(dist-lastTouchDist)*0.04));
+      lastTouchDist=dist; updateCamera();
+    }
+  },{passive:true});
+  canvas.addEventListener('touchend', e => {
+    const t=e.changedTouches[0];
+    if (Math.abs(t.clientX-touchStartPos.x)<8&&Math.abs(t.clientY-touchStartPos.y)<8) handleClick(t.clientX,t.clientY);
+    isDragging=false;
+  },{passive:true});
+
+  let clickStart = {x:0,y:0};
+  canvas.addEventListener('mousedown', e => { clickStart={x:e.clientX,y:e.clientY}; });
+  canvas.addEventListener('mouseup', e => {
+    if (Math.abs(e.clientX-clickStart.x)>5||Math.abs(e.clientY-clickStart.y)>5) return;
+    handleClick(e.clientX, e.clientY);
   });
 
-  renderer.render(scene, camera);
-}
-animate();
+  // Tooltips
+  const starTooltip   = document.getElementById('star-tooltip');
+  const nebulaTooltip = document.getElementById('nebula-tooltip');
+  let tooltipTimeout = null;
 
-// ── Resize
-window.addEventListener('resize', () => {
-  camera.aspect = window.innerWidth / window.innerHeight;
-  camera.updateProjectionMatrix();
-  renderer.setSize(window.innerWidth, window.innerHeight);
-});
-} // end _initThreeScene
+  function showStarTooltip(info, name, x, y) {
+    clearTimeout(tooltipTimeout);
+    document.getElementById('st-name').textContent = name;
+    document.getElementById('st-type').textContent = info ? info.type : '—';
+    document.getElementById('st-dist').textContent = info ? info.distance : '—';
+    document.getElementById('st-temp').textContent = info ? info.temp : '—';
+    document.getElementById('st-arg').textContent  = info ? info.arg  : '—';
+    positionTooltip(starTooltip, x, y);
+    starTooltip.classList.add('visible');
+    nebulaTooltip.classList.remove('visible');
+  }
+  function showNebulaTooltip(name, desc, x, y) {
+    clearTimeout(tooltipTimeout);
+    document.getElementById('nt-name').textContent = name||'—';
+    document.getElementById('nt-desc').textContent = desc||'—';
+    positionTooltip(nebulaTooltip, x, y);
+    nebulaTooltip.classList.add('visible');
+    starTooltip.classList.remove('visible');
+  }
+  function hideTooltips() {
+    tooltipTimeout = setTimeout(() => {
+      starTooltip.classList.remove('visible');
+      nebulaTooltip.classList.remove('visible');
+    }, 120);
+  }
+  function positionTooltip(el, x, y) {
+    if (isTouchDevice) {
+      el.style.left='50%'; el.style.transform='translateX(-50%)'; el.style.top='62px'; el.style.right='auto'; return;
+    }
+    el.style.transform='';
+    const W=window.innerWidth,H=window.innerHeight,ew=el.offsetWidth||260,eh=el.offsetHeight||140;
+    let tx=x+16,ty=y-10;
+    if (tx+ew>W-8) tx=x-ew-16;
+    if (ty+eh>H-8) ty=y-eh-10;
+    if (ty<8) ty=8;
+    el.style.left=tx+'px'; el.style.top=ty+'px';
+  }
 
-// Start the scene — retry loop handles CDN fallback timing
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', _initThreeScene);
-} else {
-  _initThreeScene();
+  canvas.addEventListener('mousemove', e => {
+    const rect=canvas.getBoundingClientRect();
+    mouse.x= ((e.clientX-rect.left)/rect.width)*2-1;
+    mouse.y=-((e.clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(mouse, camera);
+    const allMeshes=[];
+    Object.values(constellationGroups).forEach(({starMeshes,group}) => {
+      allMeshes.push(...starMeshes);
+      group.children.forEach(ch=>{ if(ch.userData&&ch.userData.isNebula) allMeshes.push(ch); });
+    });
+    const hits=raycaster.intersectObjects(allMeshes, false);
+    if (hits.length>0) {
+      const h=hits[0].object;
+      if (h.userData.isNebula) showNebulaTooltip(h.userData.nebulaName, h.userData.nebulaDesc, e.clientX, e.clientY);
+      else if (h.userData.constId && (STATE.unlockedIds.has(h.userData.constId)||STATE.solvedIds.has(h.userData.constId))) showStarTooltip(h.userData.starInfo, h.userData.starName, e.clientX, e.clientY);
+      else hideTooltips();
+      canvas.style.cursor='pointer';
+    } else {
+      hideTooltips();
+      canvas.style.cursor=isDragging?'grabbing':'grab';
+    }
+  });
+
+  function handleClick(clientX, clientY) {
+    const rect=canvas.getBoundingClientRect();
+    mouse.x= ((clientX-rect.left)/rect.width)*2-1;
+    mouse.y=-((clientY-rect.top)/rect.height)*2+1;
+    raycaster.setFromCamera(mouse, camera);
+    const allStarMeshes=[];
+    Object.values(constellationGroups).forEach(({starMeshes})=>allStarMeshes.push(...starMeshes));
+    const hits=raycaster.intersectObjects(allStarMeshes);
+    if (!hits.length) return;
+    const hit=hits[0].object;
+    const constId=hit.userData.constId;
+    const starIdx=hit.userData.starIdx;
+    const c=CONSTELLATIONS.find(x=>x.id===constId);
+    if (!c) return;
+    if (!STATE.unlockedIds.has(c.id)) { showToastLocked(c); return; }
+    if (hit.userData.starInfo) { showStarTooltip(hit.userData.starInfo, hit.userData.starName, clientX, clientY); setTimeout(hideTooltips,4500); }
+    if (STATE.selectedConstellation !== constId) {
+      STATE.selectedConstellation=constId; STATE.selectedStars=[]; openInfoPanel(c);
+    }
+    registerStarClick(c, starIdx, hit, matStarSelected, matStarSolved, matStarUnlocked);
+  }
+
+  // Render loop
+  let time=0;
+  function animate() {
+    requestAnimationFrame(animate);
+    time+=0.008;
+    if (!isDragging) { spherical.theta+=0.0008; updateCamera(); }
+    Object.values(constellationGroups).forEach(({starMeshes,c}) => {
+      if (!STATE.unlockedIds.has(c.id)) return;
+      starMeshes.forEach((mesh,i) => {
+        if (mesh.children[0]) mesh.children[0].material.opacity=0.08+0.06*Math.sin(time*1.5+i*0.8);
+      });
+    });
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect=window.innerWidth/window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  // Expose rebuild helper for 30s interval (FIX 3)
+  window._rebuildConstellationMesh = buildConstellationMesh;
 }
+
+if (document.readyState==='loading') document.addEventListener('DOMContentLoaded', _initThreeScene);
+else _initThreeScene();
 
 /* ═══════════════════════════════════════════════════
    UI — SIDEBAR
 ═══════════════════════════════════════════════════ */
 function buildSidebar() {
-  const list = document.getElementById('sb-list');
-  list.innerHTML = '';
+  const list=document.getElementById('sb-list');
+  list.innerHTML='';
   CONSTELLATIONS.forEach(c => {
-    const unlocked = STATE.unlockedIds.has(c.id);
-    const solved   = STATE.solvedIds.has(c.id);
-    const div = document.createElement('div');
-    div.className = `sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
-    div.id = `sb-${c.id}`;
-    div.innerHTML = `
+    const unlocked=STATE.unlockedIds.has(c.id), solved=STATE.solvedIds.has(c.id);
+    const div=document.createElement('div');
+    div.className=`sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
+    div.id=`sb-${c.id}`;
+    div.innerHTML=`
       <span class="sb-dot"></span>
       <span class="sb-name">
         <div class="sb-name-main">${c.name}</div>
@@ -1308,222 +1117,184 @@ function buildSidebar() {
         ${solved?'SOLVED':unlocked?'OPEN':'LOCKED'}
       </span>`;
     div.addEventListener('click', () => {
-      if (!unlocked && !solved) { showToastLockedSb(c); return; }
-      STATE.selectedConstellation = c.id;
-      STATE.selectedStars = [];
+      if (!unlocked&&!solved) { showToastLockedSb(c); return; }
+      STATE.selectedConstellation=c.id; STATE.selectedStars=[];
       openInfoPanel(c);
-      // Focus camera on this constellation
-      const grp = constellationGroups[c.id];
+      const grp=constellationGroups[c.id];
       if (grp) {
-        const pos = grp.group.position;
-        const angle = Math.atan2(pos.x, pos.z);
-        const elevation = Math.atan2(pos.y, Math.sqrt(pos.x*pos.x+pos.z*pos.z));
-        spherical.theta = angle;
-        spherical.phi = Math.PI/2 - elevation;
+        const pos=grp.group.position;
+        spherical.theta=Math.atan2(pos.x,pos.z);
+        spherical.phi=Math.PI/2-Math.atan2(pos.y,Math.sqrt(pos.x*pos.x+pos.z*pos.z));
         updateCamera();
       }
     });
     list.appendChild(div);
   });
-
-  // Update header count
-  const count = STATE.unlockedIds.size + STATE.solvedIds.size;
-  document.getElementById('hd-unlocked-count').textContent = STATE.unlockedIds.size;
-  document.getElementById('hud-unlocked').textContent = STATE.unlockedIds.size;
+  document.getElementById('hd-unlocked-count').textContent=STATE.unlockedIds.size;
+  document.getElementById('hud-unlocked').textContent=STATE.unlockedIds.size;
 }
 
 function updateSidebarItem(c) {
-  const item = document.getElementById(`sb-${c.id}`);
+  const item=document.getElementById(`sb-${c.id}`);
   if (!item) return;
-  const solved   = STATE.solvedIds.has(c.id);
-  const unlocked = STATE.unlockedIds.has(c.id);
-  item.className = `sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
-  const badge = item.querySelector('.sb-badge');
-  if (badge) {
-    badge.className = `sb-badge ${solved?'solved-badge':unlocked?'unlocked-badge':'locked-badge'}`;
-    badge.textContent = solved?'SOLVED':unlocked?'OPEN':'LOCKED';
-  }
+  const solved=STATE.solvedIds.has(c.id), unlocked=STATE.unlockedIds.has(c.id);
+  item.className=`sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
+  const badge=item.querySelector('.sb-badge');
+  if (badge) { badge.className=`sb-badge ${solved?'solved-badge':unlocked?'unlocked-badge':'locked-badge'}`; badge.textContent=solved?'SOLVED':unlocked?'OPEN':'LOCKED'; }
 }
 
 /* ═══════════════════════════════════════════════════
    UI — INFO PANEL
 ═══════════════════════════════════════════════════ */
 function openInfoPanel(c) {
-  const panel = document.getElementById('info-panel');
-  panel.classList.add('open');
-  document.getElementById('ip-constellation-name').textContent = c.name;
-  document.getElementById('ip-designation').textContent = c.designation;
-  document.getElementById('ip-unlock-cond').textContent =
-    `Listen to: ${c.tag.slice(0,3).join(', ')}${c.tag.length>3?' +more':''}`;
-  document.getElementById('ip-hint').textContent = c.hint;
-
-  const starsList = document.getElementById('ip-stars-list');
-  starsList.innerHTML = '';
-  c.sequence.forEach((starIdx, order) => {
-    const star = c.stars[starIdx];
-    const div = document.createElement('div');
-    div.className = 'ip-star-row';
-    div.id = `ip-star-${c.id}-${order}`;
-    div.innerHTML = `<div class="ip-star-idx">${order+1}</div><span>${star.name}</span>`;
-    div.addEventListener('click', () => registerStarClick(c, starIdx, null));
+  document.getElementById('info-panel').classList.add('open');
+  document.getElementById('ip-constellation-name').textContent=c.name;
+  document.getElementById('ip-designation').textContent=c.designation;
+  document.getElementById('ip-unlock-cond').textContent=`Listen to: ${c.tag.slice(0,3).join(', ')}${c.tag.length>3?' +more':''}`;
+  document.getElementById('ip-hint').textContent=c.hint;
+  const starsList=document.getElementById('ip-stars-list');
+  starsList.innerHTML='';
+  c.sequence.forEach((starIdx,order) => {
+    const star=c.stars[starIdx];
+    const div=document.createElement('div');
+    div.className='ip-star-row'; div.id=`ip-star-${c.id}-${order}`;
+    div.innerHTML=`<div class="ip-star-idx">${order+1}</div><span>${star.name}</span>`;
+    div.addEventListener('click', () => registerStarClick(c, starIdx, null, null, null, null));
     starsList.appendChild(div);
   });
-
-  document.getElementById('ip-progress-fill').style.width = '0%';
-  document.getElementById('ip-action-btn').style.display =
-    STATE.solvedIds.has(c.id) ? 'none' : 'block';
-
-  // Mark active in sidebar
-  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
-  const sbItem = document.getElementById(`sb-${c.id}`);
+  document.getElementById('ip-progress-fill').style.width='0%';
+  document.getElementById('ip-action-btn').style.display=STATE.solvedIds.has(c.id)?'none':'block';
+  document.querySelectorAll('.sb-item').forEach(el=>el.classList.remove('active'));
+  const sbItem=document.getElementById(`sb-${c.id}`);
   if (sbItem) sbItem.classList.add('active');
-
-  // Reset sequence
-  STATE.selectedStars = [];
-  updateSeqIndicator(c);
+  STATE.selectedStars=[]; updateSeqIndicator(c);
 }
 
 document.getElementById('ip-close').addEventListener('click', () => {
   document.getElementById('info-panel').classList.remove('open');
-  STATE.selectedConstellation = null;
-  STATE.selectedStars = [];
-  updateSeqIndicator(null);
+  STATE.selectedConstellation=null; STATE.selectedStars=[]; updateSeqIndicator(null);
 });
-
 document.getElementById('ip-action-btn').addEventListener('click', () => {
-  const c = CONSTELLATIONS.find(x=>x.id===STATE.selectedConstellation);
-  if (c && STATE.selectedStars.length === c.sequence.length) openPuzzle(c);
+  const c=CONSTELLATIONS.find(x=>x.id===STATE.selectedConstellation);
+  if (c&&STATE.selectedStars.length===c.sequence.length) openPuzzle(c);
   else showPanelHint('Complete the star sequence first');
 });
-
 function showPanelHint(msg) {
-  const btn = document.getElementById('ip-action-btn');
-  const orig = btn.textContent;
-  btn.textContent = msg;
-  btn.style.color = '#ef4444';
-  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+  const btn=document.getElementById('ip-action-btn');
+  const orig=btn.textContent; btn.textContent=msg; btn.style.color='#ef4444';
+  setTimeout(()=>{ btn.textContent=orig; btn.style.color=''; }, 2000);
 }
 
 /* ═══════════════════════════════════════════════════
-   STAR SEQUENCE LOGIC
+   STAR SEQUENCE
+   FIX 2: matStarSelected/matStarSolved/matStarUnlocked passed as params
+   (fallback to plain colors when called from sidebar panel click with nulls)
 ═══════════════════════════════════════════════════ */
-function registerStarClick(c, starIdx, mesh) {
+function registerStarClick(c, starIdx, mesh, matStarSelected, matStarSolved, matStarUnlocked) {
   if (STATE.solvedIds.has(c.id)) return;
-  const expectedOrder = STATE.selectedStars.length;
-  const expectedStarIdx = c.sequence[expectedOrder];
+  const expectedOrder=STATE.selectedStars.length;
+  const expectedStarIdx=c.sequence[expectedOrder];
 
-  if (starIdx === expectedStarIdx) {
-    // Correct!
+  if (starIdx===expectedStarIdx) {
     STATE.selectedStars.push(starIdx);
-    // Highlight star
-    if (mesh) {
-      mesh.material = matStarSelected.clone();
-    }
-    // Highlight in info panel
-    const rowEl = document.getElementById(`ip-star-${c.id}-${expectedOrder}`);
+    if (mesh&&matStarSelected) mesh.material=matStarSelected.clone();
+    const rowEl=document.getElementById(`ip-star-${c.id}-${expectedOrder}`);
     if (rowEl) rowEl.classList.add('selected');
-
     updateSeqIndicator(c);
-    const pct = (STATE.selectedStars.length / c.sequence.length) * 100;
-    document.getElementById('ip-progress-fill').style.width = pct + '%';
-
-    if (STATE.selectedStars.length === c.sequence.length) {
-      // All stars clicked in correct order!
-      setTimeout(() => openPuzzle(c), 400);
-    }
+    document.getElementById('ip-progress-fill').style.width=(STATE.selectedStars.length/c.sequence.length*100)+'%';
+    if (STATE.selectedStars.length===c.sequence.length) setTimeout(()=>openPuzzle(c), 400);
   } else {
-    // Wrong order — flash error
     glitchFlash();
-    STATE.selectedStars = [];
-    updateSeqIndicator(c);
-    document.getElementById('ip-progress-fill').style.width = '0%';
-    // Reset row highlights
-    document.querySelectorAll(`[id^="ip-star-${c.id}-"]`).forEach(el => el.classList.remove('selected','completed'));
-    // Reset star colors
-    if (constellationGroups[c.id]) {
-      constellationGroups[c.id].starMeshes.forEach(m => {
-        m.material = STATE.solvedIds.has(c.id) ? matStarSolved.clone() : matStarUnlocked.clone();
+    STATE.selectedStars=[]; updateSeqIndicator(c);
+    document.getElementById('ip-progress-fill').style.width='0%';
+    document.querySelectorAll(`[id^="ip-star-${c.id}-"]`).forEach(el=>el.classList.remove('selected','completed'));
+    // Reset star colors in scene
+    const grp=constellationGroups[c.id];
+    if (grp) {
+      grp.starMeshes.forEach((m,i) => {
+        const star=c.stars[i];
+        if (STATE.solvedIds.has(c.id)) {
+          m.material=new THREE.MeshBasicMaterial({color:0x22c55e,transparent:true,opacity:0.95});
+        } else {
+          m.material=new THREE.MeshBasicMaterial({
+            color: (typeof spectralColor!=='undefined') ? 0xffd4aa : 0xffd4aa,
+            transparent:true, opacity:0.95
+          });
+        }
       });
     }
   }
 }
 
 function updateSeqIndicator(c) {
-  const ind = document.getElementById('seq-indicator');
-  ind.innerHTML = '';
+  const ind=document.getElementById('seq-indicator');
+  ind.innerHTML='';
   if (!c) return;
-  c.sequence.forEach((_, i) => {
-    const dot = document.createElement('span');
-    dot.className = 'seq-dot' + (i < STATE.selectedStars.length ? ' filled' : '');
+  c.sequence.forEach((_,i) => {
+    const dot=document.createElement('span');
+    dot.className='seq-dot'+(i<STATE.selectedStars.length?' filled':'');
     ind.appendChild(dot);
   });
 }
 
 function glitchFlash() {
-  document.body.style.filter = 'hue-rotate(120deg) brightness(1.4)';
-  setTimeout(() => { document.body.style.filter = 'brightness(0.2)'; }, 60);
-  setTimeout(() => { document.body.style.filter = ''; }, 120);
+  document.body.style.filter='hue-rotate(120deg) brightness(1.4)';
+  setTimeout(()=>document.body.style.filter='brightness(0.2)',60);
+  setTimeout(()=>document.body.style.filter='',120);
 }
 
 /* ═══════════════════════════════════════════════════
    TOASTS
 ═══════════════════════════════════════════════════ */
 function showUnlockToast(c) {
-  const toast = document.getElementById('unlock-toast');
-  document.getElementById('unlock-toast-name').textContent = c.name;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 4000);
+  const toast=document.getElementById('unlock-toast');
+  document.getElementById('unlock-toast-name').textContent=c.name;
+  document.getElementById('unlock-toast-sub').textContent='CONSTELLATION UNLOCKED — SIGNAL RECEIVED';
+  toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),4000);
 }
-function showToastLocked(c) { showInfoToast(`${c.name} is locked — listen to ${c.tag.slice(0,2).join(' or ')} radio to unlock`); }
+function showToastLocked(c)   { showInfoToast(`${c.name} is locked — listen to ${c.tag.slice(0,2).join(' or ')} radio to unlock`); }
 function showToastLockedSb(c) { showInfoToast(`Unlock ${c.name} by listening to ${c.tag.slice(0,2).join(', ')} on WNCORE`); }
 function showInfoToast(msg) {
-  const toast = document.getElementById('unlock-toast');
-  document.getElementById('unlock-toast-name').textContent = msg;
-  document.getElementById('unlock-toast-sub').textContent = 'GO TO WNCORE RADIO';
+  const toast=document.getElementById('unlock-toast');
+  document.getElementById('unlock-toast-name').textContent=msg;
+  document.getElementById('unlock-toast-sub').textContent='GO TO WNCORE RADIO';
   toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); document.getElementById('unlock-toast-sub').textContent = 'CONSTELLATION UNLOCKED — SIGNAL RECEIVED'; }, 3500);
+  setTimeout(()=>{ toast.classList.remove('show'); document.getElementById('unlock-toast-sub').textContent='CONSTELLATION UNLOCKED — SIGNAL RECEIVED'; },3500);
 }
 
 /* ═══════════════════════════════════════════════════
    PUZZLE SYSTEM
 ═══════════════════════════════════════════════════ */
-let currentPuzzleConstellation = null;
-let morseInterval = null;
+let currentPuzzleConstellation=null, morseInterval=null;
 
 function openPuzzle(c) {
-  currentPuzzleConstellation = c;
-  const modal = document.getElementById('puzzle-modal');
-  const body  = document.getElementById('puzzle-body');
-  if (!modal || !body) return; // DOM not ready (THREE failed to init)
-  const loreReveal = document.getElementById('lore-reveal');
-  const puzzleError = document.getElementById('puzzle-error');
-  if (loreReveal) { loreReveal.classList.remove('show'); loreReveal.style.display = 'none'; }
-  if (puzzleError) puzzleError.textContent = '';
+  currentPuzzleConstellation=c;
+  const modal=document.getElementById('puzzle-modal');
+  const body=document.getElementById('puzzle-body');
+  if (!modal||!body) return;
+  const loreReveal=document.getElementById('lore-reveal');
+  const puzzleError=document.getElementById('puzzle-error');
+  if (loreReveal) { loreReveal.classList.remove('show'); loreReveal.style.display='none'; }
+  if (puzzleError) puzzleError.textContent='';
   modal.classList.add('open');
-
-  const titleEl = document.getElementById('puzzle-title');
-  const subtitleEl = document.getElementById('puzzle-subtitle');
-  if (titleEl) titleEl.textContent = c.name;
-  if (subtitleEl) subtitleEl.textContent =
-    '— ' + (c.puzzle.type==='morse'?'DECODE THE MORSE TRANSMISSION':
-             c.puzzle.type==='frequency'?'TUNE TO THE EXACT FREQUENCY':
-             'DECODE THE HIDDEN WORD') + ' —';
-
-  body.innerHTML = '';
-  if (c.puzzle.type === 'morse') buildMorsePuzzle(c, body);
-  else if (c.puzzle.type === 'frequency') buildFrequencyPuzzle(c, body);
-  else if (c.puzzle.type === 'acrostic') buildAcrosticPuzzle(c, body);
+  document.getElementById('puzzle-title').textContent=c.name;
+  document.getElementById('puzzle-subtitle').textContent='— '+(
+    c.puzzle.type==='morse'?'DECODE THE MORSE TRANSMISSION':
+    c.puzzle.type==='frequency'?'TUNE TO THE EXACT FREQUENCY':
+    'DECODE THE HIDDEN WORD')+' —';
+  body.innerHTML='';
+  if (c.puzzle.type==='morse') buildMorsePuzzle(c,body);
+  else if (c.puzzle.type==='frequency') buildFrequencyPuzzle(c,body);
+  else if (c.puzzle.type==='acrostic') buildAcrosticPuzzle(c,body);
 }
 
-// ── Morse Puzzle
-function buildMorsePuzzle(c, body) {
-  const morseCode = c.puzzle.morse;
-
-  body.innerHTML = `
+function buildMorsePuzzle(c,body) {
+  const morseCode=c.puzzle.morse;
+  body.innerHTML=`
     <div style="font-size:0.62rem;color:var(--text3);line-height:1.7">
-      A signal transmission is incoming. Watch the light pattern carefully — dots are brief, dashes are long.
+      A signal transmission is incoming. Watch the light pattern — dots are brief, dashes are long.
       Inter-letter gaps are longer pauses. Decode and type the word.
-      <span style="color:rgba(200,71,42,0.6)">[The transmission auto-plays once. You must listen.]</span>
+      <span style="color:rgba(200,71,42,0.6)">[The transmission auto-plays once.]</span>
     </div>
     <div id="morse-display"></div>
     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
@@ -1533,59 +1304,37 @@ function buildMorsePuzzle(c, body) {
     <input id="morse-input" type="text" placeholder="TYPE DECODED WORD" autocomplete="off" spellcheck="false">
     <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
     <button id="puzzle-submit" onclick="submitPuzzle()">SUBMIT TRANSMISSION</button>`;
-
-  // Build display as anonymous dots/dashes (no text labels)
-  const display = document.getElementById('morse-display');
+  const display=document.getElementById('morse-display');
   morseCode.split('').forEach(ch => {
-    if (ch === ' ') {
-      const sp = document.createElement('span');
-      sp.style.cssText='display:inline-block;width:14px';
-      display.appendChild(sp);
-      return;
-    }
-    const dot = document.createElement('span');
-    dot.className = `morse-flash ${ch==='.'?'dit':'dah'}`;
+    if (ch===' ') { const sp=document.createElement('span'); sp.style.cssText='display:inline-block;width:14px'; display.appendChild(sp); return; }
+    const dot=document.createElement('span');
+    dot.className=`morse-flash ${ch==='.'?'dit':'dah'}`;
     display.appendChild(dot);
   });
-
-  // Auto-play once with a brief delay
-  setTimeout(() => playMorse(morseCode), 800);
+  setTimeout(()=>playMorse(morseCode), 800);
 }
 
 window.playMorse = function(code) {
   if (morseInterval) { clearInterval(morseInterval); morseInterval=null; }
-  const display = document.getElementById('morse-display');
+  const display=document.getElementById('morse-display');
   if (!display) return;
-  const flashes = display.querySelectorAll('.morse-flash');
-  let fi = 0, ci = 0;
-  const symbols = code.replace(/ /g, ' _').split('').filter(c=>c!=='_');
-  // Reset all
+  const flashes=display.querySelectorAll('.morse-flash');
+  let fi=0;
   flashes.forEach(f=>f.classList.remove('lit'));
-
-  // Flash sequence
   function nextFlash() {
-    if (fi >= flashes.length) return;
-    const f = flashes[fi];
-    const isDit = f.classList.contains('dit');
+    if (fi>=flashes.length) return;
+    const f=flashes[fi]; const isDit=f.classList.contains('dit');
     f.classList.add('lit');
-    setTimeout(() => {
-      f.classList.remove('lit');
-      fi++;
-      // Gap between elements
-      const gap = isDit ? 100 : 200;
-      morseInterval = setTimeout(nextFlash, gap);
-    }, isDit ? 180 : 450);
+    setTimeout(()=>{ f.classList.remove('lit'); fi++; morseInterval=setTimeout(nextFlash, isDit?100:200); }, isDit?180:450);
   }
   nextFlash();
 };
 
-// ── Frequency Puzzle
-function buildFrequencyPuzzle(c, body) {
-  const {target, tolerance, range} = c.puzzle;
-  body.innerHTML = `
+function buildFrequencyPuzzle(c,body) {
+  const {target,tolerance,range}=c.puzzle;
+  body.innerHTML=`
     <div style="font-size:0.62rem;color:var(--text3);line-height:1.7">
-      A transmission has been detected. Tune the receiver to the exact frequency to lock on.
-      You need to be within ${tolerance} MHz.
+      Tune the receiver to the exact frequency to lock on. You need to be within ${tolerance} MHz.
     </div>
     <div id="freq-display">
       <div id="freq-value">${((range[0]+range[1])/2).toFixed(1)}</div>
@@ -1600,146 +1349,109 @@ function buildFrequencyPuzzle(c, body) {
 }
 
 window.updateFreq = function(val) {
-  const freq = (val/10).toFixed(1);
-  document.getElementById('freq-value').textContent = freq;
-  const c = currentPuzzleConstellation;
-  const diff = Math.abs(parseFloat(freq) - c.puzzle.target);
-  const ind = document.getElementById('freq-indicator');
-  if (diff < 0.5) ind.textContent = diff < 0.2 ? '◉ STRONG SIGNAL' : '◎ SIGNAL DETECTED';
-  else if (diff < 2) ind.textContent = parseFloat(freq) < c.puzzle.target ? '▷ TUNE HIGHER' : '◁ TUNE LOWER';
-  else ind.textContent = '— NO SIGNAL —';
-  ind.style.color = diff < c.puzzle.target*0.005+0.2 ? 'var(--accent)' : diff < 1 ? '#eab308' : 'var(--text3)';
+  const freq=(val/10).toFixed(1);
+  document.getElementById('freq-value').textContent=freq;
+  const c=currentPuzzleConstellation;
+  const diff=Math.abs(parseFloat(freq)-c.puzzle.target);
+  const ind=document.getElementById('freq-indicator');
+  if (diff<0.5) ind.textContent=diff<0.2?'◉ STRONG SIGNAL':'◎ SIGNAL DETECTED';
+  else if (diff<2) ind.textContent=parseFloat(freq)<c.puzzle.target?'▷ TUNE HIGHER':'◁ TUNE LOWER';
+  else ind.textContent='— NO SIGNAL —';
+  ind.style.color=diff<0.3?'var(--accent)':diff<1?'#eab308':'var(--text3)';
 };
 
-// ── Acrostic Puzzle
-function buildAcrosticPuzzle(c, body) {
-  const {stars, clues, answer} = c.puzzle;
-  // Show stars and clues but HIDE the first letters — user must derive them
-  const rows = stars.map((star, i) => `
+function buildAcrosticPuzzle(c,body) {
+  const {stars,clues,answer}=c.puzzle;
+  const rows=stars.map((star,i)=>`
     <div class="acrostic-row">
       <div class="acrostic-letter" style="opacity:0.15;filter:blur(3px)" id="acr-letter-${i}">?</div>
-      <div>
-        <div class="acrostic-star">${star}</div>
-        <div class="acrostic-clue">${clues[i]}</div>
-      </div>
+      <div><div class="acrostic-star">${star}</div><div class="acrostic-clue">${clues[i]}</div></div>
     </div>`).join('');
-  body.innerHTML = `
+  body.innerHTML=`
     <div style="font-size:0.62rem;color:var(--text3);line-height:1.7">
-      Each entry hides a letter. The first letter of each answer — read downward — spells a hidden word.
-      The highlighted positions are obscured. <span style="color:rgba(200,71,42,0.6)">Figure out the word yourself.</span>
+      Each entry hides a letter. Read the first letters downward to find the hidden word.
+      <span style="color:rgba(200,71,42,0.6)">Figure out the word yourself.</span>
     </div>
     <div id="acrostic-wrap">${rows}</div>
     <input id="acrostic-answer" type="text" placeholder="ENTER THE HIDDEN WORD" autocomplete="off" spellcheck="false" maxlength="${answer.length}">
     <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
     <button id="puzzle-submit" onclick="submitPuzzle()">SUBMIT TRANSMISSION</button>`;
-
-  // Reveal letters one by one as wrong answers accumulate (tracked via dataset)
-  const input = document.getElementById('acrostic-answer');
-  input.dataset.wrongCount = '0';
+  document.getElementById('acrostic-answer').dataset.wrongCount='0';
 }
 
-// ── Submit
 window.submitPuzzle = function() {
-  const c = currentPuzzleConstellation;
+  const c=currentPuzzleConstellation;
   if (!c) return;
-  let correct = false;
-
-  if (c.puzzle.type === 'morse') {
-    const input = document.getElementById('morse-input');
-    correct = input && input.value.trim().toUpperCase() === c.puzzle.word.toUpperCase();
-    if (!correct && input) {
-      input.classList.add('wrong');
-      setTimeout(()=>input.classList.remove('wrong'),500);
-      // Increment attempt counter
-      const counter = document.getElementById('morse-attempt-counter');
+  let correct=false;
+  if (c.puzzle.type==='morse') {
+    const input=document.getElementById('morse-input');
+    correct=input&&input.value.trim().toUpperCase()===c.puzzle.word.toUpperCase();
+    if (!correct&&input) {
+      input.classList.add('wrong'); setTimeout(()=>input.classList.remove('wrong'),500);
+      const counter=document.getElementById('morse-attempt-counter');
       if (counter) {
-        const n = (parseInt(counter.dataset.attempts||'0') + 1);
-        counter.dataset.attempts = n;
-        counter.textContent = `attempts: ${n}`;
-        // After 5 wrong attempts show a hint: number of letters
-        if (n === 5) {
-          const err = document.getElementById('puzzle-error');
-          if (err) { err.style.color='var(--text3)'; err.textContent = `Hint: the word is ${c.puzzle.word.length} letters long.`; }
-        }
+        const n=(parseInt(counter.dataset.attempts||'0')+1);
+        counter.dataset.attempts=n; counter.textContent=`attempts: ${n}`;
+        if (n===5) { const err=document.getElementById('puzzle-error'); if(err){err.style.color='var(--text3)';err.textContent=`Hint: the word is ${c.puzzle.word.length} letters long.`;} }
       }
     }
-  } else if (c.puzzle.type === 'frequency') {
-    const slider = document.getElementById('freq-slider');
-    if (slider) {
-      const freq = parseFloat(slider.value)/10;
-      correct = Math.abs(freq - c.puzzle.target) <= c.puzzle.tolerance;
-    }
-  } else if (c.puzzle.type === 'acrostic') {
-    const input = document.getElementById('acrostic-answer');
-    correct = input && input.value.trim().toUpperCase() === c.puzzle.answer.toUpperCase();
-    if (!correct && input) {
-      input.classList.add('wrong');
-      setTimeout(()=>input.classList.remove('wrong'),500);
-      // Progressively reveal letters: reveal one more per 2 wrong answers
-      const n = (parseInt(input.dataset.wrongCount||'0') + 1);
-      input.dataset.wrongCount = n;
-      const revealUpTo = Math.floor(n / 2);
-      for (let i = 0; i <= revealUpTo && i < c.puzzle.answer.length; i++) {
-        const el = document.getElementById(`acr-letter-${i}`);
-        if (el) { el.textContent = c.puzzle.answer[i]; el.style.opacity='1'; el.style.filter='none'; }
+  } else if (c.puzzle.type==='frequency') {
+    const slider=document.getElementById('freq-slider');
+    if (slider) correct=Math.abs(parseFloat(slider.value)/10-c.puzzle.target)<=c.puzzle.tolerance;
+  } else if (c.puzzle.type==='acrostic') {
+    const input=document.getElementById('acrostic-answer');
+    correct=input&&input.value.trim().toUpperCase()===c.puzzle.answer.toUpperCase();
+    if (!correct&&input) {
+      input.classList.add('wrong'); setTimeout(()=>input.classList.remove('wrong'),500);
+      const n=(parseInt(input.dataset.wrongCount||'0')+1); input.dataset.wrongCount=n;
+      const revealUpTo=Math.floor(n/2);
+      for (let i=0;i<=revealUpTo&&i<c.puzzle.answer.length;i++) {
+        const el=document.getElementById(`acr-letter-${i}`);
+        if (el) { el.textContent=c.puzzle.answer[i]; el.style.opacity='1'; el.style.filter='none'; }
       }
     }
   }
-
   if (correct) {
     onPuzzleSolved(c);
   } else {
-    const err = document.getElementById('puzzle-error');
-    if (err && c.puzzle.type !== 'morse') {
-      err.textContent = 'Incorrect — the signal does not match. Try again.';
-      setTimeout(()=>err.textContent='',3000);
-    } else if (err && c.puzzle.type === 'morse') {
-      err.textContent = 'Signal mismatch. Listen again carefully.';
-      setTimeout(()=>err.textContent='',2500);
-    }
+    const err=document.getElementById('puzzle-error');
+    if (err&&c.puzzle.type!=='morse') { err.textContent='Incorrect — the signal does not match. Try again.'; setTimeout(()=>err.textContent='',3000); }
+    else if (err) { err.textContent='Signal mismatch. Listen again carefully.'; setTimeout(()=>err.textContent='',2500); }
   }
 };
 
 function onPuzzleSolved(c) {
   saveSolved(c.id);
-
-  // Update 3D scene
-  const grp = constellationGroups[c.id];
+  const grp=constellationGroups[c.id];
   if (grp) {
-    grp.starMeshes.forEach(m => { m.material = matStarSolved.clone(); if(m.children[0]) m.children[0].material.color.setHex(0x22c55e); });
-    grp.lineMeshes.forEach(l => { l.material.color.setHex(0x22c55e); l.material.opacity=0.5; });
+    grp.starMeshes.forEach(m=>{
+      m.material=new THREE.MeshBasicMaterial({color:0x22c55e,transparent:true,opacity:0.95});
+      if(m.children[0]) m.children[0].material.color.setHex(0x22c55e);
+    });
+    grp.lineMeshes.forEach(l=>{ l.material.color.setHex(0x22c55e); l.material.opacity=0.5; });
   }
-
   updateSidebarItem(c);
-
-  // Show lore reveal
-  document.getElementById('puzzle-body').style.display = 'none';
-  const lore = document.getElementById('lore-reveal');
-  lore.style.display = 'flex';
-  setTimeout(()=>lore.classList.add('show'),50);
-  document.getElementById('lore-text').textContent = c.lore.text;
-  document.getElementById('lore-code').textContent = c.lore.code;
-  const link = document.getElementById('lore-link');
-  link.href = `https://siharu.vercel.app?${c.lore.param}&constellation=${c.id}`;
-
-  // Copy code on click
-  document.getElementById('lore-code').addEventListener('click', () => {
+  document.getElementById('puzzle-body').style.display='none';
+  const lore=document.getElementById('lore-reveal');
+  lore.style.display='flex'; setTimeout(()=>lore.classList.add('show'),50);
+  document.getElementById('lore-text').textContent=c.lore.text;
+  document.getElementById('lore-code').textContent=c.lore.code;
+  const link=document.getElementById('lore-link');
+  link.href=`https://siharu.vercel.app?${c.lore.param}&constellation=${c.id}`;
+  document.getElementById('lore-code').addEventListener('click', ()=>{
     navigator.clipboard?.writeText(c.lore.code).catch(()=>{});
-    document.getElementById('lore-code').textContent = 'COPIED TO CLIPBOARD';
+    document.getElementById('lore-code').textContent='COPIED TO CLIPBOARD';
     setTimeout(()=>document.getElementById('lore-code').textContent=c.lore.code, 2000);
   });
 }
 
-document.getElementById('puzzle-close').addEventListener('click', () => {
+document.getElementById('puzzle-close').addEventListener('click', ()=>{
   document.getElementById('puzzle-modal').classList.remove('open');
-  document.getElementById('puzzle-body').style.display = '';
+  document.getElementById('puzzle-body').style.display='';
   if (morseInterval) { clearInterval(morseInterval); morseInterval=null; }
 });
-
-document.getElementById('puzzle-modal').addEventListener('click', e => {
-  if (e.target === document.getElementById('puzzle-modal')) {
-    document.getElementById('puzzle-modal').classList.remove('open');
-  }
+document.getElementById('puzzle-modal').addEventListener('click', e=>{
+  if (e.target===document.getElementById('puzzle-modal')) document.getElementById('puzzle-modal').classList.remove('open');
 });
 
 /* ═══════════════════════════════════════════════════
@@ -1749,117 +1461,61 @@ loadUnlockState();
 buildSidebar();
 
 // Mobile sidebar toggle
-(function() {
-  const btn = document.getElementById('mob-sidebar-toggle');
-  const backdrop = document.getElementById('mob-sidebar-backdrop');
-  const sidebar = document.getElementById('sidebar');
+(function(){
+  const btn=document.getElementById('mob-sidebar-toggle');
+  const backdrop=document.getElementById('mob-sidebar-backdrop');
+  const sidebar=document.getElementById('sidebar');
   if (!btn) return;
-  btn.addEventListener('click', () => {
-    const open = sidebar.classList.toggle('mob-open');
-    backdrop.classList.toggle('show', open);
-    btn.textContent = open ? '✕' : '☰';
+  btn.addEventListener('click',()=>{ const open=sidebar.classList.toggle('mob-open'); backdrop.classList.toggle('show',open); btn.textContent=open?'✕':'☰'; });
+  backdrop.addEventListener('click',()=>{ sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.textContent='☰'; });
+  document.getElementById('sb-list').addEventListener('click',()=>{
+    if (window.innerWidth<=768) { sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.textContent='☰'; }
   });
-  backdrop.addEventListener('click', () => {
-    sidebar.classList.remove('mob-open');
-    backdrop.classList.remove('show');
-    btn.textContent = '☰';
-  });
-  // Close sidebar when a constellation is selected on mobile
-  document.getElementById('sb-list').addEventListener('click', () => {
-    if (window.innerWidth <= 768) {
-      sidebar.classList.remove('mob-open');
-      backdrop.classList.remove('show');
-      btn.textContent = '☰';
-    }
-  });
-
-  // FAB shift: move up when info panel is open on mobile
-  const infoPanel = document.getElementById('info-panel');
-  const observer = new MutationObserver(() => {
-    if (window.innerWidth <= 768) {
-      btn.classList.toggle('panel-up', infoPanel.classList.contains('open'));
-    }
-  });
-  observer.observe(infoPanel, {attributes:true, attributeFilter:['class']});
+  const infoPanel=document.getElementById('info-panel');
+  new MutationObserver(()=>{ if(window.innerWidth<=768) btn.classList.toggle('panel-up',infoPanel.classList.contains('open')); })
+    .observe(infoPanel,{attributes:true,attributeFilter:['class']});
 })();
 
 // Drag-to-resize info panel on mobile
-(function() {
-  const panel = document.getElementById('info-panel');
-  const handle = document.getElementById('ip-drag-handle');
+(function(){
+  const panel=document.getElementById('info-panel');
+  const handle=document.getElementById('ip-drag-handle');
   if (!handle) return;
-  let startY = 0, startH = 0, dragging = false;
-  const MIN_H = 180, MAX_H = window.innerHeight * 0.8;
-
-  handle.addEventListener('touchstart', e => {
-    if (window.innerWidth > 768) return;
-    dragging = true;
-    startY = e.touches[0].clientY;
-    startH = panel.offsetHeight;
-    panel.style.transition = 'none';
-  }, {passive:true});
-
-  window.addEventListener('touchmove', e => {
-    if (!dragging) return;
-    const dy = startY - e.touches[0].clientY; // drag up = increase height
-    const newH = Math.max(MIN_H, Math.min(MAX_H, startH + dy));
-    panel.style.height = newH + 'px';
-  }, {passive:true});
-
-  window.addEventListener('touchend', () => {
-    if (!dragging) return;
-    dragging = false;
-    panel.style.transition = '';
-    // Snap: if dragged below 140px, close panel
-    if (panel.offsetHeight < 140) {
-      panel.classList.remove('open');
-      panel.style.height = '';
-    }
-  });
+  let startY=0,startH=0,dragging=false;
+  const MIN_H=180,MAX_H=window.innerHeight*0.8;
+  handle.addEventListener('touchstart',e=>{ if(window.innerWidth>768)return; dragging=true; startY=e.touches[0].clientY; startH=panel.offsetHeight; panel.style.transition='none'; },{passive:true});
+  window.addEventListener('touchmove',e=>{ if(!dragging)return; const dy=startY-e.touches[0].clientY; panel.style.height=Math.max(MIN_H,Math.min(MAX_H,startH+dy))+'px'; },{passive:true});
+  window.addEventListener('touchend',()=>{ if(!dragging)return; dragging=false; panel.style.transition=''; if(panel.offsetHeight<140){panel.classList.remove('open');panel.style.height='';} });
 })();
 
-// Check every 30s if new stations unlocked (in case they have main site open in another tab)
-setInterval(() => {
-  const prevSize = STATE.unlockedIds.size;
+// FIX 3: 30s interval — use hoisted scene variable and exposed rebuild helper
+setInterval(()=>{
+  const prevSize=STATE.unlockedIds.size;
   loadUnlockState();
-  if (STATE.unlockedIds.size > prevSize) {
-    const newIds = [...STATE.unlockedIds].filter(id => {
-      const c = CONSTELLATIONS.find(x=>x.id===id);
-      return c && !document.getElementById(`sb-${id}`)?.classList.contains('unlocked');
+  if (STATE.unlockedIds.size>prevSize) {
+    const newIds=[...STATE.unlockedIds].filter(id=>{
+      const el=document.getElementById(`sb-${id}`);
+      return el&&!el.classList.contains('unlocked');
     });
-    newIds.forEach(id => {
-      const c = CONSTELLATIONS.find(x=>x.id===id);
-      if (c) {
-        showUnlockToast(c);
-        // Remove stale locked mesh from scene before rebuilding as unlocked
-        const existing = constellationGroups[id];
-        if (existing) {
-          scene.remove(existing.group);
-          delete constellationGroups[id];
-        }
-        // Re-derive the same Fibonacci offset position for this constellation
-        const i = CONSTELLATIONS.indexOf(c);
-        const n = CONSTELLATIONS.length;
-        const phi = Math.acos(1 - 2*(i+0.5)/n);
-        const theta = Math.PI * (1 + Math.sqrt(5)) * i;
-        const r = 5;
-        buildConstellationMesh(c, {
-          x: r * Math.sin(phi) * Math.cos(theta),
-          y: r * Math.cos(phi),
-          z: r * Math.sin(phi) * Math.sin(theta),
-        });
-        updateSidebarItem(c);
-      }
+    newIds.forEach(id=>{
+      const c=CONSTELLATIONS.find(x=>x.id===id);
+      if (!c||!scene||!window._rebuildConstellationMesh) return;
+      showUnlockToast(c);
+      const existing=constellationGroups[id];
+      if (existing) { scene.remove(existing.group); delete constellationGroups[id]; }
+      const i=CONSTELLATIONS.indexOf(c), n=CONSTELLATIONS.length;
+      const phi=Math.acos(1-2*(i+0.5)/n), theta=Math.PI*(1+Math.sqrt(5))*i, r=5;
+      window._rebuildConstellationMesh(c,{x:r*Math.sin(phi)*Math.cos(theta),y:r*Math.cos(phi),z:r*Math.sin(phi)*Math.sin(theta)});
+      updateSidebarItem(c);
     });
     buildSidebar();
   }
-}, 30000);
+},30000);
 
-// Update HUD
-setInterval(() => {
-  document.getElementById('hd-unlocked-count').textContent = STATE.unlockedIds.size;
-  document.getElementById('hud-unlocked').textContent = STATE.unlockedIds.size;
-}, 2000);
+setInterval(()=>{
+  document.getElementById('hd-unlocked-count').textContent=STATE.unlockedIds.size;
+  document.getElementById('hud-unlocked').textContent=STATE.unlockedIds.size;
+},2000);
 </script>
 </body>
 </html>
