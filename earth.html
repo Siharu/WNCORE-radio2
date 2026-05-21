@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WNCORE — SIGINT OVERLAY // SURFACE SITUATION</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#02020a;
+  --text:#ddeeff;
+  --text2:rgba(200,220,255,0.6);
+  --text3:rgba(200,220,255,0.25);
+  --accent:#4aa8ff;
+  --accent2:#a0d4ff;
+  --mono:'DM Mono',monospace;
+  --serif:'Playfair Display',serif;
+  /* Military green vars — activated after glitch transition */
+  --mg:#00ff88;
+  --mg2:rgba(0,255,136,0.6);
+  --mg3:rgba(0,255,136,0.2);
+  --mgbg:#000d05;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono)}
+#canvas{position:fixed;inset:0;z-index:0}
+
+/* OVERLAYS */
+#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px}
+#scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,10,30,0.05) 2px,rgba(0,10,30,0.05) 4px);
+  transition:background 2s}
+#scanlines.military{background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,20,8,0.08) 2px,rgba(0,20,8,0.08) 4px)}
+
+/* INTRO */
+#intro{position:fixed;inset:0;z-index:50;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  transition:opacity 1.2s}
+#intro.fade{opacity:0;pointer-events:none}
+#intro-inner{text-align:center}
+#intro-text{font-family:var(--serif);font-style:italic;font-size:1.8rem;
+  opacity:0;animation:rise 2s ease forwards 0.4s}
+#intro-sub{font-size:0.55rem;letter-spacing:4px;color:var(--text3);margin-top:12px;
+  opacity:0;animation:rise 1.5s ease forwards 1.4s;text-transform:uppercase}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* GLITCH TRANSITION OVERLAY */
+#glitch-overlay{position:fixed;inset:0;z-index:40;pointer-events:none;
+  opacity:0;background:#000;transition:opacity 0.1s}
+#glitch-overlay.flash{opacity:1}
+#reroute-msg{position:fixed;inset:0;z-index:41;display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;transition:opacity 0.3s}
+#reroute-msg.show{opacity:1}
+#reroute-inner{text-align:center;font-size:0.7rem;letter-spacing:3px;color:var(--mg);text-transform:uppercase;
+  border:1px solid rgba(0,255,136,0.3);padding:20px 36px;background:rgba(0,13,5,0.95)}
+#reroute-inner .r-title{font-size:1rem;margin-bottom:8px;
+  animation:rglitch 0.15s ease infinite}
+@keyframes rglitch{0%,100%{transform:none;opacity:1}33%{transform:translateX(2px);opacity:0.8}66%{transform:translateX(-2px);opacity:0.9}}
+#reroute-inner .r-sub{font-size:0.52rem;color:rgba(0,255,136,0.5)}
+
+/* HEADER — starts WNCORE, transitions to SIGINT */
+#hd{position:fixed;top:0;left:0;right:0;z-index:10;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;border-bottom:1px solid rgba(74,168,255,0.07);
+  background:rgba(2,2,10,0.8);backdrop-filter:blur(20px);
+  transition:all 2s}
+#hd.military{border-bottom-color:rgba(0,255,136,0.12);background:rgba(0,13,5,0.9)}
+#hd-left{display:flex;align-items:center;gap:14px}
+#hd-logo{font-family:var(--serif);font-size:1rem;color:var(--text);letter-spacing:-0.5px;
+  text-decoration:none;transition:color 2s}
+#hd.military #hd-logo{color:var(--mg);font-family:var(--mono);font-style:normal;font-size:0.7rem;letter-spacing:2px}
+#hd-sep{width:1px;height:14px;background:rgba(74,168,255,0.12);transition:background 2s}
+#hd.military #hd-sep{background:rgba(0,255,136,0.15)}
+#hd-title{font-size:0.56rem;letter-spacing:3px;color:var(--text3);transition:color 2s;text-transform:uppercase}
+#hd.military #hd-title{color:rgba(0,255,136,0.5)}
+#hd-right{display:flex;align-items:center;gap:16px}
+#hd-status{font-size:0.56rem;letter-spacing:1.5px;color:var(--text3);transition:color 2s}
+#hd-status span{color:var(--accent2);transition:color 2s}
+#hd.military #hd-status{color:rgba(0,255,136,0.4)}
+#hd.military #hd-status span{color:var(--mg)}
+#hd-back{font-size:0.58rem;letter-spacing:1.5px;color:var(--text3);text-decoration:none;
+  padding:5px 12px;border:1px solid rgba(74,168,255,0.12);border-radius:4px;
+  transition:all 2s;text-transform:uppercase}
+#hd.military #hd-back{border-color:rgba(0,255,136,0.15);color:rgba(0,255,136,0.4)}
+
+/* COUNTRY LABEL TOOLTIP */
+#country-panel{position:fixed;right:0;top:57px;bottom:0;width:320px;z-index:9;
+  border-left:1px solid rgba(74,168,255,0.07);background:rgba(2,2,10,0.92);
+  backdrop-filter:blur(20px);display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1),border-color 2s,background 2s}
+#country-panel.open{transform:translateX(0)}
+#country-panel.military{border-left-color:rgba(0,255,136,0.1);background:rgba(0,13,5,0.95)}
+#cp-header{padding:20px 18px 14px;border-bottom:1px solid rgba(74,168,255,0.07);
+  display:flex;justify-content:space-between;align-items:flex-start;transition:border-color 2s}
+#country-panel.military #cp-header{border-bottom-color:rgba(0,255,136,0.08)}
+#cp-status-tag{font-size:0.48rem;letter-spacing:2.5px;margin-bottom:5px;text-transform:uppercase}
+#cp-name{font-family:var(--serif);font-style:italic;font-size:1.2rem;line-height:1.2;
+  color:var(--text);transition:color 2s}
+#country-panel.military #cp-name{font-family:var(--mono);font-style:normal;font-size:0.9rem;
+  letter-spacing:2px;color:var(--mg)}
+#cp-close{background:none;border:none;color:var(--text3);cursor:pointer;
+  font-size:0.9rem;padding:4px;transition:color 2s}
+#country-panel.military #cp-close{color:rgba(0,255,136,0.4)}
+#cp-body{flex:1;padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:14px;
+  scrollbar-width:thin;scrollbar-color:rgba(74,168,255,0.1) transparent}
+#country-panel.military #cp-body{scrollbar-color:rgba(0,255,136,0.1) transparent}
+.cp-row-label{font-size:0.48rem;letter-spacing:2.5px;color:var(--text3);margin-bottom:5px;
+  text-transform:uppercase;transition:color 2s}
+#country-panel.military .cp-row-label{color:rgba(0,255,136,0.35)}
+.cp-row-val{font-size:0.65rem;color:var(--text2);line-height:1.7;transition:color 2s}
+#country-panel.military .cp-row-val{color:rgba(0,255,136,0.7)}
+#cp-situation{font-size:0.68rem;color:var(--text2);line-height:1.85;font-style:italic;
+  border-left:2px solid rgba(74,168,255,0.2);padding-left:12px;transition:all 2s}
+#country-panel.military #cp-situation{border-left-color:rgba(0,255,136,0.25);
+  font-style:normal;color:rgba(0,255,136,0.75)}
+#cp-threat{display:inline-block;font-size:0.5rem;letter-spacing:2px;padding:4px 10px;
+  border-radius:3px;margin-top:4px;text-transform:uppercase}
+.threat-dark{background:rgba(255,50,50,0.08);color:#ff5555;border:1px solid rgba(255,50,50,0.2)}
+.threat-quarantine{background:rgba(255,165,0,0.08);color:#ffaa44;border:1px solid rgba(255,165,0,0.2)}
+.threat-signal{background:rgba(74,168,255,0.08);color:#4aa8ff;border:1px solid rgba(74,168,255,0.2)}
+.threat-destroyed{background:rgba(255,0,0,0.12);color:#ff3333;border:1px solid rgba(255,0,0,0.3)}
+.threat-overrun{background:rgba(200,0,0,0.15);color:#ff2222;border:1px solid rgba(200,0,0,0.4);
+  animation:threat-pulse 1.5s ease-in-out infinite}
+.threat-unknown{background:rgba(200,220,255,0.04);color:rgba(200,220,255,0.4);
+  border:1px solid rgba(200,220,255,0.1)}
+.threat-active{background:rgba(0,255,136,0.08);color:#00ff88;border:1px solid rgba(0,255,136,0.25)}
+.threat-stronghold{background:rgba(0,200,255,0.08);color:#00ccff;border:1px solid rgba(0,200,255,0.2)}
+@keyframes threat-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+
+/* WNCORE BASE MARKER */
+.wncore-marker{position:fixed;z-index:8;pointer-events:all;cursor:pointer;
+  width:32px;height:32px;transform:translate(-50%,-50%)}
+.wm-dot{width:8px;height:8px;border-radius:50%;background:#00ff88;position:absolute;
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 12px rgba(0,255,136,0.9);display:none}
+.wm-ring{position:absolute;inset:0;border-radius:50%;
+  border:1px solid rgba(0,255,136,0.5);animation:wm-pulse 2.5s ease-out infinite;display:none}
+.wncore-marker.revealed .wm-dot{display:block}
+.wncore-marker.revealed .wm-ring{display:block}
+@keyframes wm-pulse{0%{transform:scale(1);opacity:.9}100%{transform:scale(2.4);opacity:0}}
+
+/* LEGEND */
+#legend{position:fixed;left:24px;bottom:64px;z-index:8;
+  display:flex;flex-direction:column;gap:6px;
+  opacity:0;animation:fadein 1s ease forwards 1s}
+@keyframes fadein{to{opacity:1}}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:0.5rem;letter-spacing:1px;text-transform:uppercase}
+.leg-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* DATA HUD */
+#data-hud{position:fixed;right:24px;bottom:64px;z-index:8;
+  display:flex;flex-direction:column;gap:5px;
+  opacity:0;animation:fadein 1s ease forwards 1.2s;text-align:right}
+.data-row{display:flex;gap:12px;align-items:baseline;justify-content:flex-end;font-size:0.52rem}
+.data-label{letter-spacing:1.5px;min-width:80px;text-transform:uppercase;
+  color:var(--text3);transition:color 2s}
+.data-hud-military .data-label{color:rgba(0,255,136,0.35)}
+.data-val{letter-spacing:0.3px;color:var(--accent2);transition:color 2s}
+.data-hud-military .data-val{color:var(--mg)}
+.data-val.pulse{animation:vpulse 3s ease-in-out infinite}
+@keyframes vpulse{0%,100%{opacity:1}50%{opacity:0.4}}
+
+/* BOTTOM HUD */
+#bottom-hud{position:fixed;bottom:0;left:0;right:0;z-index:10;
+  padding:10px 24px;border-top:1px solid rgba(74,168,255,0.05);
+  background:rgba(2,2,10,0.8);backdrop-filter:blur(14px);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:0.52rem;letter-spacing:1px;color:var(--text3);
+  text-transform:uppercase;transition:all 2s}
+#bottom-hud.military{border-top-color:rgba(0,255,136,0.08);
+  background:rgba(0,13,5,0.9);color:rgba(0,255,136,0.35)}
+#bh-infected{color:#ff5555}
+#bh-human{color:#4aa8ff}
+#bh-time{font-variant-numeric:tabular-nums}
+#bottom-hud.military #bh-time{color:var(--mg)}
+
+/* GLITCH CSS EFFECT on country labels */
+.glitch-text{position:relative}
+.glitch-text::before,.glitch-text::after{content:attr(data-text);position:absolute;top:0;left:0;width:100%;height:100%}
+.glitch-text::before{color:#ff3333;animation:gt1 2s infinite;clip-path:polygon(0 30%,100% 30%,100% 50%,0 50%)}
+.glitch-text::after{color:#00ffff;animation:gt2 2s infinite;clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%)}
+@keyframes gt1{0%,90%,100%{transform:none;opacity:0}92%{transform:translateX(-2px);opacity:0.8}96%{transform:translateX(2px);opacity:0.6}}
+@keyframes gt2{0%,88%,100%{transform:none;opacity:0}91%{transform:translateX(2px);opacity:0.7}95%{transform:translateX(-1px);opacity:0.5}}
+
+/* MOBILE */
+@media(max-width:768px){
+  #country-panel{width:100%;top:auto;bottom:52px;height:55vh;border-left:none;
+    border-top:1px solid rgba(74,168,255,0.1);transform:translateY(100%)}
+  #country-panel.open{transform:translateY(0)}
+  #data-hud{display:none}
+  #legend{display:none}
+}
+</style>
+</head>
+<body>
+
+<div id="intro">
+  <div id="intro-inner">
+    <div id="intro-text">Surface Situation — 2032</div>
+    <div id="intro-sub">WNCORE Signal Cartography — Ground Level</div>
+  </div>
+</div>
+
+<div id="glitch-overlay"></div>
+<div id="reroute-msg">
+  <div id="reroute-inner">
+    <div class="r-title">// SIGNAL REROUTED</div>
+    <div class="r-sub">UNAUTHORIZED NODE DETECTED — SIGINT OVERLAY ACTIVE</div>
+  </div>
+</div>
+
+<canvas id="canvas"></canvas>
+<div id="grain"></div>
+<div id="scanlines"></div>
+
+<!-- HEADER -->
+<header id="hd">
+  <div id="hd-left">
+    <a href="/cygnus.html" id="hd-logo">WNCORE</a>
+    <span id="hd-sep"></span>
+    <span id="hd-title">Surface Situation — Post-Outbreak 2032</span>
+  </div>
+  <div id="hd-right">
+    <span id="hd-status">Population <span id="pop-display">8.28%</span> Human · <span id="infected-display">64%</span> Turned</span>
+    <a id="hd-back" href="/cygnus.html">← Cygnus</a>
+  </div>
+</header>
+
+<!-- WNCORE BASE MARKERS (added by JS) -->
+
+<!-- COUNTRY PANEL -->
+<aside id="country-panel">
+  <div id="cp-header">
+    <div>
+      <div id="cp-status-tag">—</div>
+      <div id="cp-name">—</div>
+    </div>
+    <button id="cp-close">✕</button>
+  </div>
+  <div id="cp-body">
+    <div>
+      <div class="cp-row-label">Status</div>
+      <div class="cp-row-val"><span id="cp-threat-badge">—</span></div>
+    </div>
+    <div>
+      <div class="cp-row-label">Last Known Situation</div>
+      <div id="cp-situation">—</div>
+    </div>
+    <div>
+      <div class="cp-row-label">Population Est.</div>
+      <div class="cp-row-val" id="cp-pop">—</div>
+    </div>
+    <div>
+      <div class="cp-row-label">WNCORE Signal</div>
+      <div class="cp-row-val" id="cp-signal">—</div>
+    </div>
+    <div id="cp-wncore-section" style="display:none">
+      <div class="cp-row-label">WNCORE Base</div>
+      <div class="cp-row-val" id="cp-base">—</div>
+    </div>
+  </div>
+</aside>
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="leg-row"><div class="leg-dot" style="background:#ff2222"></div><span style="color:rgba(200,220,255,0.3)">Overrun / Destroyed</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#ffaa44"></div><span style="color:rgba(200,220,255,0.3)">Quarantined / Compromised</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#4aa8ff"></div><span style="color:rgba(200,220,255,0.3)">Partial Signal Active</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:#00ff88"></div><span style="color:rgba(200,220,255,0.3)">WNCORE Base Transmitting</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:rgba(200,220,255,0.2)"></div><span style="color:rgba(200,220,255,0.3)">Dark / Unknown</span></div>
+</div>
+
+<!-- DATA HUD -->
+<div id="data-hud">
+  <div class="data-row"><span class="data-label">Date</span><span class="data-val">April 2032</span></div>
+  <div class="data-row"><span class="data-label">Outbreak Day</span><span class="data-val pulse" id="outbreak-day">D+???</span></div>
+  <div class="data-row"><span class="data-label">Zombie Pop.</span><span class="data-val pulse" style="color:#ff5555">~5.12B</span></div>
+  <div class="data-row"><span class="data-label">Infected Pop.</span><span class="data-val pulse" style="color:#ffaa44">~2.08B</span></div>
+  <div class="data-row"><span class="data-label">Immune</span><span class="data-val">~662M</span></div>
+  <div class="data-row"><span class="data-label">WNCORE Nodes</span><span class="data-val pulse">273 Confirmed</span></div>
+  <div class="data-row"><span class="data-label">Ghuuls</span><span class="data-val pulse" style="color:#ff3333">173 Reported</span></div>
+</div>
+
+<!-- BOTTOM HUD -->
+<div id="bottom-hud">
+  <span>Drag to Rotate · Scroll to Zoom</span>
+  <span>Infected: <span id="bh-infected">64%</span> · Immune: <span id="bh-human">8.28%</span> · Turned: 26%</span>
+  <span id="bh-time">T+00:00:00</span>
+</div>
+
+<script src="/three.min.js"></script>
+<script>
+'use strict';
+
+/* ═══════════════════════════════════════════
+   COUNTRY DATA — Lore-accurate from Another Sky masterlog
+═══════════════════════════════════════════ */
+const COUNTRIES = [
+  // DESTROYED / NUKED
+  { name:'Iran', code:'IR', lat:32, lon:53, status:'destroyed',
+    situation:'Struck by nuclear warhead during WW3 (2025–2027). Uninhabitable. Radiation zones extend into neighboring regions. No signal. No survivors confirmed. The sky above Tehran reportedly turned black and stayed that way.',
+    pop:'Estimated 0 — confirmed extinction event', signal:'DEAD — no carrier detected', wncoreBase:null },
+
+  // OVERRUN — fully glitchy
+  { name:'Bangladesh', code:'BD', lat:23.7, lon:90.4, status:'overrun',
+    situation:'Outbreak origin trace — rural villages first infected April 5th, days after Nepal. Dhaka fell within 72 hours. Dense urban population amplified spread. Several survivor pockets reported near Chittagong. WNCORE station BD-09 last broadcast April 17th. S last known location.',
+    pop:'~12M survivors estimated (3.6% of pre-outbreak)', signal:'BD-09 DARK — last ping 17 April 2032', wncoreBase:'Dhaka Grid Node — DARK' },
+
+  { name:'Nepal', code:'NP', lat:28.1, lon:84.1, status:'overrun',
+    situation:'PATIENT ZERO REGION. Outbreak began in small mountain villages. WHO investigators dispatched April 6th — none returned. Villages are completely silent. Satellite imaging shows no movement. Something started here.',
+    pop:'Unknown — all contact lost', signal:'NP-01 STATIC — signal fragmented', wncoreBase:null },
+
+  { name:'India', code:'IN', lat:20.6, lon:78.9, status:'overrun',
+    situation:'Outbreak reached rural northern India within days of Nepal. Government collapsed April 14th. Military attempted containment — failed. Remaining Government representatives evacuated to Alaska. Isolated survivor enclaves reported in southern peninsular regions.',
+    pop:'~120M survivors (8.7% of pre-outbreak)', signal:'Multiple nodes — intermittent', wncoreBase:'Chennai Signal Post — INTERMITTENT' },
+
+  { name:'Pakistan', code:'PK', lat:30.4, lon:69.3, status:'overrun',
+    situation:'Axis power in WW3. Heavily bombed 2027. Outbreak compounded existing devastation. No functional government. Lahore and Karachi dark. Isolated transmission detected from Islamabad bunker — origin unknown.',
+    pop:'Critically low — war + outbreak double collapse', signal:'ISL-BUNKER — unidentified TX', wncoreBase:null },
+
+  { name:'Nigeria', code:'NG', lat:9.1, lon:8.7, status:'overrun',
+    situation:'First African nation to report outbreak — April 9th, same day WHO declared pandemic. Lagos was the epicenter. Spread across West Africa within two weeks. Rooftop Seers faction last reported broadcasting from Abuja before going silent.',
+    pop:'~28M survivors', signal:'Rooftop Seers last TX — Abuja — SILENT', wncoreBase:null },
+
+  // QUARANTINED / COMPROMISED
+  { name:'Germany', code:'DE', lat:51.2, lon:10.4, status:'quarantine',
+    situation:'FOG OF MEDUSA EVENT. Yellowish suffocating fog appeared and covered major cities. Kills infected and humans — only full zombies survive it. Berlin quarantine zone active. Remaining population sealed in southern highland shelters. WNCORE station DE-04 still transmitting from Munich bunker.',
+    pop:'~8M in shelter zones', signal:'DE-04 MUNICH — ACTIVE', wncoreBase:'Munich Bunker Array — ACTIVE' },
+
+  { name:'Russia', code:'RU', lat:61.5, lon:105.3, status:'quarantine',
+    situation:'Built massive concrete border walls post-WW3. Most of country is barren with zombie populations. Government consolidated near Ural mountain region. Ghuul cases confirmed — 11 reported near Moscow ruins. Steel wall breaches reported in Siberia.',
+    pop:'~15M inside walls', signal:'RU-URAL — ENCRYPTED TX', wncoreBase:null },
+
+  { name:'China', code:'CN', lat:35.9, lon:104.2, status:'quarantine',
+    situation:'Axis power in WW3. Massive population pre-outbreak meant massive casualty scale. Eastern coastal cities completely overrun. Government surviving in western inland provinces. Three Gorges region reported as last stable zone.',
+    pop:'~180M survivors (12% of pre-outbreak)', signal:'CN-WEST — government band only', wncoreBase:null },
+
+  { name:'Japan', code:'JP', lat:36.2, lon:138.3, status:'quarantine',
+    situation:'Government evacuated to remote island stronghold. Mainland Japan overrun — Oldbone zombies especially prevalent in elderly-heavy urban areas. Island fortress sealed. Internet still operational on the island. No outsiders admitted.',
+    pop:'~4M on island stronghold', signal:'JP-ISLAND — RESTRICTED TX', wncoreBase:null },
+
+  { name:'France', code:'FR', lat:46.2, lon:2.2, status:'quarantine',
+    situation:'Remaining Government member. Paris partially flooded from Seine overflow during global chilling event. Eiffel Tower reportedly used as antenna by Pale Node faction. Aquatic zombie spotted walking the Seine riverbed — only confirmed aquatic sighting in Europe.',
+    pop:'~9M survivors', signal:'FR-PALE NODE — anomalous TX detected', wncoreBase:null },
+
+  { name:'North Korea', code:'KP', lat:40.3, lon:127.5, status:'quarantine',
+    situation:'Sealed immediately — shoot on sight border protocol enacted day one of outbreak. No information in or out. Satellite shows no movement in border zones. Inside: complete unknown. WNCORE has zero data. The silence from North Korea is different from the silence of dead countries.',
+    pop:'UNKNOWN — total information blackout', signal:'ZERO — complete blackout', wncoreBase:null },
+
+  // SIGNAL ACTIVE — partial human control
+  { name:'United Kingdom', code:'GB', lat:55.4, lon:-3.4, status:'signal',
+    situation:'Remaining Government member. White Flag NGO faction operating from cruise ship near London coast. Channel tunnel sealed. Scotland relatively stable. WNCORE station UK-02 broadcasting from Edinburgh — one of the clearest signals in Europe.',
+    pop:'~12M survivors', signal:'UK-02 EDINBURGH — CLEAR', wncoreBase:'Edinburgh Tower — TRANSMITTING' },
+
+  { name:'Canada', code:'CA', lat:56.1, lon:-106.3, status:'signal',
+    situation:'Allied power in WW3. Remaining Government member. Alaska-adjacent border regions critical to humanity stronghold. Northern territories largely clear of outbreak. WNCORE station CA-01 broadcasting from Toronto shelter district.',
+    pop:'~18M survivors', signal:'CA-01 TORONTO — ACTIVE', wncoreBase:'Toronto Shelter Array — ACTIVE' },
+
+  { name:'Australia', code:'AU', lat:-25.3, lon:133.8, status:'signal',
+    situation:'Government went dark — under radar. No confirmed official communication since April 2032. However civilian signals suggest large survivor populations in interior desert regions. Outback proved natural quarantine barrier. WNCORE Australia node is one of strongest signals globally.',
+    pop:'~7M survivors — interior regions', signal:'AU-OUTBACK — STRONG TX', wncoreBase:'Alice Springs Node — STRONG' },
+
+  { name:'South Korea', code:'KR', lat:35.9, lon:127.8, status:'signal',
+    situation:'Remaining Government member. DMZ ironically became first effective zombie barrier. K-pop broadcast towers repurposed for WNCORE signal relay. Busan port district functioning as major survivor hub with sea evacuation capability.',
+    pop:'~11M survivors', signal:'KR-BUSAN — ACTIVE', wncoreBase:'Busan Harbor Node — ACTIVE' },
+
+  { name:'Finland', code:'FI', lat:61.9, lon:25.7, status:'signal',
+    situation:'Remaining Government member. Cold climate slowed outbreak significantly — frozen ground limits zombie mobility. Helsinki partially operational. WNCORE Nordic hub broadcasting across Scandinavia.',
+    pop:'~3.2M survivors', signal:'FI-NORDIC-HUB — STRONG', wncoreBase:'Helsinki Nordic Hub — STRONG' },
+
+  { name:'Israel', code:'IL', lat:31.5, lon:34.8, status:'signal',
+    situation:'Allied power in WW3. Iron Dome repurposed for aerial threat monitoring. Post-war military infrastructure gave head start on outbreak defense. Gaza and West Bank situation unknown. Negev Desert compounds operating as fortified survivor zones.',
+    pop:'~4M survivors', signal:'IL-NEGEV — ACTIVE', wncoreBase:null },
+
+  // DARK / UNKNOWN
+  { name:'United States', code:'US', lat:37.1, lon:-95.7, status:'stronghold',
+    situation:'Alaska Safe Zone — humanity\'s last government stronghold. Remaining Governments from USA, UK, Canada, India, Africa, France, Germany, South Korea, Finland consolidated here. Plans reportedly include nuclear strikes on zombie-dense regions. Whether this is salvation or a second extinction event remains debated.',
+    pop:'~40M in Alaska zone', signal:'US-ALASKA — RESTRICTED MILITARY TX', wncoreBase:'Alaska Signal Command — MILITARY' },
+
+  { name:'Brazil', code:'BR', lat:-14.2, lon:-51.9, status:'overrun',
+    situation:'Amazon region complicated outbreak response — dense jungle became incubation zone. Rio and São Paulo fell within weeks. Scattered survivor communities in the interior. Blood Pact criminal syndicate (formerly from Mexico) reportedly expanded into southern Brazil territory.',
+    pop:'~30M survivors', signal:'BR-INTERIOR — fragmented', wncoreBase:null },
+
+  { name:'Mexico', code:'MX', lat:23.6, lon:-102.6, status:'overrun',
+    situation:'Blood Pact originated here as Brotherhood Pact biker gang before outbreak. Now a major criminal faction with global reach. Mexico City completely overrun. Blood Pact controls northern border corridors — organ smuggling routes to remaining safe zones.',
+    pop:'~8M survivors', signal:'MX-BLOOD PACT — criminal TX', wncoreBase:null },
+
+  { name:'Argentina', code:'AR', lat:-38.4, lon:-63.6, status:'signal',
+    situation:'Blood Pact Antarctica operation uses Argentina as southern corridor. Patagonia region largely clear. Buenos Aires fell but survivors organized quickly. WNCORE station AR-01 is one of southernmost active nodes.',
+    pop:'~12M survivors', signal:'AR-01 — ACTIVE', wncoreBase:'Patagonia Node — ACTIVE' },
+
+  { name:'South Africa', code:'ZA', lat:-30.6, lon:22.9, status:'signal',
+    situation:'Cape Town survived largely intact — peninsula geography limited outbreak spread. Remaining Government Africa bloc based here. Kraken\'s Paw faction (fishermen and oil workers) operates off Cape coast. WNCORE Cape node one of most reliable in southern hemisphere.',
+    pop:'~18M survivors', signal:'ZA-CAPE — STRONG', wncoreBase:'Cape Town Array — STRONG' },
+
+  { name:'Egypt', code:'EG', lat:26.8, lon:30.8, status:'quarantine',
+    situation:'Suez Canal region contested between survivor factions and infected. Cairo fell April 22nd. Nile Valley survivors attempting agricultural continuity. Logbook Drifters reported leaving caches near Alexandria ruins.',
+    pop:'~9M survivors', signal:'EG-NILE — INTERMITTENT', wncoreBase:null },
+
+  { name:'Saudi Arabia', code:'SA', lat:23.9, lon:45.1, status:'dark',
+    situation:'Oil infrastructure collapse triggered secondary economic collapse globally. Riyadh silent since April 20th. No confirmed survivor numbers. Desert terrain may have limited initial spread but heat and lack of resources made survival difficult.',
+    pop:'Unknown', signal:'DARK — no carrier', wncoreBase:null },
+
+  { name:'Turkey', code:'TR', lat:38.9, lon:35.2, status:'quarantine',
+    situation:'Strategic Bosphorus chokepoint became major conflict zone between survivor fleets and infected swimming across. Istanbul bridges sealed with debris barriers. Anatolia interior has significant survivor population maintaining agricultural output.',
+    pop:'~14M survivors', signal:'TR-ANATOLIA — INTERMITTENT', wncoreBase:null },
+
+  { name:'Indonesia', code:'ID', lat:-0.8, lon:113.9, status:'overrun',
+    situation:'Island geography initially promised natural quarantine — failed when aquatic zombies first confirmed walking underwater near Jakarta. Bali survivor commune went dark April 30th. Papua highlands rumored as final holdout.',
+    pop:'~18M survivors — fragmented islands', signal:'ID-PAPUA — WEAK', wncoreBase:null },
+
+  { name:'Philippines', code:'PH', lat:12.9, lon:121.8, status:'signal',
+    situation:'Anne\'s homeland. Local political group she worked for reportedly reorganized as one of Southeast Asia\'s most organized survivor factions. WNCORE Philippines node broadcasting from Cebu — regular schedule. Ocean geography helped.',
+    pop:'~22M survivors', signal:'PH-CEBU — ACTIVE REGULAR TX', wncoreBase:'Cebu Signal Post — ACTIVE' },
+
+  { name:'Antarctica', code:'AQ', lat:-82.9, lon:135.0, status:'dark',
+    situation:'Blood Pact criminal syndicate base of operations. The Brotherhood Pact relocated here post-outbreak. Organ smuggling, resource hoarding, unknown experiments. McMurdo Station reportedly converted. Nobody who goes to investigate comes back.',
+    pop:'Blood Pact — unknown numbers', signal:'ENCRYPTED — Blood Pact controlled', wncoreBase:null },
+
+  { name:'Ukraine', code:'UA', lat:48.4, lon:31.2, status:'overrun',
+    situation:'Already devastated from pre-WW3 conflicts. Outbreak arrived in an already weakened nation. Dnipro river valley has survivor pockets. Eastern regions completely dark. Western Carpathian mountains host small fortified communities.',
+    pop:'~4M survivors', signal:'UA-KARPATY — WEAK', wncoreBase:null },
+
+  { name:'Poland', code:'PL', lat:51.9, lon:19.1, status:'signal',
+    situation:'Warsaw survivor coalition one of Europe\'s most organized. Mountain regions in south provided natural defense. WNCORE Poland node broadcasting from Kraków — the old city proved easier to defend than modern Warsaw\'s grid layout.',
+    pop:'~8M survivors', signal:'PL-KRAKOW — ACTIVE', wncoreBase:'Kraków Old City Node — ACTIVE' },
+
+  { name:'Ethiopia', code:'ET', lat:9.1, lon:40.5, status:'dark',
+    situation:'Addis Ababa silent. Highland terrain complicated both outbreak spread and survivor organization. No WNCORE signal detected. Logbook Drifters reported sighting of what may be a Type-5 Glitch infected in Simien Mountains — only East African report.',
+    pop:'Unknown', signal:'DARK', wncoreBase:null },
+
+  { name:'Kenya', code:'KE', lat:0.0, lon:37.9, status:'signal',
+    situation:'Nairobi partially operational. East African survivor coalition using Kenyan highlands as agricultural base. WNCORE Kenya node one of strongest in sub-Saharan Africa. Maasai community groups reportedly immune in higher proportions — under study.',
+    pop:'~12M survivors', signal:'KE-NAIROBI — ACTIVE', wncoreBase:'Nairobi Highland Node — ACTIVE' },
+
+  { name:'Morocco', code:'MA', lat:31.8, lon:-7.1, status:'signal',
+    situation:'Atlas Mountains provided crucial natural barrier. Marrakech walled medina structure proved highly defensible. WNCORE Morocco node broadcasting. White Flag NGO operating supply corridor from coast.',
+    pop:'~10M survivors', signal:'MA-ATLAS — ACTIVE', wncoreBase:null },
+
+  { name:'New Zealand', code:'NZ', lat:-40.9, lon:174.9, status:'signal',
+    situation:'Island geography successful containment. Outbreak arrived via shipping — quickly quarantined to North Island coastal ports. South Island nearly clean. Strongest surviving democracy in Pacific. WNCORE NZ node one of clearest globally.',
+    pop:'~3.8M survivors (near pre-outbreak levels)', signal:'NZ-SOUTH — CLEAR STRONG', wncoreBase:'Wellington Signal Hub — STRONG' },
+
+  { name:'Cuba', code:'CU', lat:21.5, lon:-79.0, status:'signal',
+    situation:'Island quarantine partially successful. Caribbean survivor network hub. Medical expertise (pre-outbreak reputation) directed towards infected treatment research. WNCORE Cuba node broadcasting medical data updates.',
+    pop:'~5M survivors', signal:'CU-HAVANA — MEDICAL TX', wncoreBase:null },
+
+  { name:'Sweden', code:'SE', lat:60.1, lon:18.6, status:'signal',
+    situation:'Nordic cold climate advantage. Stockholm archipelago geography helped. Significant survivor population maintaining industrial output. WNCORE Sweden part of Nordic hub network.',
+    pop:'~5M survivors', signal:'SE-NORDIC — ACTIVE', wncoreBase:null },
+
+  { name:'Switzerland', code:'CH', lat:46.8, lon:8.2, status:'signal',
+    situation:'Alpine geography and bunker infrastructure from Cold War era proved invaluable. Geneva International Zone housing surviving UN apparatus — whether it still has any authority is debated. CERN tunnels reportedly sheltering scientists.',
+    pop:'~4M survivors', signal:'CH-GENEVA — DIPLOMATIC TX', wncoreBase:'Geneva Underground Node — ACTIVE' },
+];
+
+/* ═══════════════════════════════════════════
+   DYNAMIC SITUATION GENERATOR
+   Adds randomized current-day intel each load
+═══════════════════════════════════════════ */
+const DYNAMIC_PREFIXES = {
+  overrun: [
+    'LATEST SWEEP — horde movement detected near ',
+    'SIGNAL FRAGMENT — survivor calling from ',
+    'DRIFTER LOG — cache left at ',
+    'WNCORE UPDATE — last known structure standing: ',
+    'AUDIO FRAGMENT — someone whispering from ',
+  ],
+  quarantine: [
+    'WALL BREACH REPORTED — sector ',
+    'CONTAINMENT STATUS — zone ',
+    'SWEEP RESULT — area ',
+    'PATROL LOG — perimeter ',
+    'RESOURCE LEVEL — stockpile at ',
+  ],
+  signal: [
+    'BROADCAST ACTIVE — signal strength ',
+    'SURVIVOR COUNT UPDATE — zone ',
+    'SUPPLY RUN COMPLETED — route ',
+    'WNCORE RELAY — node ',
+    'NIGHT PATROL — all clear, sector ',
+  ],
+  dark: [
+    'LAST KNOWN — ',
+    'NO RESPONSE FROM — ',
+    'SILENCE SINCE — ',
+    'PRESUMED LOST — ',
+  ],
+  destroyed: ['NO SIGNAL — ', 'CONFIRMED DEAD ZONE — ', 'RADIATION ADVISORY — '],
+  stronghold: ['SECURED — ', 'MILITARY CHANNEL — CLASSIFIED — ', 'ACCESS DENIED — '],
+};
+
+function getDynamicSituation(country) {
+  const prefixes = DYNAMIC_PREFIXES[country.status] || DYNAMIC_PREFIXES.dark;
+  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  const alphas = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const sectorId = alphas[Math.floor(Math.random() * alphas.length)] + '-' + Math.floor(Math.random() * 99 + 1);
+  return prefix + sectorId;
+}
+
+/* ═══════════════════════════════════════════
+   STATUS CONFIG
+═══════════════════════════════════════════ */
+const STATUS_CONFIG = {
+  overrun:    { color: 0xff2222, label: 'OVERRUN',     badgeClass: 'threat-overrun',    glow: 0.7 },
+  quarantine: { color: 0xff8822, label: 'QUARANTINED', badgeClass: 'threat-quarantine', glow: 0.4 },
+  signal:     { color: 0x4488ff, label: 'SIGNAL ACTIVE',badgeClass: 'threat-signal',    glow: 0.5 },
+  dark:       { color: 0x334455, label: 'DARK',        badgeClass: 'threat-unknown',    glow: 0.1 },
+  destroyed:  { color: 0xff0000, label: 'DESTROYED',   badgeClass: 'threat-destroyed',  glow: 1.0 },
+  stronghold: { color: 0x00ccff, label: 'STRONGHOLD',  badgeClass: 'threat-stronghold', glow: 0.6 },
+};
+
+/* ═══════════════════════════════════════════
+   UI STATE
+═══════════════════════════════════════════ */
+let isMilitary = false;
+let selectedCountry = null;
+
+function activateMilitaryMode() {
+  if (isMilitary) return;
+  isMilitary = true;
+
+  // Flash sequence
+  let flashes = 0;
+  const overlay = document.getElementById('glitch-overlay');
+  const flashInterval = setInterval(() => {
+    overlay.classList.toggle('flash');
+    flashes++;
+    if (flashes > 6) {
+      clearInterval(flashInterval);
+      overlay.classList.remove('flash');
+      // Show reroute message
+      document.getElementById('reroute-msg').classList.add('show');
+      setTimeout(() => {
+        document.getElementById('reroute-msg').classList.remove('show');
+        applyMilitaryStyles();
+      }, 2200);
+    }
+  }, 120);
+}
+
+function applyMilitaryStyles() {
+  document.getElementById('hd').classList.add('military');
+  document.getElementById('hd-logo').textContent = 'SIGINT-OVERLAY // NODE-09';
+  document.getElementById('hd-title').textContent = 'UNAUTHORIZED ACCESS — SURFACE SITUATION CLASSIFIED';
+  document.getElementById('scanlines').classList.add('military');
+  document.getElementById('bottom-hud').classList.add('military');
+  document.getElementById('country-panel').classList.add('military');
+  document.getElementById('data-hud').classList.add('data-hud-military');
+  // Reveal WNCORE base markers
+  document.querySelectorAll('.wncore-marker').forEach(el => el.classList.add('revealed'));
+}
+
+function openCountryPanel(country) {
+  selectedCountry = country;
+  const cfg = STATUS_CONFIG[country.status] || STATUS_CONFIG.dark;
+
+  document.getElementById('cp-status-tag').textContent = cfg.label;
+  document.getElementById('cp-status-tag').style.color = '#' + cfg.color.toString(16).padStart(6,'0');
+  document.getElementById('cp-name').textContent = country.name;
+
+  const badge = document.getElementById('cp-threat-badge');
+  badge.textContent = cfg.label;
+  badge.className = 'cp-threat ' + cfg.badgeClass;
+
+  document.getElementById('cp-situation').textContent = country.situation;
+  document.getElementById('cp-pop').textContent = country.pop;
+  document.getElementById('cp-signal').textContent = country.signal;
+
+  const wncoreSection = document.getElementById('cp-wncore-section');
+  if (country.wncoreBase && isMilitary) {
+    wncoreSection.style.display = 'block';
+    document.getElementById('cp-base').textContent = country.wncoreBase;
+  } else if (country.wncoreBase && !isMilitary) {
+    wncoreSection.style.display = 'block';
+    document.getElementById('cp-base').textContent = '[CLASSIFIED — ACCESS RESTRICTED]';
+  } else {
+    wncoreSection.style.display = 'none';
+  }
+
+  document.getElementById('country-panel').classList.add('open');
+
+  // Dynamic situation appended
+  const dyn = getDynamicSituation(country);
+  const dynDiv = document.createElement('div');
+  dynDiv.innerHTML = `<div class="cp-row-label" style="margin-top:4px">Live Intel Fragment</div><div class="cp-row-val" style="color:rgba(255,200,100,0.7);font-size:0.58rem">${dyn}</div>`;
+  const body = document.getElementById('cp-body');
+  // Remove previous live intel
+  const prev = body.querySelector('.live-intel');
+  if (prev) prev.remove();
+  dynDiv.className = 'live-intel';
+  body.appendChild(dynDiv);
+}
+
+document.getElementById('cp-close').addEventListener('click', () => {
+  document.getElementById('country-panel').classList.remove('open');
+});
+
+/* ═══════════════════════════════════════════
+   TIMER
+═══════════════════════════════════════════ */
+const startTime = Date.now();
+setInterval(() => {
+  const s = Math.floor((Date.now() - startTime) / 1000);
+  const h = String(Math.floor(s / 3600)).padStart(2, '0');
+  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+  const sec = String(s % 60).padStart(2, '0');
+  const el = document.getElementById('bh-time');
+  if (el) el.textContent = `T+${h}:${m}:${sec}`;
+  // Outbreak day counter — April 5 2032 = day 0
+  const outbreakStart = new Date('2032-04-05').getTime();
+  const now = new Date('2032-04-' + (5 + Math.floor(s / 864) % 25)).getTime();
+  document.getElementById('outbreak-day').textContent = 'D+' + Math.floor(s / 86400 + 12);
+}, 1000);
+
+/* ═══════════════════════════════════════════
+   THREE.JS GLOBE
+═══════════════════════════════════════════ */
+function startGlobe() {
+  if (typeof THREE === 'undefined') { setTimeout(startGlobe, 200); return; }
+
+  // Intro fade
+  setTimeout(() => {
+    document.getElementById('intro').classList.add('fade');
+    setTimeout(() => document.getElementById('intro').style.display = 'none', 1300);
+    // Trigger military mode glitch after intro
+    setTimeout(activateMilitaryMode, 4000);
+  }, 2800);
+
+  const canvas = document.getElementById('canvas');
+  let W = window.innerWidth, H = window.innerHeight;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x02020a, 1);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, W / H, 0.01, 1000);
+  camera.position.set(0, 0, 3.2);
+
+  /* ── BACKGROUND STARS ── */
+  (() => {
+    const count = 3000;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * Math.PI * 2, p = Math.acos(2 * Math.random() - 1);
+      const r = 80 + Math.random() * 40;
+      pos[i*3] = r * Math.sin(p) * Math.cos(t);
+      pos[i*3+1] = r * Math.sin(p) * Math.sin(t);
+      pos[i*3+2] = r * Math.cos(p);
+      const b = 0.15 + Math.random() * 0.6;
+      col[i*3] = b * 0.8; col[i*3+1] = b * 0.9; col[i*3+2] = b;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
+      vertexColors: true, size: 0.15, sizeAttenuation: true, transparent: true, opacity: 0.7
+    })));
+  })();
+
+  /* ── GLOBE BASE ── */
+  const globeGeo = new THREE.SphereGeometry(1, 64, 64);
+
+  // Dark ocean base
+  const globeMat = new THREE.MeshBasicMaterial({ color: 0x020d18 });
+  const globe = new THREE.Mesh(globeGeo, globeMat);
+  scene.add(globe);
+
+  // Ocean shimmer layer
+  const oceanMesh = new THREE.Mesh(
+    new THREE.SphereGeometry(1.001, 32, 32),
+    new THREE.MeshBasicMaterial({ color: 0x051a2e, transparent: true, opacity: 0.6, depthWrite: false })
+  );
+  scene.add(oceanMesh);
+
+  /* ── ATMOSPHERE ── */
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(1.05, 48, 48),
+    new THREE.MeshBasicMaterial({ color: 0x0a1f35, transparent: true, opacity: 0.25, depthWrite: false, side: THREE.BackSide })
+  ));
+  // Thin bright rim
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(1.02, 48, 48),
+    new THREE.MeshBasicMaterial({ color: 0x1a3a5a, transparent: true, opacity: 0.12, depthWrite: false, side: THREE.BackSide })
+  ));
+
+  /* ── COUNTRY DOTS ── */
+  // Convert lat/lon to 3D point on sphere
+  function latLonToVec3(lat, lon, r) {
+    const phi = (90 - lat) * (Math.PI / 180);
+    const theta = (lon + 180) * (Math.PI / 180);
+    return new THREE.Vector3(
+      -r * Math.sin(phi) * Math.cos(theta),
+      r * Math.cos(phi),
+      r * Math.sin(phi) * Math.sin(theta)
+    );
+  }
+
+  const countryMeshes = [];
+
+  COUNTRIES.forEach(country => {
+    const cfg = STATUS_CONFIG[country.status] || STATUS_CONFIG.dark;
+    const pos = latLonToVec3(country.lat, country.lon, 1.008);
+
+    // Country dot
+    const dotGeo = new THREE.SphereGeometry(0.012, 8, 8);
+    const dotMat = new THREE.MeshBasicMaterial({ color: cfg.color, transparent: true, opacity: 0.9 });
+    const dot = new THREE.Mesh(dotGeo, dotMat);
+    dot.position.copy(pos);
+    dot.userData = { country };
+    scene.add(dot);
+    countryMeshes.push(dot);
+
+    // Glow halo
+    if (cfg.glow > 0.2) {
+      const haloGeo = new THREE.SphereGeometry(0.022, 8, 8);
+      const haloMat = new THREE.MeshBasicMaterial({
+        color: cfg.color, transparent: true, opacity: cfg.glow * 0.25, depthWrite: false
+      });
+      const halo = new THREE.Mesh(haloGeo, haloMat);
+      halo.position.copy(pos);
+      halo.userData = { isHalo: true };
+      scene.add(halo);
+    }
+
+    // Pulsing ring for overrun/destroyed
+    if (country.status === 'overrun' || country.status === 'destroyed') {
+      const ringGeo = new THREE.TorusGeometry(0.025, 0.003, 4, 20);
+      const ringMat = new THREE.MeshBasicMaterial({
+        color: cfg.color, transparent: true, opacity: 0.6, depthWrite: false
+      });
+      const ring = new THREE.Mesh(ringGeo, ringMat);
+      ring.position.copy(pos);
+      ring.lookAt(0, 0, 0);
+      ring.userData = { isPulseRing: true, baseOpacity: 0.6, phase: Math.random() * Math.PI * 2 };
+      scene.add(ring);
+    }
+  });
+
+  /* ── WNCORE BASE HTML MARKERS ── */
+  const wncoreCountries = COUNTRIES.filter(c => c.wncoreBase);
+  wncoreCountries.forEach((country, i) => {
+    const el = document.createElement('div');
+    el.className = 'wncore-marker';
+    el.id = `wm-${i}`;
+    el.innerHTML = '<div class="wm-ring"></div><div class="wm-dot"></div>';
+    el.addEventListener('click', () => openCountryPanel(country));
+    document.body.appendChild(el);
+  });
+  scene._wncoreCountries = wncoreCountries;
+
+  /* ── CLOUD LAYER ── */
+  (() => {
+    const count = 800;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * Math.PI * 2, p = Math.acos(2 * Math.random() - 1);
+      const r = 1.015;
+      pos[i*3]   = r * Math.sin(p) * Math.cos(t);
+      pos[i*3+1] = r * Math.cos(p);
+      pos[i*3+2] = r * Math.sin(p) * Math.sin(t);
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
+      color: 0x334455, size: 0.006, sizeAttenuation: true, transparent: true, opacity: 0.3
+    })));
+  })();
+
+  /* ── BLACK RAIN PARTICLES (global chilling / obsedia) ── */
+  (() => {
+    const count = 2000;
+    const geo = new THREE.BufferGeometry();
+    const pos = new Float32Array(count * 3);
+    const col = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const t = Math.random() * Math.PI * 2, p = Math.acos(2 * Math.random() - 1);
+      const r = 1.02 + Math.random() * 0.15;
+      pos[i*3]   = r * Math.sin(p) * Math.cos(t);
+      pos[i*3+1] = r * Math.cos(p);
+      pos[i*3+2] = r * Math.sin(p) * Math.sin(t);
+      col[i*3] = 0.05 + Math.random() * 0.05;
+      col[i*3+1] = 0.05 + Math.random() * 0.05;
+      col[i*3+2] = 0.05 + Math.random() * 0.08;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    scene._rainGeo = geo;
+    scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
+      vertexColors: true, size: 0.004, sizeAttenuation: true, transparent: true, opacity: 0.7
+    })));
+  })();
+
+  /* ── ORBIT CONTROLS ── */
+  let spherical = { theta: 0.3, phi: Math.PI / 2, r: 3.2 };
+  let isDragging = false, lastMouse = { x: 0, y: 0 };
+  const isMobileDevice = 'ontouchstart' in window;
+
+  function updateCamera() {
+    camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+    camera.position.y = spherical.r * Math.cos(spherical.phi);
+    camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+    camera.lookAt(0, 0, 0);
+  }
+  updateCamera();
+
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
+  window.addEventListener('mouseup', () => { isDragging = false; });
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    spherical.theta -= (e.clientX - lastMouse.x) * 0.006;
+    spherical.phi = Math.max(0.2, Math.min(Math.PI - 0.2, spherical.phi + (e.clientY - lastMouse.y) * 0.005));
+    lastMouse = { x: e.clientX, y: e.clientY };
+    updateCamera();
+  });
+  canvas.addEventListener('wheel', e => {
+    spherical.r = Math.max(1.5, Math.min(6, spherical.r + e.deltaY * 0.005));
+    updateCamera();
+  }, { passive: true });
+
+  /* ── RAYCASTER FOR COUNTRY CLICKS ── */
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  let clickStart = { x: 0, y: 0 };
+
+  canvas.addEventListener('mousedown', e => { clickStart = { x: e.clientX, y: e.clientY }; });
+  canvas.addEventListener('mouseup', e => {
+    if (Math.abs(e.clientX - clickStart.x) > 5 || Math.abs(e.clientY - clickStart.y) > 5) return;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(countryMeshes);
+    if (hits.length > 0) {
+      openCountryPanel(hits[0].object.userData.country);
+    }
+  });
+
+  // Hover cursor
+  canvas.addEventListener('mousemove', e => {
+    if (isDragging) return;
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(countryMeshes);
+    canvas.style.cursor = hits.length > 0 ? 'pointer' : isDragging ? 'grabbing' : 'grab';
+  });
+
+  /* ── ANIMATION ── */
+  let time = 0;
+  let militaryColorApplied = false;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    time += 0.005;
+
+    if (!isDragging) {
+      spherical.theta += 0.0006;
+      updateCamera();
+    }
+
+    // Pulse rings
+    scene.children.forEach(child => {
+      if (child.userData.isPulseRing) {
+        child.userData.phase += 0.04;
+        child.material.opacity = child.userData.baseOpacity * (0.5 + 0.5 * Math.sin(child.userData.phase));
+        const s = 1 + 0.15 * Math.sin(child.userData.phase * 0.7);
+        child.scale.setScalar(s);
+      }
+    });
+
+    // Black rain drift
+    if (scene._rainGeo) {
+      const arr = scene._rainGeo.attributes.position.array;
+      for (let i = 0; i < arr.length; i += 3) {
+        arr[i+1] -= 0.0003;
+        if (arr[i+1] < -1.2) arr[i+1] += 2.4;
+      }
+      scene._rainGeo.attributes.position.needsUpdate = true;
+    }
+
+    // Military mode — shift globe color to green tint
+    if (isMilitary && !militaryColorApplied) {
+      militaryColorApplied = true;
+      globeMat.color.setHex(0x010d04);
+      oceanMesh.material.color.setHex(0x031a08);
+    }
+
+    // Update WNCORE base HTML marker positions
+    if (scene._wncoreCountries) {
+      scene._wncoreCountries.forEach((country, i) => {
+        const pos3d = latLonToVec3(country.lat, country.lon, 1.02);
+        const projected = pos3d.clone().project(camera);
+        const x = (projected.x * 0.5 + 0.5) * W;
+        const y = (-projected.y * 0.5 + 0.5) * H;
+        const el = document.getElementById(`wm-${i}`);
+        if (el && projected.z < 1) {
+          el.style.left = x + 'px';
+          el.style.top = y + 'px';
+          el.style.display = 'block';
+        } else if (el) {
+          el.style.display = 'none';
+        }
+      });
+    }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    W = window.innerWidth; H = window.innerHeight;
+    camera.aspect = W / H;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  });
+}
+
+startGlobe();
+</script>
+</body>
+</html>
