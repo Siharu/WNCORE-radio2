@@ -550,8 +550,8 @@ body.dark-mode .station-table tr:hover{background:rgba(30,28,24,0.85)}
 .pb-play:hover{transform:scale(1.06)}
 .pb-play svg{width:16px;height:16px}
 /* Smooth fade for play/pause icons */
-.pb-play svg, .pb-btn svg, #mini-player svg { transition: opacity 160ms ease, transform 160ms ease; }
-.pb-play svg.fading, .pb-btn svg.fading, #mini-player svg.fading { opacity: 0; transform: scale(0.96); }
+.pb-play svg, .pb-btn svg { transition: opacity 160ms ease, transform 160ms ease; }
+.pb-play svg.fading, .pb-btn svg.fading { opacity: 0; transform: scale(0.96); }
 /* Fallback: any SVG set to .fading will fade out */
 svg.fading { opacity: 0; transform: scale(0.96); transition: opacity 160ms ease, transform 160ms ease; }
 .pb-progress{width:100%;max-width:380px;display:flex;align-items:center;gap:8px;min-width:0}
@@ -2149,87 +2149,7 @@ body.dark-mode .lang-btn.active { background:var(--accent);color:#fff;border-col
   margin-right: 4px;
 }
 
-/* ═══════════════════════════════════════════════════════
-   MINI-PLAYER (scroll-docked)
-═══════════════════════════════════════════════════════ */
-.mini-player {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 8000;
-  background: var(--surface, #1a1714);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 40px;
-  padding: 10px 14px 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  opacity: 0;
-  transform: translateY(16px) scale(0.95);
-  pointer-events: none;
-  transition: opacity 0.25s ease, transform 0.25s ease;
-  max-width: 280px;
-}
-.mini-player.visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  pointer-events: all;
-}
-.mini-player-wave {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  height: 16px;
-}
-.mini-bar {
-  display: block;
-  width: 2px;
-  background: var(--accent, #c8472a);
-  border-radius: 2px;
-  animation: mini-bar-bounce 0.8s ease-in-out infinite alternate;
-  height: 8px;
-}
-@keyframes mini-bar-bounce {
-  from { height: 3px; }
-  to   { height: 14px; }
-}
-.mini-player-name {
-  font-size: 0.7rem;
-  color: var(--text1, #e8e4df);
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 140px;
-}
-.mini-player-btn {
-  background: rgba(200,71,42,0.12);
-  border: 1px solid rgba(200,71,42,0.25);
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  color: var(--accent, #c8472a);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-.mini-player-btn:hover { background: rgba(200,71,42,0.22); }
-.mini-player-close {
-  background: none;
-  border: none;
-  color: rgba(255,255,255,0.2);
-  cursor: pointer;
-  font-size: 0.7rem;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.15s;
-}
-.mini-player-close:hover { color: rgba(255,255,255,0.6); }
+
 
 /* ═══════════════════════════════════════════════════════
    STATION HOVER POPOVER
@@ -2579,17 +2499,7 @@ body:not(.dark-mode) .arg-status .redacted {
 /* ── Broadcast status bar separator: invisible on light bg fix ── */
 body:not(.dark-mode) .bsb-sep { color: rgba(0, 0, 0, 0.25); }
 
-/* ── Mini-player (injected by improvements.js) ── */
-body:not(.dark-mode) .mini-player {
-  background: rgba(245, 243, 239, 0.97);
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  color: var(--text);
-}
-body:not(.dark-mode) .mini-player-name { color: var(--text); }
-body:not(.dark-mode) .mini-player-btn  { color: var(--text2); border-color: var(--border); }
-body:not(.dark-mode) .mini-player-btn:hover { color: var(--text); }
-body:not(.dark-mode) #mini-name { color: var(--text); }
-body:not(.dark-mode) #mini-meta { color: var(--text2); }
+
 
 
 
@@ -3783,16 +3693,7 @@ body.dark-mode .sidebar-card:hover {
   transform: translateX(3px);
 }
 
-/* ─── 14. MOBILE MINI PLAYER ─────────────────────────────────── */
-.mini-player {
-  transition: transform var(--transition-slow) var(--ease-out) !important;
-}
-.mini-player-btn {
-  transition: transform var(--transition-fast) var(--ease-spring),
-              color var(--transition-fast) !important;
-}
-.mini-player-btn:hover { transform: scale(1.12) !important; }
-.mini-player-btn:active { transform: scale(0.9) !important; }
+
 
 /* ─── 15. MOBILE NAV ─────────────────────────────────────────── */
 .mobile-nav a {
@@ -5048,16 +4949,7 @@ body.dark-mode .sidebar-card:hover {
   transform: translateX(3px);
 }
 
-/* ─── 14. MOBILE MINI PLAYER ─────────────────────────────────── */
-.mini-player {
-  transition: transform var(--transition-slow) var(--ease-out) !important;
-}
-.mini-player-btn {
-  transition: transform var(--transition-fast) var(--ease-spring),
-              color var(--transition-fast) !important;
-}
-.mini-player-btn:hover { transform: scale(1.12) !important; }
-.mini-player-btn:active { transform: scale(0.9) !important; }
+
 
 /* ─── 15. MOBILE NAV ─────────────────────────────────────────── */
 .mobile-nav a {

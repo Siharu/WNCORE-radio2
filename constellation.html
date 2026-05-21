@@ -67,6 +67,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 .sb-badge.locked-badge{background:rgba(255,255,255,0.04);color:var(--text3)}
 .sb-badge.unlocked-badge{background:rgba(200,71,42,0.15);color:var(--accent)}
 .sb-badge.solved-badge{background:rgba(34,197,94,0.12);color:#22c55e}
+.sb-cygnus-link{display:block;font-family:'DM Mono',monospace;font-size:0.5rem;letter-spacing:2px;color:rgba(200,71,42,0.9);text-decoration:none;margin-top:5px;padding:3px 7px;border:1px solid rgba(200,71,42,0.35);border-radius:2px;text-align:center;transition:background 0.15s,border-color 0.15s}
+.sb-cygnus-link:hover{background:rgba(200,71,42,0.12);border-color:rgba(200,71,42,0.7)}
 #info-panel{position:fixed;right:0;top:57px;bottom:0;width:260px;z-index:9;
   border-left:1px solid var(--border);background:rgba(4,3,10,0.7);backdrop-filter:blur(12px);
   display:flex;flex-direction:column;overflow:hidden;
@@ -1136,6 +1138,7 @@ function buildSidebar() {
       <span class="sb-name">
         <div class="sb-name-main">${c.name}</div>
         <div class="sb-name-sub">${c.designation}</div>
+        ${c.id==='cygnus'&&solved?'<a class="sb-cygnus-link" href="/cygnus.html" onclick="event.stopPropagation()">=&nbsp;ENTER CYGNUS</a>':''}
       </span>
       <span class="sb-badge ${solved?'solved-badge':unlocked?'unlocked-badge':'locked-badge'}">
         ${solved?'SOLVED':unlocked?'OPEN':'LOCKED'}
@@ -1165,6 +1168,18 @@ function updateSidebarItem(c) {
   item.className=`sb-item ${solved?'solved':unlocked?'unlocked':'locked'}`;
   const badge=item.querySelector('.sb-badge');
   if (badge) { badge.className=`sb-badge ${solved?'solved-badge':unlocked?'unlocked-badge':'locked-badge'}`; badge.textContent=solved?'SOLVED':unlocked?'OPEN':'LOCKED'; }
+  if (c.id==='cygnus') {
+    let existingLink=item.querySelector('.sb-cygnus-link');
+    if (solved && !existingLink) {
+      const nameDiv=item.querySelector('.sb-name');
+      if (nameDiv) {
+        const a=document.createElement('a');
+        a.className='sb-cygnus-link'; a.href='/cygnus.html'; a.textContent='= ENTER CYGNUS';
+        a.addEventListener('click',e=>e.stopPropagation());
+        nameDiv.appendChild(a);
+      }
+    } else if (!solved && existingLink) { existingLink.remove(); }
+  }
 }
 
 /* ═══════════════════════════════════════════════════
