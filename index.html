@@ -1137,6 +1137,18 @@ try {
       <div class="pb-eq" id="pb-eq"><span></span><span></span><span></span></div>
     </div>
   </div>
+  <!-- Mobile-only inline controls (shown when pb-center is hidden) -->
+  <div class="pb-controls-mobile">
+    <button class="pb-btn" onclick="skipStation(-1)" aria-label="Previous station">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
+    </button>
+    <button class="pb-play" id="pb-play-btn-mobile" onclick="togglePlay()" aria-label="Play/Pause">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path id="pb-play-icon-mobile" d="M8 5v14l11-7z"/></svg>
+    </button>
+    <button class="pb-btn" onclick="skipStation(1)" aria-label="Next station">
+      <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+    </button>
+  </div>
   <div class="pb-right">
     <div class="pb-vol">
       <button class="pb-vol-icon" id="pb-mute-btn" onclick="toggleMute()" aria-label="Mute/Unmute" title="Mute (M)" style="background:none;border:none;cursor:pointer;color:var(--text2);padding:0;display:flex;align-items:center;opacity:0.7;transition:opacity 0.15s">

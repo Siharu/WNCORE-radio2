@@ -1108,16 +1108,18 @@ body:not(.mobile-menu-open) {
     text-overflow: ellipsis;
   }
 
-  /* Center controls — hide progress bar, keep play + skip only */
+  /* Center controls — hide on mobile, use pb-controls-mobile instead */
   .pb-center {
     display: none;
   }
 
-  /* Show just fav + play on mobile */
+  /* Mobile inline player controls — prev / play / next */
   .pb-controls-mobile {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
   .pb-play {

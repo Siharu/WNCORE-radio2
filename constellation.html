@@ -231,6 +231,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   color:var(--text2);opacity:0;transition:opacity 0.15s}
 #nebula-tooltip.visible{opacity:1}
 #nt-name{color:var(--text);font-size:0.7rem;margin-bottom:4px}
+
+/* ── BLACK HOLE in toggle button ── */
+#mob-sidebar-toggle{position:relative;overflow:visible}
+.bh-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;pointer-events:none}
+.bh-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1.5px solid transparent;transform:translate(-50%,-50%)}
+.bh-ring1{width:22px;height:22px;border-top-color:rgba(200,71,42,0.9);border-right-color:rgba(200,71,42,0.3);animation:bhspin 1.4s linear infinite}
+.bh-ring2{width:16px;height:16px;border-bottom-color:rgba(200,71,42,0.7);border-left-color:rgba(200,71,42,0.2);animation:bhspin 2.1s linear infinite reverse}
+.bh-ring3{width:10px;height:10px;border-top-color:rgba(255,120,60,0.6);animation:bhspin 0.9s linear infinite}
+.bh-core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:radial-gradient(circle,rgba(200,71,42,1) 0%,rgba(0,0,0,0.95) 70%);box-shadow:0 0 6px rgba(200,71,42,0.8),0 0 12px rgba(200,71,42,0.3)}
+.bh-disk{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(0deg);width:26px;height:6px;border-radius:50%;background:linear-gradient(90deg,transparent 15%,rgba(200,71,42,0.15) 35%,rgba(255,140,60,0.35) 50%,rgba(200,71,42,0.15) 65%,transparent 85%);animation:bhdisk 3s linear infinite}
+@keyframes bhspin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes bhdisk{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+
 </style>
 </head>
 <body>
@@ -257,7 +270,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     <span id="hd-logo-sub">Signal Cartography</span>
   </a>
   <span id="hd-status">NODE 09 — <span id="hd-unlocked-count">0</span> / 20 SIGNALS MAPPED</span>
-  <a id="hd-back" href="/">← Return to Array</a>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a id="hd-situation" href="/earth.html" title="Current Situation" style="font-size:0.58rem;letter-spacing:1.5px;color:var(--accent);text-decoration:none;border:1px solid rgba(200,71,42,0.35);padding:4px 10px;border-radius:3px;transition:all 0.15s;white-space:nowrap">⚠ CURRENT SITUATION</a>
+    <a id="hd-back" href="/">← Return to Array</a>
+  </div>
 </header>
 
 <nav id="sidebar">
@@ -266,7 +282,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 </nav>
 
 <div id="mob-sidebar-backdrop"></div>
-<button id="mob-sidebar-toggle" aria-label="Toggle constellation list">☰</button>
+<button id="mob-sidebar-toggle" aria-label="Toggle constellation list">
+  <div class="bh-container">
+    <div class="bh-disk"></div>
+    <div class="bh-ring bh-ring1"></div>
+    <div class="bh-ring bh-ring2"></div>
+    <div class="bh-ring bh-ring3"></div>
+    <div class="bh-core"></div>
+  </div>
+</button>
 
 <aside id="info-panel">
   <div id="ip-drag-handle"><div id="ip-drag-handle-bar"></div></div>
@@ -1422,6 +1446,10 @@ window.submitPuzzle = function() {
 
 function onPuzzleSolved(c) {
   saveSolved(c.id);
+  // Check if ALL constellations are now solved → trigger cygnus sequence
+  if (STATE.solvedIds.size >= 20) {
+    setTimeout(() => triggerCygnusSequence(), 2800);
+  }
   const grp=constellationGroups[c.id];
   if (grp) {
     grp.starMeshes.forEach(m=>{
@@ -1522,6 +1550,25 @@ setInterval(()=>{
   document.getElementById('hd-unlocked-count').textContent=STATE.unlockedIds.size;
   document.getElementById('hud-unlocked').textContent=STATE.unlockedIds.size;
 },2000);
+function triggerCygnusSequence() {
+  // Full-screen blackout with text before redirect
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:#000;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 1.2s ease';
+  overlay.innerHTML = `
+    <div style="font-family:'DM Mono',monospace;color:rgba(200,71,42,0.9);font-size:0.65rem;letter-spacing:3px;margin-bottom:24px;animation:none">ALL 20 SIGNALS MAPPED</div>
+    <div style="font-family:'Playfair Display',serif;font-size:2rem;color:#e8e4df;margin-bottom:16px;text-align:center">The swan has arrived.</div>
+    <div style="font-family:'DM Mono',monospace;color:rgba(232,228,223,0.4);font-size:0.6rem;letter-spacing:2px">ROUTING TO CYGNUS ARCHIVE…</div>
+    <div style="margin-top:40px;width:60px;height:60px;position:relative">
+      <div style="position:absolute;top:50%;left:50%;width:50px;height:50px;border-radius:50%;border:2px solid transparent;border-top-color:rgba(200,71,42,0.9);border-right-color:rgba(200,71,42,0.3);transform:translate(-50%,-50%);animation:bhspin 1s linear infinite"></div>
+      <div style="position:absolute;top:50%;left:50%;width:34px;height:34px;border-radius:50%;border:1.5px solid transparent;border-bottom-color:rgba(200,71,42,0.7);transform:translate(-50%,-50%);animation:bhspin 1.6s linear infinite reverse"></div>
+      <div style="position:absolute;top:50%;left:50%;width:10px;height:10px;border-radius:50%;background:radial-gradient(circle,#c8472a,#000);transform:translate(-50%,-50%);box-shadow:0 0 16px rgba(200,71,42,0.9)"></div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+  setTimeout(() => { window.location.href = '/cygnus.html'; }, 3200);
+}
+
 </script>
 </body>
 </html>

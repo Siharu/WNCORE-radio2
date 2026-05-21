@@ -648,6 +648,12 @@ function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
   }
   currentStation = {url, name, meta, emoji: emoji||'📻', favicon: favicon||null};
 
+  // Immediately show the player bar on mobile when a station is selected
+  const _pb = document.querySelector('.player-bar');
+  const _bn = document.querySelector('.mobile-bottom-nav');
+  if (_pb) _pb.classList.add('pb-active');
+  if (_bn) _bn.classList.add('pb-active');
+
   // Stop current stream cleanly before switching
   audio.pause();
   audio.src = '';
@@ -761,6 +767,8 @@ function playRec(url, name, meta) { playStation(url, name, meta, '📻'); }
 
 // Expose on window immediately so unified hook and any window.playStation callers work
 window.playStation = playStation;
+window.togglePlay = togglePlay;
+window.skipStation = skipStation;
 window.playRec = playRec;
 
 function play887Static() {
@@ -875,6 +883,16 @@ function setPlayIcon(playing) {
   if(npPath) fadeReplace(npPath, playing ? ICON_PAUSE : ICON_PLAY);
   const miniPath = document.getElementById('mini-play-icon');
   if(miniPath) fadeReplace(miniPath, playing ? ICON_PAUSE : ICON_PLAY);
+  const mobilePath = document.getElementById('pb-play-icon-mobile');
+  if(mobilePath) fadeReplace(mobilePath, playing ? ICON_PAUSE : ICON_PLAY);
+
+  // Sync floating mini-player icons
+  if (typeof window.syncMiniIcons === 'function') window.syncMiniIcons(playing);
+  // Sync bottom nav Playing button icon
+  const mbnPlay  = document.getElementById('mbn-play-icon');
+  const mbnPause = document.getElementById('mbn-pause-icon');
+  if (mbnPlay)  mbnPlay.style.display  = playing ? 'none' : '';
+  if (mbnPause) mbnPause.style.display = playing ? ''     : 'none';
 }
 
 function togglePlay() {
@@ -899,6 +917,24 @@ function updateMiniPlayerVisibility() {
   const playerExpanded = root && root.classList.contains('wp-visible') && root.classList.contains('wp-expanded');
   const showMini = isPlaying && !playerExpanded;
   miniPlayer.setAttribute('data-visible', showMini ? 'true' : 'false');
+
+  // Activate mobile player bar slide-in — pb-active controls visibility on mobile
+  const playerBar = document.querySelector('.player-bar');
+  const bottomNav = document.querySelector('.mobile-bottom-nav');
+  if (playerBar) {
+    if (currentStation) {
+      playerBar.classList.add('pb-active');
+    } else {
+      playerBar.classList.remove('pb-active');
+    }
+  }
+  if (bottomNav) {
+    if (currentStation) {
+      bottomNav.classList.add('pb-active');
+    } else {
+      bottomNav.classList.remove('pb-active');
+    }
+  }
 }
 
 // Attach audio play/pause listeners to keep UI in sync when playback state changes externally
@@ -4374,9 +4410,10 @@ function buildMobileBottomNav() {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><rect x="2" y="8" width="20" height="14" rx="2"/><path d="M6 8V6a6 6 0 0112 0v2"/><circle cx="12" cy="15" r="3"/></svg>
       <span>Mini</span>
     </a>
-    <button class="mbn-btn" id="mbn-playing" onclick="mbnOpenPlayer(this)">
+    <button class="mbn-btn" id="mbn-playing" onclick="mbnTogglePlayer(this)">
       <div class="mbn-playing-dot" id="mbn-dot"></div>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="20" height="20"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      <svg id="mbn-play-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="mbn-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="display:none"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
       <span>Playing</span>
     </button>`;
   document.body.appendChild(nav);
@@ -4389,6 +4426,26 @@ function mbnNav(pageId, btn) {
   if (pageId === 'favorites') { buildFavoritesPage(); renderFavoritesPage(); }
 }
 window.mbnNav = mbnNav;
+
+function mbnTogglePlayer(btn) {
+  // Toggle the player bar visibility on mobile
+  const playerBar = document.querySelector('.player-bar');
+  const bottomNav = document.querySelector('.mobile-bottom-nav');
+  if (!playerBar) return;
+
+  const isVisible = playerBar.classList.contains('pb-active');
+  if (isVisible) {
+    playerBar.classList.remove('pb-active');
+    if (bottomNav) bottomNav.classList.remove('pb-active');
+  } else {
+    playerBar.classList.add('pb-active');
+    if (bottomNav) bottomNav.classList.add('pb-active');
+  }
+  // Also handle active state on button
+  document.querySelectorAll('.mbn-btn').forEach(b => b.classList.remove('active'));
+  if (btn && !isVisible) btn.classList.add('active');
+}
+window.mbnTogglePlayer = mbnTogglePlayer;
 
 function scrollToPlayer() {
   // Legacy — kept for any external calls
@@ -5861,74 +5918,71 @@ if (document.readyState === 'loading') {
   bootV2();
 }
 
-// ─── MINI-PLAYER (docked on scroll) ──────────────────────────────────────
+// ─── MINI-PLAYER (mobile floating button) ────────────────────────────────
 (function initMiniPlayer() {
-  const SCROLL_THRESHOLD = 320;
-  let _miniName = '— no signal —';
-  let _isPlaying = false;
+  // Remove the static mini-player from HTML if it exists — we own the DOM here
+  const existing = document.getElementById('mini-player');
+  if (existing) existing.remove();
 
-  // Create mini-player DOM
   const mini = document.createElement('div');
   mini.id = 'mini-player';
   mini.className = 'mini-player';
   mini.innerHTML = `
-    <div class="mini-player-wave" id="mini-wave">
-      ${Array.from({length:5}, (_,i) => `<span class="mini-bar" style="animation-delay:${i*0.1}s"></span>`).join('')}
+    <div class="mini-player-content">
+      <div class="mini-player-art" id="mini-art">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="36" height="36"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
+      </div>
+      <div class="mini-player-info">
+        <div class="mini-player-name" id="mini-name">Network Standby</div>
+        <div class="mini-player-meta" id="mini-meta">Select a station</div>
+      </div>
+      <button class="mini-player-btn mini-player-play" id="mini-play-btn" onclick="window.__miniTogglePlay()" aria-label="Play/Pause">
+        <svg id="mini-play-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
+        <svg id="mini-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" style="display:none"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
+      </button>
+      <button class="mini-player-btn mini-player-next" onclick="skipStation(1)" aria-label="Next station">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M6 18l8.5-6L6 6v12zm2.5-6 5.5 3.9V8.1L8.5 12zM16 6h2v12h-2z"/></svg>
+      </button>
     </div>
-    <div class="mini-player-name" id="mini-name">— no signal —</div>
-    <button class="mini-player-btn" id="mini-play-btn" aria-label="Play/Pause" onclick="window.__miniTogglePlay()">
-      <svg id="mini-play-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M8 5v14l11-7z"/></svg>
-      <svg id="mini-pause-icon" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" style="display:none"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>
-    </button>
-    <button class="mini-player-close" onclick="document.getElementById('mini-player').classList.remove('visible')" aria-label="Close mini-player">✕</button>
   `;
   document.body.appendChild(mini);
 
-  // Update mini-player visibility based on scroll and station selection
-  function updateMiniVisibility() {
-    const hasStation = window._currentStationData && window._currentStationData.name;
-    const scrolledPast = window.scrollY > SCROLL_THRESHOLD;
-    if (hasStation && scrolledPast) {
-      mini.classList.add('visible');
-    } else {
-      mini.classList.remove('visible');
-    }
-  }
-
-  // Scroll watcher - show when station selected AND scrolled down
-  // Use non-passive listener and add periodic fallback check
-  let scrollTimeout;
-  const scrollCheck = () => {
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(updateMiniVisibility, 10);
-  };
-  window.addEventListener('scroll', scrollCheck, false);
-  
-  // Fallback: also check on wheel and touch events since scroll may not fire reliably
-  window.addEventListener('wheel', scrollCheck, false);
-  window.addEventListener('touchmove', scrollCheck, { passive: true });
-  
-  // FIX4: Removed setInterval(updateMiniVisibility, 250) — scroll/touch listeners above handle this
-
-  // [NEUTRALIZED: mini-player wrapper — handled by unified hook in bundle.js]
-  // Features: _miniName update, updateMiniIcons, updateMiniVisibility
-
+  // Toggle play/pause and sync icons
   window.__miniTogglePlay = function() {
-    const audio = document.getElementById('radio-audio') || document.querySelector('audio');
-    if (!audio) return;
-    if (audio.paused) { audio.play().catch(() => {}); _isPlaying = true; }
-    else { audio.pause(); _isPlaying = false; }
-    updateMiniIcons();
+    if (typeof window.togglePlay === 'function') {
+      window.togglePlay();
+    }
+    // Icon update happens via syncMiniIcons called from setPlayIcon
   };
 
-  function updateMiniIcons() {
-    const playIcon = document.getElementById('mini-play-icon');
+  // Called by setPlayIcon whenever play state changes globally
+  window.syncMiniIcons = function(playing) {
+    const playIcon  = document.getElementById('mini-play-icon');
     const pauseIcon = document.getElementById('mini-pause-icon');
-    if (playIcon) playIcon.style.display = _isPlaying ? 'none' : '';
-    if (pauseIcon) pauseIcon.style.display = _isPlaying ? '' : 'none';
-    const wave = document.getElementById('mini-wave');
-    if (wave) wave.style.opacity = _isPlaying ? '1' : '0.3';
-  }
+    if (playIcon)  playIcon.style.display  = playing ? 'none' : '';
+    if (pauseIcon) pauseIcon.style.display = playing ? ''     : 'none';
+    const art = document.getElementById('mini-art');
+    if (art) art.style.opacity = playing ? '1' : '0.6';
+    // Update station info
+    if (window._currentStationData) {
+      const nameEl = document.getElementById('mini-name');
+      const metaEl = document.getElementById('mini-meta');
+      if (nameEl) nameEl.textContent = window._currentStationData.name || 'Network Standby';
+      if (metaEl) metaEl.textContent = window._currentStationData.meta || '';
+    }
+  };
+
+  // Show/hide the mini-player based on whether a station is selected
+  window.updateMiniPlayerVisibility = function() {
+    const hasStation = !!window.currentStation || !!(window._currentStationData && window._currentStationData.name);
+    if (hasStation) {
+      mini.setAttribute('data-visible', 'true');
+      mini.classList.add('playing-visible', 'visible');
+    } else {
+      mini.setAttribute('data-visible', 'false');
+      mini.classList.remove('playing-visible', 'visible');
+    }
+  };
 })();
 
 // ─── STATION ROW HOVER PREVIEW POPOVER ───────────────────────────────────
