@@ -46,7 +46,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #sidebar{position:fixed;left:0;top:57px;bottom:0;width:220px;z-index:9;
   border-right:1px solid var(--border);background:rgba(4,3,10,0.7);backdrop-filter:blur(12px);
   overflow-y:auto;display:flex;flex-direction:column;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;pointer-events:none}
 #sidebar::-webkit-scrollbar{width:3px}
 #sidebar::-webkit-scrollbar-track{background:transparent}
 #sidebar::-webkit-scrollbar-thumb{background:var(--border)}
@@ -190,7 +190,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #hd-status{display:none}
   #hd{padding:10px 14px}
   #sidebar{transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);width:240px;top:50px}
-  #sidebar.mob-open{transform:translateX(0)}
+  #sidebar.mob-open{transform:translateX(0);pointer-events:all}
   .sb-item{padding:14px 16px;min-height:48px}
   #info-panel{width:100%;right:0;top:auto;bottom:0;height:40vh;min-height:220px;
     border-left:none;border-top:1px solid var(--border);transform:translateY(100%);
@@ -213,6 +213,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #mob-sidebar-toggle{display:none}
   #mob-sidebar-backdrop{display:none!important}
   #ip-drag-handle{display:none}
+  #sidebar{pointer-events:all}
 }
 #star-tooltip{position:fixed;z-index:50;pointer-events:none;max-width:280px;min-width:180px;
   background:rgba(4,3,10,0.93);border:1px solid rgba(200,71,42,0.35);border-radius:8px;
@@ -235,7 +236,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #nt-name{color:var(--text);font-size:0.7rem;margin-bottom:4px}
 
 /* ── BLACK HOLE in toggle button ── */
-#mob-sidebar-toggle{position:relative;overflow:visible}
+#mob-sidebar-toggle{position:relative;overflow:visible;display:none}
 .bh-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;pointer-events:none}
 .bh-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1.5px solid transparent;transform:translate(-50%,-50%)}
 .bh-ring1{width:22px;height:22px;border-top-color:rgba(200,71,42,0.9);border-right-color:rgba(200,71,42,0.3);animation:bhspin 1.4s linear infinite}
