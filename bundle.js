@@ -5904,7 +5904,6 @@ if (document.readyState === 'loading') {
   bootV2();
 }
 
-})();
 
 // ─── STATION ROW HOVER PREVIEW POPOVER ───────────────────────────────────
 (function initHoverPreviews() {
