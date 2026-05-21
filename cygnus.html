@@ -253,6 +253,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       Solve all 20 constellation puzzles in the signal archive to receive the final transmission.
     </div>
     <a id="lock-back" href="/constellation.html">← Return to Signal Archive</a>
+  </div>
+  <button id="dev-bypass" onclick="devBypass()">DEV UNLOCK</button>
 </div>
 
 <!-- HEADER -->
@@ -322,6 +324,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div class="data-row"><span class="data-label">Spin</span><span class="data-val pulse">&gt;0.95 a*</span></div>
   <div class="data-row"><span class="data-label">Distance</span><span class="data-val">6,070 LY</span></div>
   <div class="data-row"><span class="data-label">Companion</span><span class="data-val">HDE 226868 (O9.7Iab)</span></div>
+  <div class="data-row"><span class="data-label">Signal World</span><span class="data-val pulse">ORBITING — TX ACTIVE</span></div>
   <div class="data-row"><span class="data-label">X-Ray Lum.</span><span class="data-val pulse">~2×10³⁷ erg/s</span></div>
   <div class="data-row"><span class="data-label">NODE 09 Ref</span><span class="data-val">CYG-X1-TERMINUS</span></div>
 </div>
@@ -359,7 +362,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
 </div>
 
-<script src="/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 'use strict';
 
@@ -420,7 +423,7 @@ const LORE_NODES = [
     signal: 'CYG-X1 // OBSEDIA FILE 7-TERMINUS',
     title: 'The Companion',
     classification: 'Restricted · Signal_Kage Annotation',
-    text: `HDE 226868 — the blue supergiant companion. It feeds the black hole with stellar wind at a rate of 10⁻⁶ solar masses per year. SIGNAL_KAGE wrote in 2019: "the companion does not know it is being consumed. It continues to shine at full luminosity. This is either a mercy or an irrelevance." The annotation was filed without follow-up. We have not discussed it since.`,
+    text: `HDE 226868 — the blue supergiant companion. It feeds the black hole with stellar wind at a rate of 10⁻⁶ solar masses per year. But the companion is not alone. A world orbits in the system — tidal-locked, atmosphere degrading, surface still transmitting. SIGNAL_KAGE wrote in 2019: "the companion does not know it is being consumed. The world does not know it is dying. Both continue as if nothing has changed. We have not told them."`,
     code: 'ARG-CYGX1-007-COMPANION'
   },
   {
@@ -755,6 +758,148 @@ function startScene() {
     diskGroup.add(new THREE.Mesh(geo, mat));
   })();
 
+  /* ─── SIGNAL WORLD (glitchy orbiting planet) ─── */
+  (() => {
+    const planetGroup = new THREE.Group();
+    scene.add(planetGroup);
+
+    // Core planet — slightly squashed, blue-green like a dead Earth
+    const planetGeo = new THREE.SphereGeometry(0.38, 48, 48);
+    const planetMat = new THREE.MeshBasicMaterial({ color: 0x1a3a4a });
+    const planet = new THREE.Mesh(planetGeo, planetMat);
+    planetGroup.add(planet);
+
+    // Continent patches — dark landmasses
+    const patchData = [
+      { lat: 0.6, lon: 1.2, s: 0.18, c: 0x0d2218 },
+      { lat: -0.3, lon: 2.8, s: 0.14, c: 0x0a1e14 },
+      { lat: 0.9, lon: 4.5, s: 0.12, c: 0x0c2016 },
+      { lat: -0.7, lon: 0.4, s: 0.10, c: 0x091c12 },
+      { lat: 0.2, lon: 3.6, s: 0.16, c: 0x0b1f15 },
+    ];
+    patchData.forEach(({ lat, lon, s, c }) => {
+      const patch = new THREE.Mesh(
+        new THREE.SphereGeometry(s, 8, 8),
+        new THREE.MeshBasicMaterial({ color: c })
+      );
+      const r = 0.39;
+      patch.position.set(
+        r * Math.cos(lat) * Math.cos(lon),
+        r * Math.sin(lat),
+        r * Math.cos(lat) * Math.sin(lon)
+      );
+      planet.add(patch);
+    });
+
+    // Atmosphere glow — sickly blue-green
+    const atmoGeo = new THREE.SphereGeometry(0.44, 32, 32);
+    const atmoMat = new THREE.MeshBasicMaterial({
+      color: 0x1a5544, transparent: true, opacity: 0.18,
+      depthWrite: false, side: THREE.BackSide
+    });
+    planetGroup.add(new THREE.Mesh(atmoGeo, atmoMat));
+
+    // Outer glow
+    const outerGeo = new THREE.SphereGeometry(0.52, 24, 24);
+    const outerMat = new THREE.MeshBasicMaterial({
+      color: 0x0a2a20, transparent: true, opacity: 0.08,
+      depthWrite: false, side: THREE.BackSide
+    });
+    planetGroup.add(new THREE.Mesh(outerGeo, outerMat));
+
+    // Tidal debris ring — matter being stripped
+    const debrisGeo = new THREE.TorusGeometry(0.55, 0.018, 6, 80);
+    const debrisMat = new THREE.MeshBasicMaterial({
+      color: 0x336655, transparent: true, opacity: 0.28, depthWrite: false
+    });
+    const debris = new THREE.Mesh(debrisGeo, debrisMat);
+    debris.rotation.x = Math.PI / 2 + 0.3;
+    planetGroup.add(debris);
+
+    // Signal pulse ring — expanding transmission wave
+    const pulseGeo = new THREE.TorusGeometry(0.6, 0.006, 6, 60);
+    const pulseMat = new THREE.MeshBasicMaterial({
+      color: 0x44ffaa, transparent: true, opacity: 0.0, depthWrite: false
+    });
+    const pulse = new THREE.Mesh(pulseGeo, pulseMat);
+    pulse.rotation.x = Math.PI / 2;
+    planetGroup.add(pulse);
+
+    // Glitch particles — surface static
+    const glitchN = 200;
+    const glitchGeo = new THREE.BufferGeometry();
+    const glitchPos = new Float32Array(glitchN * 3);
+    for (let i = 0; i < glitchN; i++) {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const r = 0.40 + Math.random() * 0.04;
+      glitchPos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+      glitchPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+      glitchPos[i*3+2] = r * Math.cos(phi);
+    }
+    glitchGeo.setAttribute('position', new THREE.BufferAttribute(glitchPos, 3));
+    const glitchPts = new THREE.Points(glitchGeo, new THREE.PointsMaterial({
+      color: 0x55ffbb, size: 0.012, sizeAttenuation: true,
+      transparent: true, opacity: 0.6, depthWrite: false
+    }));
+    planetGroup.add(glitchPts);
+
+    // Orbit parameters — inclined elliptical orbit
+    const ORBIT_RADIUS = 13.5;
+    const ORBIT_TILT = 0.28; // radians inclination
+    const ORBIT_SPEED = 0.006;
+    let orbitAngle = 1.2;
+    let pulsePhase = 0;
+    let glitchTimer = 0;
+
+    scene._planetUpdate = function(dt) {
+      orbitAngle += ORBIT_SPEED;
+      pulsePhase += 0.04;
+      glitchTimer += dt;
+
+      // Elliptical orbit with tilt
+      const x = ORBIT_RADIUS * Math.cos(orbitAngle);
+      const z = ORBIT_RADIUS * 0.75 * Math.sin(orbitAngle); // ellipse
+      const y = Math.sin(orbitAngle * 0.7) * ORBIT_RADIUS * 0.15 * Math.sin(ORBIT_TILT);
+      planetGroup.position.set(x, y, z);
+
+      // Tidal lock — always faces black hole
+      planetGroup.lookAt(0, 0, 0);
+
+      // Planet slow spin
+      planet.rotation.y += 0.003;
+
+      // Signal pulse — periodically expand outward
+      const pScale = 1 + (pulsePhase % (Math.PI * 2)) / (Math.PI * 0.4);
+      const pOp = Math.max(0, 0.5 - (pulsePhase % (Math.PI * 2)) / (Math.PI * 1.2));
+      pulse.scale.setScalar(Math.min(pScale, 3.5));
+      pulseMat.opacity = pOp * 0.55;
+
+      // Glitch — random flicker on surface particles
+      if (glitchTimer > 0.08) {
+        glitchTimer = 0;
+        glitchPts.material.opacity = Math.random() > 0.3 ? 0.6 + Math.random() * 0.4 : 0.0;
+        // Random position jitter on a few particles
+        const arr = glitchGeo.attributes.position.array;
+        const jitterCount = Math.floor(Math.random() * 8);
+        for (let i = 0; i < jitterCount; i++) {
+          const idx = Math.floor(Math.random() * glitchN) * 3;
+          arr[idx]   += (Math.random() - 0.5) * 0.06;
+          arr[idx+1] += (Math.random() - 0.5) * 0.06;
+          arr[idx+2] += (Math.random() - 0.5) * 0.06;
+        }
+        glitchGeo.attributes.position.needsUpdate = true;
+      }
+
+      // Atmosphere flicker
+      atmoMat.opacity = 0.14 + Math.sin(pulsePhase * 2.3) * 0.06;
+      outerMat.opacity = 0.06 + Math.sin(pulsePhase * 1.7 + 1) * 0.03;
+
+      // Debris ring slow rotation
+      debris.rotation.z += 0.002;
+    };
+  })();
+
   /* ─── ORBIT CONTROLS ─── */
   let spherical = { theta: 0.3, phi: 1.3, r: 14 };
   let isDragging = false, lastMouse = { x: 0, y: 0 };
@@ -919,6 +1064,9 @@ function startScene() {
       }
       geo.attributes.position.needsUpdate = true;
     }
+
+    // Planet orbit + glitch
+    if (scene._planetUpdate) scene._planetUpdate(0.005);
 
     updateNodePositions();
     renderer.render(scene, camera);
