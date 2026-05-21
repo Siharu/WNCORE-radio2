@@ -1437,7 +1437,13 @@ function onPuzzleSolved(c) {
   document.getElementById('lore-text').textContent=c.lore.text;
   document.getElementById('lore-code').textContent=c.lore.code;
   const link=document.getElementById('lore-link');
-  link.href=`https://siharu.vercel.app?${c.lore.param}&constellation=${c.id}`;
+  const allSolved = STATE.solvedIds.size >= 20;
+link.href = allSolved
+  ? '/cygnus.html'
+  : `https://siharu.vercel.app?${c.lore.param}&constellation=${c.id}`;
+link.textContent = allSolved
+  ? '→ ACCESS THE BLACK HOLE ARCHIVE'
+  : '→ ACCESS ARCHIVE AT SIHARU.VERCEL.APP';
   document.getElementById('lore-code').addEventListener('click', ()=>{
     navigator.clipboard?.writeText(c.lore.code).catch(()=>{});
     document.getElementById('lore-code').textContent='COPIED TO CLIPBOARD';
