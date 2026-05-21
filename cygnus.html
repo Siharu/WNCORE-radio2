@@ -101,12 +101,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   transition:all 0.25s;text-transform:uppercase}
 #lock-back:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 20px rgba(74,168,255,0.1)}
 
-/* ── DEV BYPASS ── */
-#dev-bypass{position:fixed;bottom:16px;right:16px;z-index:110;
-  background:none;border:1px solid rgba(74,168,255,0.15);border-radius:4px;
-  color:rgba(74,168,255,0.3);font-family:var(--mono);font-size:0.5rem;
-  letter-spacing:1px;padding:5px 10px;cursor:pointer;transition:all 0.2s}
-#dev-bypass:hover{border-color:rgba(74,168,255,0.4);color:var(--accent)}
 
 /* ── INTRO ── */
 #intro{position:fixed;inset:0;z-index:50;background:var(--bg);
@@ -330,7 +324,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
     </div>
     <a id="lock-back" href="/constellation.html">← Return to Signal Archive</a>
   </div>
-  <button id="dev-bypass" onclick="devBypass()">DEV UNLOCK</button>
 </div>
 
 <!-- HEADER -->
@@ -447,10 +440,6 @@ function getSolvedCount() {
   } catch(e) { return { count: 0, ids: [] }; }
 }
 
-function devBypass() {
-  localStorage.setItem('wncore-constellation-solved', JSON.stringify(REQUIRED_IDS));
-  checkLock();
-}
 
 function checkLock() {
   const { count } = getSolvedCount();
