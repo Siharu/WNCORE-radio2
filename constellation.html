@@ -1515,10 +1515,10 @@ buildSidebar();
   const backdrop=document.getElementById('mob-sidebar-backdrop');
   const sidebar=document.getElementById('sidebar');
   if (!btn) return;
-  btn.addEventListener('click',()=>{ const open=sidebar.classList.toggle('mob-open'); backdrop.classList.toggle('show',open); btn.textContent=open?'✕':'☰'; });
-  backdrop.addEventListener('click',()=>{ sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.textContent='☰'; });
+  btn.addEventListener('click',()=>{ const open=sidebar.classList.toggle('mob-open'); backdrop.classList.toggle('show',open); btn.innerHTML=open?'<span style="font-size:1rem;line-height:1">✕</span>':'<div class="bh-container"><div class="bh-disk"></div><div class="bh-ring bh-ring1"></div><div class="bh-ring bh-ring2"></div><div class="bh-ring bh-ring3"></div><div class="bh-core"></div></div>'; });
+  backdrop.addEventListener('click',()=>{ sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.innerHTML='<div class="bh-container"><div class="bh-disk"></div><div class="bh-ring bh-ring1"></div><div class="bh-ring bh-ring2"></div><div class="bh-ring bh-ring3"></div><div class="bh-core"></div></div>'; });
   document.getElementById('sb-list').addEventListener('click',()=>{
-    if (window.innerWidth<=768) { sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.textContent='☰'; }
+    if (window.innerWidth<=768) { sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.innerHTML='<div class="bh-container"><div class="bh-disk"></div><div class="bh-ring bh-ring1"></div><div class="bh-ring bh-ring2"></div><div class="bh-ring bh-ring3"></div><div class="bh-core"></div></div>'; }
   });
   const infoPanel=document.getElementById('info-panel');
   new MutationObserver(()=>{ if(window.innerWidth<=768) btn.classList.toggle('panel-up',infoPanel.classList.contains('open')); })
