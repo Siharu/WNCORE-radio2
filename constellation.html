@@ -43,10 +43,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #hd-back{font-size:0.6rem;letter-spacing:1.5px;color:var(--text3);text-decoration:none;
   padding:5px 10px;border:1px solid var(--border);border-radius:4px;transition:all 0.15s}
 #hd-back:hover{color:var(--text);border-color:rgba(255,255,255,0.2)}
-#sidebar{position:fixed;left:0;top:57px;bottom:0;width:220px;z-index:9;
-  border-right:1px solid var(--border);background:rgba(4,3,10,0.7);backdrop-filter:blur(12px);
+#sidebar{position:fixed;left:0;top:57px;bottom:0;width:240px;z-index:9;
+  border-right:1px solid var(--border);background:rgba(4,3,10,0.92);backdrop-filter:blur(16px);
   overflow-y:auto;display:flex;flex-direction:column;
-  scrollbar-width:thin;scrollbar-color:var(--border) transparent;pointer-events:none}
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;pointer-events:none;
+  transform:translateX(-100%);transition:transform 0.32s cubic-bezier(0.16,1,0.3,1)}
+#sidebar.mob-open{transform:translateX(0);pointer-events:all}
 #sidebar::-webkit-scrollbar{width:3px}
 #sidebar::-webkit-scrollbar-track{background:transparent}
 #sidebar::-webkit-scrollbar-thumb{background:var(--border)}
@@ -168,12 +170,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.25);
   border-radius:6px;color:var(--accent);font-size:0.65rem;letter-spacing:1.5px;transition:all 0.2s}
 #lore-link:hover{background:rgba(200,71,42,0.15)}
-#hud{position:fixed;bottom:0;left:220px;right:260px;z-index:10;
+#hud{position:fixed;bottom:0;left:0;right:0;z-index:10;
   padding:12px 20px;border-top:1px solid var(--border);
   background:rgba(4,3,10,0.8);backdrop-filter:blur(12px);
   display:flex;align-items:center;gap:16px;font-size:0.6rem;letter-spacing:1px;color:var(--text3)}
 #hud.panel-closed{right:0}
-#mob-sidebar-toggle{display:none}
 #hud-unlocked{color:var(--accent)}
 #hud-tip{margin-left:auto;font-style:italic;opacity:0.6}
 #seq-indicator{display:flex;align-items:center;gap:4px}
@@ -190,8 +191,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 @media(max-width:768px){
   #hd-status{display:none}
   #hd{padding:10px 14px}
-  #sidebar{transform:translateX(-100%);transition:transform 0.28s cubic-bezier(0.16,1,0.3,1);width:240px;top:50px}
-  #sidebar.mob-open{transform:translateX(0);pointer-events:all}
   .sb-item{padding:14px 16px;min-height:48px}
   #info-panel{width:100%;right:0;top:auto;bottom:0;height:40vh;min-height:220px;
     border-left:none;border-top:1px solid var(--border);transform:translateY(100%);
@@ -199,23 +198,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #info-panel.open{transform:translateY(0)}
   #hud{left:0;right:0;font-size:0.5rem;padding:5px 10px;gap:8px}
   #hud-tip{display:none}
-  #mob-sidebar-toggle{display:flex;align-items:center;justify-content:center;
-    position:fixed;bottom:50px;left:12px;z-index:20;width:42px;height:42px;border-radius:50%;
-    background:rgba(4,3,10,0.92);border:1px solid rgba(200,71,42,0.4);
-    color:var(--accent);font-size:0.75rem;cursor:pointer;
-    box-shadow:0 0 14px rgba(200,71,42,0.15);
-    touch-action:manipulation;
-    transition:background 0.15s, bottom 0.3s cubic-bezier(0.16,1,0.3,1)}
-  #mob-sidebar-toggle:hover{background:rgba(200,71,42,0.12)}
-  #mob-sidebar-toggle.panel-up{bottom:calc(40vh + 8px)}
   #mob-sidebar-backdrop{display:none;position:fixed;inset:0;z-index:8;background:rgba(0,0,0,0.5)}
   #mob-sidebar-backdrop.show{display:block}
 }
 @media(min-width:769px){
-  #mob-sidebar-toggle{display:none}
-  #mob-sidebar-backdrop{display:none!important}
-  #ip-drag-handle{display:none}
-  #sidebar{pointer-events:all}
+    #ip-drag-handle{display:none}
 }
 #star-tooltip{position:fixed;z-index:50;pointer-events:none;max-width:280px;min-width:180px;
   background:rgba(4,3,10,0.93);border:1px solid rgba(200,71,42,0.35);border-radius:8px;
@@ -237,17 +224,134 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #nebula-tooltip.visible{opacity:1}
 #nt-name{color:var(--text);font-size:0.7rem;margin-bottom:4px}
 
-/* ── BLACK HOLE in toggle button ── */
-#mob-sidebar-toggle{position:relative;overflow:visible}
-.bh-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:28px;height:28px;pointer-events:none}
-.bh-ring{position:absolute;top:50%;left:50%;border-radius:50%;border:1.5px solid transparent;transform:translate(-50%,-50%)}
-.bh-ring1{width:22px;height:22px;border-top-color:rgba(200,71,42,0.9);border-right-color:rgba(200,71,42,0.3);animation:bhspin 1.4s linear infinite}
-.bh-ring2{width:16px;height:16px;border-bottom-color:rgba(200,71,42,0.7);border-left-color:rgba(200,71,42,0.2);animation:bhspin 2.1s linear infinite reverse}
-.bh-ring3{width:10px;height:10px;border-top-color:rgba(255,120,60,0.6);animation:bhspin 0.9s linear infinite}
-.bh-core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:5px;height:5px;border-radius:50%;background:radial-gradient(circle,rgba(200,71,42,1) 0%,rgba(0,0,0,0.95) 70%);box-shadow:0 0 6px rgba(200,71,42,0.8),0 0 12px rgba(200,71,42,0.3)}
-.bh-disk{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(0deg);width:26px;height:6px;border-radius:50%;background:linear-gradient(90deg,transparent 15%,rgba(200,71,42,0.15) 35%,rgba(255,140,60,0.35) 50%,rgba(200,71,42,0.15) 65%,transparent 85%);animation:bhdisk 3s linear infinite}
+/* ══════════════════════════════════════════
+   BLACK HOLE MOBILE MENU — GRAVITATIONAL FIELD
+══════════════════════════════════════════ */
+#mob-sidebar-toggle{
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:rgba(4,3,10,0.6);border:1px solid rgba(200,71,42,0.35);
+  cursor:pointer;overflow:visible;position:relative;
+  touch-action:manipulation;
+  transition:background 0.2s,border-color 0.2s,transform 0.15s}
+#mob-sidebar-toggle:hover{background:rgba(200,71,42,0.1);border-color:rgba(200,71,42,0.6)}
+#mob-sidebar-toggle:active{transform:scale(0.85)}
+
+/* Button glow pulse when closed */
+#mob-sidebar-toggle:not(.is-open){animation:bh-idle-pulse 3s ease-in-out infinite}
+@keyframes bh-idle-pulse{
+  0%,100%{box-shadow:0 0 14px rgba(200,71,42,0.15),0 0 0px rgba(200,71,42,0)}
+  50%{box-shadow:0 0 22px rgba(200,71,42,0.35),0 0 40px rgba(200,71,42,0.08)}
+}
+
+/* Black hole container */
+.bh-container{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:32px;height:32px;pointer-events:none}
+
+/* Gravitational lensing glow behind everything */
+.bh-lens{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:38px;height:38px;border-radius:50%;
+  background:radial-gradient(circle, rgba(200,71,42,0.08) 0%, transparent 70%);
+  animation:bh-lens-breathe 2.8s ease-in-out infinite}
+@keyframes bh-lens-breathe{
+  0%,100%{transform:translate(-50%,-50%) scale(1);opacity:0.6}
+  50%{transform:translate(-50%,-50%) scale(1.4);opacity:1}
+}
+
+/* Accretion disk — flat ellipse rotating */
+.bh-disk{position:absolute;top:50%;left:50%;width:30px;height:7px;border-radius:50%;
+  background:conic-gradient(from 0deg, 
+    transparent 0deg, rgba(200,71,42,0.05) 30deg, rgba(255,140,60,0.45) 90deg,
+    rgba(200,71,42,0.6) 140deg, rgba(255,80,20,0.3) 180deg,
+    rgba(200,71,42,0.1) 240deg, transparent 300deg, transparent 360deg);
+  animation:bh-disk-spin 2.4s linear infinite;
+  filter:blur(0.5px)}
+@keyframes bh-disk-spin{
+  from{transform:translate(-50%,-50%) rotate(0deg) scaleY(0.28)}
+  to{transform:translate(-50%,-50%) rotate(360deg) scaleY(0.28)}
+}
+
+/* Photon orbit rings */
+.bh-ring{position:absolute;top:50%;left:50%;border-radius:50%;transform:translate(-50%,-50%);
+  border-style:solid;border-color:transparent}
+.bh-ring1{width:26px;height:26px;border-width:1.5px;
+  border-top-color:rgba(200,71,42,0.95);border-right-color:rgba(255,100,40,0.4);
+  animation:bhspin 1.2s linear infinite;
+  filter:drop-shadow(0 0 2px rgba(200,71,42,0.6))}
+.bh-ring2{width:20px;height:20px;border-width:1px;
+  border-bottom-color:rgba(200,71,42,0.75);border-left-color:rgba(200,71,42,0.25);
+  animation:bhspin 1.9s linear infinite reverse;
+  filter:drop-shadow(0 0 1px rgba(200,71,42,0.4))}
+.bh-ring3{width:13px;height:13px;border-width:1px;
+  border-top-color:rgba(255,130,60,0.7);border-right-color:rgba(255,130,60,0.2);
+  animation:bhspin 0.75s linear infinite}
+
+/* Singularity — absolute darkness with event horizon */
+.bh-core{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:7px;height:7px;border-radius:50%;
+  background:radial-gradient(circle, #000 0%, #000 40%, rgba(200,71,42,0.6) 70%, transparent 100%);
+  box-shadow:0 0 0 1.5px rgba(200,71,42,0.5), 0 0 8px rgba(200,71,42,0.7), 0 0 18px rgba(200,71,42,0.25);
+  animation:bh-singularity 4s ease-in-out infinite}
+@keyframes bh-singularity{
+  0%,100%{box-shadow:0 0 0 1.5px rgba(200,71,42,0.5),0 0 8px rgba(200,71,42,0.7),0 0 18px rgba(200,71,42,0.25)}
+  50%{box-shadow:0 0 0 2px rgba(255,100,40,0.8),0 0 14px rgba(200,71,42,1),0 0 30px rgba(200,71,42,0.4),0 0 50px rgba(200,71,42,0.1)}
+}
+
+/* Hawking radiation particles */
+.bh-particle{position:absolute;top:50%;left:50%;width:2px;height:2px;border-radius:50%;
+  background:rgba(255,160,80,0.9);animation:bh-radiate 2.2s ease-out infinite;
+  transform-origin:0 0}
+.bh-particle:nth-child(1){animation-delay:0s;animation-duration:2.2s}
+.bh-particle:nth-child(2){animation-delay:0.55s;animation-duration:1.8s}
+.bh-particle:nth-child(3){animation-delay:1.1s;animation-duration:2.5s}
+.bh-particle:nth-child(4){animation-delay:1.65s;animation-duration:2.0s}
+@keyframes bh-radiate{
+  0%{transform:translate(-50%,-50%) rotate(var(--bh-angle,0deg)) translateX(6px) scale(1);opacity:0.9}
+  100%{transform:translate(-50%,-50%) rotate(var(--bh-angle,0deg)) translateX(22px) scale(0);opacity:0}
+}
+.bh-particle:nth-child(1){--bh-angle:15deg}
+.bh-particle:nth-child(2){--bh-angle:105deg}
+.bh-particle:nth-child(3){--bh-angle:200deg}
+.bh-particle:nth-child(4){--bh-angle:290deg}
+
+/* OPEN STATE — gravitational collapse effect */
+#mob-sidebar-toggle.is-open .bh-ring1{animation-duration:0.4s;border-top-color:rgba(255,80,30,1);filter:drop-shadow(0 0 4px rgba(255,80,30,0.9))}
+#mob-sidebar-toggle.is-open .bh-ring2{animation-duration:0.65s;border-bottom-color:rgba(200,71,42,1)}
+#mob-sidebar-toggle.is-open .bh-ring3{animation-duration:0.25s}
+#mob-sidebar-toggle.is-open .bh-core{animation:bh-collapse 0.5s ease-out forwards}
+@keyframes bh-collapse{
+  0%{transform:translate(-50%,-50%) scale(1)}
+  40%{transform:translate(-50%,-50%) scale(2.2);box-shadow:0 0 0 3px rgba(255,80,30,0.8),0 0 20px rgba(255,80,30,1),0 0 40px rgba(200,71,42,0.6)}
+  100%{transform:translate(-50%,-50%) scale(1.4);box-shadow:0 0 0 2px rgba(255,80,30,0.6),0 0 12px rgba(200,71,42,0.8)}
+}
+
+/* Close X — appears as gravitational ejection */
+.bh-close-x{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:14px;line-height:1;color:rgba(255,80,30,0.9);font-weight:300;
+  letter-spacing:-1px;font-family:var(--mono);
+  animation:bh-eject 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards}
+@keyframes bh-eject{
+  from{transform:translate(-50%,-50%) scale(0) rotate(90deg);opacity:0}
+  to{transform:translate(-50%,-50%) scale(1) rotate(0deg);opacity:1}
+}
+
+/* Sidebar entry with gravitational distortion */
+#sidebar.mob-open{
+  animation:bh-sidebar-emerge 0.35s cubic-bezier(0.16,1,0.3,1) forwards}
+@keyframes bh-sidebar-emerge{
+  from{transform:translateX(-100%) scaleX(0.85);filter:blur(4px)}
+  to{transform:translateX(0) scaleX(1);filter:blur(0)}
+}
+
+/* Backdrop — not just black, but event horizon shimmer */
+#mob-sidebar-backdrop{background:radial-gradient(ellipse at 0% 50%, rgba(200,71,42,0.08) 0%, rgba(0,0,0,0.65) 60%)}
+#mob-sidebar-backdrop.show{
+  animation:bh-backdrop-in 0.3s ease forwards}
+@keyframes bh-backdrop-in{
+  from{opacity:0}to{opacity:1}
+}
+
 @keyframes bhspin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
-@keyframes bhdisk{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+@keyframes bhdisk{from{transform:translate(-50%,-50%) rotate(0deg) scaleY(0.28)}to{transform:translate(-50%,-50%) rotate(360deg) scaleY(0.28)}}
 
 </style>
 </head>
@@ -269,11 +373,27 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="grain"></div>
 
 <header id="hd">
-  <a id="hd-logo" href="/">
-    <span id="hd-logo-mark">WNCORE</span>
-    <span id="hd-logo-sep"></span>
-    <span id="hd-logo-sub">Signal Cartography</span>
-  </a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button id="mob-sidebar-toggle" aria-label="Toggle constellation list">
+      <div class="bh-container">
+        <div class="bh-lens"></div>
+        <div class="bh-disk"></div>
+        <div class="bh-ring bh-ring1"></div>
+        <div class="bh-ring bh-ring2"></div>
+        <div class="bh-ring bh-ring3"></div>
+        <div class="bh-core"></div>
+        <div class="bh-particle"></div>
+        <div class="bh-particle"></div>
+        <div class="bh-particle"></div>
+        <div class="bh-particle"></div>
+      </div>
+    </button>
+    <a id="hd-logo" href="/">
+      <span id="hd-logo-mark">WNCORE</span>
+      <span id="hd-logo-sep"></span>
+      <span id="hd-logo-sub">Signal Cartography</span>
+    </a>
+  </div>
   <span id="hd-status">NODE 09 — <span id="hd-unlocked-count">0</span> / 20 SIGNALS MAPPED</span>
   <div style="display:flex;align-items:center;gap:12px">
     <a id="hd-situation" href="/earth.html" title="Current Situation" style="font-size:0.58rem;letter-spacing:1.5px;color:var(--accent);text-decoration:none;border:1px solid rgba(200,71,42,0.35);padding:4px 10px;border-radius:3px;transition:all 0.15s;white-space:nowrap">⚠ CURRENT SITUATION</a>
@@ -287,15 +407,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 </nav>
 
 <div id="mob-sidebar-backdrop"></div>
-<button id="mob-sidebar-toggle" aria-label="Toggle constellation list">
-  <div class="bh-container">
-    <div class="bh-disk"></div>
-    <div class="bh-ring bh-ring1"></div>
-    <div class="bh-ring bh-ring2"></div>
-    <div class="bh-ring bh-ring3"></div>
-    <div class="bh-core"></div>
-  </div>
-</button>
 
 <aside id="info-panel">
   <div id="ip-drag-handle"><div id="ip-drag-handle-bar"></div></div>
@@ -1514,20 +1625,54 @@ document.getElementById('puzzle-modal').addEventListener('click', e=>{
 loadUnlockState();
 buildSidebar();
 
-// Mobile sidebar toggle
+// Mobile sidebar toggle — Black Hole Edition
 (function(){
   const btn=document.getElementById('mob-sidebar-toggle');
   const backdrop=document.getElementById('mob-sidebar-backdrop');
   const sidebar=document.getElementById('sidebar');
   if (!btn) return;
-  btn.addEventListener('click',()=>{ const open=sidebar.classList.toggle('mob-open'); backdrop.classList.toggle('show',open); btn.innerHTML=open?'<span style="font-size:1rem;line-height:1">✕</span>':'<div class="bh-container"><div class="bh-disk"></div><div class="bh-ring bh-ring1"></div><div class="bh-ring bh-ring2"></div><div class="bh-ring bh-ring3"></div><div class="bh-core"></div></div>'; });
-  backdrop.addEventListener('click',()=>{ sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.innerHTML='<div class="bh-container"><div class="bh-disk"></div><div class="bh-ring bh-ring1"></div><div class="bh-ring bh-ring2"></div><div class="bh-ring bh-ring3"></div><div class="bh-core"></div></div>'; });
-  document.getElementById('sb-list').addEventListener('click',()=>{
-    if (window.innerWidth<=768) { sidebar.classList.remove('mob-open'); backdrop.classList.remove('show'); btn.innerHTML='<div class="bh-container"><div class="bh-disk"></div><div class="bh-ring bh-ring1"></div><div class="bh-ring bh-ring2"></div><div class="bh-ring bh-ring3"></div><div class="bh-core"></div></div>'; }
-  });
-  const infoPanel=document.getElementById('info-panel');
-  new MutationObserver(()=>{ if(window.innerWidth<=768) btn.classList.toggle('panel-up',infoPanel.classList.contains('open')); })
-    .observe(infoPanel,{attributes:true,attributeFilter:['class']});
+
+  const BH_HTML = `<div class="bh-container">
+    <div class="bh-lens"></div>
+    <div class="bh-disk"></div>
+    <div class="bh-ring bh-ring1"></div>
+    <div class="bh-ring bh-ring2"></div>
+    <div class="bh-ring bh-ring3"></div>
+    <div class="bh-core"></div>
+    <div class="bh-particle"></div>
+    <div class="bh-particle"></div>
+    <div class="bh-particle"></div>
+    <div class="bh-particle"></div>
+  </div>`;
+  const CLOSE_HTML = `<div class="bh-container">
+    <div class="bh-lens" style="animation-duration:1.2s"></div>
+    <div class="bh-disk" style="animation-duration:0.8s"></div>
+    <div class="bh-ring bh-ring1" style="animation-duration:0.4s"></div>
+    <div class="bh-ring bh-ring2" style="animation-duration:0.65s"></div>
+    <div class="bh-ring bh-ring3" style="animation-duration:0.25s"></div>
+    <div class="bh-core"></div>
+    <div class="bh-close-x">✕</div>
+  </div>`;
+
+  function openMenu() {
+    sidebar.classList.add('mob-open');
+    backdrop.classList.add('show');
+    btn.classList.add('is-open');
+    btn.innerHTML = CLOSE_HTML;
+  }
+  function closeMenu() {
+    sidebar.classList.remove('mob-open');
+    backdrop.classList.remove('show');
+    btn.classList.remove('is-open');
+    btn.innerHTML = BH_HTML;
+  }
+
+  btn.addEventListener('click', ()=>{ btn.classList.contains('is-open') ? closeMenu() : openMenu(); });
+  backdrop.addEventListener('click', closeMenu);
+  document.getElementById('sb-list').addEventListener('click', closeMenu);
+
+  new MutationObserver(()=>{ btn.classList.toggle('is-open', sidebar.classList.contains('mob-open')); })
+    .observe(sidebar,{attributes:true,attributeFilter:['class']});
 })();
 
 // Drag-to-resize info panel on mobile
