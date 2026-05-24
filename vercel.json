@@ -16,6 +16,9 @@
     },
     "api/icy.js": {
       "maxDuration": 10
+    },
+    "api/earth-admin.js": {
+      "maxDuration": 30
     }
   },
 
@@ -163,6 +166,10 @@
     {
       "src": "/api/icy",
       "dest": "/api/icy.js"
+    },
+    {
+      "src": "/api/earth-admin",
+      "dest": "/api/earth-admin.js"
     },
     {
       "src": "/(.*)",

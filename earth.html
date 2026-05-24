@@ -194,9 +194,206 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #legend{display:none}
   #arg-counter{top:auto;bottom:65px;right:12px}
 }
+
+/* ══ MOON ORBIT ══════════════════════════════════════════════════ */
+#moon-orbit-wrap{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+}
+#moon-orbit-arm{
+  position:absolute;width:0;height:0;
+  animation:moonOrbit 32s linear infinite;
+  transform-origin:0 0;
+}
+@keyframes moonOrbit{
+  0%  {transform:rotate(0deg)}
+  100%{transform:rotate(360deg)}
+}
+#moon-body{
+  position:absolute;
+  width:38px;height:38px;border-radius:50%;
+  transform:translate(140px,-19px);
+  background:radial-gradient(circle at 35% 35%,#d8dfe8,#b0bac7 40%,#8a96a3 70%,#6b7480);
+  box-shadow:inset -6px -4px 12px rgba(0,0,0,0.55),
+             inset 3px 3px 8px rgba(255,255,255,0.12),
+             0 0 18px rgba(180,200,230,0.18),
+             0 0 40px rgba(150,180,220,0.08);
+}
+#moon-body::before{
+  content:'';position:absolute;border-radius:50%;
+  background:rgba(0,0,0,0.18);
+  width:7px;height:7px;top:28%;left:38%;
+  box-shadow:10px 8px 0 rgba(0,0,0,0.12),
+             -4px 14px 0 3px rgba(0,0,0,0.10),
+             15px -2px 0 2px rgba(0,0,0,0.09);
+}
+#moon-body::after{
+  content:'';position:absolute;border-radius:50%;
+  background:rgba(255,255,255,0.10);
+  width:4px;height:4px;top:55%;left:60%;
+}
+
+/* ══ EARTH ADMIN PANEL ═══════════════════════════════════════════ */
+#earth-admin-backdrop{
+  position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.88);
+  backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;
+}
+#earth-admin-backdrop.open{display:flex}
+#earth-admin-box{
+  position:relative;width:min(700px,95vw);max-height:88vh;overflow-y:auto;
+  background:#020b04;border:1px solid rgba(0,255,136,0.25);border-radius:6px;
+  padding:28px;
+  box-shadow:0 0 60px rgba(0,255,136,0.07),inset 0 0 40px rgba(0,0,0,0.4);
+  font-family:'DM Mono',monospace;color:rgba(0,255,136,0.85);
+  scrollbar-width:thin;scrollbar-color:rgba(0,255,136,0.12) transparent;
+}
+#earth-admin-box h2{font-size:0.62rem;letter-spacing:4px;text-transform:uppercase;color:var(--mg);margin-bottom:4px}
+#earth-admin-box .adm-sub{font-size:0.46rem;letter-spacing:2px;color:rgba(0,255,136,0.3);margin-bottom:22px;text-transform:uppercase}
+#adm-auth{display:flex;flex-direction:column;gap:14px}
+.adm-auth-input{
+  background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.18);
+  border-radius:4px;padding:10px 14px;color:var(--mg);font-family:inherit;
+  font-size:0.65rem;letter-spacing:2px;outline:none;width:100%;
+}
+.adm-auth-input:focus{border-color:rgba(0,255,136,0.45)}
+#adm-auth-err{font-size:0.52rem;color:#ff5555;letter-spacing:1.5px;display:none}
+#adm-main{display:none;flex-direction:column;gap:18px}
+.adm-label{font-size:0.46rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(0,255,136,0.4);margin-bottom:5px}
+.adm-select,.adm-textarea,.adm-input{
+  width:100%;background:rgba(0,255,136,0.03);border:1px solid rgba(0,255,136,0.14);
+  border-radius:4px;padding:10px 14px;color:var(--mg);font-family:inherit;
+  font-size:0.62rem;letter-spacing:1px;outline:none;transition:border-color 0.2s;
+}
+.adm-select:focus,.adm-textarea:focus,.adm-input:focus{border-color:rgba(0,255,136,0.4)}
+.adm-textarea{min-height:100px;resize:vertical;line-height:1.7}
+#adm-preview{
+  min-height:80px;background:rgba(0,255,136,0.02);border:1px solid rgba(0,255,136,0.08);
+  border-radius:4px;padding:12px 14px;font-size:0.6rem;line-height:1.85;
+  color:rgba(0,255,136,0.65);white-space:pre-wrap;letter-spacing:0.3px;font-style:italic;
+}
+#adm-status{font-size:0.5rem;letter-spacing:1.5px;color:rgba(0,255,136,0.35);
+  text-transform:uppercase;min-height:16px;margin-top:2px}
+.adm-row{display:flex;gap:10px;flex-wrap:wrap}
+.adm-btn{
+  flex:1;min-width:120px;padding:10px 16px;border-radius:4px;font-family:inherit;
+  font-size:0.5rem;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;
+  border:1px solid rgba(0,255,136,0.22);background:rgba(0,255,136,0.04);
+  color:var(--mg);transition:all 0.2s;
+}
+.adm-btn:hover:not(:disabled){border-color:rgba(0,255,136,0.5);background:rgba(0,255,136,0.1)}
+.adm-btn:disabled{opacity:0.3;cursor:not-allowed}
+.adm-btn.primary{border-color:rgba(0,255,136,0.42);background:rgba(0,255,136,0.08)}
+.adm-btn.primary:hover:not(:disabled){background:rgba(0,255,136,0.17)}
+.adm-btn.danger{border-color:rgba(255,50,50,0.25);color:#ff6666;background:rgba(255,50,50,0.03)}
+.adm-btn.danger:hover:not(:disabled){border-color:rgba(255,50,50,0.55);background:rgba(255,50,50,0.1)}
+#adm-entries{display:flex;flex-direction:column;gap:8px}
+.adm-entry{
+  background:rgba(0,255,136,0.02);border:1px solid rgba(0,255,136,0.09);
+  border-radius:4px;padding:12px 14px;
+}
+.adm-entry-header{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.adm-entry-name{font-size:0.54rem;letter-spacing:2px;color:var(--mg);text-transform:uppercase}
+.adm-entry-meta{font-size:0.42rem;color:rgba(0,255,136,0.3);letter-spacing:1px;margin-top:2px}
+.adm-entry-text{font-size:0.55rem;color:rgba(0,255,136,0.5);line-height:1.7;font-style:italic;
+  max-height:72px;overflow:hidden;text-overflow:ellipsis}
+.adm-entry-actions{display:flex;gap:6px;flex-shrink:0}
+.adm-entry-btn{
+  font-family:inherit;font-size:0.42rem;letter-spacing:1.5px;padding:4px 9px;
+  border-radius:3px;cursor:pointer;text-transform:uppercase;
+  border:1px solid rgba(0,255,136,0.16);background:transparent;
+  color:rgba(0,255,136,0.55);transition:all 0.2s;
+}
+.adm-entry-btn:hover{border-color:rgba(0,255,136,0.4);color:var(--mg)}
+.adm-entry-btn.del{border-color:rgba(255,50,50,0.18);color:rgba(255,80,80,0.55)}
+.adm-entry-btn.del:hover{border-color:rgba(255,50,50,0.5);color:#ff5555}
+#adm-close-btn{
+  position:absolute;top:14px;right:18px;
+  background:none;border:none;color:rgba(0,255,136,0.3);
+  font-size:1rem;cursor:pointer;transition:color 0.2s;line-height:1;
+}
+#adm-close-btn:hover{color:var(--mg)}
+#adm-hint{
+  position:fixed;bottom:78px;left:50%;transform:translateX(-50%);
+  z-index:5;font-family:'DM Mono',monospace;font-size:0.44rem;
+  letter-spacing:2px;text-transform:uppercase;
+  color:rgba(0,255,136,0);transition:color 2s;pointer-events:none;
+}
+#adm-hint.show{color:rgba(0,255,136,0.22)}
+.adm-divider{border:none;border-top:1px solid rgba(0,255,136,0.08);margin:4px 0}
 </style>
 </head>
 <body>
+
+<!-- Moon orbit -->
+<div id="moon-orbit-wrap">
+  <div id="moon-orbit-arm">
+    <div id="moon-body"></div>
+  </div>
+</div>
+
+<!-- Earth Admin Panel -->
+<div id="earth-admin-backdrop">
+  <div id="earth-admin-box">
+    <button id="adm-close-btn">✕</button>
+    <h2>// WNCORE Earth Admin</h2>
+    <div class="adm-sub">Surface Situation Control — SIGINT Overlay</div>
+
+    <!-- AUTH SCREEN -->
+    <div id="adm-auth">
+      <div>
+        <div class="adm-label">Access Password</div>
+        <input id="adm-pw" class="adm-auth-input" type="password" placeholder="Enter EARTH_ADMIN password..." autocomplete="off">
+      </div>
+      <div id="adm-auth-err">// UNAUTHORIZED — Wrong password</div>
+      <div class="adm-row">
+        <button class="adm-btn primary" onclick="admLogin()">Authenticate →</button>
+      </div>
+    </div>
+
+    <!-- MAIN EDITOR (shown after auth) -->
+    <div id="adm-main">
+      <!-- Country selector -->
+      <div>
+        <div class="adm-label">Target Country</div>
+        <select class="adm-select" id="adm-country"></select>
+      </div>
+
+      <!-- Admin notes -->
+      <div>
+        <div class="adm-label">Lore Directive — What happened / what changed</div>
+        <textarea class="adm-textarea" id="adm-notes" placeholder="e.g. A WNCORE relay in Dhaka just came back online broadcasting corrupted audio. Blood Pact agents confirmed in Chittagong port. Survivor group calling themselves The Tide has been spotted near the old BD-09 building..."></textarea>
+      </div>
+
+      <!-- Preview area -->
+      <div>
+        <div class="adm-label" id="adm-preview-label">Generated Situation — Preview</div>
+        <div id="adm-preview">No preview yet. Generate or save raw below.</div>
+      </div>
+
+      <div id="adm-status"></div>
+
+      <div class="adm-row">
+        <button class="adm-btn primary" id="adm-gen-btn" onclick="admGenerate()">⚡ Generate via Groq</button>
+        <button class="adm-btn" id="adm-raw-btn" onclick="admSaveRaw()">💾 Save Raw (no AI)</button>
+      </div>
+
+      <hr class="adm-divider">
+
+      <!-- Saved entries -->
+      <div>
+        <div class="adm-label">Saved Situation Overrides</div>
+        <div id="adm-entries"><div style="font-size:0.52rem;color:rgba(0,255,136,0.25)">Loading...</div></div>
+      </div>
+
+      <div class="adm-row" style="margin-top:4px">
+        <button class="adm-btn danger" onclick="admClearSession()">🔒 Lock Session</button>
+        <button class="adm-btn" onclick="admLoadEntries()">↻ Refresh Entries</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="adm-hint">// Ctrl+Shift+E — Admin</div>
+
 
 <div id="intro">
   <div>
@@ -1094,6 +1291,305 @@ function startGlobe() {
 
   globe.pointOfView({ lat: 25, lng: 80, altitude: 2.5 }, 0);
 }
+
+/* ══════════════════════════════════════════════════════
+   DYNAMIC LORE — load overrides from Supabase via API
+══════════════════════════════════════════════════════ */
+const LORE_CACHE = {};   // countryCode -> situationText (runtime only)
+
+async function loadLoreOverrides() {
+  try {
+    const res = await fetch('/api/earth-admin');
+    if (!res.ok) return;
+    const { entries } = await res.json();
+    if (!Array.isArray(entries)) return;
+    entries.forEach(e => {
+      if (e.country_code && e.situation_text) {
+        LORE_CACHE[e.country_code.toUpperCase()] = {
+          text: e.situation_text,
+          date: e.updated_at,
+        };
+      }
+    });
+    console.log('[WNCORE Earth] Lore overrides loaded:', Object.keys(LORE_CACHE).length);
+  } catch(err) {
+    console.warn('[WNCORE Earth] Could not load lore overrides:', err);
+  }
+}
+
+// Patch openCountryPanel to inject lore override if present
+const _origOpenCountryPanel = openCountryPanel;
+function openCountryPanel(country) {
+  _origOpenCountryPanel(country);
+  const override = LORE_CACHE[country.code];
+  if (override) {
+    const sitEl = document.getElementById('cp-situation');
+    if (sitEl) {
+      sitEl.textContent = override.text;
+      // Add a small "updated" tag
+      const tag = document.createElement('div');
+      tag.style.cssText = 'font-size:0.42rem;letter-spacing:1.5px;color:rgba(0,255,136,0.3);margin-top:8px;text-transform:uppercase';
+      const d = new Date(override.date);
+      tag.textContent = '// Updated ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      sitEl.parentNode.appendChild(tag);
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   EARTH ADMIN PANEL
+══════════════════════════════════════════════════════ */
+let admAuthed = false;
+let admPassword = '';
+
+// Keyboard shortcut: Ctrl+Shift+E
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.shiftKey && (e.key === 'E' || e.key === 'e')) {
+    e.preventDefault();
+    toggleAdminPanel();
+  }
+});
+
+// Show hint briefly on load (fades out)
+setTimeout(() => {
+  const hint = document.getElementById('adm-hint');
+  hint.classList.add('show');
+  setTimeout(() => hint.classList.remove('show'), 4000);
+}, 6000);
+
+function toggleAdminPanel() {
+  const backdrop = document.getElementById('earth-admin-backdrop');
+  const isOpen = backdrop.classList.contains('open');
+  if (isOpen) {
+    backdrop.classList.remove('open');
+  } else {
+    backdrop.classList.add('open');
+    if (admAuthed) admLoadEntries();
+  }
+}
+
+// Close on backdrop click
+document.getElementById('earth-admin-backdrop').addEventListener('click', e => {
+  if (e.target === document.getElementById('earth-admin-backdrop')) toggleAdminPanel();
+});
+document.getElementById('adm-close-btn').addEventListener('click', toggleAdminPanel);
+
+// Enter key on password field
+document.getElementById('adm-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') admLogin();
+});
+
+async function admLogin() {
+  const pw = document.getElementById('adm-pw').value.trim();
+  if (!pw) return;
+  admSetStatus('Authenticating...');
+  try {
+    const res = await fetch('/api/earth-admin', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-earth-password': pw },
+      body: JSON.stringify({ action: 'auth_check' }),
+    });
+    if (res.status === 401) {
+      document.getElementById('adm-auth-err').style.display = 'block';
+      admSetStatus('');
+      return;
+    }
+    if (!res.ok) { admSetStatus('Server error: ' + res.status); return; }
+    admAuthed = true;
+    admPassword = pw;
+    document.getElementById('adm-auth-err').style.display = 'none';
+    document.getElementById('adm-auth').style.display = 'none';
+    document.getElementById('adm-main').style.display = 'flex';
+    admPopulateCountries();
+    admLoadEntries();
+    admSetStatus('// Authenticated — session active');
+  } catch(err) {
+    admSetStatus('Connection failed: ' + err.message);
+  }
+}
+
+function admPopulateCountries() {
+  const sel = document.getElementById('adm-country');
+  sel.innerHTML = '';
+  // Sort by name
+  const sorted = [...COUNTRIES].sort((a,b) => a.name.localeCompare(b.name));
+  sorted.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.code;
+    opt.textContent = c.name + ' [' + c.status.toUpperCase() + ']';
+    sel.appendChild(opt);
+  });
+}
+
+function admGetSelectedCountry() {
+  const code = document.getElementById('adm-country').value;
+  return COUNTRIES.find(c => c.code === code);
+}
+
+async function admGenerate() {
+  const country = admGetSelectedCountry();
+  const notes = document.getElementById('adm-notes').value.trim();
+  if (!country) { admSetStatus('Select a country first.'); return; }
+  if (!notes) { admSetStatus('Write some lore directives first.'); return; }
+
+  admSetBusy(true);
+  admSetStatus('⚡ Calling Groq — generating situation...');
+  document.getElementById('adm-preview').textContent = '...';
+
+  try {
+    const res = await fetch('/api/earth-admin', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-earth-password': admPassword },
+      body: JSON.stringify({
+        action: 'generate',
+        countryCode: country.code,
+        countryName: country.name,
+        countryStatus: country.status,
+        existingSituation: country.situation,
+        adminNotes: notes,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.situationText) {
+      admSetStatus('Error: ' + (data.error || 'Unknown'));
+      admSetBusy(false);
+      return;
+    }
+    document.getElementById('adm-preview').textContent = data.situationText;
+    // Update runtime cache immediately
+    LORE_CACHE[country.code] = { text: data.situationText, date: new Date().toISOString() };
+    admSetStatus('✓ Generated + saved to Supabase. Situation is now live for all visitors.');
+    admSetBusy(false);
+    document.getElementById('adm-notes').value = '';
+    admLoadEntries();
+  } catch(err) {
+    admSetStatus('Network error: ' + err.message);
+    admSetBusy(false);
+  }
+}
+
+async function admSaveRaw() {
+  const country = admGetSelectedCountry();
+  const notes = document.getElementById('adm-notes').value.trim();
+  if (!country) { admSetStatus('Select a country first.'); return; }
+  if (!notes) { admSetStatus('Nothing to save.'); return; }
+
+  admSetBusy(true);
+  admSetStatus('Saving raw text...');
+
+  try {
+    const res = await fetch('/api/earth-admin', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-earth-password': admPassword },
+      body: JSON.stringify({
+        action: 'save_raw',
+        countryCode: country.code,
+        countryName: country.name,
+        adminNotes: notes,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) { admSetStatus('Error: ' + (data.error || 'Unknown')); admSetBusy(false); return; }
+    document.getElementById('adm-preview').textContent = notes;
+    LORE_CACHE[country.code] = { text: notes, date: new Date().toISOString() };
+    admSetStatus('✓ Raw text saved. Live for all visitors.');
+    admSetBusy(false);
+    document.getElementById('adm-notes').value = '';
+    admLoadEntries();
+  } catch(err) {
+    admSetStatus('Network error: ' + err.message);
+    admSetBusy(false);
+  }
+}
+
+async function admDeleteEntry(id, code) {
+  if (!confirm('Delete situation override for ' + code + '?')) return;
+  try {
+    const res = await fetch('/api/earth-admin', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-earth-password': admPassword },
+      body: JSON.stringify({ action:'delete', entryId: id }),
+    });
+    if (res.ok) {
+      delete LORE_CACHE[code];
+      admSetStatus('Entry deleted.');
+      admLoadEntries();
+    }
+  } catch(err) {
+    admSetStatus('Delete failed: ' + err.message);
+  }
+}
+
+function admEditEntry(entry) {
+  // Pre-fill the form with this entry
+  const sel = document.getElementById('adm-country');
+  for (let i = 0; i < sel.options.length; i++) {
+    if (sel.options[i].value === entry.country_code) { sel.selectedIndex = i; break; }
+  }
+  document.getElementById('adm-notes').value = entry.admin_notes || entry.situation_text;
+  document.getElementById('adm-preview').textContent = entry.situation_text;
+  admSetStatus('// Loaded entry for ' + entry.country_name + ' — edit above and regenerate or save.');
+  // Scroll to top of box
+  document.getElementById('earth-admin-box').scrollTop = 0;
+}
+
+async function admLoadEntries() {
+  const el = document.getElementById('adm-entries');
+  el.innerHTML = '<div style="font-size:0.52rem;color:rgba(0,255,136,0.25)">Loading...</div>';
+  try {
+    const res = await fetch('/api/earth-admin');
+    const { entries } = await res.json();
+    if (!entries || entries.length === 0) {
+      el.innerHTML = '<div style="font-size:0.52rem;color:rgba(0,255,136,0.2)">No overrides saved yet.</div>';
+      return;
+    }
+    el.innerHTML = '';
+    entries.forEach(e => {
+      const d = new Date(e.updated_at);
+      const dateStr = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      const div = document.createElement('div');
+      div.className = 'adm-entry';
+      div.innerHTML = `
+        <div class="adm-entry-header">
+          <div>
+            <div class="adm-entry-name">${e.country_name} · ${e.country_code}</div>
+            <div class="adm-entry-meta">${e.generated ? '⚡ Groq-generated' : '📝 Raw text'} · ${dateStr}</div>
+          </div>
+          <div class="adm-entry-actions">
+            <button class="adm-entry-btn" onclick='admEditEntry(${JSON.stringify(e)})'>Edit</button>
+            <button class="adm-entry-btn del" onclick='admDeleteEntry("${e.id}","${e.country_code}")'>Del</button>
+          </div>
+        </div>
+        <div class="adm-entry-text">${e.situation_text}</div>
+      `;
+      el.appendChild(div);
+    });
+  } catch(err) {
+    el.innerHTML = '<div style="font-size:0.52rem;color:#ff5555">Failed to load entries.</div>';
+  }
+}
+
+function admSetStatus(msg) {
+  const el = document.getElementById('adm-status');
+  if (el) el.textContent = msg;
+}
+
+function admSetBusy(busy) {
+  document.getElementById('adm-gen-btn').disabled = busy;
+  document.getElementById('adm-raw-btn').disabled = busy;
+}
+
+function admClearSession() {
+  admAuthed = false;
+  admPassword = '';
+  document.getElementById('adm-auth').style.display = 'flex';
+  document.getElementById('adm-main').style.display = 'none';
+  document.getElementById('adm-pw').value = '';
+  admSetStatus('');
+}
+
+// Load lore on page init
+loadLoreOverrides();
 
 startGlobe();
 </script>
