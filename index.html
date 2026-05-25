@@ -152,6 +152,7 @@ try {
 <!-- Preconnect for performance — non-blocking font load -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&family=IM+Fell+English:ital@0;1&family=Permanent+Marker&family=Orbitron:wght@700&family=Bree+Serif&family=Lobster&family=Rajdhani:wght@700&family=Bangers&family=Abril+Fatface&family=Patrick+Hand&family=Monoton&family=UnifrakturMaguntia&family=Fredericka+the+Great&family=Rye&family=Righteous&family=Press+Start+2P&family=Pacifico&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap">
 <link rel="preconnect" href="https://de1.api.radio-browser.info">
 <link rel="preconnect" href="https://api.dicebear.com">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -202,6 +203,14 @@ try {
       <a href="#" onclick="showPage('podcasts',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
         Podcasts
+      </a>
+      <a href="#" onclick="showPage('gaming',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4"/><circle cx="17" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="14" r="1" fill="currentColor"/></svg>
+        Gaming
+      </a>
+      <a href="#" onclick="showPage('sleep',this);return false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        Sleep
       </a>
       <a href="#" onclick="showPage('livemusic',this);return false" class="nav-livemusic-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
@@ -270,6 +279,14 @@ try {
   <a href="#" onclick="showPage('podcasts',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
     Podcasts
+  </a>
+  <a href="#" onclick="showPage('gaming',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 12h4m-2-2v4"/><circle cx="17" cy="12" r="1" fill="currentColor"/><circle cx="15" cy="14" r="1" fill="currentColor"/></svg>
+    Gaming
+  </a>
+  <a href="#" onclick="showPage('sleep',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    Sleep
   </a>
   <a href="#" onclick="showPage('livemusic',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
@@ -638,20 +655,49 @@ try {
 </div>
 
 <!-- ══════════════ ANIME PAGE ══════════════ -->
-<div id="page-anime" class="page">
-  <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
+<div id="page-anime" class="page anime-page-root">
+
+  <!-- Floating billboard side panels -->
+  <div class="anime-side anime-side-left" aria-hidden="true">
+    <div class="anime-billboard ab-1">
+      <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=70" alt="">
+      <div class="ab-neon-text">アニメ</div>
+    </div>
+    <div class="anime-billboard ab-2">
+      <div class="ab-kanji-stack">
+        <span>音</span><span>楽</span><span>放</span><span>送</span>
+      </div>
+    </div>
+    <div class="anime-billboard ab-3">
+      <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300&q=70" alt="">
+      <div class="ab-label">LIVE · 生放送</div>
+    </div>
+    <div class="anime-side-vline"></div>
+  </div>
+
+  <div class="anime-side anime-side-right" aria-hidden="true">
+    <div class="anime-billboard ab-4">
+      <img src="https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=300&q=70" alt="">
+      <div class="ab-neon-text">J-POP</div>
+    </div>
+    <div class="anime-billboard ab-5">
+      <div class="ab-kanji-stack">
+        <span>東</span><span>京</span><span>波</span><span>動</span>
+      </div>
+    </div>
+    <div class="anime-billboard ab-6">
+      <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=300&q=70" alt="">
+      <div class="ab-label">88.7 FM · WNCORE</div>
+    </div>
+    <div class="anime-side-vline"></div>
+  </div>
+
+  <!-- Main content column -->
+  <div class="anime-main-col">
+
     <div class="anime-banner" id="anime-banner">
-      <!-- Ambient video background (Veo 8s loops — muted autoplay) -->
-      <video class="anime-banner-video" id="anime-banner-video"
-        autoplay muted loop playsinline
-        poster=""
-        style="display:none"
-        aria-hidden="true">
-        <!-- Add your Veo-generated video sources here:
-          <source src="videos/anime-loop-1.mp4" type="video/mp4">
-        -->
-      </video>
-      <img class="anime-banner-img" id="anime-banner-img"  alt="Anime / J-Music banner"  loading="lazy">
+      <video class="anime-banner-video" id="anime-banner-video" autoplay muted loop playsinline poster="" style="display:none" aria-hidden="true"></video>
+      <img class="anime-banner-img" id="anime-banner-img" alt="Anime / J-Music banner" loading="lazy">
       <div class="anime-banner-overlay"></div>
       <div class="anime-now-playing" id="anime-now-playing-badge" style="display:none">Live</div>
       <div class="anime-banner-content">
@@ -663,19 +709,19 @@ try {
 
     <div style="margin-bottom:28px;">
       <div class="section-hd">
-        <div class="section-title" style="font-family:var(--font-display);">Station Artwork</div>
+        <div class="section-title anime-section-title">ステーション アートワーク · Station Artwork</div>
         <a class="section-more" href="#" onclick="refreshAnimeImages();return false">Refresh ↺</a>
       </div>
       <div class="anime-img-strip" id="anime-img-strip"></div>
     </div>
 
     <div class="section-hd">
-      <div class="section-title" style="font-family:var(--font-display);">Featured J-Music Stations</div>
+      <div class="section-title anime-section-title">注目局 · Featured J-Music Stations</div>
     </div>
     <div class="anime-stations-grid" id="anime-stations-grid"></div>
 
     <div class="section-hd" style="margin-top:36px;">
-      <div class="section-title" style="font-family:var(--font-display);">Live J-Pop &amp; Anime Radio</div>
+      <div class="section-title anime-section-title">ライブ · Live J-Pop &amp; Anime Radio</div>
       <a class="section-more" href="#" onclick="loadAnimeStationsLive();return false">Refresh live →</a>
     </div>
     <table class="station-table" style="margin-bottom:0;" aria-label="Live anime radio stations">
@@ -683,7 +729,8 @@ try {
         <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
       </tbody>
     </table>
-  </div>
+
+  </div><!-- /anime-main-col -->
 </div>
 
 <!-- ══════════════ PODCASTS PAGE ══════════════ -->
@@ -933,6 +980,67 @@ try {
       </div>
       <div style="font-size:0.58rem;color:var(--text3);font-family:var(--font-mono);opacity:0.45;">© 2016–2026 WNCORE Signal Foundation. All rights reserved.</div>
     </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ GAMING PAGE ══════════════ -->
+<div id="page-gaming" class="page gaming-page-root">
+  <div class="gaming-scanline-overlay" aria-hidden="true"></div>
+  <div class="gaming-pixel-border" aria-hidden="true"></div>
+  <div style="max-width:960px;margin:0 auto;padding:40px 24px;position:relative;z-index:1;">
+
+    <div class="gaming-hero">
+      <div class="gaming-hero-kicker">INSERT COIN · WNCORE ARCADE CHANNEL</div>
+      <div class="gaming-hero-title">GAME RADIO</div>
+      <div class="gaming-hero-sub">Chiptune, VGM, OST streams · 100% royalty-free · No DRM · No accounts</div>
+      <div class="gaming-hero-score">SCORE <span id="gaming-score-val">00000000</span></div>
+    </div>
+
+    <div class="section-hd" style="margin-top:32px;">
+      <div class="section-title gaming-section-title">▶ FEATURED STATIONS</div>
+    </div>
+    <div class="gaming-stations-grid" id="gaming-stations-grid"></div>
+
+    <div class="section-hd" style="margin-top:32px;">
+      <div class="section-title gaming-section-title">▶ FREE MUSIC SOURCES</div>
+    </div>
+    <div class="gaming-sources-grid" id="gaming-sources-grid"></div>
+
+  </div>
+</div>
+
+<!-- ══════════════ SLEEP PAGE ══════════════ -->
+<div id="page-sleep" class="page sleep-page-root">
+  <div class="sleep-stars" id="sleep-stars" aria-hidden="true"></div>
+  <div style="max-width:860px;margin:0 auto;padding:56px 24px;position:relative;z-index:1;">
+
+    <div class="sleep-hero">
+      <div class="sleep-hero-moon">☽</div>
+      <div class="sleep-hero-title">Sleep &amp; Meditation</div>
+      <div class="sleep-hero-sub">Drift streams · Binaural tones · Ambient nature · All royalty-free, always on</div>
+    </div>
+
+    <div class="sleep-timer-bar">
+      <span class="sleep-timer-label">SLEEP TIMER</span>
+      <div class="sleep-timer-btns">
+        <button class="sleep-timer-btn" onclick="setSleepTimer(15)">15m</button>
+        <button class="sleep-timer-btn" onclick="setSleepTimer(30)">30m</button>
+        <button class="sleep-timer-btn" onclick="setSleepTimer(60)">1h</button>
+        <button class="sleep-timer-btn" onclick="setSleepTimer(0)">Off</button>
+      </div>
+      <span class="sleep-timer-remaining" id="sleep-timer-remaining"></span>
+    </div>
+
+    <div class="section-hd" style="margin-top:32px;">
+      <div class="section-title sleep-section-title">Drift Streams</div>
+    </div>
+    <div class="sleep-stations-grid" id="sleep-stations-grid"></div>
+
+    <div class="section-hd" style="margin-top:32px;">
+      <div class="section-title sleep-section-title">Free Sound Sources</div>
+    </div>
+    <div class="sleep-sources-grid" id="sleep-sources-grid"></div>
 
   </div>
 </div>
