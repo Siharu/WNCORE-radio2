@@ -208,9 +208,10 @@ try {
         Live Music
         <span class="nav-live-pip"></span>
       </a>
-      <a href="#" onclick="showPage('community',this);return false">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
-        Community
+      <a href="community.html" class="nav-glitch-ball" title="Community">
+        <div class="gb"></div>
+        <div class="gb"></div>
+        <div class="gb"></div>
       </a>
     </nav>
     <div class="header-right">
@@ -278,7 +279,11 @@ try {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
     Favourites
   </a>
-  <a href="#" onclick="showPage('community',this);toggleMobileMenu();return false">Community</a>
+  <a href="community.html" class="nav-glitch-ball" title="Community">
+    <div class="gb"></div>
+    <div class="gb"></div>
+    <div class="gb"></div>
+  </a>
   <a href="#" onclick="showPage('about',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
     About
@@ -1301,64 +1306,68 @@ try {
 }
 </style>
 
+<style>
+/* ── GLITCH BALL NAV LINK ── */
+.nav-glitch-ball {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-glitch-ball .gb {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent, #c8472a);
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+}
+.nav-glitch-ball .gb:nth-child(1) {
+  animation: glitch1 2.5s infinite;
+  background: var(--accent, #c8472a);
+  box-shadow: 0 0 8px rgba(200,71,42,0.5);
+}
+.nav-glitch-ball .gb:nth-child(2) {
+  background: #67f3da;
+  animation: glitch2 2.5s infinite;
+  opacity: 0.25;
+}
+.nav-glitch-ball .gb:nth-child(3) {
+  background: #f16f6f;
+  animation: glitch3 2.5s infinite;
+  opacity: 0.25;
+}
+@keyframes glitch1 {
+  0%,10%,35%,50%,80%,100% { transform: none; opacity: 1; }
+  7%  { transform: skew(-0.5deg,-0.9deg); opacity: 0.75; }
+  30% { transform: skew(0.8deg,-0.1deg); opacity: 0.75; }
+  55% { transform: skew(-1deg,0.2deg);   opacity: 0.75; }
+  75% { transform: skew(0.4deg,1deg);    opacity: 0.75; }
+}
+@keyframes glitch2 {
+  0%,10%,35%,50%,80%,100% { transform: none; opacity: 0.25; }
+  7%  { transform: translate(-2px,-3px); opacity: 0.5; }
+  30% { transform: translate(-5px,-2px); opacity: 0.5; }
+  55% { transform: translate(-5px,-1px); opacity: 0.5; }
+  75% { transform: translate(-2px,-6px); opacity: 0.5; }
+}
+@keyframes glitch3 {
+  0%,10%,35%,50%,80%,100% { transform: none; opacity: 0.25; }
+  7%  { transform: translate(2px,3px);  opacity: 0.5; }
+  30% { transform: translate(5px,2px);  opacity: 0.5; }
+  55% { transform: translate(5px,1px);  opacity: 0.5; }
+  75% { transform: translate(2px,6px);  opacity: 0.5; }
+}
+</style>
 
-<!-- ═══════════════════════════════════════════════
-     COMMUNITY LEADERBOARD PAGE
-══════════════════════════════════════════════════ -->
-<div id="page-community" class="page">
-  <div class="cm-wrap">
-
-    <div class="cm-header">
-      <div>
-        <div class="cm-title-wrap">
-          <div class="cm-title" data-text="SIGNAL INDEX">SIGNAL INDEX</div>
-        </div>
-        <div class="cm-subtitle">Community Transmission Log · Active Operators</div>
-      </div>
-      <div>
-        <div class="cm-live"><div class="cm-live-dot"></div> Live</div>
-      </div>
-    </div>
-
-    <!-- Your card -->
-    <div class="cm-your-card" id="cm-your-card">
-      <div class="cm-your-label">// Your Node</div>
-      <div class="cm-your-row">
-        <div class="cm-your-name" id="cm-your-name">IDENTIFYING...</div>
-        <div class="cm-your-score" id="cm-your-score">—</div>
-      </div>
-      <div class="cm-your-bars" id="cm-your-bars"></div>
-    </div>
-
-    <!-- Filters -->
-    <div class="cm-filters">
-      <button class="cm-filter-btn active" data-filter="all" onclick="cmSetFilter('all',this)">All Operators</button>
-      <button class="cm-filter-btn" data-filter="constellation" onclick="cmSetFilter('constellation',this)">Constellation</button>
-      <button class="cm-filter-btn" data-filter="cygnus" onclick="cmSetFilter('cygnus',this)">Cygnus</button>
-      <button class="cm-filter-btn" data-filter="legacy" onclick="cmSetFilter('legacy',this)">Legacy Unlocked</button>
-    </div>
-
-    <!-- Table header -->
-    <div class="cm-table-head">
-      <span>#</span>
-      <span>Operator</span>
-      <span style="text-align:right">Score</span>
-      <span class="cm-th-prog">Progress</span>
-      <span>Badges</span>
-    </div>
-
-    <!-- Leaderboard rows -->
-    <div id="cm-board">
-      <div class="cm-loading">Scanning network...</div>
-    </div>
-
-    <!-- Footer note -->
-    <div style="margin-top:24px;font-family:var(--font-mono);font-size:0.44rem;letter-spacing:2px;color:rgba(255,255,255,0.1);text-transform:uppercase;text-align:center">
-      Operators identified by node fingerprint — no account required · Updates on each session
-    </div>
-
-  </div>
-</div>
 
 <!-- ═══════════════════════════════════════════════
      WNCORE ADMIN PANEL — HIDDEN MODAL
@@ -2077,261 +2086,6 @@ if ('serviceWorker' in navigator) {
 </script>
 
   <script src="/font-glitch.js" defer></script>
-
-<script>
-
-/* ══════════════════════════════════════════════════
-   COMMUNITY LEADERBOARD ENGINE
-══════════════════════════════════════════════════ */
-(function(){
-
-  /* ── Fingerprint (deterministic, no tracking) ── */
-  function getFingerprint() {
-    const k = 'wncore-fp';
-    let fp = localStorage.getItem(k);
-    if (fp) return fp;
-    // Generate from browser entropy
-    const raw = [
-      navigator.language,
-      screen.width + 'x' + screen.height,
-      screen.colorDepth,
-      new Date().getTimezoneOffset(),
-      navigator.hardwareConcurrency || 0,
-      navigator.platform || '',
-      Math.random().toString(36).slice(2),
-    ].join('|');
-    // Simple hash
-    let h = 0;
-    for (let i = 0; i < raw.length; i++) {
-      h = Math.imul(31, h) + raw.charCodeAt(i) | 0;
-    }
-    fp = Math.abs(h).toString(36) + Date.now().toString(36);
-    localStorage.setItem(k, fp);
-    return fp;
-  }
-
-  /* ── Gather local progress ──────────────────── */
-  function getLocalProgress() {
-    const constSolved = (() => {
-      try { return JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]').length; }
-      catch { return 0; }
-    })();
-    const earthNodes = (() => {
-      try { return JSON.parse(localStorage.getItem('wncore-earth-arg-found') || '[]').length; }
-      catch { return 0; }
-    })();
-    // Legacy unlocked = constellation >= 10
-    const legacyUnlocked = constSolved >= 10;
-    // Cygnus sections — track how many times user has been to cygnus.html
-    // stored as wncore-cygnus-visited count (we set this when user visits)
-    const cygnusSections = (() => {
-      try { return parseInt(localStorage.getItem('wncore-cygnus-sections') || '0', 10); }
-      catch { return 0; }
-    })();
-    return { constSolved, earthNodes, legacyUnlocked, cygnusSections };
-  }
-
-  /* ── Score calc (mirrors server) ────────────── */
-  function calcScore(p) {
-    return p.constSolved * 10 + p.cygnusSections * 25 + p.earthNodes * 5 + (p.legacyUnlocked ? 50 : 0);
-  }
-
-  /* ── Render your card ────────────────────────── */
-  function renderYourCard(codename, p) {
-    document.getElementById('cm-your-name').textContent = codename;
-    document.getElementById('cm-your-score').textContent = calcScore(p).toLocaleString();
-
-    const bars = document.getElementById('cm-your-bars');
-    bars.innerHTML = '';
-
-    const pips = [
-      { label: `Constellations ${p.constSolved}/20`, lit: p.constSolved > 0, gold: p.constSolved >= 20 },
-      { label: `Earth Nodes ${p.earthNodes}`, lit: p.earthNodes > 0, gold: false },
-      { label: p.legacyUnlocked ? 'Legacy Unlocked' : 'Legacy Locked', lit: p.legacyUnlocked, gold: p.legacyUnlocked },
-    ];
-    pips.forEach(pip => {
-      const el = document.createElement('div');
-      el.className = 'cm-pip' + (pip.gold ? ' lit-gold' : pip.lit ? ' lit' : '');
-      el.textContent = pip.label;
-      bars.appendChild(el);
-    });
-  }
-
-  /* ── Render board ────────────────────────────── */
-  let allEntries = [];
-  let currentFilter = 'all';
-
-  function renderBoard(entries, myCodename) {
-    const board = document.getElementById('cm-board');
-    if (!entries || entries.length === 0) {
-      board.innerHTML = '<div class="cm-empty">No operators detected yet. You may be first.</div>';
-      return;
-    }
-
-    let filtered = entries;
-    if (currentFilter === 'constellation') {
-      filtered = entries.filter(e => e.constellation_solved > 0);
-    } else if (currentFilter === 'cygnus') {
-      filtered = entries.filter(e => e.cygnus_sections > 0);
-    } else if (currentFilter === 'legacy') {
-      filtered = entries.filter(e => e.legacy_unlocked);
-    }
-
-    board.innerHTML = '';
-    filtered.forEach((e, i) => {
-      const rank = i + 1;
-      const isYou = e.codename === myCodename;
-      const rankClass = rank === 1 ? 'rank-1' : rank === 2 ? 'rank-2' : rank === 3 ? 'rank-3' : '';
-      const rankLabel = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
-
-      const row = document.createElement('div');
-      row.className = `cm-row ${rankClass} ${isYou ? 'is-you' : ''}`;
-
-      // Rank
-      const rankEl = document.createElement('div');
-      rankEl.className = `cm-rank ${rankLabel}`;
-      rankEl.textContent = '#' + rank;
-
-      // Codename
-      const nameEl = document.createElement('div');
-      nameEl.className = 'cm-codename';
-      nameEl.textContent = e.codename + (isYou ? ' ← you' : '');
-
-      // Score
-      const scoreEl = document.createElement('div');
-      scoreEl.className = 'cm-score-val';
-      scoreEl.textContent = (e.score || 0).toLocaleString();
-
-      // Progress mini bars
-      const progEl = document.createElement('div');
-      progEl.className = 'cm-progress-mini';
-      [
-        { label: 'CST', val: e.constellation_solved, max: 20, cls: '' },
-        { label: 'CYG', val: e.cygnus_sections, max: 10, cls: 'pink' },
-        { label: 'ETH', val: e.earth_nodes_found, max: 20, cls: 'gold' },
-      ].forEach(bar => {
-        const pr = document.createElement('div');
-        pr.className = 'cm-prog-row';
-        pr.innerHTML = `
-          <span class="cm-prog-label">${bar.label}</span>
-          <div class="cm-prog-track">
-            <div class="cm-prog-fill ${bar.cls}" style="width:${Math.min(100,(bar.val/bar.max)*100)}%"></div>
-          </div>
-        `;
-        progEl.appendChild(pr);
-      });
-
-      // Badges
-      const badgeEl = document.createElement('div');
-      badgeEl.className = 'cm-badges';
-      [
-        { cls: 'cm-badge-const', icon: '★', earned: e.constellation_solved >= 10, title: 'Constellation Mapper' },
-        { cls: 'cm-badge-earth', icon: '◈', earned: e.earth_nodes_found > 0, title: 'Signal Hunter' },
-        { cls: 'cm-badge-legacy', icon: '◆', earned: e.legacy_unlocked, title: 'Legacy Unlocked' },
-      ].forEach(b => {
-        const bd = document.createElement('div');
-        bd.className = `cm-badge ${b.cls} ${b.earned ? 'earned' : ''}`;
-        bd.textContent = b.icon;
-        bd.title = b.title;
-        badgeEl.appendChild(bd);
-      });
-
-      row.appendChild(rankEl);
-      row.appendChild(nameEl);
-      row.appendChild(scoreEl);
-      row.appendChild(progEl);
-      row.appendChild(badgeEl);
-      board.appendChild(row);
-
-      // Staggered glitch-in animation
-      setTimeout(() => row.classList.add('cm-glitch-in'), i * 40);
-    });
-  }
-
-  /* ── Filter ──────────────────────────────────── */
-  window.cmSetFilter = function(filter, btn) {
-    currentFilter = filter;
-    document.querySelectorAll('.cm-filter-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    const fp = getFingerprint();
-    // get codename from server response or derive locally
-    const codename = localStorage.getItem('wncore-codename') || '';
-    renderBoard(allEntries, codename);
-  };
-
-  /* ── Push progress to server ─────────────────── */
-  async function pushProgress(fp, p) {
-    try {
-      const res = await fetch('/api/community', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fingerprint: fp,
-          constellation_solved: p.constSolved,
-          cygnus_sections: p.cygnusSections,
-          earth_nodes_found: p.earthNodes,
-          legacy_unlocked: p.legacyUnlocked,
-        }),
-      });
-      const data = await res.json();
-      if (data.codename) {
-        localStorage.setItem('wncore-codename', data.codename);
-        return data.codename;
-      }
-    } catch(e) {
-      console.warn('[WNCORE Community] push failed:', e);
-    }
-    return null;
-  }
-
-  /* ── Load leaderboard ────────────────────────── */
-  async function loadBoard() {
-    try {
-      const res = await fetch('/api/community');
-      const data = await res.json();
-      allEntries = data.entries || [];
-      const codename = localStorage.getItem('wncore-codename') || '';
-      renderBoard(allEntries, codename);
-    } catch(e) {
-      document.getElementById('cm-board').innerHTML =
-        '<div class="cm-empty">Signal lost — could not reach network.</div>';
-    }
-  }
-
-  /* ── Init (runs when community page is opened) ── */
-  window.cmInit = async function() {
-    const fp = getFingerprint();
-    const p = getLocalProgress();
-    
-    // Push progress and get codename
-    const codename = await pushProgress(fp, p) || localStorage.getItem('wncore-codename') || 'IDENTIFYING...';
-    localStorage.setItem('wncore-codename', codename);
-    
-    renderYourCard(codename, p);
-    await loadBoard();
-  };
-
-  // Hook into showPage so init fires when community tab opens
-  const _origShowPage = window.showPage;
-  if (typeof _origShowPage === 'function') {
-    window.showPage = function(page, el) {
-      _origShowPage(page, el);
-      if (page === 'community') window.cmInit();
-    };
-  } else {
-    // showPage not yet defined — patch after load
-    window.addEventListener('load', () => {
-      const orig = window.showPage;
-      if (typeof orig === 'function') {
-        window.showPage = function(page, el) {
-          orig(page, el);
-          if (page === 'community') window.cmInit();
-        };
-      }
-    });
-  }
-
-})();
 
 // Live ticker sync time
 (function(){
