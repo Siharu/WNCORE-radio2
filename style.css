@@ -6232,3 +6232,60 @@ body.dark-mode .sidebar-card button:not(.np-play-btn):not(.np-ctrl-btn) {
   background: var(--surface2) !important;
   color: var(--text2) !important;
 }
+
+/* ─── GENRE CARDS — ENHANCED (image bg + unique fonts) ──────────────── */
+.genre-card-enhanced {
+  position: relative;
+  cursor: pointer;
+  min-height: 120px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.genre-card-enhanced:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.genre-card-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.28;
+  transition: opacity 0.3s;
+  border-radius: inherit;
+}
+.genre-card-enhanced:hover .genre-card-bg {
+  opacity: 0.42;
+}
+.genre-card-overlay {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.genre-card-inner {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+}
+.genre-card-icon-wrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.genre-card-title {
+  color: #fff;
+  font-weight: 700;
+  margin-bottom: 4px;
+  line-height: 1.2;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.8);
+  letter-spacing: 0.02em;
+}
+.genre-card-desc {
+  font-size: 0.63rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.4;
+}
