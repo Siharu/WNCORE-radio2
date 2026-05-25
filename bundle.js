@@ -2,7 +2,7 @@
    WNCORE RADIO — bundle.js
    Unified script bundle. All JS merged and wrapper chains eliminated.
    ONE clean playStation. No race conditions. No defer loading conflicts.
-   Edited: Mon May 11 08:37:43 UTC 2026
+   Generated: Mon May 11 08:37:43 UTC 2026
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ━━━ main.js ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -12,10 +12,9 @@
 ═══════════════════════════════════════════════════════ */
 
 // ─── RADIO BROWSER API — MIRROR RESOLVER ─────────────────────────────────
-// Radio Browser API mirror resolver with cert-failure fallback.
-// Some mirrors have expired SSL certs — we skip those gracefully.
+// all.api.radio-browser.info is a round-robin that can fail or CORS-block.
+// We race 5 mirrors and cache the first one that responds.
 const _API_MIRRORS = [
-  'https://at1.api.radio-browser.info/json',
   'https://de1.api.radio-browser.info/json',
   'https://de2.api.radio-browser.info/json',
   'https://nl1.api.radio-browser.info/json',
@@ -31,20 +30,16 @@ async function _resolveApi() {
     try {
       const r = await Promise.race([
         fetch(mirror + '/stats', { method: 'GET', cache: 'no-store' }),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
       ]);
       if (r.ok) {
         _a = mirror; _apiResolved = true;
         console.debug('[WNCORE] API mirror resolved:', mirror);
         return _a;
       }
-    } catch(e) {
-      console.debug('[WNCORE] Mirror failed (cert/network):', mirror, e.message);
-      /* try next mirror */
-    }
+    } catch(e) { /* try next */ }
   }
-  _apiResolved = true; // exhausted all mirrors, use whatever _a is
-  console.warn('[WNCORE] All API mirrors failed — API calls may not work.');
+  _apiResolved = true; // stop retrying
   return _a;
 }
 const _d = (function(){const p=['s','i','h','a','r','u','.','v','e','r','c','e','l','.','a','p','p'];return 'https://'+p.join('')})();
@@ -1464,8 +1459,6 @@ function showPage(id, linkEl) {
   window.scrollTo({top:0,behavior:'instant'});
   document.documentElement.scrollTop = 0;
   document.body.scrollTop = 0;
-  if(id==='gaming') loadGamingPage();
-  if(id==='sleep') loadSleepPage();
   if(id==='charts') loadChartsPage();
   if(id==='podcasts') loadPodcastsPage();
   if(id==='genres') loadGenrePage();
@@ -1482,161 +1475,44 @@ function showPage(id, linkEl) {
 function loadGenrePage() {
   const grid = document.getElementById('genre-cards-grid');
   if(grid.dataset.loaded) return;
-
-  // [key, name, desc, bgColor, fontFamily, fontSize, imgQuery, iconSvg]
   const genres = [
-    ['jazz','Jazz','After midnight. The real stuff.','#0e0e1e',
-     "'IM Fell English', serif",'1rem',
-     'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&q=60',
-     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
-
-    ['classical','Classical','Stations that have been on the air longer than you\'ve been alive','#111118',
-     "'UnifrakturMaguntia', cursive",'1.05rem',
-     'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=400&q=60',
-     '<path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>'],
-
-    ['rock','Rock','Loud, live, no algorithm involved','#1a0606',
-     "'Permanent Marker', cursive",'0.9rem',
-     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=60',
-     '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'],
-
-    ['pop','Pop','What 3 billion people are hearing right now','#1a0a1a',
-     "'Pacifico', cursive",'0.88rem',
-     'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&q=60',
-     '<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>'],
-
-    ['electronic','Electronic','Transmitting from basements and warehouses','#040418',
-     "'Orbitron', sans-serif",'0.72rem',
-     'https://images.unsplash.com/photo-1571266028243-d220c6a40f9b?w=400&q=60',
-     '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
-
-    ['hiphop','Hip-Hop','Live from stations that don\'t get playlisted','#080808',
-     "'Bangers', cursive",'1.05rem',
-     'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=400&q=60',
-     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
-
-    ['ambient','Ambient','Broadcasts that disappear into the room','#081208',
-     "'Abril Fatface', serif",'0.88rem',
-     'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=60',
-     '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>'],
-
-    ['news','News','Shortwave, public radio, wire services still running','#121000',
-     "'Fredericka the Great', serif",'0.85rem',
-     'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=60',
-     '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6z"/>'],
-
-    ['country','Country','Truck stops and back porches, live','#120800',
-     "'Rye', cursive",'0.85rem',
-     'https://images.unsplash.com/photo-1508361727343-ca787442dcd7?w=400&q=60',
-     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
-
-    ['rnb','R&B','Late nights on the FM dial','#180a16',
-     "'Lobster', cursive",'1rem',
-     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=60',
-     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
-
-    ['metal','Metal','Heavy, thrash & doom','#0a0505',
-     "'Rubik Glitch', sans-serif",'0.82rem',
-     'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=400&q=60',
-     '<path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M7.5 4.21l4.5 7.79H3l4.5-7.79z"/><path d="M16.5 4.21L21 12h-9l4.5-7.79z"/>'],
-
-    ['reggae','Reggae','Kingston to Bristol to Lagos, live','#061206',
-     "'Patrick Hand', cursive",'0.9rem',
-     'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=400&q=60',
-     '<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>'],
-
-    ['anime','Anime / J-Pop','Direct Japanese broadcasts, no middleman','#0d0818',
-     "'Righteous', sans-serif",'0.85rem',
-     'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=60',
-     '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>'],
-
-    ['folk','Folk','Recorded in rooms that echo','#0e0c04',
-     "'Bree Serif', serif",'0.88rem',
-     'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&q=60',
-     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
-
-    ['lofi','Lo-Fi','Background signal for wherever you are','#080c12',
-     "'Monoton', cursive",'0.65rem',
-     'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=60',
-     '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>'],
-
-    ['80s','80s','Stations that never updated their playlist. Meant as a compliment.','#130810',
-     "'Press Start 2P', monospace",'0.6rem',
-     'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=60',
-     '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
-
-    ['90s','90s','Before streaming killed the radio star','#080c14',
-     "'Rajdhani', sans-serif",'0.92rem',
-     'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=60',
-     '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'],
+    ['jazz','Jazz','After midnight. The real stuff.','#1a1a2a'],
+    ['classical','Classical','Stations that have been on the air longer than you\'ve been alive','#1a1a1a'],
+    ['rock','Rock','Loud, live, no algorithm involved','#1a0a0a'],
+    ['pop','Pop','What 3 billion people are hearing right now','#1a0a1a'],
+    ['electronic','Electronic','Transmitting from basements and warehouses','#0a0a1a'],
+    ['hiphop','Hip-Hop','Live from stations that don\'t get playlisted','#0a0a0a'],
+    ['ambient','Ambient','Broadcasts that disappear into the room','#0a1a0a'],
+    ['news','News','Shortwave, public radio, wire services still running','#1a1000'],
+    ['country','Country','Truck stops and back porches, live','#120a00'],
+    ['rnb','R&B','Late nights on the FM dial','#1a0a18'],
+    ['metal','Metal','Heavy, thrash & doom','#0e0a0a'],
+    ['reggae','Reggae','Kingston to Bristol to Lagos, live','#0a140a'],
+    ['anime','Anime / J-Pop','Direct Japanese broadcasts, no middleman','#0f0a1a'],
+    ['folk','Folk','Recorded in rooms that echo','#100e06'],
+    ['lofi','Lo-Fi','Background signal for wherever you are','#0a0e16'],
+    ['80s','80s','Stations that never updated their playlist. Meant as a compliment.','#150a10'],
+    ['90s','90s','Before streaming killed the radio star','#0a0f15'],
   ];
-
-  grid.innerHTML = genres.map(([g,n,d,bg,font,fontSize,imgUrl,iconPath]) => `
-    <div class="featured-card genre-card-enhanced" style="padding:0;overflow:hidden;position:relative;" onclick="filterGenreFromPage('${g}')">
-      <div class="genre-card-bg" style="background-image:url('${imgUrl}');"></div>
-      <div class="genre-card-overlay" style="background:linear-gradient(160deg, ${bg}ee 0%, ${bg}99 50%, ${bg}cc 100%);"></div>
-      <div class="genre-card-inner" style="padding:16px 14px 14px;position:relative;z-index:2;">
-        <div class="genre-card-icon-wrap" style="background:${bg}bb;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">${iconPath}</svg>
-        </div>
-        <div class="genre-card-title" style="font-family:${font};font-size:${fontSize};">${n}</div>
-        <div class="genre-card-desc">${d}</div>
+  grid.innerHTML = genres.map(([g,n,d,bg]) => `
+    <div class="featured-card" style="padding:18px;" onclick="filterGenreFromPage('${g}')">
+      <div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
       </div>
+      <div style="font-size:0.88rem;font-weight:600;margin-bottom:3px;">${n}</div>
+      <div style="font-size:0.67rem;color:var(--text3);line-height:1.4;">${d}</div>
     </div>`).join('');
   grid.dataset.loaded='1';
 }
 
 // ─── ANIME PAGE ───────────────────────────────────────────────────────────
 let animeLoaded = false;
-let _animeBannerCycleTimer = null;
-let _animeBannerUrls = [];
-let _animeBannerIdx = 0;
-
-function _startAnimeBannerCycle() {
-  if (_animeBannerCycleTimer) clearInterval(_animeBannerCycleTimer);
-  _animeBannerCycleTimer = setInterval(() => {
-    if (!_animeBannerUrls.length) return;
-    _animeBannerIdx = (_animeBannerIdx + 1) % _animeBannerUrls.length;
-    const bi = document.getElementById('anime-banner-img');
-    if (bi) {
-      bi.style.opacity = '0';
-      setTimeout(() => {
-        bi.src = _animeBannerUrls[_animeBannerIdx];
-        bi.style.opacity = '0.35';
-      }, 400);
-    }
-  }, 4000);
-}
-
-function _openAnimeLightbox(src) {
-  let lb = document.getElementById('anime-lightbox');
-  if (!lb) {
-    lb = document.createElement('div');
-    lb.id = 'anime-lightbox';
-    lb.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;align-items:center;justify-content:center;cursor:zoom-out;backdrop-filter:blur(4px);';
-    lb.onclick = () => { lb.style.display='none'; };
-    const img = document.createElement('img');
-    img.id = 'anime-lightbox-img';
-    img.style.cssText = 'max-width:90vw;max-height:90vh;object-fit:contain;border-radius:12px;box-shadow:0 0 60px rgba(233,30,140,0.3);';
-    lb.appendChild(img);
-    document.body.appendChild(lb);
-  }
-  document.getElementById('anime-lightbox-img').src = src;
-  lb.style.display = 'flex';
-}
-
 function loadAnimePage() {
   if(animeLoaded) return; animeLoaded=true;
-  // No video init — we cycle images instead
+  initAnimeVideo();
   const bi = document.getElementById('anime-banner-img');
-  if (bi) {
-    const seed = ANIME_BANNER_IMGS[Math.floor(Math.random()*ANIME_BANNER_IMGS.length)];
-    bi.src = seed;
-    bi.style.display='block';
-    bi.style.transition='opacity 0.4s ease';
-    _animeBannerUrls = [...ANIME_BANNER_IMGS];
-    _startAnimeBannerCycle();
-  }
+  bi.src = ANIME_BANNER_IMGS[Math.floor(Math.random()*ANIME_BANNER_IMGS.length)];
+  bi.style.display='block';
   const grid = document.getElementById('anime-stations-grid');
   grid.innerHTML = ANIME_STATIONS.map((s,i) => `
     <div class="anime-station-card" onclick="playAnimeStation(${i})">
@@ -1703,23 +1579,17 @@ async function refreshAnimeImages() {
   }
 
   strip.innerHTML = '';
-  // Feed new images into banner cycle pool
-  if (urls.length) {
-    _animeBannerUrls = urls;
-    _animeBannerIdx = 0;
-    const bi = document.getElementById('anime-banner-img');
-    if (bi) { bi.src = urls[0]; bi.style.opacity='0.35'; }
-    _startAnimeBannerCycle();
-  }
   urls.forEach(src => {
     const img = document.createElement('img');
     img.className = 'anime-img-real';
     img.src = src;
     img.alt = '';
     img.loading = 'lazy';
-    img.title = 'Click to view full size';
     img.onerror = function() { this.style.display = 'none'; };
-    img.onclick = (e) => { e.stopPropagation(); _openAnimeLightbox(src); };
+    img.onclick = () => {
+      const banner = document.getElementById('anime-banner-img');
+      if (banner) banner.src = src;
+    };
     strip.appendChild(img);
   });
 
@@ -1753,146 +1623,6 @@ async function loadAnimeStationsLive() {
       {name:'Radio Anime Japan',country:'Japan',tags:'anime,jpop',bitrate:128,countrycode:'JP',url_resolved:'https://listen.moe/stream'},
       {name:'Nightwave Plaza',country:'USA',tags:'vaporwave,city pop',bitrate:128,countrycode:'US',url_resolved:'https://radio.plaza.one/mp3'},
     ],'anime-live-tbody');
-  }
-}
-
-// ─── GAMING PAGE ──────────────────────────────────────────────────────────
-let gamingLoaded = false;
-function loadGamingPage() {
-  if (gamingLoaded) return; gamingLoaded = true;
-
-  // Animate score counter
-  let score = 0;
-  const scoreEl = document.getElementById('gaming-score-val');
-  const scoreInterval = setInterval(() => {
-    score = Math.min(score + Math.floor(Math.random() * 12000), 99999999);
-    if (scoreEl) scoreEl.textContent = String(score).padStart(8, '0');
-    if (score >= 99999999) clearInterval(scoreInterval);
-  }, 80);
-
-  // Curated free gaming / chiptune radio stations
-  const GAMING_STATIONS = [
-    { name: 'SomaFM DEF CON Radio', desc: 'Hacker · Electronic · Chiptune', emoji: '👾', badge: 'live', url: 'https://ice6.somafm.com/defcon-128-mp3' },
-    { name: 'SomaFM Digitalis', desc: 'IDM · Electronica · VGM vibes', emoji: '🕹️', badge: 'live', url: 'https://ice4.somafm.com/digitalis-128-mp3' },
-    { name: 'Radio Nintendo', desc: 'Nintendo OST stream 24/7', emoji: '🍄', badge: 'ost', url: 'https://listen.radionintendo.com/stream' },
-    { name: 'OverClocked ReMix Radio', desc: 'VGM fan remixes, free & legal', emoji: '🎮', badge: 'remix', url: 'https://stream.ocremix.org/ocr192.mp3' },
-    { name: 'VGMO Radio', desc: 'Video game music 24/7', emoji: '🎵', badge: 'ost', url: 'https://listen.radiovgm.com/stream' },
-    { name: 'Rainwave Chiptune', desc: 'Listener-voted chiptune & 8bit', emoji: '📻', badge: 'live', url: 'https://rainwave.cc/chiptune.mp3' },
-    { name: 'SomaFM Fluid', desc: 'Chill grooves · Perfect for gaming', emoji: '💧', badge: 'chill', url: 'https://ice4.somafm.com/fluid-128-mp3' },
-    { name: 'di.fm Chiptunes', desc: '8-bit · 16-bit · Lo-fi electronic', emoji: '🔊', badge: 'live', url: 'https://prem2.di.fm/chiptunes' },
-  ];
-
-  // Free music source cards
-  const GAMING_SOURCES = [
-    { name: 'OverClocked ReMix', desc: '200,000+ free VGM fan arrangements — legal, no DRM', url: 'https://ocremix.org', icon: '🎼' },
-    { name: 'Free Music Archive', desc: 'Electronic & chiptune section — CC licensed downloads', url: 'https://freemusicarchive.org', icon: '📂' },
-    { name: 'Incompetech', desc: 'Kevin MacLeod\'s royalty-free game music library', url: 'https://incompetech.com', icon: '🎹' },
-    { name: 'OpenGameArt', desc: 'Game audio assets including full OSTs — open license', url: 'https://opengameart.org', icon: '🕹️' },
-    { name: 'ccMixter', desc: 'Community remixes under Creative Commons', url: 'https://ccmixter.org', icon: '🔀' },
-    { name: 'Pixabay Music', desc: 'Royalty-free game tracks, no attribution required', url: 'https://pixabay.com/music', icon: '🎮' },
-  ];
-
-  const grid = document.getElementById('gaming-stations-grid');
-  if (grid) {
-    grid.innerHTML = GAMING_STATIONS.map((s, i) => `
-      <div class="gaming-station-card" onclick="playStation('${s.url}','${escHtml(s.name)}','${escHtml(s.desc)}','${s.emoji}')">
-        <div class="gaming-card-emoji">${s.emoji}</div>
-        <div class="gaming-card-title">${escHtml(s.name)}</div>
-        <div class="gaming-card-desc">${escHtml(s.desc)}</div>
-        <span class="gaming-card-badge badge-${s.badge}">${s.badge.toUpperCase()}</span>
-      </div>`).join('');
-  }
-
-  const srcGrid = document.getElementById('gaming-sources-grid');
-  if (srcGrid) {
-    srcGrid.innerHTML = GAMING_SOURCES.map(s => `
-      <a class="gaming-source-card" href="${s.url}" target="_blank" rel="noopener">
-        <div class="gaming-source-icon">${s.icon}</div>
-        <div class="gaming-source-name">${escHtml(s.name)}</div>
-        <div class="gaming-source-desc">${escHtml(s.desc)}</div>
-        <span class="gaming-source-arrow">↗</span>
-      </a>`).join('');
-  }
-}
-
-// ─── SLEEP PAGE ───────────────────────────────────────────────────────────
-let sleepLoaded = false;
-let _sleepTimerRef = null;
-let _sleepTimerEnd = null;
-
-function setSleepTimer(minutes) {
-  if (_sleepTimerRef) { clearInterval(_sleepTimerRef); _sleepTimerRef = null; }
-  const el = document.getElementById('sleep-timer-remaining');
-  if (!minutes) { if (el) el.textContent = ''; return; }
-  _sleepTimerEnd = Date.now() + minutes * 60000;
-  function tick() {
-    const rem = Math.max(0, _sleepTimerEnd - Date.now());
-    if (el) el.textContent = rem > 0 ? Math.ceil(rem/60000) + 'm remaining' : '';
-    if (rem <= 0) {
-      clearInterval(_sleepTimerRef);
-      // Fade out — stop any playing station
-      const audio = document.getElementById('main-audio') || document.querySelector('audio');
-      if (audio) { audio.pause(); }
-    }
-  }
-  tick();
-  _sleepTimerRef = setInterval(tick, 10000);
-}
-
-function loadSleepPage() {
-  if (sleepLoaded) return; sleepLoaded = true;
-
-  // Spawn stars
-  const starContainer = document.getElementById('sleep-stars');
-  if (starContainer) {
-    starContainer.innerHTML = Array.from({length: 120}, () => {
-      const size = Math.random() * 2.5 + 0.5;
-      const x = Math.random() * 100, y = Math.random() * 100;
-      const dur = (Math.random() * 4 + 2).toFixed(1);
-      const del = (Math.random() * 5).toFixed(1);
-      return `<div style="position:absolute;left:${x}%;top:${y}%;width:${size}px;height:${size}px;border-radius:50%;background:#fff;opacity:${(Math.random()*0.6+0.2).toFixed(2)};animation:sleep-twinkle ${dur}s ease-in-out ${del}s infinite;"></div>`;
-    }).join('');
-  }
-
-  // Curated sleep / meditation / ambient stations — all free streams
-  const SLEEP_STATIONS = [
-    { name: 'SomaFM Groove Salad', desc: 'Ambient · Chill · Downtempo', emoji: '🥗', badge: 'ambient', url: 'https://ice6.somafm.com/groovesalad-256-mp3' },
-    { name: 'SomaFM Space Station', desc: 'Spacemusic for sleep & focus', emoji: '🌌', badge: 'space', url: 'https://ice4.somafm.com/spacestation-128-mp3' },
-    { name: 'SomaFM Drone Zone', desc: 'Dark ambient · Deep space', emoji: '🔮', badge: 'deep', url: 'https://ice4.somafm.com/dronezone-128-mp3' },
-    { name: 'SomaFM Lush', desc: 'Soft indie pop · Gentle vocals', emoji: '🌿', badge: 'soft', url: 'https://ice1.somafm.com/lush-128-mp3' },
-    { name: 'di.fm Chillout', desc: 'Continuous chill · Sleep-safe', emoji: '🌙', badge: 'chill', url: 'https://prem2.di.fm/chillout' },
-    { name: 'Radio Meditation', desc: 'Pure binaural & nature tones', emoji: '🧘', badge: 'binaural', url: 'https://streaming.radio.co/s9d5d01b16/listen' },
-    { name: 'Ambient Sleeping Pill', desc: 'No beats, no breaks — pure drift', emoji: '💊', badge: 'drift', url: 'https://streaming.radio.co/s6f441f47e/listen' },
-    { name: 'SomaFM Suburbs of Goa', desc: 'Psybient · Psychill · Meditative', emoji: '🕉️', badge: 'meditative', url: 'https://ice4.somafm.com/suburbsofgoa-128-mp3' },
-    { name: 'Sleep Radio', desc: 'Purpose-built sleep frequencies', emoji: '😴', badge: 'sleep', url: 'https://streaming.radio.co/s7ef4f0e4c/listen' },
-  ];
-
-  const SLEEP_SOURCES = [
-    { name: 'Freesound', desc: 'Millions of CC-licensed nature sounds, rain, white noise', url: 'https://freesound.org', icon: '🌧️' },
-    { name: 'mynoise.net', desc: 'Browser-based noise generators — free, no stream needed', url: 'https://mynoise.net', icon: '🔊' },
-    { name: 'Pixabay — Meditation', desc: 'Royalty-free meditation music, downloadable', url: 'https://pixabay.com/music/search/meditation/', icon: '🎵' },
-    { name: 'Musopen', desc: 'Public domain classical recordings — great for sleep', url: 'https://musopen.org', icon: '🎻' },
-  ];
-
-  const grid = document.getElementById('sleep-stations-grid');
-  if (grid) {
-    grid.innerHTML = SLEEP_STATIONS.map(s => `
-      <div class="sleep-station-card" onclick="playStation('${s.url}','${escHtml(s.name)}','${escHtml(s.desc)}','${s.emoji}')">
-        <div class="sleep-card-emoji">${s.emoji}</div>
-        <div class="sleep-card-title">${escHtml(s.name)}</div>
-        <div class="sleep-card-desc">${escHtml(s.desc)}</div>
-        <span class="sleep-card-badge badge-${s.badge}">${s.badge}</span>
-      </div>`).join('');
-  }
-
-  const srcGrid = document.getElementById('sleep-sources-grid');
-  if (srcGrid) {
-    srcGrid.innerHTML = SLEEP_SOURCES.map(s => `
-      <a class="sleep-source-card" href="${s.url}" target="_blank" rel="noopener">
-        <div class="sleep-source-icon">${s.icon}</div>
-        <div class="sleep-source-name">${escHtml(s.name)}</div>
-        <div class="sleep-source-desc">${escHtml(s.desc)}</div>
-      </a>`).join('');
   }
 }
 
@@ -3804,7 +3534,7 @@ function buildCountryFilter() {
 
 async function populateCountryFilter() {
   try {
-    const r = await fetch(`${_a}/countries?order=name&limit=200`);
+    const r = await fetch('https://all.api.radio-browser.info/json/countries?order=name&limit=200');
     const countries = await r.json();
     const sel = document.getElementById('country-filter');
     if (!sel) return;
@@ -3824,8 +3554,8 @@ async function applyCountryFilter(country) {
   tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Filtering...</td></tr>';
   try {
     const url = country
-      ? `${_a}/stations/search?limit=30&https=true&country=${encodeURIComponent(country)}&order=clickcount&reverse=true`
-      : `${_a}/stations/search?limit=30&https=true&order=clickcount&reverse=true`;
+      ? `https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&country=${encodeURIComponent(country)}&order=clickcount&reverse=true`
+      : `https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&order=clickcount&reverse=true`;
     const r = await fetch(url);
     const stations = await r.json();
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
@@ -4049,7 +3779,7 @@ async function loadSimilarStations() {
   list.innerHTML = '<div class="sim-loading">Scanning frequencies…</div>';
 
   try {
-    const r = await fetch(`${_a}/stations/search?limit=8&https=true&tag=${encodeURIComponent(tags)}&order=clickcount&reverse=true`);
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=8&https=true&tag=${encodeURIComponent(tags)}&order=clickcount&reverse=true`);
     const stations = await r.json();
     const filtered = stations.filter(st => st.stationuuid !== s.stationuuid);
     if (!filtered.length) { list.innerHTML = '<div class="sim-loading">No similar signals found</div>'; return; }
@@ -4996,7 +4726,7 @@ function voteStation(uuid, dir) {
     votes[uuid] = dir;
     // Submit to Radio Browser vote API (fire-and-forget)
     if (dir === 1) {
-      fetch(`${_a}/vote/${uuid}`, { method: 'POST' }).catch(() => {});
+      fetch(`https://all.api.radio-browser.info/json/vote/${uuid}`, { method: 'POST' }).catch(() => {});
     }
   }
   try { localStorage.setItem(VOTES_KEY, JSON.stringify(votes)); } catch {}
@@ -5379,7 +5109,7 @@ async function buildTrendingGenres() {
   else homeSection.prepend(strip);
 
   try {
-    const r = await fetch(`${_a}/tags?order=stationcount&reverse=true&limit=16`);
+    const r = await fetch('https://all.api.radio-browser.info/json/tags?order=stationcount&reverse=true&limit=16');
     const tags = await r.json();
     const pills = document.getElementById('tg-pills');
     if (!pills) return;
@@ -5394,7 +5124,7 @@ async function quickTagSearch(tag) {
   if (!tbody) return;
   showSkeletonTable('station-tbody', 8);
   try {
-    const r = await fetch(`${_a}/stations/search?limit=30&https=true&tag=${encodeURIComponent(tag)}&order=clickcount&reverse=true`);
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&tag=${encodeURIComponent(tag)}&order=clickcount&reverse=true`);
     const stations = await r.json();
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
     injectVoteButtons(stations, 'station-tbody');
@@ -5665,7 +5395,7 @@ async function buildStationOfTheDay() {
 
   try {
     const seed = dayNum % 5000;
-    const r = await fetch(`${_a}/stations/search?limit=1&https=true&offset=${seed}&order=votes&reverse=true&has_extended_info=true`);
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=1&https=true&offset=${seed}&order=votes&reverse=true&has_extended_info=true`);
     const [s] = await r.json();
     if (!s) return;
     const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
@@ -5734,7 +5464,7 @@ async function applyLangFilter(lang, btn) {
     ...(lang && { language: lang }),
   });
   try {
-    const r = await fetch(`${_a}/stations/search?${params}`);
+    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?${params}`);
     const stations = await r.json();
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
     injectVoteButtons(stations, 'station-tbody');
@@ -7554,7 +7284,7 @@ function adminSaveFeatured(idx) {
     
     try {
       let stations = [];
-      const base = _a;
+      const base = 'https://all.api.radio-browser.info/json';
       
       if(filter === 'country') {
         // Search both by country name AND country code

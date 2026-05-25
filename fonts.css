@@ -17,7 +17,7 @@
  */
 
 /* ── IMPORTS ─────────────────────────────────────────────────── */
-@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Rubik+Glitch&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Zen+Tokyo+Zoo&family=DotGothic16&family=Reggae+One&family=Cormorant+Garamond:ital,wght@0,300;1,300;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Rubik+Glitch&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
 
 /* ── CSS VARIABLES ───────────────────────────────────────────── */
 :root {
@@ -25,8 +25,6 @@
   --font-body:    'Comic Neue', 'Comic Sans MS', 'Comic Sans', cursive;
   --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
   --font-glitch:  'Rubik Glitch', 'Special Gothic Expanded One', sans-serif;
-  --font-anime:   'Zen Tokyo Zoo', 'DotGothic16', 'Reggae One', sans-serif;
-  --font-anime-sub: 'DotGothic16', monospace;
 }
 
 /* ── BASE OVERRIDES ──────────────────────────────────────────── */
