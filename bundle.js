@@ -2,7 +2,7 @@
    WNCORE RADIO — bundle.js
    Unified script bundle. All JS merged and wrapper chains eliminated.
    ONE clean playStation. No race conditions. No defer loading conflicts.
-   Generated: Mon May 11 08:37:43 UTC 2026
+   Edited: Mon May 11 08:37:43 UTC 2026
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ━━━ main.js ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -12,9 +12,9 @@
 ═══════════════════════════════════════════════════════ */
 
 // ─── RADIO BROWSER API — MIRROR RESOLVER ─────────────────────────────────
-// all.api.radio-browser.info is a round-robin that can fail or CORS-block.
-// We race 5 mirrors and cache the first one that responds.
+// Radio Browser API mirror resolver — cert-failure tolerant.
 const _API_MIRRORS = [
+  'https://at1.api.radio-browser.info/json',
   'https://de1.api.radio-browser.info/json',
   'https://de2.api.radio-browser.info/json',
   'https://nl1.api.radio-browser.info/json',
@@ -30,16 +30,19 @@ async function _resolveApi() {
     try {
       const r = await Promise.race([
         fetch(mirror + '/stats', { method: 'GET', cache: 'no-store' }),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 3000))
+        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
       ]);
       if (r.ok) {
         _a = mirror; _apiResolved = true;
         console.debug('[WNCORE] API mirror resolved:', mirror);
         return _a;
       }
-    } catch(e) { /* try next */ }
+    } catch(e) {
+      console.debug('[WNCORE] Mirror skipped (cert/network):', mirror);
+    }
   }
-  _apiResolved = true; // stop retrying
+  _apiResolved = true;
+  console.warn('[WNCORE] All mirrors failed — requests may error.');
   return _a;
 }
 const _d = (function(){const p=['s','i','h','a','r','u','.','v','e','r','c','e','l','.','a','p','p'];return 'https://'+p.join('')})();
@@ -3534,7 +3537,7 @@ function buildCountryFilter() {
 
 async function populateCountryFilter() {
   try {
-    const r = await fetch('https://all.api.radio-browser.info/json/countries?order=name&limit=200');
+    const r = await fetch(`${_a}/countries?order=name&limit=200`);
     const countries = await r.json();
     const sel = document.getElementById('country-filter');
     if (!sel) return;
@@ -3554,8 +3557,8 @@ async function applyCountryFilter(country) {
   tbody.innerHTML = '<tr><td colspan="7" class="loading-row">Filtering...</td></tr>';
   try {
     const url = country
-      ? `https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&country=${encodeURIComponent(country)}&order=clickcount&reverse=true`
-      : `https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&order=clickcount&reverse=true`;
+      ? `${_a}/stations/search?limit=30&https=true&country=${encodeURIComponent(country)}&order=clickcount&reverse=true`
+      : `${_a}/stations/search?limit=30&https=true&order=clickcount&reverse=true`;
     const r = await fetch(url);
     const stations = await r.json();
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
@@ -3779,7 +3782,7 @@ async function loadSimilarStations() {
   list.innerHTML = '<div class="sim-loading">Scanning frequencies…</div>';
 
   try {
-    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=8&https=true&tag=${encodeURIComponent(tags)}&order=clickcount&reverse=true`);
+    const r = await fetch(`${_a}/stations/search?limit=8&https=true&tag=${encodeURIComponent(tags)}&order=clickcount&reverse=true`);
     const stations = await r.json();
     const filtered = stations.filter(st => st.stationuuid !== s.stationuuid);
     if (!filtered.length) { list.innerHTML = '<div class="sim-loading">No similar signals found</div>'; return; }
@@ -4726,7 +4729,7 @@ function voteStation(uuid, dir) {
     votes[uuid] = dir;
     // Submit to Radio Browser vote API (fire-and-forget)
     if (dir === 1) {
-      fetch(`https://all.api.radio-browser.info/json/vote/${uuid}`, { method: 'POST' }).catch(() => {});
+      fetch(`${_a}/vote/${uuid}`, { method: 'POST' }).catch(() => {});
     }
   }
   try { localStorage.setItem(VOTES_KEY, JSON.stringify(votes)); } catch {}
@@ -5109,7 +5112,7 @@ async function buildTrendingGenres() {
   else homeSection.prepend(strip);
 
   try {
-    const r = await fetch('https://all.api.radio-browser.info/json/tags?order=stationcount&reverse=true&limit=16');
+    const r = await fetch(`${_a}/tags?order=stationcount&reverse=true&limit=16`);
     const tags = await r.json();
     const pills = document.getElementById('tg-pills');
     if (!pills) return;
@@ -5124,7 +5127,7 @@ async function quickTagSearch(tag) {
   if (!tbody) return;
   showSkeletonTable('station-tbody', 8);
   try {
-    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=30&https=true&tag=${encodeURIComponent(tag)}&order=clickcount&reverse=true`);
+    const r = await fetch(`${_a}/stations/search?limit=30&https=true&tag=${encodeURIComponent(tag)}&order=clickcount&reverse=true`);
     const stations = await r.json();
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
     injectVoteButtons(stations, 'station-tbody');
@@ -5395,7 +5398,7 @@ async function buildStationOfTheDay() {
 
   try {
     const seed = dayNum % 5000;
-    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?limit=1&https=true&offset=${seed}&order=votes&reverse=true&has_extended_info=true`);
+    const r = await fetch(`${_a}/stations/search?limit=1&https=true&offset=${seed}&order=votes&reverse=true&has_extended_info=true`);
     const [s] = await r.json();
     if (!s) return;
     const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
@@ -5464,7 +5467,7 @@ async function applyLangFilter(lang, btn) {
     ...(lang && { language: lang }),
   });
   try {
-    const r = await fetch(`https://all.api.radio-browser.info/json/stations/search?${params}`);
+    const r = await fetch(`${_a}/stations/search?${params}`);
     const stations = await r.json();
     if (typeof renderTable === 'function') renderTable(stations, 'station-tbody');
     injectVoteButtons(stations, 'station-tbody');
@@ -7284,7 +7287,7 @@ function adminSaveFeatured(idx) {
     
     try {
       let stations = [];
-      const base = 'https://all.api.radio-browser.info/json';
+      const base = _a;
       
       if(filter === 'country') {
         // Search both by country name AND country code
