@@ -170,11 +170,13 @@
     {
       "src": "/(.*)",
       "dest": "/$1"
-    }
-  ],
-  "routes_error": [
+    },
     {
-      "statusCode": 404,
+      "handle": "error"
+    },
+    {
+      "status": 404,
+      "src": "/(.*)",
       "dest": "/404.html"
     }
   ]
