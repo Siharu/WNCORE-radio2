@@ -203,25 +203,29 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 }
 #bh-nav-svg{
   width:28px;height:28px;flex-shrink:0;
-  animation:bhSpin 12s linear infinite;
-  filter:drop-shadow(0 0 6px rgba(180,60,255,0.5));
   transition:filter 0.3s;
 }
-#bh-nav-btn:hover #bh-nav-svg{
-  filter:drop-shadow(0 0 12px rgba(200,100,255,0.9));
-  animation-duration:4s;
+#bh-nav-svg .fb-core{
+  animation:fbPulse 1.8s ease-in-out infinite;
+  transform-origin:50% 50%;
 }
-@keyframes bhSpin{
-  0%  {transform:rotate(0deg)}
-  100%{transform:rotate(360deg)}
-}
+#bh-nav-svg .fb-flame1{animation:fbFlame1 1.2s ease-in-out infinite;transform-origin:50% 70%}
+#bh-nav-svg .fb-flame2{animation:fbFlame2 1.5s ease-in-out infinite 0.3s;transform-origin:50% 70%}
+#bh-nav-svg .fb-flame3{animation:fbFlame3 1.0s ease-in-out infinite 0.6s;transform-origin:50% 70%}
+#bh-nav-svg .fb-ray{animation:fbRay 2s ease-in-out infinite;transform-origin:50% 50%}
+@keyframes fbPulse{0%,100%{r:14}50%{r:16}}
+@keyframes fbFlame1{0%,100%{transform:scaleY(1) translateY(0)}50%{transform:scaleY(1.15) translateY(-2px)}}
+@keyframes fbFlame2{0%,100%{transform:scaleY(1) translateX(0)}50%{transform:scaleY(1.2) translateX(1px)}}
+@keyframes fbFlame3{0%,100%{transform:scaleY(1) translateX(0)}50%{transform:scaleY(1.1) translateX(-1px)}}
+@keyframes fbRay{0%,100%{opacity:0.3}50%{opacity:0.7}}
+#bh-nav-btn:hover #bh-nav-svg{filter:drop-shadow(0 0 8px rgba(255,140,30,0.8))}
 #bh-nav-label{
   font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;
-  color:rgba(180,100,255,0.5);transition:color 0.3s;white-space:nowrap;
+  color:rgba(255,140,40,0.6);transition:color 0.3s;white-space:nowrap;
 }
-#bh-nav-btn:hover #bh-nav-label{color:rgba(210,140,255,0.9)}
-#bh-nav-btn.locked #bh-nav-label{color:rgba(180,100,255,0.25)}
-#bh-nav-btn.locked #bh-nav-svg{filter:drop-shadow(0 0 4px rgba(180,60,255,0.2));opacity:0.5}
+#bh-nav-btn:hover #bh-nav-label{color:rgba(255,180,60,1)}
+#bh-nav-btn.locked #bh-nav-label{color:rgba(255,140,40,0.25)}
+#bh-nav-btn.locked #bh-nav-svg{filter:none;opacity:0.4}
 
 /* ══ MOON ORBIT ══════════════════════════════════════════════════ */
 #moon-orbit-wrap{
@@ -454,23 +458,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
   <div id="hd-right">
     <span id="hd-status">Population <span id="pop-display">8.28%</span> Human · <span id="infected-display">64%</span> Turned</span>
-    <button id="bh-nav-btn" onclick="bhNavClick()" title="CYGNUS X-1 — Legacy System">
+    <button id="bh-nav-btn" onclick="bhNavClick()" title="LEGACY SIGNAL — Enter if unlocked">
       <svg id="bh-nav-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-        <!-- accretion disk rings -->
-        <ellipse cx="50" cy="50" rx="46" ry="14" fill="none" stroke="rgba(180,80,255,0.25)" stroke-width="1"/>
-        <ellipse cx="50" cy="50" rx="38" ry="10" fill="none" stroke="rgba(200,100,255,0.4)" stroke-width="1.2"/>
-        <ellipse cx="50" cy="50" rx="28" ry="7"  fill="none" stroke="rgba(220,120,255,0.6)" stroke-width="1.5"/>
-        <!-- outer glow halo -->
-        <circle cx="50" cy="50" r="20" fill="none" stroke="rgba(200,100,255,0.15)" stroke-width="6"/>
-        <!-- event horizon -->
-        <circle cx="50" cy="50" r="14" fill="black"/>
-        <circle cx="50" cy="50" r="14" fill="none" stroke="rgba(180,60,255,0.8)" stroke-width="1.5"/>
-        <!-- photon ring -->
-        <circle cx="50" cy="50" r="17" fill="none" stroke="rgba(255,180,255,0.3)" stroke-width="0.8"/>
-        <!-- hot spot -->
-        <circle cx="65" cy="44" r="3" fill="rgba(255,200,255,0.7)"/>
+        <line class="fb-ray" x1="50" y1="4" x2="50" y2="16" stroke="rgba(255,200,60,0.5)" stroke-width="1.5" stroke-linecap="round"/>
+        <line class="fb-ray" x1="78" y1="12" x2="70" y2="20" stroke="rgba(255,180,40,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+        <line class="fb-ray" x1="22" y1="12" x2="30" y2="20" stroke="rgba(255,180,40,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+        <line class="fb-ray" x1="94" y1="38" x2="83" y2="42" stroke="rgba(255,160,30,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <line class="fb-ray" x1="6"  y1="38" x2="17" y2="42" stroke="rgba(255,160,30,0.35)" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="50" cy="50" r="28" fill="rgba(255,80,10,0.08)"/>
+        <circle cx="50" cy="50" r="22" fill="rgba(255,120,20,0.12)"/>
+        <path class="fb-flame1" d="M50 28 C44 36 38 42 40 52 C42 60 48 64 50 68 C52 64 58 60 60 52 C62 42 56 36 50 28Z" fill="rgba(255,80,10,0.7)"/>
+        <path class="fb-flame2" d="M50 34 C46 40 43 46 45 54 C47 60 49 63 50 65 C51 63 53 60 55 54 C57 46 54 40 50 34Z" fill="rgba(255,140,20,0.8)"/>
+        <path class="fb-flame3" d="M43 40 C40 44 39 50 41 56 C43 61 47 64 50 66 C51 63 52 60 51 55 C50 49 45 44 43 40Z" fill="rgba(255,100,15,0.5)"/>
+        <path class="fb-flame3" d="M57 40 C60 44 61 50 59 56 C57 61 53 64 50 66 C49 63 48 60 49 55 C50 49 55 44 57 40Z" fill="rgba(255,100,15,0.5)"/>
+        <circle class="fb-core" cx="50" cy="52" r="14" fill="rgba(255,220,80,1)"/>
+        <circle cx="50" cy="52" r="10" fill="rgba(255,255,200,0.9)"/>
+        <circle cx="46" cy="48" r="4" fill="rgba(255,255,255,0.7)"/>
       </svg>
-      <span id="bh-nav-label">Cygnus X-1</span>
+      <span id="bh-nav-label">Legacy Signal</span>
     </button>
     <a id="hd-back" href="/cygnus.html">← Cygnus</a>
   </div>
@@ -1653,10 +1658,10 @@ function bhNavInit() {
   const solved = bhNavGetSolved();
   if (solved >= 10) {
     btn.classList.remove('locked');
-    label.textContent = 'Cygnus X-1';
+    label.textContent = 'Legacy Signal';
   } else {
     btn.classList.add('locked');
-    label.textContent = solved + '/10 Mapped';
+    label.textContent = solved + '/10 Constellations';
   }
 }
 
