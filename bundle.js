@@ -2,7 +2,7 @@
    WNCORE RADIO — bundle.js
    Unified script bundle. All JS merged and wrapper chains eliminated.
    ONE clean playStation. No race conditions. No defer loading conflicts.
-   Edited: Mon May 11 08:37:43 UTC 2026
+   Generated: Mon May 11 08:37:43 UTC 2026
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ━━━ main.js ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -1478,32 +1478,106 @@ function showPage(id, linkEl) {
 function loadGenrePage() {
   const grid = document.getElementById('genre-cards-grid');
   if(grid.dataset.loaded) return;
+
+  // [key, name, desc, bgColor, fontFamily, fontSize, imgUrl, iconSvgPath]
   const genres = [
-    ['jazz','Jazz','After midnight. The real stuff.','#1a1a2a'],
-    ['classical','Classical','Stations that have been on the air longer than you\'ve been alive','#1a1a1a'],
-    ['rock','Rock','Loud, live, no algorithm involved','#1a0a0a'],
-    ['pop','Pop','What 3 billion people are hearing right now','#1a0a1a'],
-    ['electronic','Electronic','Transmitting from basements and warehouses','#0a0a1a'],
-    ['hiphop','Hip-Hop','Live from stations that don\'t get playlisted','#0a0a0a'],
-    ['ambient','Ambient','Broadcasts that disappear into the room','#0a1a0a'],
-    ['news','News','Shortwave, public radio, wire services still running','#1a1000'],
-    ['country','Country','Truck stops and back porches, live','#120a00'],
-    ['rnb','R&B','Late nights on the FM dial','#1a0a18'],
-    ['metal','Metal','Heavy, thrash & doom','#0e0a0a'],
-    ['reggae','Reggae','Kingston to Bristol to Lagos, live','#0a140a'],
-    ['anime','Anime / J-Pop','Direct Japanese broadcasts, no middleman','#0f0a1a'],
-    ['folk','Folk','Recorded in rooms that echo','#100e06'],
-    ['lofi','Lo-Fi','Background signal for wherever you are','#0a0e16'],
-    ['80s','80s','Stations that never updated their playlist. Meant as a compliment.','#150a10'],
-    ['90s','90s','Before streaming killed the radio star','#0a0f15'],
+    ['jazz','Jazz','After midnight. The real stuff.','#0e0e1e',
+     "'IM Fell English', serif",'1rem',
+     'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&q=60',
+     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+
+    ['classical','Classical','Stations that have been on the air longer than you\'ve been alive','#111118',
+     "'UnifrakturMaguntia', cursive",'1.05rem',
+     'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=400&q=60',
+     '<path d="M12 2a3 3 0 0 1 3 3v7a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>'],
+
+    ['rock','Rock','Loud, live, no algorithm involved','#1a0606',
+     "'Permanent Marker', cursive",'0.9rem',
+     'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=60',
+     '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'],
+
+    ['pop','Pop','What 3 billion people are hearing right now','#1a0a1a',
+     "'Pacifico', cursive",'0.88rem',
+     'https://images.unsplash.com/photo-1501612780327-45045538702b?w=400&q=60',
+     '<circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/>'],
+
+    ['electronic','Electronic','Transmitting from basements and warehouses','#040418',
+     "'Orbitron', sans-serif",'0.72rem',
+     'https://images.unsplash.com/photo-1571266028243-d220c6a40f9b?w=400&q=60',
+     '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
+
+    ['hiphop','Hip-Hop','Live from stations that don\'t get playlisted','#080808',
+     "'Bangers', cursive",'1.05rem',
+     'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=400&q=60',
+     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+
+    ['ambient','Ambient','Broadcasts that disappear into the room','#081208',
+     "'Abril Fatface', serif",'0.88rem',
+     'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400&q=60',
+     '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>'],
+
+    ['news','News','Shortwave, public radio, wire services still running','#121000',
+     "'Fredericka the Great', serif",'0.85rem',
+     'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&q=60',
+     '<path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6z"/>'],
+
+    ['country','Country','Truck stops and back porches, live','#120800',
+     "'Rye', cursive",'0.85rem',
+     'https://images.unsplash.com/photo-1508361727343-ca787442dcd7?w=400&q=60',
+     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+
+    ['rnb','R&B','Late nights on the FM dial','#180a16',
+     "'Lobster', cursive",'1rem',
+     'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=60',
+     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+
+    ['metal','Metal','Heavy, thrash & doom','#0a0505',
+     "'Rubik Glitch', sans-serif",'0.82rem',
+     'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=400&q=60',
+     '<path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M7.5 4.21l4.5 7.79H3l4.5-7.79z"/><path d="M16.5 4.21L21 12h-9l4.5-7.79z"/>'],
+
+    ['reggae','Reggae','Kingston to Bristol to Lagos, live','#061206',
+     "'Patrick Hand', cursive",'0.9rem',
+     'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=400&q=60',
+     '<circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/>'],
+
+    ['anime','Anime / J-Pop','Direct Japanese broadcasts, no middleman','#0d0818',
+     "'Righteous', sans-serif",'0.85rem',
+     'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=400&q=60',
+     '<path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>'],
+
+    ['folk','Folk','Recorded in rooms that echo','#0e0c04',
+     "'Bree Serif', serif",'0.88rem',
+     'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&q=60',
+     '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
+
+    ['lofi','Lo-Fi','Background signal for wherever you are','#080c12',
+     "'Monoton', cursive",'0.65rem',
+     'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=60',
+     '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>'],
+
+    ['80s','80s','Stations that never updated their playlist. Meant as a compliment.','#130810',
+     "'Press Start 2P', monospace",'0.6rem',
+     'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=60',
+     '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
+
+    ['90s','90s','Before streaming killed the radio star','#080c14',
+     "'Rajdhani', sans-serif",'0.92rem',
+     'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&q=60',
+     '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>'],
   ];
-  grid.innerHTML = genres.map(([g,n,d,bg]) => `
-    <div class="featured-card" style="padding:18px;" onclick="filterGenreFromPage('${g}')">
-      <div style="width:32px;height:32px;border-radius:8px;background:${bg};display:flex;align-items:center;justify-content:center;margin-bottom:10px;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" stroke-linecap="round" width="18" height="18"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+
+  grid.innerHTML = genres.map(([g,n,d,bg,font,fontSize,imgUrl,iconPath]) => `
+    <div class="featured-card genre-card-enhanced" style="padding:0;overflow:hidden;position:relative;" onclick="filterGenreFromPage('${g}')">
+      <div class="genre-card-bg" style="background-image:url('${imgUrl}');"></div>
+      <div class="genre-card-overlay" style="background:linear-gradient(160deg, ${bg}ee 0%, ${bg}99 50%, ${bg}cc 100%);"></div>
+      <div class="genre-card-inner" style="padding:16px 14px 14px;position:relative;z-index:2;">
+        <div class="genre-card-icon-wrap" style="background:${bg}bb;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.75)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">${iconPath}</svg>
+        </div>
+        <div class="genre-card-title" style="font-family:${font};font-size:${fontSize};">${n}</div>
+        <div class="genre-card-desc">${d}</div>
       </div>
-      <div style="font-size:0.88rem;font-weight:600;margin-bottom:3px;">${n}</div>
-      <div style="font-size:0.67rem;color:var(--text3);line-height:1.4;">${d}</div>
     </div>`).join('');
   grid.dataset.loaded='1';
 }
