@@ -49,12 +49,41 @@ function sbHeaders(extra = {}) {
   };
 }
 
+// ── Radio Browser proxy mirrors (server-side, no cert issues) ────────────
+const _RB_MIRRORS = [
+  'https://de1.api.radio-browser.info',
+  'https://de2.api.radio-browser.info',
+  'https://all.api.radio-browser.info',
+];
+
+async function proxyRadioBrowser(path, res) {
+  for (const mirror of _RB_MIRRORS) {
+    try {
+      const upstream = await fetch(`${mirror}/json/${path}`, {
+        headers: { 'User-Agent': 'WNCORE-Radio/3.0' },
+      });
+      if (!upstream.ok) continue;
+      const data = await upstream.json();
+      res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate=120');
+      res.setHeader('Content-Type', 'application/json');
+      return res.status(200).json(data);
+    } catch (_) { /* try next */ }
+  }
+  return res.status(502).json({ error: 'All radio-browser mirrors failed' });
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── Radio Browser proxy: GET /api/config?rb=<path> ───────────────────────
+  if (req.method === 'GET' && req.query.rb) {
+    const path = req.query.rb.replace(/^\/+/, '').replace(/[^a-zA-Z0-9\/_?=&%.+-]/g, '');
+    return proxyRadioBrowser(path, res);
+  }
 
   // Guard: Supabase not configured
   if (!supabaseUrl || !supabaseKey) {
