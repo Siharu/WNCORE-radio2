@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WNCORE — CORE-REAPER SIGNAL INDEX</title>
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#050102;
+  --surface:rgba(20,4,6,0.95);
+  --red:#c8180a;
+  --red2:#ff2a10;
+  --red3:rgba(200,24,10,0.15);
+  --red4:rgba(200,24,10,0.06);
+  --red-dim:rgba(200,24,10,0.35);
+  --amber:#ff6a1a;
+  --text:#f0dada;
+  --text2:rgba(240,200,200,0.5);
+  --text3:rgba(240,200,200,0.2);
+  --border:rgba(200,24,10,0.18);
+  --border2:rgba(200,24,10,0.08);
+  --gold:#ffcc00;
+  --gold2:rgba(255,204,0,0.6);
+}
+
+html,body{
+  width:100%;min-height:100%;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-mono);
+  overflow-x:hidden;
+}
+
+/* ── SCAN LINES ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 3px,
+    rgba(0,0,0,0.18) 3px,rgba(0,0,0,0.18) 4px
+  );
+}
+
+/* ── NOISE GRAIN ── */
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.035;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px;
+}
+
+/* ── HEADER ── */
+#hd{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 28px;
+  border-bottom:1px solid var(--border);
+  background:rgba(5,1,2,0.92);
+  backdrop-filter:blur(20px);
+}
+#hd-left{display:flex;align-items:center;gap:14px}
+#hd-logo{
+  font-family:var(--font-glitch);
+  font-size:0.9rem;letter-spacing:0.05em;
+  color:var(--red2);text-decoration:none;
+}
+#hd-sep{width:1px;height:14px;background:var(--border)}
+#hd-title{font-size:0.5rem;letter-spacing:3px;color:var(--text3);text-transform:uppercase}
+#hd-right{display:flex;align-items:center;gap:20px}
+#hd-back{
+  font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--text3);text-decoration:none;
+  padding:5px 12px;border:1px solid var(--border2);border-radius:3px;
+  transition:all 0.2s;
+}
+#hd-back:hover{border-color:var(--red-dim);color:var(--text2)}
+
+/* live pulse */
+#hd-live{display:flex;align-items:center;gap:6px;font-size:0.46rem;letter-spacing:2px;text-transform:uppercase;color:rgba(200,24,10,0.5)}
+.live-dot{width:5px;height:5px;border-radius:50%;background:var(--red2);animation:livepulse 1.8s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(255,42,16,0.6)}48%{opacity:0.3;box-shadow:0 0 0 4px rgba(255,42,16,0)}}
+
+/* ── MAIN ── */
+#main{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:40px 24px 80px}
+
+/* ── HERO TITLE ── */
+#hero{margin-bottom:40px;border-bottom:1px solid var(--border2);padding-bottom:28px}
+#hero-eyebrow{font-size:0.46rem;letter-spacing:4px;text-transform:uppercase;color:var(--red-dim);margin-bottom:12px}
+#hero-title{
+  font-family:var(--font-glitch);
+  font-size:clamp(1.8rem,5vw,3rem);
+  letter-spacing:0.03em;
+  color:var(--text);
+  line-height:0.97;
+  margin-bottom:10px;
+  margin-left:-1px;
+}
+#hero-title span{color:var(--red2)}
+#hero-sub{font-size:0.52rem;letter-spacing:2px;color:var(--text3);text-transform:uppercase}
+
+/* counter strip */
+#counter-strip{
+  display:flex;gap:28px;flex-wrap:wrap;margin-top:20px;
+}
+.ctr-block{display:flex;flex-direction:column;gap:3px}
+.ctr-val{
+  font-family:var(--font-glitch);font-size:1.4rem;
+  color:var(--red2);letter-spacing:0.04em;
+}
+.ctr-val.glitching{animation:numglitch 0.12s steps(2) forwards}
+@keyframes numglitch{
+  0%{transform:translate(0,0);opacity:1}
+  25%{transform:translate(-2px,0);opacity:0.7;color:var(--amber)}
+  50%{transform:translate(2px,0);opacity:0.9}
+  75%{transform:translate(-1px,0);opacity:0.8}
+  100%{transform:translate(0,0);opacity:1;color:var(--red2)}
+}
+.ctr-label{font-size:0.42rem;letter-spacing:3px;text-transform:uppercase;color:var(--text3)}
+
+/* ── YOUR CARD ── */
+#your-card{
+  background:var(--red4);
+  border:1px solid var(--border);
+  border-left:3px solid var(--red2);
+  border-radius:4px;
+  padding:18px 20px;
+  margin-bottom:24px;
+  position:relative;
+  overflow:hidden;
+}
+#your-card::before{
+  content:'// YOUR NODE';
+  position:absolute;top:10px;right:14px;
+  font-size:0.4rem;letter-spacing:3px;color:rgba(200,24,10,0.25);
+  text-transform:uppercase;
+}
+#yc-rank-badge{
+  display:inline-block;
+  font-size:0.42rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--red-dim);border:1px solid var(--border);
+  padding:2px 8px;border-radius:2px;margin-bottom:10px;
+}
+#yc-name{
+  font-family:var(--font-glitch);
+  font-size:1.1rem;letter-spacing:0.06em;
+  color:var(--red2);margin-bottom:4px;
+}
+#yc-role{font-size:0.44rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,106,26,0.6);margin-bottom:14px}
+#yc-score-row{display:flex;align-items:baseline;gap:8px;margin-bottom:14px}
+#yc-score{font-family:var(--font-glitch);font-size:1.6rem;color:var(--text)}
+#yc-score-label{font-size:0.44rem;letter-spacing:2px;text-transform:uppercase;color:var(--text3)}
+#yc-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.yc-bar-wrap{}
+.yc-bar-label{font-size:0.42rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);display:flex;justify-content:space-between;margin-bottom:4px}
+.yc-bar-label span{color:var(--red-dim)}
+.yc-track{height:2px;background:rgba(200,24,10,0.1);border-radius:1px;overflow:hidden}
+.yc-fill{height:100%;background:var(--red2);border-radius:1px;transition:width 1s ease}
+.yc-fill.gold{background:var(--gold)}
+
+/* ── FILTERS ── */
+#filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.flt-btn{
+  font-family:var(--font-mono);
+  font-size:0.44rem;letter-spacing:2px;text-transform:uppercase;
+  padding:6px 14px;border:1px solid var(--border2);border-radius:2px;
+  background:transparent;color:var(--text3);cursor:pointer;transition:all 0.2s;
+}
+.flt-btn:hover{border-color:var(--red-dim);color:var(--text2)}
+.flt-btn.active{border-color:var(--red);color:var(--red2);background:var(--red4)}
+
+/* ── TABLE ── */
+#tbl-head{
+  display:grid;
+  grid-template-columns:44px 1fr 88px 158px 80px;
+  gap:8px;padding:8px 12px;
+  font-size:0.42rem;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--text3);
+  border-bottom:1px solid var(--border2);
+  margin-bottom:4px;
+}
+
+
+/* ── ROWS ── */
+.cr-row{
+  display:grid;
+  grid-template-columns:44px 1fr 90px 160px 80px;
+  gap:8px;align-items:center;
+  padding:11px 14px;
+  border:1px solid transparent;
+  border-radius:3px;
+  margin-bottom:3px;
+  cursor:default;
+  transition:background 0.15s,border-color 0.15s;
+  opacity:0;
+}
+.cr-row.visible{opacity:1;animation:rowscan 0.3s ease forwards}
+@keyframes rowscan{
+  from{opacity:0;transform:translateX(-8px);border-left-color:var(--red2)}
+  60%{border-left-color:transparent}
+  to{opacity:1;transform:none}
+}
+.cr-row:hover{background:rgba(200,24,10,0.04);border-color:var(--border2)}
+.cr-row.is-you{background:var(--red4);border-color:var(--border)}
+.cr-row.rank-top{border-left:2px solid var(--gold)}
+
+
+/* rank */
+.cr-rank{font-size:0.52rem;letter-spacing:1px;color:var(--text3);text-align:center}
+.cr-rank.gold{color:var(--gold);font-family:var(--font-glitch);font-size:0.7rem}
+.cr-rank.silver{color:rgba(200,200,220,0.7);font-family:var(--font-glitch);font-size:0.65rem}
+.cr-rank.bronze{color:rgba(200,140,60,0.8);font-family:var(--font-glitch);font-size:0.6rem}
+
+/* name col */
+.cr-name-col{min-width:0}
+.cr-codename{
+  font-family:var(--font-glitch);
+  font-size:0.7rem;letter-spacing:0.05em;
+  color:var(--text);text-transform:uppercase;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.cr-codename.you-name{color:var(--red2)}
+.cr-role-tag{
+  display:inline-block;margin-top:3px;
+  font-size:0.38rem;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,106,26,0.5);
+  border:1px solid rgba(255,106,26,0.15);padding:1px 5px;border-radius:1px;
+}
+.cr-role-tag.legacy{color:rgba(255,204,0,0.6);border-color:rgba(255,204,0,0.2)}
+
+/* score */
+.cr-score{
+  font-family:var(--font-glitch);font-size:0.95rem;
+  color:var(--text2);text-align:right;
+}
+.cr-score.glitching{animation:numglitch 0.1s steps(2) forwards}
+
+/* progress */
+.cr-prog{display:flex;flex-direction:column;gap:4px}
+.cr-prog-row{display:flex;align-items:center;gap:6px}
+.cr-prog-lbl{font-size:0.38rem;letter-spacing:1px;text-transform:uppercase;color:var(--text3);width:28px;flex-shrink:0}
+.cr-prog-track{flex:1;height:2px;background:rgba(200,24,10,0.08);border-radius:1px;overflow:hidden}
+.cr-prog-fill{height:100%;border-radius:1px;transition:width 0.8s ease;background:var(--red-dim)}
+.cr-prog-fill.cygnus{background:rgba(180,80,255,0.6)}
+.cr-prog-fill.earth{background:rgba(0,200,100,0.5)}
+
+/* badges */
+.cr-badges{display:flex;gap:4px;justify-content:flex-end}
+.cr-badge{
+  width:22px;height:22px;border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.58rem;
+  border:1px solid rgba(240,200,200,0.07);
+  color:rgba(240,200,200,0.1);
+  transition:all 0.2s;cursor:default;
+}
+.cr-badge.earned.b-const{border-color:rgba(255,204,0,0.3);color:var(--gold);background:rgba(255,204,0,0.05)}
+.cr-badge.earned.b-earth{border-color:rgba(0,200,100,0.3);color:rgba(0,220,120,0.8);background:rgba(0,200,100,0.04)}
+.cr-badge.earned.b-legacy{border-color:rgba(255,106,26,0.4);color:var(--amber);background:rgba(255,106,26,0.06)}
+
+/* loading / empty */
+#board-loading,#board-empty{
+  font-size:0.5rem;letter-spacing:3px;text-transform:uppercase;
+  color:var(--text3);text-align:center;padding:60px 0;
+}
+#board-loading{animation:livepulse 1.5s ease-in-out infinite}
+
+/* ── GLITCH SWEEP LINE ── */
+#sweep{
+  position:fixed;top:0;left:0;right:0;height:2px;z-index:100;
+  background:linear-gradient(90deg,transparent 20%,var(--red2) 55%,rgba(255,106,26,0.4) 80%,transparent);
+  animation:sweep 8s linear infinite;
+  opacity:0.4;pointer-events:none;
+}
+@keyframes sweep{
+  0%{top:-2px}100%{top:100vh}
+}
+
+/* ── BOTTOM BAR ── */
+#bbar{
+  position:fixed;bottom:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 26px;
+  border-top:1px solid var(--border2);
+  background:rgba(5,1,2,0.92);backdrop-filter:blur(14px);
+  font-size:0.46rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);
+}
+#bbar-refresh{color:var(--red-dim)}
+#bbar-clock{font-variant-numeric:tabular-nums}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:52px;left:50%;transform:translateX(-50%);
+  z-index:200;
+  background:rgba(12,2,4,0.97);border:1px solid var(--border);border-radius:3px;
+  padding:10px 20px;font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--red2);white-space:nowrap;
+  opacity:0;transition:opacity 0.3s;pointer-events:none;
+}
+#toast.show{opacity:1}
+
+/* ── CORNER DECORATION ── */
+.corner-tl{position:fixed;width:18px;height:22px;z-index:2;pointer-events:none}
+.corner-br{position:fixed;width:24px;height:18px;z-index:2;pointer-events:none}
+.corner-tl{top:0;left:0;border-top:1px solid var(--red-dim);border-left:1px solid var(--red-dim)}
+.corner-br{bottom:0;right:0;border-bottom:1px solid var(--red-dim);border-right:1px solid var(--red-dim)}
+
+/* ══ MOBILE ══════════════════════════════════════════════════ */
+@media(max-width:640px){
+
+  /* header */
+  #hd{padding:11px 14px;gap:8px}
+  #hd-title{display:none}
+  #hd-live{display:none}
+  #hd-back{padding:4px 9px;font-size:0.44rem}
+
+  /* main */
+  #main{padding:24px 14px 72px}
+
+  /* hero */
+  #hero{margin-bottom:28px;padding-bottom:20px}
+  #hero-eyebrow{font-size:0.42rem;letter-spacing:2px}
+  #hero-title{font-size:clamp(1.4rem,9vw,2.2rem)}
+  #hero-sub{font-size:0.44rem;letter-spacing:1px}
+  #counter-strip{gap:16px}
+  .ctr-val{font-size:1.1rem}
+  .ctr-label{font-size:0.38rem;letter-spacing:2px}
+
+  /* your card */
+  #your-card{padding:14px}
+  #yc-name{font-size:0.9rem}
+  #yc-score{font-size:1.3rem}
+  #yc-bars{grid-template-columns:1fr 1fr}
+
+  /* filters — horizontal scroll */
+  #filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  #filters::-webkit-scrollbar{display:none}
+  .flt-btn{flex-shrink:0;font-size:0.42rem;padding:5px 10px}
+
+  /* table head */
+  #tbl-head{grid-template-columns:28px 1fr 64px 60px;gap:6px;padding:7px 10px;font-size:0.38rem}
+  #tbl-head .th-prog{display:none}
+
+  /* rows */
+  .cr-row{grid-template-columns:28px 1fr 64px 60px;gap:6px;padding:10px 10px}
+  .cr-prog{display:none}
+  .cr-codename{font-size:0.6rem}
+  .cr-role-tag{font-size:0.34rem}
+  .cr-score{font-size:0.8rem}
+  .cr-badge{width:18px;height:18px;font-size:0.5rem}
+
+  /* bottom bar */
+  #bbar{padding:8px 14px;flex-wrap:wrap;gap:4px;justify-content:space-between}
+  #bbar > span:first-child{display:none}
+  #bbar-refresh{font-size:0.42rem}
+  #bbar-clock{font-size:0.42rem}
+
+  /* sweep line less distracting on small screen */
+  #sweep{opacity:0.2}
+
+  /* corners */
+  .corner-tl,.corner-br{width:12px;height:12px}
+}
+
+@media(max-width:380px){
+  #hero-title{font-size:1.3rem}
+  #yc-bars{grid-template-columns:1fr}
+  .ctr-val{font-size:0.95rem}
+}
+
+</style>
+</head>
+<body>
+
+<div class="corner-tl"></div>
+<div class="corner-br"></div>
+<div id="sweep"></div>
+
+<header id="hd">
+  <div id="hd-left">
+    <a href="/cygnus.html" id="hd-logo">WNCORE</a>
+    <span id="hd-sep"></span>
+    <span id="hd-title">Core-Reaper Signal Index</span>
+  </div>
+  <div id="hd-right">
+    <div id="hd-live"><div class="live-dot"></div> Live Feed</div>
+    <a id="hd-back" href="/cygnus.html">← Back</a>
+  </div>
+</header>
+
+<main id="main">
+
+  <div id="hero">
+    <div id="hero-eyebrow">// WNCORE Transmission Log — Authenticated Operators</div>
+    <div id="hero-title">CORE-<span>REAPER</span><br>INDEX</div>
+    <div id="hero-sub">All active nodes visible — no anonymity in the signal </div>
+
+    <div id="counter-strip">
+      <div class="ctr-block">
+        <div class="ctr-val" id="ctr-reapers">—</div>
+        <div class="ctr-label">Core-Reapers Online</div>
+      </div>
+      <div class="ctr-block">
+        <div class="ctr-val" id="ctr-legacy">—</div>
+        <div class="ctr-label">Legacy Unlocked</div>
+      </div>
+      <div class="ctr-block">
+        <div class="ctr-val" id="ctr-top">—</div>
+        <div class="ctr-label">Top Score</div>
+      </div>
+      <div class="ctr-block">
+        <div class="ctr-val" id="ctr-nodes">—</div>
+        <div class="ctr-label">earth Nodes found</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- YOUR CARD -->
+  <div id="your-card">
+    <div id="yc-rank-badge">Rank #<span id="yc-rank">—</span></div>
+    <div id="yc-name">IDENTIFYING NODE...</div>
+    <div id="yc-role">Core-Reaper</div>
+    <div id="yc-score-row">
+      <div id="yc-score">0</div>
+      <div id="yc-score-label">Signal Points</div>
+    </div>
+    <div id="yc-bars">
+      <div class="yc-bar-wrap">
+        <div class="yc-bar-label">Constellations <span id="yb-c">0/20</span></div>
+        <div class="yc-track"><div class="yc-fill" id="yb-cf" style="width:0%"></div></div>
+      </div>
+      <div class="yc-bar-wrap">
+        <div class="yc-bar-label">Cygnus Sections <span id="yb-cy">0/10</span></div>
+        <div class="yc-track"><div class="yc-fill" id="yb-cyf" style="width:0%"></div></div>
+      </div>
+      <div class="yc-bar-wrap">
+        <div class="yc-bar-label">Earth Nodes <span id="yb-e">0/10</span></div>
+        <div class="yc-track"><div class="yc-fill" id="yb-ef" style="width:0%"></div></div>
+      </div>
+      <div class="yc-bar-wrap">
+        <div class="yc-bar-label">Legacy Signal <span id="yb-l">Locked</span></div>
+        <div class="yc-track"><div class="yc-fill gold" id="yb-lf" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div id="filters">
+    <button class="flt-btn active" data-f="all" onclick="setFilter('all',this)">All Reapers</button>
+    <button class="flt-btn" data-f="constellation" onclick="setFilter('constellation',this)">Constellation</button>
+    <button class="flt-btn" data-f="cygnus" onclick="setFilter('cygnus',this)">Cygnus</button>
+    <button class="flt-btn" data-f="earth" onclick="setFilter('earth',this)" style="padding:6px 12px;">Earth Nodes</button>
+    <button class="flt-btn" data-f="legacy" onclick="setFilter('legacy',this)">Legacy Unlocked</button>
+  </div>
+
+  <!-- TABLE -->
+  <div id="tbl-head">
+    <span>#</span>
+    <span>Reaper Node</span>
+    <span style="text-align:right">Score</span>
+    <span class="th-prog">Progress</span>
+    <span style="text-align:right">Badges</span>
+  </div>
+  <div id="board">
+    <div id="board-loading">//  Scanning network — acquiring signal...</div>
+  </div>
+
+</main>
+
+<div id="bbar">
+  <span>WNCORE Signal Index — Core-Reaper Leaderboard</span>
+  <span id="bbar-refresh">Next refresh in <span id="bbar-cd">30</span>s</span>
+  <span id="bbar-clock">——:——:——</span>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+// TODO: clean up glitch timings later
+
+/* ── STATE ── */
+let allEntries = [];
+let myCodename = '';
+let currentFilter = 'all';
+let refreshTimer = 30;
+let glitchPool = [];
+
+/* ── FINGERPRINT ── */
+function getFingerprint() {
+  const k = 'wncore-fp';
+  let fp = localStorage.getItem(k);
+  if (!fp) {
+    let h = 0;
+    const s = navigator.userAgent + screen.width + screen.height + navigator.language + Date.now();
+    for (let i = 0; i < s.length; i++) { h = ((h << 5) - h) + s.charCodeAt(i); h |= 0; }
+    fp = Math.abs(h).toString(36) + Date.now().toString(36);
+    localStorage.setItem(k, fp);
+  }
+  return fp;
+}
+
+/* ── LOCAL PROGRESS ── */
+function getLocalProgress() {
+  const constSolved = (() => { try { return JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]').length; } catch { return 0; } })();
+  const earthNodes  = (() => { try { return JSON.parse(localStorage.getItem('wncore-earth-arg-found') || '[]').length; } catch { return 0; } })();
+  const cygnusSections = (() => { try { return parseInt(localStorage.getItem('wncore-cygnus-sections') || '0', 10); } catch { return 0; } })();
+  const legacyUnlocked = constSolved >= 10;
+  return { constSolved, earthNodes, cygnusSections, legacyUnlocked };
+}
+
+function calcScore(p) {
+  return (p.constellation_solved||p.constSolved||0)*10
+       + (p.cygnus_sections||p.cygnusSections||0)*25
+       + (p.earth_nodes_found||p.earthNodes||0)*5
+       + ((p.legacy_unlocked||p.legacyUnlocked) ? 50 : 0);
+}
+
+/* ── NUMBER GLITCH ── */
+function glitchNumber(el, target, duration = 600) {
+  const chars = '0123456789';
+  const start = Date.now();
+  const interval = setInterval(() => {
+    const progress = (Date.now() - start) / duration;
+    if (progress >= 1) { el.textContent = formatNum(target); clearInterval(interval); return; }
+    const partial = Math.floor(target * progress);
+    const noise = chars[Math.floor(Math.random() * chars.length)];
+    el.textContent = formatNum(partial) + noise;
+    el.classList.add('glitching');
+    setTimeout(() => el.classList.remove('glitching'), 80);
+  }, 40);
+}
+
+function formatNum(n) {
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toString();
+}
+
+/* ── YOUR CARD ── */
+function renderYourCard(p, rank) {
+  document.getElementById('yc-name').textContent = myCodename || 'UNIDENTIFIED';
+  document.getElementById('yc-rank').textContent  = rank > 0 ? rank : '—';
+
+  const score = calcScore(p);
+  glitchNumber(document.getElementById('yc-score'), score, 800);
+
+  document.getElementById('yb-c').textContent  = p.constSolved + '/20';
+  document.getElementById('yb-cy').textContent = p.cygnusSections + '/10';
+  document.getElementById('yb-e').textContent  = p.earthNodes + '/10';
+  document.getElementById('yb-l').textContent  = p.legacyUnlocked ? 'Unlocked' : 'Locked';
+
+  document.getElementById('yb-cf').style.width  = Math.min(100, (p.constSolved/20)*100) + '%';
+  document.getElementById('yb-cyf').style.width = Math.min(100, (p.cygnusSections/10)*100) + '%';
+  document.getElementById('yb-ef').style.width  = Math.min(100, (p.earthNodes/10)*100) + '%';
+  document.getElementById('yb-lf').style.width  = p.legacyUnlocked ? '100%' : '0%';
+}
+
+/* ── COUNTER STRIP ── */
+function updateCounters(entries) {
+  const legacy  = entries.filter(e => e.legacy_unlocked).length;
+  const top     = entries.length > 0 ? entries[0].score : 0;
+  const nodes   = entries.reduce((a, e) => a + (e.earth_nodes_found || 0), 0);
+
+  glitchNumber(document.getElementById('ctr-reapers'), entries.length, 700);
+  glitchNumber(document.getElementById('ctr-legacy'),  legacy,         700);
+  glitchNumber(document.getElementById('ctr-top'),     top,            900);
+  glitchNumber(document.getElementById('ctr-nodes'),   nodes,          800);
+}
+
+/* ── RENDER BOARD ── */
+function renderBoard(entries) {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  let filtered = [...entries];
+  if (currentFilter === 'constellation') filtered = filtered.filter(e => e.constellation_solved > 0);
+  else if (currentFilter === 'cygnus')   filtered = filtered.filter(e => e.cygnus_sections > 0);
+  else if (currentFilter === 'earth')    filtered = filtered.filter(e => e.earth_nodes_found > 0);
+  else if (currentFilter === 'legacy')   filtered = filtered.filter(e => e.legacy_unlocked);
+
+  if (!filtered.length) {
+    board.innerHTML = '<div id="board-empty">// No reapers match this filter</div>';
+    return;
+  }
+
+  filtered.forEach((e, i) => {
+    const rank   = i + 1;
+    const isYou  = e.codename === myCodename;
+    const isTop3 = rank <= 3;
+
+    const rankLabel = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+    const rankIcon  = rank === 1 ? '◆' : rank === 2 ? '◇' : rank === 3 ? '▸' : '#' + rank;
+
+    const row = document.createElement('div');
+    row.className = 'cr-row' + (isTop3 ? ' rank-top' : '') + (isYou ? ' is-you' : '');
+
+    // Rank
+    const rankEl = document.createElement('div');
+    rankEl.className = 'cr-rank ' + rankLabel;
+    rankEl.textContent = rankIcon;
+
+    // Name col
+    const nameCol = document.createElement('div');
+    nameCol.className = 'cr-name-col';
+    const codeEl = document.createElement('div');
+    codeEl.className = 'cr-codename' + (isYou ? ' you-name' : '');
+    codeEl.textContent = e.codename;
+    const roleEl = document.createElement('div');
+    roleEl.className = 'cr-role-tag' + (e.legacy_unlocked ? ' legacy' : '');
+    roleEl.textContent = e.legacy_unlocked ? 'Legacy Reaper' : 'Core-Reaper';
+    nameCol.appendChild(codeEl);
+    nameCol.appendChild(roleEl);
+
+    // Score
+    const scoreEl = document.createElement('div');
+    scoreEl.className = 'cr-score';
+    scoreEl.textContent = (e.score || 0).toLocaleString();
+    // random glitch on load
+    if (Math.random() < 0.3) {
+      setTimeout(() => {
+        scoreEl.classList.add('glitching');
+        setTimeout(() => scoreEl.classList.remove('glitching'), 120);
+      }, i * 60 + Math.random() * 400);
+    }
+
+    // Progress
+    const progEl = document.createElement('div');
+    progEl.className = 'cr-prog';
+    [
+      { lbl:'CST', val: e.constellation_solved, max:20, cls:'' },
+      { lbl:'CYG', val: e.cygnus_sections,      max:10, cls:'cygnus' },
+      { lbl:'ETH', val: e.earth_nodes_found,    max:10, cls:'earth' },
+    ].forEach(b => {
+      const pr = document.createElement('div');
+      pr.className = 'cr-prog-row';
+      pr.innerHTML = `<span class="cr-prog-lbl">${b.lbl}</span>
+        <div class="cr-prog-track"><div class="cr-prog-fill ${b.cls}" style="width:${Math.min(100,(b.val/b.max)*100)}%"></div></div>`;
+      progEl.appendChild(pr);
+    });
+
+    // Badges
+    const badgeEl = document.createElement('div');
+    badgeEl.className = 'cr-badges';
+    [
+      { cls:'b-const',  icon:'★', earned: e.constellation_solved >= 10, title:'Constellation Mapper' },
+      { cls:'b-earth',  icon:'◈', earned: e.earth_nodes_found > 0,      title:'Signal Hunter' },
+      { cls:'b-legacy', icon:'◆', earned: e.legacy_unlocked,            title:'Legacy Reaper' },
+    ].forEach(b => {
+      const bd = document.createElement('div');
+      bd.className = `cr-badge ${b.cls}` + (b.earned ? ' earned' : '');
+      bd.textContent = b.icon;
+      bd.title = b.title;
+      badgeEl.appendChild(bd);
+    });
+
+    row.appendChild(rankEl);
+    row.appendChild(nameCol);
+    row.appendChild(scoreEl);
+    row.appendChild(progEl);
+    row.appendChild(badgeEl);
+    board.appendChild(row);
+
+    // Staggered scan-in
+    setTimeout(() => row.classList.add('visible'), i * 35);
+  });
+}
+
+/* ── FILTER ── */
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard(allEntries);
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+/* ── FETCH & SUBMIT ── */
+async function submitProgress() {
+  const fp = getFingerprint();
+  const p  = getLocalProgress();
+  try {
+    const res = await fetch('/api/community', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fingerprint: fp,
+        constellation_solved: p.constSolved,
+        cygnus_sections: p.cygnusSections,
+        earth_nodes_found: p.earthNodes,
+        legacy_unlocked: p.legacyUnlocked,
+      }),
+    });
+    const data = await res.json();
+    if (data.codename) myCodename = data.codename;
+  } catch(e) { /* silent */ }
+}
+
+async function fetchBoard() {
+  try {
+    const res = await fetch('/api/community');
+    if (!res.ok) return;
+    const { entries } = await res.json();
+    if (!Array.isArray(entries)) return;
+
+    const prev = allEntries.length;
+    allEntries = entries;
+
+    if (prev > 0 && entries.length > prev) showToast('// New reaper detected on network');
+
+    updateCounters(entries);
+    renderBoard(entries);
+
+    // Find your rank
+    const myRank = entries.findIndex(e => e.codename === myCodename) + 1;
+    const p = getLocalProgress();
+    renderYourCard(p, myRank);
+
+  } catch(e) {
+    document.getElementById('board').innerHTML = '<div id="board-empty">// Signal lost — network unreachable</div>';
+  }
+}
+
+/* ── CLOCK ── */
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('bbar-clock').textContent =
+    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+}
+
+/* ── AMBIENT NUMBER GLITCH ── */
+function ambientGlitch() {
+  const scores = document.querySelectorAll('.cr-score');
+  if (scores.length > 0) {
+    const el = scores[Math.floor(Math.random() * scores.length)];
+    el.classList.add('glitching');
+    setTimeout(() => el.classList.remove('glitching'), 100);
+  }
+}
+
+/* ── INIT ── */
+async function init() {
+  updateClock();
+  setInterval(updateClock, 1000);
+
+  // Initial card render with local data
+  const p = getLocalProgress();
+  renderYourCard(p, 0);
+  document.getElementById('yc-name').textContent = 'IDENTIFYING...';
+
+  // Submit then fetch
+  await submitProgress();
+  document.getElementById('board-loading').textContent = '// Acquiring Core-Reaper roster...';
+  await fetchBoard();
+
+  // Refresh countdown
+  setInterval(() => {
+    refreshTimer--;
+    const cd = document.getElementById('bbar-cd');
+    if (cd) cd.textContent = refreshTimer;
+    if (refreshTimer <= 0) {
+      refreshTimer = 30;
+      fetchBoard();
+    }
+  }, 1000);
+
+  // Ambient glitch every 2.5s
+  setInterval(ambientGlitch, 2500);
+}
+
+init();
+</script>
+</body>
+</html>
