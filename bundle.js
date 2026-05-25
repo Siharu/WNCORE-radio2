@@ -12,39 +12,11 @@
 ═══════════════════════════════════════════════════════ */
 
 // ─── RADIO BROWSER API — MIRROR RESOLVER ─────────────────────────────────
-// Radio Browser API mirror resolver — cert-failure tolerant.
-const _API_MIRRORS = [
-  'https://at1.api.radio-browser.info/json',
-  'https://de1.api.radio-browser.info/json',
-  'https://de2.api.radio-browser.info/json',
-  'https://nl1.api.radio-browser.info/json',
-  'https://all.api.radio-browser.info/json',
-  'https://fr1.api.radio-browser.info/json',
-];
-let _a = _API_MIRRORS[0];
-let _apiResolved = false;
-
-async function _resolveApi() {
-  if (_apiResolved) return _a;
-  for (const mirror of _API_MIRRORS) {
-    try {
-      const r = await Promise.race([
-        fetch(mirror + '/stats', { method: 'GET', cache: 'no-store' }),
-        new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 4000))
-      ]);
-      if (r.ok) {
-        _a = mirror; _apiResolved = true;
-        console.debug('[WNCORE] API mirror resolved:', mirror);
-        return _a;
-      }
-    } catch(e) {
-      console.debug('[WNCORE] Mirror skipped (cert/network):', mirror);
-    }
-  }
-  _apiResolved = true;
-  console.warn('[WNCORE] All mirrors failed — requests may error.');
-  return _a;
-}
+// Radio Browser API — routed through our own Vercel proxy (/api/config?rb=)
+// so expired SSL certs on radio-browser.info never hit the browser.
+const _a = '/api/config?rb=';
+const _apiResolved = true;
+async function _resolveApi() { return _a; }
 const _d = (function(){const p=['s','i','h','a','r','u','.','v','e','r','c','e','l','.','a','p','p'];return 'https://'+p.join('')})();
 
 const audio = document.getElementById('audio');
