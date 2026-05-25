@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WNCORE — CYGNUS X-1 // LEGACY SYSTEM</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+:root {
+  --bg:#02000a;
+  --text:#e8d8ff;
+  --text2:rgba(220,180,255,0.6);
+  --text3:rgba(220,180,255,0.25);
+  --accent:#b45aff;
+  --accent2:#d4a0ff;
+  --mono:var(--font-mono);
+  --serif:var(--font-display);
+
+  /* Cygnus X-1 system color palette — deep purples, hot plasma whites */
+  --cx-core: oklch(18% 0.04 280);
+  --cx-ring1: oklch(55% 0.28 295 / 35%);
+  --cx-ring2: oklch(65% 0.30 300 / 55%);
+  --cx-ring3: oklch(72% 0.32 305 / 75%);
+  --cx-hot:   oklch(90% 0.18 310 / 90%);
+  --cx-glow:  oklch(60% 0.30 295);
+
+  /* planet trajectory radii */
+  --tr-drev:    210px;
+  --tr-obsidis: 290px;
+  --tr-vael:    370px;
+  --tr-kage:    455px;
+  --tr-shurn:   540px;
+  --tr-mourne:  625px;
+  --tr-orveth:  710px;
+  --tr-calyx:   800px;
+  --tr-thresh:  890px;
+  --tr-nullen:  975px;
+
+  /* planet sizes */
+  --sz-drev:    18px;
+  --sz-obsidis: 28px;
+  --sz-vael:    22px;
+  --sz-kage:    52px;
+  --sz-shurn:   38px;
+  --sz-mourne:  30px;
+  --sz-orveth:  44px;
+  --sz-calyx:   24px;
+  --sz-thresh:  34px;
+  --sz-nullen:  20px;
+}
+
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  background:var(--bg);
+  font-family:var(--mono);
+  color:var(--text);
+}
+
+/* ── LOCK SCREEN ────────────────────────────────────────────── */
+#lock-screen {
+  position:fixed;inset:0;z-index:100;
+  background:#000;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:20px;
+  text-align:center;
+}
+#lock-screen.hidden { display:none; }
+#lock-icon {
+  width:72px;height:72px;
+  animation:lockPulse 3s ease-in-out infinite;
+}
+@keyframes lockPulse {
+  0%,100%{ filter:drop-shadow(0 0 6px rgba(180,90,255,0.3)); }
+  50%    { filter:drop-shadow(0 0 20px rgba(180,90,255,0.8)); }
+}
+#lock-title {
+  font-family:var(--serif);font-style:italic;font-size:1.6rem;
+  color:rgba(200,150,255,0.9);
+}
+#lock-sub {
+  font-size:0.55rem;letter-spacing:3px;text-transform:uppercase;
+  color:rgba(180,100,255,0.4);margin-top:-8px;
+}
+#lock-progress {
+  font-size:0.65rem;letter-spacing:2px;
+  color:rgba(180,100,255,0.6);margin-top:8px;
+}
+#lock-progress span { color:var(--accent2); }
+#lock-bar-wrap {
+  width:280px;height:3px;background:rgba(180,100,255,0.1);border-radius:2px;
+}
+#lock-bar-fill {
+  height:100%;background:var(--accent);border-radius:2px;
+  transition:width 0.6s ease;
+}
+#lock-cta {
+  font-size:0.52rem;letter-spacing:2px;color:rgba(180,100,255,0.3);
+  text-transform:uppercase;margin-top:4px;
+}
+#lock-back {
+  font-size:0.5rem;letter-spacing:2px;color:rgba(180,100,255,0.25);
+  text-decoration:none;text-transform:uppercase;border:1px solid rgba(180,100,255,0.15);
+  padding:7px 18px;border-radius:4px;margin-top:8px;transition:all 0.2s;
+}
+#lock-back:hover { color:var(--accent2);border-color:rgba(180,100,255,0.45); }
+
+/* ── GRAIN + SCANLINES ──────────────────────────────────────── */
+#grain {
+  position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px;
+}
+#scanlines {
+  position:fixed;inset:0;z-index:2;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(10,0,20,0.06) 2px,rgba(10,0,20,0.06) 4px);
+}
+
+/* ── HEADER ─────────────────────────────────────────────────── */
+#hd {
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;
+  border-bottom:1px solid rgba(180,90,255,0.08);
+  background:rgba(2,0,10,0.85);backdrop-filter:blur(20px);
+}
+#hd-logo { font-family:var(--serif);font-size:1rem;color:var(--text);text-decoration:none; }
+#hd-title { font-size:0.54rem;letter-spacing:3px;color:var(--text3);text-transform:uppercase; }
+#hd-right { display:flex;align-items:center;gap:16px; }
+#hd-badge {
+  font-size:0.48rem;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(180,90,255,0.5);border:1px solid rgba(180,90,255,0.18);
+  padding:4px 10px;border-radius:3px;
+}
+#hd-back {
+  font-size:0.56rem;letter-spacing:1.5px;color:var(--text3);text-decoration:none;
+  padding:5px 12px;border:1px solid rgba(180,90,255,0.12);border-radius:4px;
+  text-transform:uppercase;transition:all 0.2s;
+}
+#hd-back:hover { border-color:rgba(180,90,255,0.4);color:var(--accent2); }
+#hd-sep { width:1px;height:14px;background:rgba(180,90,255,0.12); }
+
+/* ── INTRO ──────────────────────────────────────────────────── */
+#intro {
+  position:fixed;inset:0;z-index:49;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:10px;
+  transition:opacity 1.4s;
+}
+#intro.fade { opacity:0;pointer-events:none; }
+#intro-text {
+  font-family:var(--serif);font-style:italic;font-size:1.9rem;
+  opacity:0;animation:rise 2s ease forwards 0.3s;text-align:center;
+}
+#intro-sub {
+  font-size:0.52rem;letter-spacing:4px;color:var(--text3);
+  text-transform:uppercase;text-align:center;
+  opacity:0;animation:rise 1.5s ease forwards 1.2s;
+}
+@keyframes rise { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:none} }
+
+/* ── SOLAR SYSTEM STAGE ─────────────────────────────────────── */
+#stage {
+  position:fixed;inset:0;z-index:3;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+}
+
+.solar-system {
+  display:flex;align-items:center;justify-content:center;
+  width:100%;height:100%;
+  transform:skewX(-45deg);
+}
+
+/* ── BLACK HOLE (center) ────────────────────────────────────── */
+#bh-center {
+  position:absolute;z-index:50;
+  width:90px;height:90px;
+  border-radius:50%;
+  cursor:pointer;
+  transform:skewX(45deg);
+}
+#bh-event {
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,
+    #000 0%, #000 45%,
+    rgba(80,0,140,0.4) 60%,
+    rgba(140,0,220,0.15) 75%,
+    transparent 100%);
+  box-shadow:
+    0 0 0 2px rgba(180,80,255,0.6),
+    0 0 20px rgba(150,60,255,0.4),
+    0 0 50px rgba(120,40,220,0.25),
+    0 0 90px rgba(100,30,200,0.12);
+}
+/* accretion disk — CSS only */
+#bh-disk {
+  position:absolute;
+  inset:-28px;
+  border-radius:50%;
+  border:10px solid transparent;
+  background:
+    radial-gradient(ellipse 100% 30% at 50% 50%,
+      rgba(255,200,255,0.08) 0%,
+      rgba(200,80,255,0.18) 35%,
+      rgba(160,50,220,0.12) 55%,
+      transparent 70%) border-box;
+  animation:diskSpin 8s linear infinite;
+  filter:blur(1px);
+}
+#bh-disk2 {
+  position:absolute;
+  inset:-18px;
+  border-radius:50%;
+  border:6px solid transparent;
+  background:
+    radial-gradient(ellipse 100% 25% at 50% 50%,
+      rgba(255,240,255,0.12) 0%,
+      rgba(220,120,255,0.25) 30%,
+      rgba(180,70,240,0.15) 50%,
+      transparent 65%) border-box;
+  animation:diskSpin 5s linear infinite reverse;
+  filter:blur(0.5px);
+}
+#bh-photon {
+  position:absolute;
+  inset:-8px;
+  border-radius:50%;
+  border:2px solid rgba(240,200,255,0.35);
+  animation:diskSpin 3s linear infinite;
+}
+@keyframes diskSpin {
+  0%  {transform:rotate(0deg) scaleY(0.35)}
+  100%{transform:rotate(360deg) scaleY(0.35)}
+}
+/* jet */
+#bh-jet {
+  position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:3px;height:200px;
+  background:linear-gradient(to top,rgba(200,100,255,0.6),rgba(200,100,255,0) 50%,rgba(200,100,255,0) 50%,rgba(200,100,255,0.6));
+  filter:blur(2px);
+  animation:jetPulse 2.5s ease-in-out infinite;
+  border-radius:2px;
+}
+@keyframes jetPulse {
+  0%,100%{opacity:0.4;height:200px}
+  50%{opacity:0.7;height:220px}
+}
+
+/* ── ORBIT TRAJECTORIES ─────────────────────────────────────── */
+.traj {
+  position:absolute;border-radius:50%;
+  border:1px solid rgba(180,90,255,0.1);
+  display:flex;align-items:center;justify-content:center;
+}
+
+/* ── PLANET BASE ────────────────────────────────────────────── */
+.planet-wrap {
+  position:absolute;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;
+  cursor:pointer;
+  top:0;left:50%;
+  transform-origin:50% 50%;
+}
+.planet {
+  border-radius:50%;
+  position:relative;
+  border:1px solid rgba(180,90,255,0.3);
+  box-shadow:0 0 6px rgba(180,90,255,0.2);
+  transition:box-shadow 0.3s, transform 0.3s;
+}
+.planet-wrap:hover .planet {
+  box-shadow:0 0 18px rgba(200,120,255,0.7);
+  transform:scale(1.15);
+}
+
+/* individual planet styles */
+#pl-drev    .planet { width:var(--sz-drev);height:var(--sz-drev);
+  background:radial-gradient(circle at 35% 30%,#6a3060,#1a0825);
+  box-shadow:0 0 8px rgba(120,40,100,0.5); }
+
+#pl-obsidis .planet { width:var(--sz-obsidis);height:var(--sz-obsidis);
+  background:radial-gradient(circle at 30% 30%,#3a3a4a,#0a0a14);
+  box-shadow:0 0 10px rgba(80,80,120,0.4); }
+
+#pl-vael    .planet { width:var(--sz-vael);height:var(--sz-vael);
+  background:radial-gradient(circle at 40% 35%,#c07040,#3a1800);
+  box-shadow:0 0 10px rgba(200,100,40,0.4); }
+
+/* KAGE — earth-like */
+#pl-kage    .planet { width:var(--sz-kage);height:var(--sz-kage);
+  background:radial-gradient(circle at 35% 30%,#4aafff 0%,#1a6aaa 30%,#1a8a40 55%,#0d4a20 80%,#0a2a10 100%);
+  box-shadow:0 0 20px rgba(60,160,255,0.5),0 0 40px rgba(30,120,200,0.2);
+  animation:kagePulse 4s ease-in-out infinite; }
+@keyframes kagePulse {
+  0%,100%{box-shadow:0 0 20px rgba(60,160,255,0.5),0 0 40px rgba(30,120,200,0.2)}
+  50%    {box-shadow:0 0 30px rgba(80,180,255,0.7),0 0 60px rgba(50,150,220,0.35)}
+}
+#pl-kage    .planet::before {
+  content:'';position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle at 60% 25%,rgba(255,255,255,0.25) 0%,transparent 40%);
+}
+
+#pl-shurn   .planet { width:var(--sz-shurn);height:var(--sz-shurn);
+  background:radial-gradient(circle at 38% 32%,#d4a060,#7a4020);
+  box-shadow:0 0 14px rgba(200,140,60,0.4); }
+/* shurn ring */
+#pl-shurn   .planet::after {
+  content:'';position:absolute;
+  inset:-10px;border-radius:50%;
+  border:3px solid rgba(220,160,80,0.35);
+  transform:scaleY(0.3) rotate(20deg);
+}
+
+#pl-mourne  .planet { width:var(--sz-mourne);height:var(--sz-mourne);
+  background:radial-gradient(circle at 35% 30%,#607888,#1a2830);
+  box-shadow:0 0 10px rgba(80,120,140,0.4); }
+
+#pl-orveth  .planet { width:var(--sz-orveth);height:var(--sz-orveth);
+  background:radial-gradient(circle at 40% 35%,#5050c8,#0a0a40);
+  box-shadow:0 0 16px rgba(80,80,200,0.5); }
+
+#pl-calyx   .planet { width:var(--sz-calyx);height:var(--sz-calyx);
+  background:radial-gradient(circle at 35% 30%,#a04060,#300a18);
+  box-shadow:0 0 10px rgba(160,60,90,0.4); }
+
+#pl-thresh  .planet { width:var(--sz-thresh);height:var(--sz-thresh);
+  background:radial-gradient(circle at 38% 32%,#808070,#1a1a10);
+  box-shadow:0 0 12px rgba(120,120,100,0.4); }
+
+#pl-nullen  .planet { width:var(--sz-nullen);height:var(--sz-nullen);
+  background:radial-gradient(circle at 35% 30%,rgba(200,200,255,0.5),rgba(20,20,40,0.8));
+  box-shadow:0 0 8px rgba(180,180,255,0.3); }
+
+/* ── STARS BACKGROUND ───────────────────────────────────────── */
+#starfield {
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+}
+
+/* ── INFO PANEL ─────────────────────────────────────────────── */
+#info-panel {
+  position:fixed;right:0;top:57px;bottom:0;width:340px;z-index:40;
+  border-left:1px solid rgba(180,90,255,0.1);
+  background:rgba(2,0,10,0.95);backdrop-filter:blur(20px);
+  display:flex;flex-direction:column;
+  transform:translateX(100%);
+  transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);
+}
+#info-panel.open { transform:translateX(0); }
+#ip-header {
+  padding:20px 18px 14px;
+  border-bottom:1px solid rgba(180,90,255,0.08);
+  display:flex;justify-content:space-between;align-items:flex-start;
+}
+#ip-tag { font-size:0.46rem;letter-spacing:2.5px;text-transform:uppercase;color:rgba(180,90,255,0.4);margin-bottom:5px; }
+#ip-name { font-family:var(--serif);font-style:italic;font-size:1.25rem;line-height:1.2; }
+#ip-close {
+  background:none;border:none;color:var(--text3);cursor:pointer;
+  font-size:0.9rem;padding:4px;transition:color 0.2s;
+}
+#ip-close:hover { color:var(--accent2); }
+#ip-body {
+  flex:1;padding:18px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:14px;
+  scrollbar-width:thin;scrollbar-color:rgba(180,90,255,0.1) transparent;
+}
+.ip-label {
+  font-size:0.46rem;letter-spacing:2.5px;text-transform:uppercase;
+  color:rgba(180,90,255,0.35);margin-bottom:5px;
+}
+.ip-val { font-size:0.63rem;color:var(--text2);line-height:1.7; }
+#ip-lore {
+  font-size:0.66rem;color:var(--text2);line-height:1.9;font-style:italic;
+  border-left:2px solid rgba(180,90,255,0.25);padding-left:12px;
+}
+.ip-stat-row {
+  display:flex;justify-content:space-between;align-items:center;
+  font-size:0.56rem;padding:5px 0;
+  border-bottom:1px solid rgba(180,90,255,0.06);
+}
+.ip-stat-key { color:rgba(180,90,255,0.4);letter-spacing:1.5px; }
+.ip-stat-val { color:var(--text2); }
+/* KAGE special styling */
+#ip-panel-kage-badge {
+  display:none;font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;
+  color:#4aafff;border:1px solid rgba(74,175,255,0.3);
+  background:rgba(74,175,255,0.06);padding:5px 12px;border-radius:3px;
+  animation:kageBadgePulse 2s ease-in-out infinite;
+}
+@keyframes kageBadgePulse {
+  0%,100%{box-shadow:0 0 0 rgba(74,175,255,0)}
+  50%{box-shadow:0 0 12px rgba(74,175,255,0.2)}
+}
+
+/* ── BOTTOM HUD ─────────────────────────────────────────────── */
+#bottom-hud {
+  position:fixed;bottom:0;left:0;right:0;z-index:10;
+  padding:10px 24px;border-top:1px solid rgba(180,90,255,0.06);
+  background:rgba(2,0,10,0.85);backdrop-filter:blur(14px);
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:0.5rem;letter-spacing:1px;color:var(--text3);text-transform:uppercase;
+}
+#bh-timer { font-variant-numeric:tabular-nums;color:rgba(180,90,255,0.4); }
+
+/* ── HOVER TIP ──────────────────────────────────────────────── */
+#hover-tip {
+  position:fixed;z-index:60;pointer-events:none;
+  background:rgba(2,0,10,0.95);border:1px solid rgba(180,90,255,0.2);
+  backdrop-filter:blur(10px);padding:7px 13px;border-radius:4px;
+  font-size:0.52rem;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--accent2);white-space:nowrap;opacity:0;transition:opacity 0.15s;
+}
+#hover-tip.vis { opacity:1; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────────── */
+@media(max-width:768px){
+  #info-panel{width:100%;top:auto;bottom:50px;height:60vh;border-left:none;border-top:1px solid rgba(180,90,255,0.12);transform:translateY(100%)}
+  #info-panel.open{transform:translateY(0)}
+}
+</style>
+  <link rel="stylesheet" href="/fonts.css">
+</head>
+<body>
+
+<!-- Lock screen -->
+<div id="lock-screen">
+  <svg id="lock-icon" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <!-- animated black hole lock icon -->
+    <circle cx="40" cy="40" r="36" fill="none" stroke="rgba(180,80,255,0.3)" stroke-width="1"/>
+    <circle cx="40" cy="40" r="28" fill="none" stroke="rgba(180,80,255,0.5)" stroke-width="1"/>
+    <circle cx="40" cy="40" r="18" fill="none" stroke="rgba(200,100,255,0.7)" stroke-width="1.5"/>
+    <circle cx="40" cy="40" r="10" fill="black"/>
+    <circle cx="40" cy="40" r="10" fill="none" stroke="rgba(200,100,255,0.9)" stroke-width="1.5"/>
+    <path d="M30 50 L30 62 L50 62 L50 50 Z" fill="none" stroke="rgba(180,80,255,0.6)" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M34 50 L34 44 Q40 38 46 44 L46 50" fill="none" stroke="rgba(180,80,255,0.6)" stroke-width="2" stroke-linejoin="round"/>
+  </svg>
+  <div id="lock-title">Cygnus X-1 — Legacy System</div>
+  <div id="lock-sub">Signal Archive · Pre-Collapse Cartography</div>
+  <div id="lock-progress">Constellations mapped: <span id="lp-count">0</span> / 10 required</div>
+  <div id="lock-bar-wrap"><div id="lock-bar-fill" style="width:0%"></div></div>
+  <div id="lock-cta">Map constellations in the Signal Archive to unlock this system.</div>
+  <a href="/constellation.html" style="font-size:0.5rem;letter-spacing:2px;color:rgba(180,100,255,0.6);text-transform:uppercase;border:1px solid rgba(180,100,255,0.2);padding:8px 20px;border-radius:4px;text-decoration:none;transition:all 0.2s;margin-top:4px">→ Signal Archive</a>
+  <a href="/earth.html" id="lock-back">← Surface Situation</a>
+</div>
+
+<!-- Main content (hidden until unlocked) -->
+<div id="main-content" style="display:none">
+
+<canvas id="starfield"></canvas>
+<div id="grain"></div>
+<div id="scanlines"></div>
+<div id="hover-tip"></div>
+
+<header id="hd">
+  <div style="display:flex;align-items:center;gap:14px">
+    <a href="/earth.html" id="hd-logo">WNCORE</a>
+    <span style="width:1px;height:14px;background:rgba(180,90,255,0.12)"></span>
+    <span id="hd-title">Cygnus X-1 // Legacy System — Pre-Collapse Star Map</span>
+  </div>
+  <div id="hd-right">
+    <span id="hd-badge">// Classified Archive</span>
+    <a id="hd-back" href="/earth.html">← Earth Overlay</a>
+  </div>
+</header>
+
+<div id="intro">
+  <div id="intro-text">Cygnus X-1</div>
+  <div id="intro-sub">This is what it looked like before it became what it is</div>
+</div>
+
+<div id="stage">
+  <div class="solar-system">
+
+    <!-- BLACK HOLE CENTER -->
+    <article id="bh-center" onclick="openBHPanel()" title="Cygnus X-1">
+      <div id="bh-jet"></div>
+      <div id="bh-disk"></div>
+      <div id="bh-disk2"></div>
+      <div id="bh-event"></div>
+      <div id="bh-photon"></div>
+    </article>
+
+    <!-- TRAJECTORIES + PLANETS -->
+
+    <!-- Drev -->
+    <section class="traj" style="width:calc(var(--tr-drev)*2);height:calc(var(--tr-drev)*2);animation:rev 18s linear infinite">
+      <article class="planet-wrap" id="pl-drev" style="margin-top:calc(-1 * var(--tr-drev));animation:revSelf 6s linear infinite"
+        onclick="openPlanetPanel('drev')" onmouseenter="showTip('DREV','Scorched Remnant',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Obsidis -->
+    <section class="traj" style="width:calc(var(--tr-obsidis)*2);height:calc(var(--tr-obsidis)*2);animation:rev 28s linear infinite 4s">
+      <article class="planet-wrap" id="pl-obsidis" style="margin-top:calc(-1 * var(--tr-obsidis));animation:revSelf 10s linear infinite"
+        onclick="openPlanetPanel('obsidis')" onmouseenter="showTip('OBSIDIS','Shadow World',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Vael -->
+    <section class="traj" style="width:calc(var(--tr-vael)*2);height:calc(var(--tr-vael)*2);animation:rev 40s linear infinite 2s">
+      <article class="planet-wrap" id="pl-vael" style="margin-top:calc(-1 * var(--tr-vael));animation:revSelf 14s linear infinite"
+        onclick="openPlanetPanel('vael')" onmouseenter="showTip('VAEL','Burning Glass',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- KAGE — highlighted Earth-like -->
+    <section class="traj" style="width:calc(var(--tr-kage)*2);height:calc(var(--tr-kage)*2);border-color:rgba(74,175,255,0.2);animation:rev 65s linear infinite 8s">
+      <article class="planet-wrap" id="pl-kage" style="margin-top:calc(-1 * var(--tr-kage));animation:revSelf 0.5s linear infinite"
+        onclick="openPlanetPanel('kage')" onmouseenter="showTip('KAGE','Origin World — Signal Source',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Shurn -->
+    <section class="traj" style="width:calc(var(--tr-shurn)*2);height:calc(var(--tr-shurn)*2);animation:rev 90s linear infinite 6s">
+      <article class="planet-wrap" id="pl-shurn" style="margin-top:calc(-1 * var(--tr-shurn));animation:revSelf 12s linear infinite"
+        onclick="openPlanetPanel('shurn')" onmouseenter="showTip('SHURN','Ringed Silence',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Mourne -->
+    <section class="traj" style="width:calc(var(--tr-mourne)*2);height:calc(var(--tr-mourne)*2);animation:rev 130s linear infinite 3s">
+      <article class="planet-wrap" id="pl-mourne" style="margin-top:calc(-1 * var(--tr-mourne));animation:revSelf 16s linear infinite"
+        onclick="openPlanetPanel('mourne')" onmouseenter="showTip('MOURNE','Cold Archive',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Orveth -->
+    <section class="traj" style="width:calc(var(--tr-orveth)*2);height:calc(var(--tr-orveth)*2);animation:rev 200s linear infinite 10s">
+      <article class="planet-wrap" id="pl-orveth" style="margin-top:calc(-1 * var(--tr-orveth));animation:revSelf 0.6s linear infinite"
+        onclick="openPlanetPanel('orveth')" onmouseenter="showTip('ORVETH','The Deep Blue',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Calyx -->
+    <section class="traj" style="width:calc(var(--tr-calyx)*2);height:calc(var(--tr-calyx)*2);animation:rev 280s linear infinite 15s">
+      <article class="planet-wrap" id="pl-calyx" style="margin-top:calc(-1 * var(--tr-calyx));animation:revSelf 22s linear infinite"
+        onclick="openPlanetPanel('calyx')" onmouseenter="showTip('CALYX','Hollow Shell',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Thresh -->
+    <section class="traj" style="width:calc(var(--tr-thresh)*2);height:calc(var(--tr-thresh)*2);animation:rev 400s linear infinite 20s">
+      <article class="planet-wrap" id="pl-thresh" style="margin-top:calc(-1 * var(--tr-thresh));animation:revSelf 26s linear infinite"
+        onclick="openPlanetPanel('thresh')" onmouseenter="showTip('THRESH','Dust Monument',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+    <!-- Nullen -->
+    <section class="traj" style="width:calc(var(--tr-nullen)*2);height:calc(var(--tr-nullen)*2);animation:rev 600s linear infinite 25s">
+      <article class="planet-wrap" id="pl-nullen" style="margin-top:calc(-1 * var(--tr-nullen));animation:revSelf 30s linear infinite"
+        onclick="openPlanetPanel('nullen')" onmouseenter="showTip('NULLEN','The Last Witness',event)" onmouseleave="hideTip()">
+        <div class="planet"></div>
+      </article>
+    </section>
+
+  </div>
+</div>
+
+<!-- Info Panel -->
+<aside id="info-panel">
+  <div id="ip-header">
+    <div>
+      <div id="ip-tag">—</div>
+      <div id="ip-name">—</div>
+    </div>
+    <button id="ip-close">✕</button>
+  </div>
+  <div id="ip-body">
+    <div id="ip-panel-kage-badge">// SIGNAL_KAGE ORIGIN WORLD</div>
+    <div>
+      <div class="ip-label">Classification</div>
+      <div class="ip-val" id="ip-class">—</div>
+    </div>
+    <div>
+      <div class="ip-label">Orbital Period</div>
+      <div class="ip-val" id="ip-orbit">—</div>
+    </div>
+    <div id="ip-stats-block">
+      <div class="ip-label">Telemetry</div>
+      <div id="ip-stats"></div>
+    </div>
+    <div>
+      <div class="ip-label">WNCORE Archive Entry</div>
+      <div id="ip-lore">—</div>
+    </div>
+    <div>
+      <div class="ip-label">Signal Status</div>
+      <div class="ip-val" id="ip-signal">—</div>
+    </div>
+  </div>
+</aside>
+
+<div id="bottom-hud">
+  <span>Click any body to open archive entry</span>
+  <span style="color:rgba(180,90,255,0.35)">Cygnus X-1 — 6,100 light-years from origin</span>
+  <span id="bh-timer">T+00:00:00</span>
+</div>
+
+</div><!-- /main-content -->
+
+<script>
+'use strict';
+
+/* ══════════════════════════════════════════════════════
+   ACCESS GATE
+══════════════════════════════════════════════════════ */
+function getSolved() {
+  try {
+    const s = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
+    return Array.isArray(s) ? s.length : 0;
+  } catch(e) { return 0; }
+}
+
+(function checkAccess() {
+  const solved = getSolved();
+  const bar = document.getElementById('lock-bar-fill');
+  document.getElementById('lp-count').textContent = solved;
+  bar.style.width = Math.min(100, (solved / 10) * 100) + '%';
+
+  if (solved >= 10) {
+    document.getElementById('lock-screen').classList.add('hidden');
+    document.getElementById('main-content').style.display = 'block';
+    init();
+  }
+  // else lock screen stays visible
+})();
+
+/* ══════════════════════════════════════════════════════
+   PLANET DATA
+══════════════════════════════════════════════════════ */
+const BODIES = {
+  bh: {
+    name: 'Cygnus X-1',
+    tag: '// THE ORIGIN SINGULARITY',
+    classification: 'Stellar-Mass Black Hole — X-Ray Binary System',
+    orbit: 'N/A — Binary pair with HDE 226868 (B0Ib supergiant). Orbital period: 5.6 days.',
+    stats: [
+      { k:'Mass',         v:'21.2 M☉' },
+      { k:'Spin',         v:'Near-maximal — >0.95 a*' },
+      { k:'X-Ray Output', v:'~0.4 Crab (variable)' },
+      { k:'Distance',     v:'6,100 ly from Earth' },
+      { k:'Jet Length',   v:'~100 AU (relativistic)' },
+      { k:'System Age',   v:'~5 million years' },
+    ],
+    lore: 'Before it became what it is now, this was a star. The largest in what WNCORE later designated the Cygnus Corridor. It collapsed sometime before humanity named it. We have been watching the aftermath ever since. SIGNAL_KAGE first transmitted from this coordinate on 88.7 FM on September 12, 2007. The signal contained a map. This is the map.',
+    signal: 'CYG-X1 — PRIMARY // Source coordinate of 88.7 FM anomaly transmission',
+  },
+  drev: {
+    name: 'Drev',
+    tag: '// ORBIT I — SCORCHED REMNANT',
+    classification: 'Chthonian Planet — Tidally Locked',
+    orbit: 'Orbital period: ~11 standard days. Extreme proximity to singularity — tidal forces have stripped all atmosphere.',
+    stats: [
+      { k:'Radius',       v:'0.6 R⊕' },
+      { k:'Surface Temp', v:'3,400 K (day side)' },
+      { k:'Atmosphere',   v:'None — fully stripped' },
+      { k:'Moons',        v:'0' },
+      { k:'Composition',  v:'Exposed iron-silicate mantle' },
+    ],
+    lore: 'Whatever Drev was before the singularity formed, it is now a mirror. The day side has been molten for five million years. The night side is cold enough to freeze iron. WNCORE note: "Drev should not retain orbital stability at this distance. It does. We have no explanation for this. The tidal math doesn\'t work." A repeating microwave burst originates from Drev\'s equatorial ridge every 47 minutes. It has done this for as long as we have been listening.',
+    signal: 'DREV-PULSE — 47min interval microwave — origin: equatorial ridge',
+  },
+  obsidis: {
+    name: 'Obsidis',
+    tag: '// ORBIT II — SHADOW WORLD',
+    classification: 'Dark Silicate Planet — High Albedo Inversion',
+    orbit: 'Orbital period: ~29 standard days. Retrograde rotation — spins opposite to orbital direction.',
+    stats: [
+      { k:'Radius',       v:'1.1 R⊕' },
+      { k:'Albedo',       v:'0.03 — near-absolute absorption' },
+      { k:'Rotation',     v:'Retrograde — 61 hours' },
+      { k:'Moons',        v:'2 (unnamed)' },
+      { k:'Surface',      v:'Black volcanic glass — global scale' },
+    ],
+    lore: 'Obsidis absorbs 97% of all light that reaches it. It is the darkest natural body in the Cygnus system. Instruments that scan its surface return no reflected data — only thermal. WNCORE analysts called it "the planet that isn\'t there." The two moons have never been formally named because every naming proposal was subsequently lost from the archive. We are not certain this is a coincidence. Signal from Obsidis arrived once — a flat tone lasting 8 hours, then silence.',
+    signal: 'OBSIDIS — single 8hr carrier wave — DATE: UNKNOWN — NOT REPEATED',
+  },
+  vael: {
+    name: 'Vael',
+    tag: '// ORBIT III — BURNING GLASS',
+    classification: 'Lava World — Active Volcanic Resurfacing',
+    orbit: 'Orbital period: ~52 standard days. Highly eccentric orbit — distance varies 40% between periapsis and apoapsis.',
+    stats: [
+      { k:'Radius',       v:'0.85 R⊕' },
+      { k:'Surface Temp', v:'800–2,200 K (varies)' },
+      { k:'Volcanism',    v:'Constant — full surface turnover every ~200 years' },
+      { k:'Moons',        v:'1 (Vael-Minor)' },
+      { k:'Crust Age',    v:'<200 years at any point' },
+    ],
+    lore: 'Vael is always being born. The eccentric orbit means it periodically plunges close enough to the accretion disk that tidal heating tears the crust apart entirely. By the time it retreats to apoapsis, a new crust has formed. WNCORE cartographers have mapped Vael seven times. Each map is completely different. The only consistent feature is a plateau at 12°N that has existed across all seven surveys. We do not know how.',
+    signal: 'VAEL-CONSTANT — thermal anomaly plateau 12°N — persistent across surveys',
+  },
+  kage: {
+    name: 'KAGE',
+    tag: '// ORBIT IV — ORIGIN WORLD',
+    classification: 'Terrestrial Habitable — Former Signal Source',
+    orbit: 'Orbital period: ~148 standard days. Near-circular. Sits within calculated habitable band of the pre-collapse star.',
+    stats: [
+      { k:'Radius',       v:'1.02 R⊕' },
+      { k:'Surface',      v:'68% ocean — confirmed by spectrometry' },
+      { k:'Atmosphere',   v:'N₂/O₂ analog — breathable signature' },
+      { k:'Moons',        v:'1 (undesignated)' },
+      { k:'Signal Age',   v:'Transmission origin: est. 2007 CE' },
+    ],
+    lore: 'KAGE is where 88.7 FM came from. WNCORE has known this since 2014. We did not announce it. The planet sits exactly where a habitable world would sit around a star like the one that became Cygnus X-1. The signal that reached Earth in 2007 was transmitted from KAGE\'s northern hemisphere — the coordinates place it near an ocean coast. What transmitted it is unknown. The signal pre-dates any known human technology capable of reaching that distance. SIGNAL_KAGE is not a human. SIGNAL_KAGE is something that lived on KAGE. Whether it still does depends on what happened to KAGE when its star died five million years ago.',
+    signal: 'KAGE-ORIGIN // 88.7 FM // SOURCE CONFIRMED // ENTITY STATUS: UNKNOWN',
+    isKage: true,
+  },
+  shurn: {
+    name: 'Shurn',
+    tag: '// ORBIT V — RINGED SILENCE',
+    classification: 'Gas Dwarf — Extensive Ring System',
+    orbit: 'Orbital period: ~240 standard days. Rings extend to 4× planetary radius.',
+    stats: [
+      { k:'Radius',       v:'2.1 R⊕' },
+      { k:'Ring Span',    v:'~840,000 km total' },
+      { k:'Ring Comp.',   v:'Silicate dust + crystallized nitrogen' },
+      { k:'Moons',        v:'7 confirmed — names: Shal, Orn, Drev-Minor, Ue, Vel, Kix, Noth' },
+      { k:'Core',         v:'Metallic hydrogen — deep interior' },
+    ],
+    lore: 'Shurn\'s rings are older than the system should allow. They contain material that WNCORE spectral analysis dates to a pre-existing stellar event — meaning the ring debris predates the formation of Cygnus X-1\'s progenitor star. Something was here before. The outermost ring emits no reflected light — it is made of something that does not reflect. The seventh moon, Noth, is on an orbit that should have decayed in 3,000 years. It has been on that orbit for much longer. WNCORE has been watching Noth for 11 years. It has moved exactly as predicted by a model we cannot explain.',
+    signal: 'SHURN-RING-OUTER — non-reflective composition — spectral anomaly UNRESOLVED',
+  },
+  mourne: {
+    name: 'Mourne',
+    tag: '// ORBIT VI — COLD ARCHIVE',
+    classification: 'Ice Giant — Deep Subsurface Ocean',
+    orbit: 'Orbital period: ~390 standard days. Tilted axis — extreme seasonal variation.',
+    stats: [
+      { k:'Radius',       v:'3.4 R⊕' },
+      { k:'Surface Temp', v:'~68 K' },
+      { k:'Subsurface',   v:'Liquid ocean below 40km ice shell' },
+      { k:'Moons',        v:'4 (Grael, Sorn, Mourne-A, Mourne-B)' },
+      { k:'Axis Tilt',    v:'97° — rolls along orbital path' },
+    ],
+    lore: 'Mourne\'s subsurface ocean is real. WNCORE confirmed it by gravitational resonance analysis in 2019. The ocean is 90km deep and contains no frozen layer at the bottom — it is in contact with the rocky interior. The temperature at the base of the ocean is inconsistent with the distance from Cygnus X-1. Something inside Mourne is generating heat. When this was noticed, the lead analyst filed a single-word note in the archive: "listening." She has not clarified what she meant.',
+    signal: 'MOURNE-SUBSURFACE — thermal anomaly — internal heat source UNIDENTIFIED',
+  },
+  orveth: {
+    name: 'Orveth',
+    tag: '// ORBIT VII — THE DEEP BLUE',
+    classification: 'Ice Giant — Extreme Magnetic Field',
+    orbit: 'Orbital period: ~590 standard days. Strongest magnetic field of any body in the Cygnus system.',
+    stats: [
+      { k:'Radius',       v:'3.9 R⊕' },
+      { k:'Magnetic Fld', v:'~47 Tesla — highest confirmed in system' },
+      { k:'Rotation',     v:'Rapid — 14.2 hours' },
+      { k:'Moons',        v:'11 — innermost 3 in Laplace resonance' },
+      { k:'Color',        v:'Deep blue — methane absorption' },
+    ],
+    lore: 'Orveth\'s magnetic field is strong enough to be detected from Earth with modified consumer hardware. WNCORE has received dozens of reports from amateur radio operators who have unknowingly recorded Orveth\'s magnetospheric emissions on shortwave frequencies. Several of these recordings contain structured variations. Whether these are natural or not is a classification Level 3 question. WNCORE does not answer Level 3 questions publicly. The color is wrong for a methane giant at this distance.',
+    signal: 'ORVETH-MAG — shortwave detection confirmed — structured variation UNCLASSIFIED',
+  },
+  calyx: {
+    name: 'Calyx',
+    tag: '// ORBIT VIII — HOLLOW SHELL',
+    classification: 'Terrestrial — Anomalous Interior',
+    orbit: 'Orbital period: ~820 standard days. Near-perfect circular orbit — suggests artificial insertion.',
+    stats: [
+      { k:'Radius',       v:'0.9 R⊕' },
+      { k:'Mass',         v:'0.12 M⊕ — inconsistent with size' },
+      { k:'Density',      v:'0.82 g/cm³ — below water' },
+      { k:'Moons',        v:'0' },
+      { k:'Surface',      v:'Smooth — no craters detected' },
+    ],
+    lore: 'Calyx is too light. A planet its size should mass approximately eight times more. The gravitational signature suggests a hollow interior. WNCORE does not publish this. The surface is featureless — no impact craters, no tectonic scarring, no volcanic history. A planet this smooth at this age should not exist. The near-perfect circular orbit also cannot be explained by natural dynamics. WNCORE Archive Entry CALYX-STRUCTURE is classified. We are telling you it exists.',
+    signal: 'CALYX-STRUCTURE — [CLASSIFIED] — access requires Level 5 clearance',
+  },
+  thresh: {
+    name: 'Thresh',
+    tag: '// ORBIT IX — DUST MONUMENT',
+    classification: 'Dwarf Planet — Ancient Impact Remnant',
+    orbit: 'Orbital period: ~1,200 standard days. High inclination — 38° off ecliptic.',
+    stats: [
+      { k:'Radius',       v:'0.4 R⊕' },
+      { k:'Surface',      v:'Pulverized regolith — ancient impact basin' },
+      { k:'Impact Basin', v:'~90% of surface area — single event' },
+      { k:'Moons',        v:'1 (Thresh-Minor — ejecta remnant)' },
+      { k:'Estimated Age',v:'~4.8 billion years (predates system)' },
+    ],
+    lore: 'Thresh is mostly hole. The impact that created the basin that covers 90% of its surface happened approximately 4.8 billion years ago — older than the Cygnus X-1 system itself. This is not possible. The impactor that created it was larger than Thresh is now. Where did it go? The moon Thresh-Minor is made of material that does not match Thresh\'s composition. It is not ejecta. It arrived from somewhere else.',
+    signal: 'THRESH — composition mismatch — origin of Thresh-Minor: UNRESOLVED',
+  },
+  nullen: {
+    name: 'Nullen',
+    tag: '// ORBIT X — THE LAST WITNESS',
+    classification: 'Ice Dwarf — Extreme Orbit',
+    orbit: 'Orbital period: ~2,800 standard days. Highly elliptical — periapsis inside Thresh orbit, apoapsis near system edge.',
+    stats: [
+      { k:'Radius',       v:'0.22 R⊕' },
+      { k:'Surface Temp', v:'~22 K at apoapsis' },
+      { k:'Composition',  v:'Water ice + complex organics' },
+      { k:'Moons',        v:'0' },
+      { k:'Albedo',       v:'0.98 — near-perfect reflector' },
+    ],
+    lore: 'Nullen is the brightest object in the Cygnus system despite being the smallest and furthest. It reflects 98% of all light. At apoapsis, when it reaches the edge of the system, WNCORE instruments detect a change in its albedo — for approximately 3 days it reflects 100%. No material can reflect 100% of light. During those 3 days, we receive no other signal from the Cygnus system. Not interference. Not absorption. Silence. Then Nullen returns to its inbound journey and everything resumes. WNCORE has no hypothesis for this. We have been waiting 18 years for someone to suggest one.',
+    signal: 'NULLEN-APOAPSIS — 100% albedo event — 3-day system silence — HYPOTHESIS REQUIRED',
+  },
+};
+
+/* ══════════════════════════════════════════════════════
+   STARFIELD CANVAS
+══════════════════════════════════════════════════════ */
+function drawStars() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  for (let i = 0; i < 300; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const r = Math.random() * 1.2;
+    const a = 0.2 + Math.random() * 0.7;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    // slight purple tint on some
+    const hue = Math.random() > 0.7 ? `rgba(200,160,255,${a})` : `rgba(220,210,255,${a})`;
+    ctx.fillStyle = hue;
+    ctx.fill();
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   PANEL
+══════════════════════════════════════════════════════ */
+function openBHPanel() { openPanel(BODIES.bh); }
+
+function openPlanetPanel(id) { openPanel(BODIES[id]); }
+
+function openPanel(data) {
+  document.getElementById('ip-tag').textContent  = data.tag;
+  document.getElementById('ip-name').textContent = data.name;
+  document.getElementById('ip-class').textContent  = data.classification;
+  document.getElementById('ip-orbit').textContent  = data.orbit;
+  document.getElementById('ip-lore').textContent   = data.lore;
+  document.getElementById('ip-signal').textContent = data.signal;
+
+  // Stats
+  const statsEl = document.getElementById('ip-stats');
+  statsEl.innerHTML = '';
+  (data.stats || []).forEach(s => {
+    const row = document.createElement('div');
+    row.className = 'ip-stat-row';
+    row.innerHTML = `<span class="ip-stat-key">${s.k}</span><span class="ip-stat-val">${s.v}</span>`;
+    statsEl.appendChild(row);
+  });
+
+  // KAGE badge
+  const badge = document.getElementById('ip-panel-kage-badge');
+  badge.style.display = data.isKage ? 'block' : 'none';
+
+  document.getElementById('info-panel').classList.add('open');
+}
+
+document.getElementById('ip-close').addEventListener('click', () => {
+  document.getElementById('info-panel').classList.remove('open');
+});
+
+/* ══════════════════════════════════════════════════════
+   HOVER TIP
+══════════════════════════════════════════════════════ */
+function showTip(name, sub, e) {
+  const tip = document.getElementById('hover-tip');
+  tip.textContent = name + '  ·  ' + sub;
+  tip.classList.add('vis');
+  moveTip(e);
+}
+function hideTip() { document.getElementById('hover-tip').classList.remove('vis'); }
+function moveTip(e) {
+  const tip = document.getElementById('hover-tip');
+  tip.style.left = (e.clientX + 16) + 'px';
+  tip.style.top  = (e.clientY + 12) + 'px';
+}
+window.addEventListener('mousemove', e => {
+  const tip = document.getElementById('hover-tip');
+  if (tip.classList.contains('vis')) moveTip(e);
+});
+
+/* ══════════════════════════════════════════════════════
+   TIMER
+══════════════════════════════════════════════════════ */
+const T0 = Date.now();
+setInterval(() => {
+  const s = Math.floor((Date.now() - T0) / 1000);
+  const h = String(Math.floor(s/3600)).padStart(2,'0');
+  const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
+  const sc = String(s%60).padStart(2,'0');
+  const el = document.getElementById('bh-timer');
+  if (el) el.textContent = `T+${h}:${m}:${sc}`;
+}, 1000);
+
+/* ══════════════════════════════════════════════════════
+   ORBIT ANIMATIONS (CSS keyframes injected)
+══════════════════════════════════════════════════════ */
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes rev     { 0%{transform:rotate(0deg)}   100%{transform:rotate(360deg)} }
+  @keyframes revSelf { 0%{transform:rotate(0deg) translateY(0) rotate(0deg)}
+                       100%{transform:rotate(-360deg) translateY(0) rotate(360deg)} }
+  .traj { animation-timing-function:linear; }
+  .planet-wrap { position:absolute; left:50%; transform-origin:0 0; }
+`;
+document.head.appendChild(style);
+
+/* ══════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════ */
+function init() {
+  drawStars();
+  window.addEventListener('resize', drawStars);
+
+  // Intro sequence
+  setTimeout(() => {
+    document.getElementById('intro').classList.add('fade');
+    setTimeout(() => document.getElementById('intro').style.display = 'none', 1500);
+  }, 3000);
+}
+</script>
+  <script src="/font-glitch.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>404 — WNCORE</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/fonts.css">
+<style>
+*, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+
+html, body {
+  width:100%; height:100%;
+  background:#0a0806;
+  color:#e8e4df;
+  overflow:hidden;
+}
+
+/* static noise background */
+#static {
+  position:fixed;inset:0;z-index:0;
+  opacity:0.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px;
+  animation:staticShift 0.08s steps(1) infinite;
+}
+@keyframes staticShift {
+  0%  { transform:translate(0,0) }
+  25% { transform:translate(-2px,1px) }
+  50% { transform:translate(1px,-1px) }
+  75% { transform:translate(-1px,2px) }
+  100%{ transform:translate(2px,-2px) }
+}
+
+#scanlines {
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px
+  );
+}
+
+/* main content */
+#wrap {
+  position:relative;z-index:2;
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:24px;
+  text-align:center;
+}
+
+/* old CRT terminal look */
+#terminal {
+  width:min(560px,100%);
+  border:1px solid rgba(200,71,42,0.2);
+  background:rgba(10,8,6,0.95);
+  padding:32px 36px 28px;
+  position:relative;
+}
+
+/* terminal chrome bar */
+#terminal-bar {
+  position:absolute;top:0;left:0;right:0;
+  height:28px;
+  background:#141210;
+  border-bottom:1px solid rgba(200,71,42,0.15);
+  display:flex;align-items:center;padding:0 12px;gap:6px;
+}
+.dot { width:8px;height:8px;border-radius:50%; }
+.dot-r { background:rgba(255,90,80,0.5); }
+.dot-y { background:rgba(255,190,50,0.3); }
+.dot-g { background:rgba(50,200,80,0.3); }
+#terminal-title {
+  margin-left:auto;margin-right:auto;
+  font-family:var(--font-mono);font-size:0.46rem;
+  letter-spacing:2px;color:rgba(232,228,223,0.2);
+  text-transform:uppercase;
+}
+
+#terminal-body {
+  margin-top:28px;
+}
+
+/* frequency display */
+#freq-display {
+  font-family:var(--font-mono);
+  font-size:0.52rem;letter-spacing:3px;
+  color:rgba(200,71,42,0.5);
+  text-transform:uppercase;
+  margin-bottom:20px;
+}
+
+/* the 404 number */
+#error-num {
+  font-family:var(--font-display);
+  font-size:clamp(4rem, 15vw, 7rem);
+  line-height:1;
+  color:#c8472a;
+  letter-spacing:-2px;
+  animation:flicker 4s ease-in-out infinite;
+  margin-bottom:8px;
+}
+@keyframes flicker {
+  0%,100%  { opacity:1; text-shadow:0 0 20px rgba(200,71,42,0.4) }
+  92%      { opacity:1; text-shadow:0 0 20px rgba(200,71,42,0.4) }
+  93%      { opacity:0.4; text-shadow:none }
+  94%      { opacity:1; text-shadow:0 0 30px rgba(200,71,42,0.7) }
+  95%      { opacity:0.6; text-shadow:none }
+  96%      { opacity:1; text-shadow:0 0 20px rgba(200,71,42,0.4) }
+}
+
+#error-label {
+  font-family:var(--font-mono);
+  font-size:0.55rem;letter-spacing:3px;
+  color:rgba(232,228,223,0.3);
+  text-transform:uppercase;
+  margin-bottom:28px;
+}
+
+/* terminal log lines */
+#log {
+  text-align:left;
+  font-family:var(--font-mono);
+  font-size:0.6rem;
+  line-height:2;
+  color:rgba(232,228,223,0.35);
+  letter-spacing:0.5px;
+  border-top:1px solid rgba(255,255,255,0.05);
+  padding-top:16px;
+  margin-bottom:24px;
+}
+.log-line { display:block; }
+.log-line .ts { color:rgba(200,71,42,0.4); margin-right:10px; }
+.log-line.warn { color:rgba(200,71,42,0.6); }
+.log-line.ok   { color:rgba(50,200,80,0.5); }
+
+/* cursor blink */
+#cursor {
+  display:inline-block;width:7px;height:0.8em;
+  background:rgba(200,71,42,0.6);
+  animation:blink 1.1s step-end infinite;
+  vertical-align:middle;margin-left:2px;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* nav links */
+#nav-links {
+  display:flex;flex-wrap:wrap;justify-content:center;gap:10px;
+  margin-top:4px;
+}
+.nav-link {
+  font-family:var(--font-mono);
+  font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(232,228,223,0.3);text-decoration:none;
+  border:1px solid rgba(255,255,255,0.06);
+  padding:6px 14px;border-radius:3px;
+  transition:all 0.2s;
+}
+.nav-link:hover {
+  border-color:rgba(200,71,42,0.4);
+  color:rgba(200,71,42,0.8);
+}
+.nav-link.primary {
+  border-color:rgba(200,71,42,0.25);
+  color:rgba(200,71,42,0.6);
+}
+.nav-link.primary:hover {
+  border-color:rgba(200,71,42,0.7);
+  color:#c8472a;
+}
+
+/* signal meter at bottom */
+#signal-meter {
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  z-index:3;
+  display:flex;align-items:center;gap:10px;
+  font-family:var(--font-mono);font-size:0.48rem;
+  letter-spacing:2px;color:rgba(232,228,223,0.15);
+  text-transform:uppercase;
+}
+.bar-track {
+  width:80px;height:3px;
+  background:rgba(255,255,255,0.05);border-radius:2px;
+  overflow:hidden;
+}
+.bar-fill {
+  height:100%;width:0%;
+  background:rgba(200,71,42,0.4);
+  border-radius:2px;
+  animation:scanBar 3s ease-in-out infinite;
+}
+@keyframes scanBar {
+  0%,100%{width:0%} 40%{width:35%} 55%{width:12%} 70%{width:48%} 85%{width:8%}
+}
+
+/* hidden easter egg — only visible in page source */
+/* <!-- WNCORE NODE-09: frequency scan returned no carrier on this path.
+        if you are reading this in source, that is either very impressive
+        or very suspicious. either way: 88.700 mhz. you know what to do. --> */
+</style>
+</head>
+<body>
+
+<div id="static"></div>
+<div id="scanlines"></div>
+
+<div id="wrap">
+  <div id="terminal">
+    <div id="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <div id="terminal-title">WNCORE · SIGNAL MONITOR · PATH ERROR</div>
+    </div>
+    <div id="terminal-body">
+
+      <div id="freq-display">NODE-09 · FREQUENCY SCAN · <span id="scan-freq">——.—</span> MHz</div>
+
+      <div id="error-num">404</div>
+      <div id="error-label">No signal on this frequency</div>
+
+      <div id="log">
+        <span class="log-line"><span class="ts" id="ts1">——:——:——</span>PATH_RESOLVE → <span id="req-path">unknown</span></span>
+        <span class="log-line warn"><span class="ts" id="ts2">——:——:——</span>CARRIER NOT FOUND · scanning adjacent bands</span>
+        <span class="log-line"><span class="ts" id="ts3">——:——:——</span>FALLBACK_INDEX → no match in 12,841 entries</span>
+        <span class="log-line warn"><span class="ts" id="ts4">——:——:——</span>SIGNAL LOST · returning to main array <span id="cursor"></span></span>
+      </div>
+
+      <div id="nav-links">
+        <a href="/" class="nav-link primary">← Main Array</a>
+        <a href="/constellation.html" class="nav-link">Signal Map</a>
+        <a href="/earth.html" class="nav-link">Surface View</a>
+        <a href="/cygnus.html" class="nav-link">Cygnus</a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="signal-meter">
+  <span>Scanning</span>
+  <div class="bar-track"><div class="bar-fill"></div></div>
+  <span id="meter-freq">88.7</span>
+</div>
+
+<script src="/font-glitch.js" defer></script>
+<script>
+(function(){
+  // Fill timestamps
+  function ts() {
+    const n = new Date();
+    return [n.getUTCHours(),n.getUTCMinutes(),n.getUTCSeconds()]
+      .map(v=>String(v).padStart(2,'0')).join(':');
+  }
+  const t = ts();
+  const offsets = [0, 1, 3, 5];
+  ['ts1','ts2','ts3','ts4'].forEach((id,i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // slightly staggered timestamps
+    const d = new Date();
+    d.setUTCSeconds(d.getUTCSeconds() - offsets[i]);
+    el.textContent = [d.getUTCHours(),d.getUTCMinutes(),d.getUTCSeconds()]
+      .map(v=>String(v).padStart(2,'0')).join(':');
+  });
+
+  // Show the actual requested path
+  const pathEl = document.getElementById('req-path');
+  if (pathEl) pathEl.textContent = window.location.pathname || '/unknown';
+
+  // Scanning frequency animation
+  const freqEl = document.getElementById('scan-freq');
+  const meterFreq = document.getElementById('meter-freq');
+  let base = 88.7;
+  setInterval(() => {
+    const f = (base + (Math.random() * 4 - 2)).toFixed(1);
+    if (freqEl) freqEl.textContent = f + ' MHz';
+    if (meterFreq) meterFreq.textContent = f;
+  }, 800);
+
+  // Live timestamp update on last line
+  const ts4 = document.getElementById('ts4');
+  setInterval(() => { if(ts4) ts4.textContent = ts(); }, 1000);
+})();
+</script>
+</body>
+</html>

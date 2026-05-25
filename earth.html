@@ -6,12 +6,11 @@
 <title>WNCORE — SIGINT OVERLAY // SURFACE SITUATION</title>
 <meta name="robots" content="noindex">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:ital,wght@0,700;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#02020a;--text:#ddeeff;--text2:rgba(200,220,255,0.6);--text3:rgba(200,220,255,0.25);
-  --accent:#4aa8ff;--accent2:#a0d4ff;--mono:'DM Mono',monospace;--serif:'Playfair Display',serif;
+  --accent:#4aa8ff;--accent2:#a0d4ff;--mono:var(--font-mono);--serif:var(--font-display);
   --mg:#00ff88;--mg2:rgba(0,255,136,0.6);--mg3:rgba(0,255,136,0.2);--mgbg:#000d05;
   --arg:#ffcc00;--arg2:rgba(255,204,0,0.6);
 }
@@ -195,6 +194,35 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #arg-counter{top:auto;bottom:65px;right:12px}
 }
 
+
+/* ══ BLACK HOLE NAV BUTTON ═══════════════════════════════════════ */
+#bh-nav-btn{
+  display:flex;align-items:center;gap:9px;
+  background:none;border:none;cursor:pointer;padding:0;
+  text-decoration:none;
+}
+#bh-nav-svg{
+  width:28px;height:28px;flex-shrink:0;
+  animation:bhSpin 12s linear infinite;
+  filter:drop-shadow(0 0 6px rgba(180,60,255,0.5));
+  transition:filter 0.3s;
+}
+#bh-nav-btn:hover #bh-nav-svg{
+  filter:drop-shadow(0 0 12px rgba(200,100,255,0.9));
+  animation-duration:4s;
+}
+@keyframes bhSpin{
+  0%  {transform:rotate(0deg)}
+  100%{transform:rotate(360deg)}
+}
+#bh-nav-label{
+  font-size:0.52rem;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(180,100,255,0.5);transition:color 0.3s;white-space:nowrap;
+}
+#bh-nav-btn:hover #bh-nav-label{color:rgba(210,140,255,0.9)}
+#bh-nav-btn.locked #bh-nav-label{color:rgba(180,100,255,0.25)}
+#bh-nav-btn.locked #bh-nav-svg{filter:drop-shadow(0 0 4px rgba(180,60,255,0.2));opacity:0.5}
+
 /* ══ MOON ORBIT ══════════════════════════════════════════════════ */
 #moon-orbit-wrap{
   position:fixed;inset:0;z-index:0;pointer-events:none;
@@ -244,7 +272,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   background:#020b04;border:1px solid rgba(0,255,136,0.25);border-radius:6px;
   padding:28px;
   box-shadow:0 0 60px rgba(0,255,136,0.07),inset 0 0 40px rgba(0,0,0,0.4);
-  font-family:'DM Mono',monospace;color:rgba(0,255,136,0.85);
+  font-family:var(--font-mono);color:rgba(0,255,136,0.85);
   scrollbar-width:thin;scrollbar-color:rgba(0,255,136,0.12) transparent;
 }
 #earth-admin-box h2{font-size:0.62rem;letter-spacing:4px;text-transform:uppercase;color:var(--mg);margin-bottom:4px}
@@ -314,13 +342,14 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 #adm-close-btn:hover{color:var(--mg)}
 #adm-hint{
   position:fixed;bottom:78px;left:50%;transform:translateX(-50%);
-  z-index:5;font-family:'DM Mono',monospace;font-size:0.44rem;
+  z-index:5;font-family:var(--font-mono);font-size:0.44rem;
   letter-spacing:2px;text-transform:uppercase;
   color:rgba(0,255,136,0);transition:color 2s;pointer-events:none;
 }
 #adm-hint.show{color:rgba(0,255,136,0.22)}
 .adm-divider{border:none;border-top:1px solid rgba(0,255,136,0.08);margin:4px 0}
 </style>
+  <link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
 
@@ -425,6 +454,24 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
   <div id="hd-right">
     <span id="hd-status">Population <span id="pop-display">8.28%</span> Human · <span id="infected-display">64%</span> Turned</span>
+    <button id="bh-nav-btn" onclick="bhNavClick()" title="CYGNUS X-1 — Legacy System">
+      <svg id="bh-nav-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <!-- accretion disk rings -->
+        <ellipse cx="50" cy="50" rx="46" ry="14" fill="none" stroke="rgba(180,80,255,0.25)" stroke-width="1"/>
+        <ellipse cx="50" cy="50" rx="38" ry="10" fill="none" stroke="rgba(200,100,255,0.4)" stroke-width="1.2"/>
+        <ellipse cx="50" cy="50" rx="28" ry="7"  fill="none" stroke="rgba(220,120,255,0.6)" stroke-width="1.5"/>
+        <!-- outer glow halo -->
+        <circle cx="50" cy="50" r="20" fill="none" stroke="rgba(200,100,255,0.15)" stroke-width="6"/>
+        <!-- event horizon -->
+        <circle cx="50" cy="50" r="14" fill="black"/>
+        <circle cx="50" cy="50" r="14" fill="none" stroke="rgba(180,60,255,0.8)" stroke-width="1.5"/>
+        <!-- photon ring -->
+        <circle cx="50" cy="50" r="17" fill="none" stroke="rgba(255,180,255,0.3)" stroke-width="0.8"/>
+        <!-- hot spot -->
+        <circle cx="65" cy="44" r="3" fill="rgba(255,200,255,0.7)"/>
+      </svg>
+      <span id="bh-nav-label">Cygnus X-1</span>
+    </button>
     <a id="hd-back" href="/cygnus.html">← Cygnus</a>
   </div>
 </header>
@@ -1115,6 +1162,8 @@ function openCountryPanel(country) {
   let dynDiv = body.querySelector('.live-intel');
   if (!dynDiv) { dynDiv = document.createElement('div'); dynDiv.className = 'live-intel'; body.appendChild(dynDiv); }
   dynDiv.innerHTML = `<div class="cp-row-label" style="margin-top:4px">Live Intel Fragment</div><div class="cp-row-val" style="color:rgba(255,200,100,0.7);font-size:0.58rem">${getDynamicSituation(country)}</div>`;
+  // Inject Supabase lore override if available
+  injectLoreOverride(country);
 }
 
 document.getElementById('cp-close').addEventListener('click', () => {
@@ -1219,7 +1268,7 @@ function startGlobe() {
     })
     .polygonLabel(feat => {
       const c = COUNTRY_BY_CODE[feat.properties.ISO_A2];
-      return c ? `<span style="font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;color:#ddeeff;text-transform:uppercase">${c.name}</span>` : '';
+      return c ? `<span style="font-family:var(--font-mono);font-size:11px;letter-spacing:2px;color:#ddeeff;text-transform:uppercase">${c.name}</span>` : '';
     })
 
     .ringsData(rings)
@@ -1317,23 +1366,22 @@ async function loadLoreOverrides() {
   }
 }
 
-// Patch openCountryPanel to inject lore override if present
-const _origOpenCountryPanel = openCountryPanel;
-function openCountryPanel(country) {
-  _origOpenCountryPanel(country);
+// Inject lore override after openCountryPanel runs
+// (separate function to avoid hoisting bug from redeclaring openCountryPanel)
+function injectLoreOverride(country) {
   const override = LORE_CACHE[country.code];
-  if (override) {
-    const sitEl = document.getElementById('cp-situation');
-    if (sitEl) {
-      sitEl.textContent = override.text;
-      // Add a small "updated" tag
-      const tag = document.createElement('div');
-      tag.style.cssText = 'font-size:0.42rem;letter-spacing:1.5px;color:rgba(0,255,136,0.3);margin-top:8px;text-transform:uppercase';
-      const d = new Date(override.date);
-      tag.textContent = '// Updated ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      sitEl.parentNode.appendChild(tag);
-    }
-  }
+  if (!override) return;
+  const sitEl = document.getElementById('cp-situation');
+  if (!sitEl) return;
+  sitEl.textContent = override.text;
+  const prev = sitEl.parentNode.querySelector('.lore-date-tag');
+  if (prev) prev.remove();
+  const tag = document.createElement('div');
+  tag.className = 'lore-date-tag';
+  tag.style.cssText = 'font-size:0.42rem;letter-spacing:1.5px;color:rgba(0,255,136,0.3);margin-top:8px;text-transform:uppercase';
+  const d = new Date(override.date);
+  tag.textContent = '// Updated ' + d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  sitEl.parentNode.appendChild(tag);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -1591,7 +1639,55 @@ function admClearSession() {
 // Load lore on page init
 loadLoreOverrides();
 
+/* ══ BLACK HOLE NAV ══════════════════════════════════════════════ */
+function bhNavGetSolved() {
+  try {
+    const s = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
+    return Array.isArray(s) ? s.length : 0;
+  } catch(e) { return 0; }
+}
+
+function bhNavInit() {
+  const btn = document.getElementById('bh-nav-btn');
+  const label = document.getElementById('bh-nav-label');
+  const solved = bhNavGetSolved();
+  if (solved >= 10) {
+    btn.classList.remove('locked');
+    label.textContent = 'Cygnus X-1';
+  } else {
+    btn.classList.add('locked');
+    label.textContent = solved + '/10 Mapped';
+  }
+}
+
+function bhNavClick() {
+  const solved = bhNavGetSolved();
+  if (solved >= 10) {
+    window.location.href = '/legacy.html';
+  } else {
+    // Brief glitch flash then show message in country panel area
+    const overlay = document.getElementById('glitch-overlay');
+    overlay.classList.add('flash');
+    setTimeout(() => overlay.classList.remove('flash'), 120);
+    // Reuse reroute msg as denial
+    const msg = document.getElementById('reroute-msg');
+    const inner = document.getElementById('reroute-inner');
+    inner.querySelector('.r-title').textContent = '// ACCESS DENIED';
+    inner.querySelector('.r-sub').textContent = 'MAP ' + (10 - solved) + ' MORE CONSTELLATIONS TO UNLOCK CYGNUS X-1 LEGACY';
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2800);
+    // Reset text after
+    setTimeout(() => {
+      inner.querySelector('.r-title').textContent = '// SIGNAL REROUTED';
+      inner.querySelector('.r-sub').textContent = 'UNAUTHORIZED NODE DETECTED — SIGINT OVERLAY ACTIVE';
+    }, 3000);
+  }
+}
+
+bhNavInit();
+
 startGlobe();
 </script>
+  <script src="/font-glitch.js" defer></script>
 </body>
 </html>

@@ -1,0 +1,190 @@
+/*
+ * ╔══════════════════════════════════════════════════════════════╗
+ * ║  WNCORE — UNIVERSAL FONT SYSTEM                              ║
+ * ║  fonts.css — link this in every HTML page                   ║
+ * ║                                                              ║
+ * ║  Stack:                                                      ║
+ * ║  --font-display  → Special Gothic Expanded One  (headings)  ║
+ * ║  --font-body     → Comic Sans MS / Comic Neue   (body)      ║
+ * ║  --font-mono     → IBM Plex Mono                (data/ARG)  ║
+ * ║  --font-glitch   → Rubik Glitch          (horror/activated) ║
+ * ║                                                              ║
+ * ║  Glitch engine:                                              ║
+ * ║  • 40–50s after load → random word micro-glitch starts      ║
+ * ║  • After 60s         → glitch intensifies slightly          ║
+ * ║  • Rubik Glitch only activates on horror/ARG triggers        ║
+ * ╚══════════════════════════════════════════════════════════════╝
+ */
+
+/* ── IMPORTS ─────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Rubik+Glitch&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap');
+
+/* ── CSS VARIABLES ───────────────────────────────────────────── */
+:root {
+  --font-display: 'Special Gothic Expanded One', 'Arial Black', sans-serif;
+  --font-body:    'Comic Neue', 'Comic Sans MS', 'Comic Sans', cursive;
+  --font-mono:    'IBM Plex Mono', 'Courier New', monospace;
+  --font-glitch:  'Rubik Glitch', 'Special Gothic Expanded One', sans-serif;
+}
+
+/* ── BASE OVERRIDES ──────────────────────────────────────────── */
+
+/* Body text — Comic Neue (the typographically legitimate cousin of Comic Sans) */
+body {
+  font-family: var(--font-body);
+}
+
+/* All headings → Special Gothic Expanded One */
+h1, h2, h3, h4, h5, h6,
+.globe-title,
+.section-title,
+.lm-hero-title,
+.about-title,
+.anime-banner-title,
+.legal-title,
+.modal-title,
+.admin-section-title,
+.admin-login-logo,
+.admin-topbar-logo,
+.logo-mark,
+.arg-freq,
+.ip-name,
+#ip-name,
+.lm-section-title,
+.fc-name,
+.np-name,
+#np-name,
+.pb-name,
+#pb-name {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+}
+
+/* Monospace — IBM Plex Mono replaces DM Mono everywhere */
+.globe-kicker,
+.globe-hint,
+.ticker-inner,
+.ticker-label,
+.section-more,
+.fc-meta,
+.fc-now,
+.fc-listeners,
+.st-num,
+.st-bitrate,
+.st-country,
+.np-meta,
+#np-meta,
+.np-track,
+#np-track,
+.pb-meta,
+#pb-meta,
+.pb-time,
+.arg-card,
+.arg-status,
+.arg-broken-bar,
+.arg-card-label,
+.signal-conn-box,
+.signal-conn-label,
+.signal-conn-status,
+.hud-line,
+#hd-status,
+#hd-title,
+#hd-back,
+#hd-logo,
+.adm-sub,
+.adm-label,
+.adm-btn,
+.ip-tag,
+#ip-tag,
+.ip-label,
+.ip-val,
+#ip-lore,
+.ip-stat-key,
+.ip-stat-val,
+#adm-status,
+.sb-label,
+.sb-name-main,
+.sb-meta,
+.sb-badge,
+.np-progress,
+.hud-val,
+.redacted,
+code, pre,
+[class*="mono"],
+[class*="terminal"],
+[class*="ticker"],
+[class*="freq"],
+[class*="signal"],
+[class*="status"],
+[class*="hud"],
+[class*="badge"],
+[class*="label"] {
+  font-family: var(--font-mono);
+}
+
+/* Explicit DM Mono → IBM Plex Mono overrides for inline styles */
+/* (bundle.js inlines font-family:'DM Mono' on many elements — 
+   we override at specificity level via attribute selector) */
+[style*="DM Mono"] {
+  font-family: var(--font-mono) !important;
+}
+[style*="DM Sans"] {
+  font-family: var(--font-body) !important;
+}
+[style*="Playfair Display"] {
+  font-family: var(--font-display) !important;
+}
+[style*="Syne"] {
+  font-family: var(--font-display) !important;
+}
+
+/* ── GLITCH CLASS (activated by JS engine below) ─────────────── */
+.wncore-glitch-word {
+  display: inline;
+  position: relative;
+}
+
+/* Phase 1: subtle clip-path flicker (40–60s) */
+.wncore-glitch-word.glitch-p1 {
+  animation: wg-p1 0.18s steps(2) forwards;
+}
+
+/* Phase 2: slightly more visible after 60s */
+.wncore-glitch-word.glitch-p2 {
+  animation: wg-p2 0.22s steps(3) forwards;
+}
+
+@keyframes wg-p1 {
+  0%   { clip-path: inset(0 0 0 0);  transform: translate(0, 0);    color: inherit; }
+  25%  { clip-path: inset(15% 0 60% 0); transform: translate(-1px, 0); color: inherit; }
+  50%  { clip-path: inset(55% 0 10% 0); transform: translate(1px, 0);  color: inherit; }
+  75%  { clip-path: inset(30% 0 35% 0); transform: translate(-1px, 0); color: inherit; }
+  100% { clip-path: inset(0 0 0 0);  transform: translate(0, 0);    color: inherit; }
+}
+
+@keyframes wg-p2 {
+  0%   { clip-path: inset(0 0 0 0);    transform: translate(0,0);     opacity: 1; }
+  20%  { clip-path: inset(20% 0 50% 0); transform: translate(-2px,0); opacity: 0.9; }
+  40%  { clip-path: inset(60% 0 5% 0);  transform: translate(2px,0);  opacity: 0.85; }
+  60%  { clip-path: inset(10% 0 70% 0); transform: translate(-1px,0); opacity: 0.9; }
+  80%  { clip-path: inset(40% 0 25% 0); transform: translate(1px,0);  opacity: 0.95; }
+  100% { clip-path: inset(0 0 0 0);    transform: translate(0,0);     opacity: 1; }
+}
+
+/* Rubik Glitch — applied on ARG horror triggers only */
+.wncore-horror-font {
+  font-family: var(--font-glitch) !important;
+  animation: horrorPulse 0.5s steps(2) infinite;
+}
+@keyframes horrorPulse {
+  0%,100% { text-shadow: none; }
+  50% { text-shadow: 2px 0 rgba(200,71,42,0.6), -2px 0 rgba(0,200,136,0.4); }
+}
+
+/*
+ * ── WORD GLITCH ENGINE ────────────────────────────────────────
+ *
+ * Loaded once via <script src="fonts.css"> — NO, loaded via
+ * the companion <script src="font-glitch.js"> instead.
+ * See font-glitch.js for the JS engine.
+ */

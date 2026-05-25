@@ -12,7 +12,6 @@
 <link rel="icon" href="/favicon.ico">
 <link rel="manifest" href="/manifest-mini.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -26,8 +25,8 @@
   --accent:#c8472a;
   --accent2:#e8824a;
   --green:#22c55e;
-  --mono:'DM Mono',monospace;
-  --sans:'Syne',sans-serif;
+  --mono:var(--font-mono);
+  --sans:var(--font-display);
   --r:16px;
   --safe-top:env(safe-area-inset-top,0px);
   --safe-bot:env(safe-area-inset-bottom,0px);
@@ -301,6 +300,7 @@ body::before{
 }
 </style>
 
+  <link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
 <div id="app">
@@ -905,5 +905,6 @@ async function init() {
 
 init();
 </script>
+  <script src="/font-glitch.js" defer></script>
 </body>
 </html>

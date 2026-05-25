@@ -175,5 +175,8 @@
       "src": "/(.*)",
       "dest": "/$1"
     }
+  ],
+  "routes_error": [
+    { "statusCode": 404, "dest": "/404.html" }
   ]
 }
