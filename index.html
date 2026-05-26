@@ -638,20 +638,49 @@ try {
 </div>
 
 <!-- ══════════════ ANIME PAGE ══════════════ -->
-<div id="page-anime" class="page">
-  <div style="max-width:1200px;margin:0 auto;padding:40px 24px;">
+<div id="page-anime" class="page anime-page-root">
+
+  <!-- Floating billboard side panels -->
+  <div class="anime-side anime-side-left" aria-hidden="true">
+    <div class="anime-billboard ab-1">
+      <img src="https://images.unsplash.com/photo-1578632767115-351597cf2477?w=300&q=70" alt="">
+      <div class="ab-neon-text">アニメ</div>
+    </div>
+    <div class="anime-billboard ab-2">
+      <div class="ab-kanji-stack">
+        <span>音</span><span>楽</span><span>放</span><span>送</span>
+      </div>
+    </div>
+    <div class="anime-billboard ab-3">
+      <img src="https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=300&q=70" alt="">
+      <div class="ab-label">LIVE · 生放送</div>
+    </div>
+    <div class="anime-side-vline"></div>
+  </div>
+
+  <div class="anime-side anime-side-right" aria-hidden="true">
+    <div class="anime-billboard ab-4">
+      <img src="https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=300&q=70" alt="">
+      <div class="ab-neon-text">J-POP</div>
+    </div>
+    <div class="anime-billboard ab-5">
+      <div class="ab-kanji-stack">
+        <span>東</span><span>京</span><span>波</span><span>動</span>
+      </div>
+    </div>
+    <div class="anime-billboard ab-6">
+      <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=300&q=70" alt="">
+      <div class="ab-label">88.7 FM · WNCORE</div>
+    </div>
+    <div class="anime-side-vline"></div>
+  </div>
+
+  <!-- Main content column -->
+  <div class="anime-main-col">
+
     <div class="anime-banner" id="anime-banner">
-      <!-- Ambient video background (Veo 8s loops — muted autoplay) -->
-      <video class="anime-banner-video" id="anime-banner-video"
-        autoplay muted loop playsinline
-        poster=""
-        style="display:none"
-        aria-hidden="true">
-        <!-- Add your Veo-generated video sources here:
-          <source src="videos/anime-loop-1.mp4" type="video/mp4">
-        -->
-      </video>
-      <img class="anime-banner-img" id="anime-banner-img"  alt="Anime / J-Music banner"  loading="lazy">
+      <video class="anime-banner-video" id="anime-banner-video" autoplay muted loop playsinline poster="" style="display:none" aria-hidden="true"></video>
+      <img class="anime-banner-img" id="anime-banner-img" alt="Anime / J-Music banner" loading="lazy">
       <div class="anime-banner-overlay"></div>
       <div class="anime-now-playing" id="anime-now-playing-badge" style="display:none">Live</div>
       <div class="anime-banner-content">
@@ -663,19 +692,19 @@ try {
 
     <div style="margin-bottom:28px;">
       <div class="section-hd">
-        <div class="section-title" style="font-family:var(--font-display);">Station Artwork</div>
+        <div class="section-title anime-section-title">ステーション アートワーク · Station Artwork</div>
         <a class="section-more" href="#" onclick="refreshAnimeImages();return false">Refresh ↺</a>
       </div>
       <div class="anime-img-strip" id="anime-img-strip"></div>
     </div>
 
     <div class="section-hd">
-      <div class="section-title" style="font-family:var(--font-display);">Featured J-Music Stations</div>
+      <div class="section-title anime-section-title">注目局 · Featured J-Music Stations</div>
     </div>
     <div class="anime-stations-grid" id="anime-stations-grid"></div>
 
     <div class="section-hd" style="margin-top:36px;">
-      <div class="section-title" style="font-family:var(--font-display);">Live J-Pop &amp; Anime Radio</div>
+      <div class="section-title anime-section-title">ライブ · Live J-Pop &amp; Anime Radio</div>
       <a class="section-more" href="#" onclick="loadAnimeStationsLive();return false">Refresh live →</a>
     </div>
     <table class="station-table" style="margin-bottom:0;" aria-label="Live anime radio stations">
@@ -683,7 +712,8 @@ try {
         <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3);font-size:0.8rem;">Loading anime stations...</td></tr>
       </tbody>
     </table>
-  </div>
+
+  </div><!-- /anime-main-col -->
 </div>
 
 <!-- ══════════════ PODCASTS PAGE ══════════════ -->
@@ -2101,5 +2131,27 @@ if ('serviceWorker' in navigator) {
   setInterval(updateTicker,1000);
 })();
 </script>
+
+<!-- ══════════════ GENRE DRILL-DOWN OVERLAY ══════════════ -->
+<div id="genre-overlay" aria-modal="true" role="dialog" aria-label="Genre stations">
+  <div id="genre-overlay-bg"></div>
+  <div id="genre-overlay-panel">
+    <button id="genre-overlay-close" onclick="closeGenreOverlay()" aria-label="Back to genres">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/></svg>
+      Back
+    </button>
+    <div id="genre-overlay-hero">
+      <div id="genre-overlay-icon"></div>
+      <div id="genre-overlay-name"></div>
+      <div id="genre-overlay-desc"></div>
+      <div id="genre-overlay-count"></div>
+    </div>
+    <div id="genre-overlay-stations">
+      <div id="genre-overlay-list"></div>
+      <button id="genre-overlay-more" onclick="loadMoreGenreStations()">Load more stations</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
