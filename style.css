@@ -6384,11 +6384,10 @@ body.dark-mode .sidebar-card button:not(.np-play-btn):not(.np-ctrl-btn) {
   flex-direction: column;
   gap: 16px;
   align-items: center;
-  position: sticky;
-  top: var(--header-h, 60px);
-  max-height: calc(100vh - var(--header-h, 60px));
-  overflow: hidden;
-  align-self: flex-start;
+  justify-content: space-evenly;
+  align-self: stretch;
+  min-height: 100%;
+  position: relative;
 }
 .anime-side-left  { border-right: 1px solid rgba(233,30,140,0.12); }
 .anime-side-right { border-left:  1px solid rgba(0,180,216,0.12); }
