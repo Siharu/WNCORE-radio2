@@ -19,6 +19,9 @@
 /* ── IMPORTS ─────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Rubik+Glitch&family=Comic+Neue:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&family=Zen+Tokyo+Zoo&family=DotGothic16&family=Reggae+One&display=swap');
 
+/* ── GENRE-SPECIFIC FONTS (lazy-loaded for genre cards & overlays) ── */
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=UnifrakturMaguntia&family=Permanent+Marker&family=Pacifico&family=Orbitron:wght@400;700&family=Bangers&family=Abril+Fatface&family=Fredericka+the+Great&family=Rye&family=Lobster&family=Patrick+Hand&family=Righteous&family=Bree+Serif&family=Monoton&family=Press+Start+2P&family=Rajdhani:wght@400;600&display=swap');
+
 /* ── CSS VARIABLES ───────────────────────────────────────────── */
 :root {
   --font-anime:     'Zen Tokyo Zoo', 'DotGothic16', 'Reggae One', sans-serif;

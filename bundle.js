@@ -425,7 +425,7 @@ async function loadStations(genre='') {
     ]);
     let d;
     try {
-      const r = await fetchWithTimeout(`${api}stations/search?limit=20&https=true&order=clickcount&reverse=true${tag}&offset=${genre?0:offset}`);
+      const r = await fetchWithTimeout(`${api}stations/search?limit=60&https=true&order=clickcount&reverse=true${tag}&offset=${genre?0:offset}`);
       if (!r.ok) throw new Error('status ' + r.status);
       d = await r.json();
     } catch(innerErr) {
@@ -554,6 +554,45 @@ function stationGradient(tags, name) {
   return `linear-gradient(135deg, ${colors[0]}, ${colors[1]})`;
 }
 
+// Unsplash fallback images by genre tag (copyright-free)
+const _GENRE_COVER_IMGS = {
+  jazz:       'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=64&q=60',
+  classical:  'https://images.unsplash.com/photo-1465847899084-d164df4dedc6?w=64&q=60',
+  rock:       'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=64&q=60',
+  pop:        'https://images.unsplash.com/photo-1501612780327-45045538702b?w=64&q=60',
+  electronic: 'https://images.unsplash.com/photo-1571266028243-d220c6a40f9b?w=64&q=60',
+  hiphop:     'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
+  'hip-hop':  'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
+  'hip hop':  'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
+  ambient:    'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=64&q=60',
+  news:       'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=64&q=60',
+  country:    'https://images.unsplash.com/photo-1508361727343-ca787442dcd7?w=64&q=60',
+  rnb:        'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=64&q=60',
+  'r&b':      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=64&q=60',
+  metal:      'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=64&q=60',
+  reggae:     'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=64&q=60',
+  anime:      'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=64&q=60',
+  jpop:       'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=64&q=60',
+  folk:       'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=64&q=60',
+  lofi:       'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=64&q=60',
+  'lo-fi':    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=64&q=60',
+  '80s':      'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=64&q=60',
+  '90s':      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=64&q=60',
+  talk:       'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=64&q=60',
+  podcast:    'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=64&q=60',
+  gaming:     'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=64&q=60',
+  chiptune:   'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=64&q=60',
+  default:    'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=64&q=60',
+};
+
+function _getGenreFallbackImg(tags, name) {
+  const tagStr = ((tags || '') + ' ' + (name || '')).toLowerCase();
+  for (const key of Object.keys(_GENRE_COVER_IMGS)) {
+    if (tagStr.includes(key)) return _GENRE_COVER_IMGS[key];
+  }
+  return _GENRE_COVER_IMGS.default;
+}
+
 function stationCoverHtml(s, size) {
   const sz = size || 32;
   const grad = stationGradient(s.tags, s.name);
@@ -563,9 +602,13 @@ function stationCoverHtml(s, size) {
     return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><span class="st-cover-init">${initial}</span></div>`;
   }
   if (s.favicon && s.favicon.startsWith('http')) {
-    return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><img src="${escHtml(s.favicon)}" width="${sz}" height="${sz}" loading="lazy" onerror="this.style.display='none'"></div>`;
+    // On favicon load error: show genre fallback image, then letter initial if that also fails
+    const fallbackImg = _getGenreFallbackImg(s.tags, s.name);
+    return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><img src="${escHtml(s.favicon)}" width="${sz}" height="${sz}" loading="lazy" onerror="this.src='${fallbackImg}';this.onerror=function(){this.style.display='none';this.parentElement.querySelector('.st-cover-init')&&(this.parentElement.querySelector('.st-cover-init').style.display='');};"><span class="st-cover-init" style="display:none">${initial}</span></div>`;
   }
-  return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><span class="st-cover-init">${initial}</span></div>`;
+  // No favicon: use genre-specific fallback image
+  const fallbackImg = _getGenreFallbackImg(s.tags, s.name);
+  return `<div class="st-cover" style="width:${sz}px;height:${sz}px;background:${grad}"><img src="${fallbackImg}" width="${sz}" height="${sz}" loading="lazy" onerror="this.style.display='none';this.parentElement.querySelector('.st-cover-init')&&(this.parentElement.querySelector('.st-cover-init').style.display='');"><span class="st-cover-init" style="display:none">${initial}</span></div>`;
 }
 
 function renderTable(stations, tbodyId) {
@@ -1396,7 +1439,7 @@ async function doSearch(q) {
         ? `<img src="${escHtml(s.favicon)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:8px" onerror="this.style.display='none'">`
         : `<span style="font-size:1rem;line-height:1">${emoji}</span>`;
       el.innerHTML = `<div class="sr-icon" style="background:${srGrad};overflow:hidden">${srImg}</div><div><div class="sr-name">${escHtml(s.name)}</div><div class="sr-meta">${escHtml(s.country||'—')} · ${(s.tags||'').split(',').slice(0,2).filter(Boolean).map(t=>escHtml(t.trim())).join(', ')||'Radio'} · ${s.bitrate?s.bitrate+'kbps':'—'}</div></div>`;
-      el.onclick = () => { playStation(s.url_resolved, s.name, s.country||'Unknown', emoji, s.favicon||null); closeSearch(); };
+      el.onclick = () => { playStation(s.url_resolved || s.url, s.name, s.country||'Unknown', emoji, s.favicon||null); closeSearch(); };
       results.appendChild(el);
     });
   } catch(e) { results.innerHTML='<div class="search-empty">Signal degraded — try again</div>'; }
@@ -1899,11 +1942,11 @@ async function loadPodcastsPage() {
 // Genre metadata — mirrors the loadGenrePage array for overlay use
 const _GENRE_META = {
   jazz:       { name:'Jazz',         desc:'After midnight. The real stuff.',                          font:"'IM Fell English', serif",        size:'2.4rem', bg:'#0e0e1e', accent:'#c8a96e' },
-  classical:  { name:'Classical',    desc:'Stations on air longer than you've been alive.',          font:"'UnifrakturMaguntia', cursive",    size:'2.2rem', bg:'#111118', accent:'#d4c5a9' },
+  classical:  { name:'Classical',    desc:"Stations on air longer than you've been alive.",          font:"'UnifrakturMaguntia', cursive",    size:'2.2rem', bg:'#111118', accent:'#d4c5a9' },
   rock:       { name:'Rock',         desc:'Loud, live, no algorithm involved.',                       font:"'Permanent Marker', cursive",      size:'2.6rem', bg:'#1a0606', accent:'#e05a5a' },
   pop:        { name:'Pop',          desc:'What 3 billion people are hearing right now.',             font:"'Pacifico', cursive",              size:'2.3rem', bg:'#1a0a1a', accent:'#e879f9' },
   electronic: { name:'Electronic',   desc:'Transmitting from basements and warehouses.',              font:"'Orbitron', sans-serif",           size:'1.7rem', bg:'#040418', accent:'#818cf8' },
-  hiphop:     { name:'Hip-Hop',      desc:'Live from stations that don't get playlisted.',           font:"'Bangers', cursive",               size:'2.8rem', bg:'#080808', accent:'#fbbf24' },
+  hiphop:     { name:'Hip-Hop',      desc:"Live from stations that don't get playlisted.",           font:"'Bangers', cursive",               size:'2.8rem', bg:'#080808', accent:'#fbbf24' },
   ambient:    { name:'Ambient',      desc:'Broadcasts that disappear into the room.',                 font:"'Abril Fatface', serif",           size:'2.2rem', bg:'#081208', accent:'#6ee7b7' },
   news:       { name:'News',         desc:'Shortwave, public radio, wire services still running.',    font:"'Fredericka the Great', serif",    size:'2rem',   bg:'#121000', accent:'#fde68a' },
   country:    { name:'Country',      desc:'Truck stops and back porches, live.',                      font:"'Rye', cursive",                   size:'2.2rem', bg:'#120800', accent:'#d97706' },
@@ -1990,7 +2033,7 @@ async function _loadGenreOverlayStations(genre, fresh) {
         card.className = 'go-station-card';
         card.innerHTML = `
           <div class="go-station-img">
-            ${s.favicon ? `<img src="${s.favicon}" alt="" onerror="this.style.display='none'">` : ''}
+            <img src="${(s.favicon && s.favicon.startsWith('http')) ? s.favicon : _getGenreFallbackImg(s.tags, s.name)}" alt="" loading="lazy" onerror="if(this.src.includes('unsplash')){this.style.display='none';}else{this.src=_getGenreFallbackImg(s.tags,s.name);this.onerror=function(){this.style.display='none';};}">
             <svg class="go-station-note" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="20" height="20"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
           </div>
           <div class="go-station-info">
@@ -2939,11 +2982,10 @@ buildGenreStrip();
 // loadChartsPage() only fires when navigating to page-charts, so we prime it here
 // to populate station-tbody using the same data + cache
 (async function initHomeCharts() {
+  // Only load charts page data; do NOT write to station-tbody here.
+  // loadStations() already runs above and owns station-tbody.
+  // We prime the cache so navigating to the Charts page is instant.
   await loadChartsPage();
-  // After charts data is cached, also render into home page station-tbody
-  if (chartsData && chartsData.length) {
-    renderTable(chartsData, 'station-tbody');
-  }
 })();
 
 // ═══════════════════════════════════════════════════════

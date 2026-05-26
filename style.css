@@ -293,12 +293,13 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 
 .mobile-nav{
   display:none;position:fixed;
-  top:0;left:0;right:0;bottom:0;
+  top:var(--header-h,56px);left:0;right:0;bottom:0;
   background:var(--bg);
   z-index:499; /* below header(500) above backdrop(493) */
-  /* padding-top/bottom set in mobile.css to clear header + player/bottom-nav */
-  padding:20px 16px;
+  padding:12px 16px 24px;
   overflow-y:auto;-webkit-overflow-scrolling:touch;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
   flex-direction:column;gap:6px;
   transform:translateY(-8px);opacity:0;
   transition:transform 0.22s cubic-bezier(.4,0,.2,1),opacity 0.22s;
@@ -314,6 +315,8 @@ body.dark-mode .tl-dark{color:var(--text2);font-weight:600}
 /* ── PAGES ── */
 .page{display:none}
 .page.active{display:block}
+/* Anime page needs flex for left/right side panels */
+#page-anime.active{display:flex}
 
 /* ── SIGN IN MODAL ── */
 .modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);z-index:800;align-items:center;justify-content:center;padding:16px}
@@ -439,6 +442,32 @@ body.dark-mode .station-table tr:hover{background:rgba(30,28,24,0.85)}
 /* ── ANIME SECTION ── */
 .anime-banner{position:relative;border-radius:16px;overflow:hidden;height:200px;background:linear-gradient(135deg,#0d0d1f 0%,#1a0533 40%,#0a1628 100%);margin-bottom:20px;cursor:pointer}
 .anime-banner-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.35;transition:opacity 0.5s}
+
+/* Trivsion — animated canvas backdrop + rotating artwork in banner */
+.anime-trivsion{
+  position:absolute;inset:0;z-index:0;overflow:hidden;
+  will-change:transform; /* promote container to its own compositor layer */
+}
+.anime-trivsion-slide{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  opacity:0;
+  transition:opacity 1.4s ease;
+  /* NO animation on inactive slides — only .tv-active gets Ken Burns */
+  animation:none;
+}
+.anime-trivsion-slide.tv-active{
+  opacity:0.45;
+  /* Ken Burns only on the visible slide */
+  animation:tv-kenburns 12s ease-in-out infinite alternate;
+  will-change:transform;
+}
+.anime-trivsion-slide.tv-prev{opacity:0;animation:none;}
+@keyframes tv-kenburns{
+  0%   {transform:scale(1.0) translate(0%,0%)}
+  50%  {transform:scale(1.06) translate(-1.5%,-0.5%)}
+  100% {transform:scale(1.03) translate(1%,0.5%)}
+}
 .anime-banner-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(13,13,31,0.85) 0%,rgba(13,13,31,0.4) 100%)}
 .anime-banner-content{position:relative;z-index:2;padding:28px;height:100%;display:flex;flex-direction:column;justify-content:flex-end}
 .anime-banner-kicker{font-family:var(--font-mono);font-size:0.58rem;letter-spacing:3px;color:var(--anime-pink);margin-bottom:8px}
@@ -6299,7 +6328,6 @@ body.dark-mode .sidebar-card button:not(.np-play-btn):not(.np-ctrl-btn) {
    overflow:hidden is CRITICAL — prevents sticky side panels
    from bleeding into other .page divs when inactive. */
 .anime-page-root {
-  display: flex;
   flex-direction: row;
   align-items: flex-start;
   min-height: 100vh;

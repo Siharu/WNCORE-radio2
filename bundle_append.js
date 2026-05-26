@@ -2234,3 +2234,242 @@ ${stage >= 4 ? '> ██ BREACH CONFIRMED. GHOST PROTOCOL ACTIVE.' : ''}
   }
 
 })();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIME TRIVSION — animated canvas backdrop + rotating free artwork in the banner
+   Images: Unsplash (hotlink-friendly from browser, free commercial use)
+═══════════════════════════════════════════════════════════════════════════ */
+(function initAnimeTrivision() {
+  // Unsplash free-to-use Japan/city/night images — these work fine from browsers
+  // (403 only from server-side curl without Referer; browser requests include Referer)
+  const SLIDES = [
+    'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=900&q=70',  // Tokyo night
+    'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=900&q=70',  // Japan street
+    'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=900&q=70',  // neon city
+    'https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=900&q=70',     // Japan shrine
+    'https://images.unsplash.com/photo-1490806843957-31f4c9a91c65?w=900&q=70',  // cherry blossom
+    'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=900&q=70',  // Tokyo alley
+    'https://images.unsplash.com/photo-1480796927426-f609979314bd?w=900&q=70',  // Tokyo skyline
+    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=900&q=70',  // Japan temple
+    'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=900&q=70',  // Tokyo rain
+    'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?w=900&q=70',  // night market
+  ];
+
+  let current = 0;
+  let intervalId = null;
+
+  function buildSlides(container) {
+    container.innerHTML = '';
+    const shuffled = [...SLIDES].sort(() => Math.random() - 0.5);
+    shuffled.forEach((url, i) => {
+      const div = document.createElement('div');
+      div.className = 'anime-trivsion-slide' + (i === 0 ? ' tv-active' : '');
+      div.style.backgroundImage = `url('${url}')`;
+      container.appendChild(div);
+    });
+    current = 0;
+    return container.querySelectorAll('.anime-trivsion-slide');
+  }
+
+  function advance(slides) {
+    const prev = current;
+    current = (current + 1) % slides.length;
+    slides[prev].classList.remove('tv-active');
+    slides[prev].classList.add('tv-prev');
+    slides[current].classList.add('tv-active');
+    slides[current].classList.remove('tv-prev');
+    setTimeout(() => slides[prev].classList.remove('tv-prev'), 1400);
+  }
+
+  function startTrivision() {
+    const container = document.getElementById('anime-trivsion');
+    if (!container) return;
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    const slides = buildSlides(container);
+    intervalId = setInterval(() => advance(slides), 5500);
+    // Start particle canvas animation if not already running
+    startTrivsionCanvas(container);
+  }
+
+  // ── Canvas particle animation ─────────────────────────────────────────
+  let _canvasRaf = null;
+  let _resizeObs = null;
+
+  function startTrivsionCanvas(container) {
+    if (_canvasRaf) return; // already running
+
+    // FIX 6: Honour prefers-reduced-motion — skip canvas for accessibility
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    let canvas = container.querySelector('.tv-canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.className = 'tv-canvas';
+      canvas.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;';
+      container.appendChild(canvas);
+    }
+
+    const ctx = canvas.getContext('2d');
+    let W = 0, H = 0;
+
+    // FIX 3: ResizeObserver keeps canvas in sync on rotate / resize
+    const STREAKS = []; // declared early so resize() can scatter them
+    function resize() {
+      const rect = container.getBoundingClientRect();
+      const newW = rect.width  || 600;
+      const newH = rect.height || 200;
+      if (newW === W && newH === H) return;
+      W = canvas.width  = newW;
+      H = canvas.height = newH;
+      STREAKS.forEach(s => { s.x = Math.random() * W; s.y = Math.random() * H; });
+    }
+    if (window.ResizeObserver) {
+      _resizeObs = new ResizeObserver(resize);
+      _resizeObs.observe(container);
+    } else {
+      window.addEventListener('resize', resize);
+    }
+    resize();
+
+    // FIX 5: Pre-cache hsl strings at spawn time — zero string alloc per frame
+    function spawnPetal(scatterY) {
+      const hue = Math.random() > 0.4 ? 340 : 310;
+      const sat = Math.round(50 + Math.random() * 40);
+      return {
+        x: Math.random() * W,
+        y: scatterY !== undefined ? scatterY : -12 - Math.random() * 40,
+        size: 4 + Math.random() * 7,
+        vx: -0.4 + Math.random() * 0.8,
+        vy: 0.6 + Math.random() * 1.0,
+        rot: Math.random() * Math.PI * 2,
+        rotV: (Math.random() - 0.5) * 0.04,
+        swing: Math.random() * Math.PI * 2,
+        swingV: 0.02 + Math.random() * 0.02,
+        alpha: 0.5 + Math.random() * 0.45,
+        fill:   `hsl(${hue},${sat}%,85%)`,   // cached — not rebuilt every frame
+        stroke: `hsl(${hue},${sat}%,65%)`,
+      };
+    }
+    const PETALS = Array.from({length: 28}, () => spawnPetal(Math.random() * (H || 200)));
+
+    // Streaks pre-populated now that STREAKS array exists
+    for (let i = 0; i < 18; i++) {
+      STREAKS.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        len: 8 + Math.random() * 20,
+        v: 3 + Math.random() * 4,
+        alpha: 0.04 + Math.random() * 0.08,
+      });
+    }
+
+    // FIX 4: ONE ctx.save/restore per frame total — use setTransform per particle
+    // instead of save/translate/rotate/restore (which pushes the entire state stack)
+    function drawAllPetals() {
+      ctx.save(); // single push for the whole batch
+      PETALS.forEach(p => {
+        const cos = Math.cos(p.rot), sin = Math.sin(p.rot);
+        // setTransform = translate + rotate + scale in one call, no stack push
+        ctx.setTransform(cos * p.size, sin * p.size,
+                        -sin * p.size * 0.55, cos * p.size * 0.55,
+                         p.x, p.y);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle   = p.fill;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, 1, 0.55, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = p.alpha * 0.3;
+        ctx.strokeStyle = p.stroke;
+        ctx.lineWidth   = 0.5 / p.size; // scale-compensated
+        ctx.beginPath();
+        ctx.moveTo(-0.8, 0);
+        ctx.lineTo( 0.8, 0);
+        ctx.stroke();
+      });
+      ctx.restore(); // single pop
+    }
+
+    function drawAllStreaks() {
+      ctx.save(); // single push
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // identity
+      ctx.strokeStyle = 'rgba(180,220,255,1)';
+      ctx.lineWidth   = 0.7;
+      STREAKS.forEach(s => {
+        ctx.globalAlpha = s.alpha;
+        ctx.beginPath();
+        ctx.moveTo(s.x, s.y);
+        ctx.lineTo(s.x - 1, s.y + s.len);
+        ctx.stroke();
+        s.y += s.v;
+        if (s.y > H + 30) { s.y = -30; s.x = Math.random() * W; }
+      });
+      ctx.restore(); // single pop
+    }
+
+    function tick() {
+      _canvasRaf = requestAnimationFrame(tick);
+      // FIX 2: skip draw work when tab is hidden (rAF still fires in some browsers)
+      if (document.hidden) return;
+
+      ctx.clearRect(0, 0, W, H);
+      drawAllStreaks();
+
+      PETALS.forEach(p => {
+        p.swing += p.swingV;
+        p.x += p.vx + Math.sin(p.swing) * 0.5;
+        p.y += p.vy;
+        p.rot += p.rotV;
+        if (p.y > H + 20 || p.x < -20 || p.x > W + 20) {
+          Object.assign(p, spawnPetal());
+        }
+      });
+      drawAllPetals();
+    }
+    tick();
+
+    // FIX 2: resume rAF on tab return (cancelAnimationFrame was called by stopTrivision)
+    function _onVisChange() {
+      if (!document.hidden && !_canvasRaf && intervalId) { tick(); }
+    }
+    document.addEventListener('visibilitychange', _onVisChange);
+    container._tvVisChange = _onVisChange; // stored for cleanup in stopTrivision
+  }
+
+  function stopTrivision() {
+    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+    if (_canvasRaf) { cancelAnimationFrame(_canvasRaf); _canvasRaf = null; }
+    if (_resizeObs) { _resizeObs.disconnect(); _resizeObs = null; }
+    const _cont = document.getElementById('anime-trivsion');
+    if (_cont && _cont._tvVisChange) {
+      document.removeEventListener('visibilitychange', _cont._tvVisChange);
+      _cont._tvVisChange = null;
+    }
+  }
+
+  // Patch showPage AFTER all other patches have settled (p5Patch uses setTimeout(0))
+  // We use setTimeout(50) so we're always outermost in the chain
+  function installTrivisionPatch() {
+    const _origShowPage = window.showPage;
+    window.showPage = function(id, linkEl) {
+      if (id === 'anime') {
+        startTrivision();
+      } else {
+        stopTrivision();
+      }
+      return _origShowPage ? _origShowPage.call(this, id, linkEl) : undefined;
+    };
+    window.showPage._trivisionPatched = true;
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // setTimeout(50) ensures p5Patch's setTimeout(0) has already run
+    setTimeout(function() {
+      installTrivisionPatch();
+      // Auto-start if anime page is already active on load
+      const animePage = document.getElementById('page-anime');
+      if (animePage && animePage.classList.contains('active')) {
+        startTrivision();
+      }
+    }, 50);
+  });
+})();
