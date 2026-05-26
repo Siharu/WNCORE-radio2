@@ -432,8 +432,8 @@ async function loadStations(genre='') {
     } catch(innerErr) {
       throw innerErr;
     }
-    // Filter stations with no valid playable URL before rendering
-    const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('http'));
+    // Filter stations with no valid playable URL before rendering — https only to avoid mixed content
+    const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('https'));
     renderTable(playable.length ? playable : d, 'station-tbody');
     // Add shuffle/load-more row at bottom
     _appendStationShuffleRow(genre);
@@ -509,7 +509,7 @@ async function _loadMoreCharts() {
     if (oldRow) oldRow.remove();
     chartsData = [...(chartsData||[]), ...d];
     // Append new rows directly (renderTable would overwrite the table)
-    const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('http'));
+    const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('https'));
     playable.forEach((s, i) => {
       const emoji = typeof getCountryEmoji === 'function' ? getCountryEmoji(s.countrycode) : '📻';
       const tags = (s.tags||'').split(',').slice(0,2).filter(t=>t.trim()).map(t=>`<span class="st-tag">${escHtml(t.trim())}</span>`).join('');
@@ -672,6 +672,8 @@ function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
     if (_onFail) _onFail();
     return;
   }
+  // Upgrade http:// → https:// to prevent mixed-content warnings on HTTPS pages
+  if (url.startsWith('http://')) url = 'https://' + url.slice(7);
   currentStation = {url, name, meta, emoji: emoji||'📻', favicon: favicon||null};
 
   // Immediately show the player bar on mobile when a station is selected
@@ -715,6 +717,8 @@ function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
         if (window._broadcastStation) window._broadcastStation(name); // Option A: live station tracking
         updateUI(name, meta, emoji||'📻', currentStation.favicon);
         updateMiniPlayerVisibility();
+        // Start ICY now-playing polling for this stream
+        _startIcyPoll(url);
         // NOTE: applyStationSecondaryEffects removed from here — it called initAudioFX()
         // unconditionally which broke CORS-restricted streams. Now only called for horror stations.
         if (name && meta) {
@@ -748,6 +752,86 @@ function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
       });
     }
   }, 50);
+}
+
+// ─── ICY NOW-PLAYING METADATA POLLING ──────────────────────────────────────
+// Uses the /api/icy proxy to pull StreamTitle from the live stream.
+// listen.moe uses a WebSocket API instead of ICY headers — handled separately.
+let _icyPollTimer = null;
+let _icyCurrentUrl = null;
+let _listenMoeWs = null;
+
+async function _fetchIcy(streamUrl) {
+  try {
+    const r = await fetch(`/api/icy?url=${encodeURIComponent(streamUrl)}`);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+function _stopIcyPoll() {
+  if (_icyPollTimer) { clearInterval(_icyPollTimer); _icyPollTimer = null; }
+  _icyCurrentUrl = null;
+  // Also close any open listen.moe WebSocket
+  if (typeof _listenMoeWs !== 'undefined' && _listenMoeWs) {
+    try { _listenMoeWs.close(); } catch(_) {}
+    _listenMoeWs = null;
+  }
+}
+
+function _updateNpDisplay(title) {
+  const el = document.getElementById('np-track');
+  if (el && title) el.textContent = title;
+  // Only update the Live Music now-playing card if LM is NOT running its own stream
+  if (typeof lmIsPlaying === 'undefined' || !lmIsPlaying) {
+    const lmTitle = document.getElementById('lm-np-title');
+    if (lmTitle && title) lmTitle.textContent = title;
+  }
+}
+
+function _startIcyPoll(streamUrl) {
+  _stopIcyPoll();
+  _icyCurrentUrl = streamUrl;
+
+  // listen.moe — uses a dedicated WebSocket API, ICY doesn't work on it
+  if (streamUrl.includes('listen.moe')) {
+    _startListenMoeWs(streamUrl);
+    return;
+  }
+
+  const doPoll = async () => {
+    if (_icyCurrentUrl !== streamUrl) return; // station changed
+    const data = await _fetchIcy(streamUrl);
+    if (data && data.title) _updateNpDisplay(data.title);
+  };
+  doPoll(); // immediate first fetch
+  _icyPollTimer = setInterval(doPoll, 30000); // poll every 30s
+}
+
+// listen.moe WebSocket now-playing
+function _startListenMoeWs(streamUrl) {
+  if (_listenMoeWs) { try { _listenMoeWs.close(); } catch(_){} _listenMoeWs = null; }
+  const wsUrl = streamUrl.includes('kpop')
+    ? 'wss://listen.moe/kpop/gateway_v2'
+    : 'wss://listen.moe/gateway_v2';
+  try {
+    _listenMoeWs = new WebSocket(wsUrl);
+    _listenMoeWs.onmessage = (e) => {
+      try {
+        const msg = JSON.parse(e.data);
+        if (msg.op === 0 && msg.d && msg.d.song) {
+          const song = msg.d.song;
+          const artists = (song.artists||[]).map(a=>a.name).join(', ');
+          const title = artists ? `${artists} — ${song.title}` : song.title;
+          if (title) _updateNpDisplay(title);
+        }
+        // Respond to heartbeat
+        if (msg.op === 9) _listenMoeWs.send(JSON.stringify({op:9}));
+      } catch(_){}
+    };
+    _listenMoeWs.onerror = () => {};
+    _listenMoeWs.onclose = () => { _listenMoeWs = null; };
+  } catch(_) {}
 }
 
 function applyStationSecondaryEffects(name, meta) {
@@ -919,6 +1003,7 @@ function togglePlay() {
   if(!currentStation) return;
   if(isPlaying) {
     audio.pause(); isPlaying=false; window.isPlaying=false; setPlayIcon(false);
+    _stopIcyPoll();
     ['pb-eq','pb-fill','np-fill'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('playing')});
     stopProgressSync();
   } else {
