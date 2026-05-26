@@ -433,8 +433,9 @@ body.dark-mode .station-table tr:hover{background:rgba(30,28,24,0.85)}
 .rec-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:36px}
 .rec-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all 0.15s;display:flex;gap:12px;align-items:center}
 .rec-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.06);transform:translateY(-2px)}
-.rec-art{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rec-art{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
 .rec-art svg{width:22px;height:22px}
+.rec-art img{width:100%;height:100%;object-fit:cover;border-radius:8px;display:block}
 .rec-info{min-width:0}
 .rec-name{font-size:0.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .rec-desc{font-size:0.67rem;color:var(--text3);margin-top:2px}

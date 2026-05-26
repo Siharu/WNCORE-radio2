@@ -2021,7 +2021,12 @@ async function loadPodcastsPage() {
     grid.innerHTML='';
     combined.forEach(s=>{
       const card=document.createElement('div'); card.className='rec-card';
-      card.innerHTML=`<div class="rec-art" style="background:var(--surface2);">${SVG.mic.replace('viewBox','width="22" height="22" viewBox')}</div><div class="rec-info"><div class="rec-name">${escHtml(s.name||s.desc)}</div><div class="rec-desc">${escHtml(s.country||s.desc||'Talk Radio')}</div></div>`;
+      const _pFavicon = (s.favicon && s.favicon.startsWith('http')) ? s.favicon : '';
+      const _pFallback = _getGenreFallbackImg(s.tags||'podcast talk', s.name);
+      const _pArt = _pFavicon
+        ? `<img src="${escHtml(_pFavicon)}" loading="lazy" alt="" onerror="this.src='${_pFallback}';this.onerror=function(){this.style.display='none';};">`
+        : `<img src="${_pFallback}" loading="lazy" alt="" onerror="this.style.display='none';">`;
+      card.innerHTML=`<div class="rec-art" style="background:var(--surface2);overflow:hidden;">${_pArt}</div><div class="rec-info"><div class="rec-name">${escHtml(s.name||s.desc)}</div><div class="rec-desc">${escHtml(s.country||s.desc||'Talk Radio')}</div></div>`;
       card.onclick=()=>playStation(s.url_resolved||s.url, s.name, s.country||s.desc, '🎙', s.favicon||null);
       grid.appendChild(card);
     });
@@ -2029,7 +2034,8 @@ async function loadPodcastsPage() {
     grid.innerHTML='';
     fallbacks.forEach(f=>{
       const card=document.createElement('div'); card.className='rec-card';
-      card.innerHTML=`<div class="rec-art" style="background:var(--surface2);">${SVG.mic.replace('viewBox','width="22" height="22" viewBox')}</div><div class="rec-info"><div class="rec-name">${escHtml(f.name)}</div><div class="rec-desc">${escHtml(f.desc)}</div></div>`;
+      const _pfFallback = _getGenreFallbackImg('podcast talk', f.name);
+      card.innerHTML=`<div class="rec-art" style="background:var(--surface2);overflow:hidden;"><img src="${_pfFallback}" loading="lazy" alt="" onerror="this.style.display='none';"></div><div class="rec-info"><div class="rec-name">${escHtml(f.name)}</div><div class="rec-desc">${escHtml(f.desc)}</div></div>`;
       card.onclick=()=>playStation(f.url,f.name,f.desc,'🎙');
       grid.appendChild(card);
     });
