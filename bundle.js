@@ -2,7 +2,7 @@
    WNCORE RADIO — bundle.js
    Unified script bundle. All JS merged and wrapper chains eliminated.
    ONE clean playStation. No race conditions. No defer loading conflicts.
-   Generated: Mon May 11 08:37:43 UTC 2026
+   Edited: Mon May 11 08:37:43 UTC 2026
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ━━━ main.js ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -213,10 +213,10 @@ const FEATURED = [
 
 const ANIME_STATIONS = [
   {name:'Anime Koi Radio',desc:'Non-stop anime OSTs & J-Pop',emoji:'🌸',badge:'live',url:'https://listen.moe/stream'},
-  {name:'Listen.moe K-Pop',desc:'K-Pop & J-Pop crossover',emoji:'💜',badge:'jpop',url:'https://listen.moe/kpop/stream'},
-  {name:'Nightwave Plaza',desc:'Future funk, city pop, vaporwave',emoji:'🌆',badge:'jpop',url:'https://radio.plaza.one/mp3'},
-  {name:'Yggdrasil Lo-Fi',desc:'Study beats · anime aesthetic',emoji:'🌿',badge:'lofi',url:'https://pool.nightwave.io/plaza.mp3'},
-  {name:'J1 Hits',desc:'Japanese J-Pop hits, live',emoji:'🎌',badge:'jpop',url:'https://listen.radioking.com/radio/285028/stream/330334'},
+  {name:'Listen.moe K-Pop',desc:'K-Pop & J-Pop crossover',emoji:'💜',badge:'j-pop',url:'https://listen.moe/kpop/stream'},
+  {name:'Nightwave Plaza',desc:'Future funk, city pop, vaporwave',emoji:'🌆',badge:'j-pop',url:'https://radio.plaza.one/mp3'},
+  {name:'Yggdrasil Lo-Fi',desc:'Study beats · anime aesthetic',emoji:'🌿',badge:'lo-fi',url:'https://pool.nightwave.io/plaza.mp3'},
+  {name:'J1 Hits',desc:'Japanese J-Pop hits, live',emoji:'🎌',badge:'j-pop',url:'https://listen.radioking.com/radio/285028/stream/330334'},
   {name:'Akiba Radio',desc:'Anime music 24/7',emoji:'⛩️',badge:'live',url:'https://stream.radioking.com/akibaradio'}
 ];
 
@@ -575,20 +575,20 @@ const _GENRE_COVER_IMGS = {
   rock:       'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=64&q=60',
   pop:        'https://images.unsplash.com/photo-1501612780327-45045538702b?w=64&q=60',
   electronic: 'https://images.unsplash.com/photo-1571266028243-d220c6a40f9b?w=64&q=60',
-  hiphop:     'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
+  "hip-hop":  'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
   'hip-hop':  'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
   'hip hop':  'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=64&q=60',
   ambient:    'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=64&q=60',
   news:       'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=64&q=60',
   country:    'https://images.unsplash.com/photo-1508361727343-ca787442dcd7?w=64&q=60',
-  rnb:        'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=64&q=60',
+  "r&b":      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=64&q=60',
   'r&b':      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=64&q=60',
   metal:      'https://images.unsplash.com/photo-1498038432885-c6f3f1b912ee?w=64&q=60',
   reggae:     'https://images.unsplash.com/photo-1518972559570-7cc1309f3229?w=64&q=60',
   anime:      'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=64&q=60',
   jpop:       'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=64&q=60',
   folk:       'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=64&q=60',
-  lofi:       'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=64&q=60',
+  "lo-fi":    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=64&q=60',
   'lo-fi':    'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=64&q=60',
   '80s':      'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=64&q=60',
   '90s':      'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=64&q=60',
@@ -1531,7 +1531,7 @@ function loadGenrePage() {
      'https://images.unsplash.com/photo-1571266028243-d220c6a40f9b?w=400&q=60',
      '<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'],
 
-    ['hiphop','Hip-Hop','Live from stations that don\'t get playlisted','#080808',
+    ['hip-hop','Hip-Hop','Live from stations that don\'t get playlisted','#080808',
      "'Bangers', cursive",'1.05rem',
      'https://images.unsplash.com/photo-1547472260-b0db7b0e06f6?w=400&q=60',
      '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
@@ -1551,7 +1551,7 @@ function loadGenrePage() {
      'https://images.unsplash.com/photo-1508361727343-ca787442dcd7?w=400&q=60',
      '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
 
-    ['rnb','R&B','Late nights on the FM dial','#180a16',
+    ['r&b','R&B','Late nights on the FM dial','#180a16',
      "'Lobster', cursive",'1rem',
      'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=400&q=60',
      '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
@@ -1576,7 +1576,7 @@ function loadGenrePage() {
      'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&q=60',
      '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'],
 
-    ['lofi','Lo-Fi','Background signal for wherever you are','#080c12',
+    ['lo-fi','Lo-Fi','Background signal for wherever you are','#080c12',
      "'Monoton', cursive",'0.65rem',
      'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=400&q=60',
      '<path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>'],
@@ -1667,7 +1667,7 @@ function loadAnimePage() {
       <span class="anime-card-badge ${s.badge}">
         ${s.badge==='live'
           ? '<svg viewBox="0 0 8 8" width="7" height="7"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg> LIVE'
-          : s.badge==='jpop'
+          : s.badge==='j-pop'
           ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="9" height="9"><path d="M9 18V5l12-2v13"/></svg> J-POP'
           : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="9" height="9"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg> LO-FI'}
       </span>
@@ -1771,7 +1771,7 @@ async function loadAnimeStationsLive() {
     renderTable(combined,'anime-live-tbody');
   } catch(e) {
     renderTable([
-      {name:'Radio Anime Japan',country:'Japan',tags:'anime,jpop',bitrate:128,countrycode:'JP',url_resolved:'https://listen.moe/stream'},
+      {name:'Radio Anime Japan',country:'Japan',tags:'anime,j-pop',bitrate:128,countrycode:'JP',url_resolved:'https://listen.moe/stream'},
       {name:'Nightwave Plaza',country:'USA',tags:'vaporwave,city pop',bitrate:128,countrycode:'US',url_resolved:'https://radio.plaza.one/mp3'},
     ],'anime-live-tbody');
   }
@@ -1960,16 +1960,16 @@ const _GENRE_META = {
   rock:       { name:'Rock',         desc:'Loud, live, no algorithm involved.',                       font:"'Permanent Marker', cursive",      size:'2.6rem', bg:'#1a0606', accent:'#e05a5a' },
   pop:        { name:'Pop',          desc:'What 3 billion people are hearing right now.',             font:"'Pacifico', cursive",              size:'2.3rem', bg:'#1a0a1a', accent:'#e879f9' },
   electronic: { name:'Electronic',   desc:'Transmitting from basements and warehouses.',              font:"'Orbitron', sans-serif",           size:'1.7rem', bg:'#040418', accent:'#818cf8' },
-  hiphop:     { name:'Hip-Hop',      desc:"Live from stations that don't get playlisted.",           font:"'Bangers', cursive",               size:'2.8rem', bg:'#080808', accent:'#fbbf24' },
+  "hip-hop":  { name:'Hip-Hop',      desc:"Live from stations that don't get playlisted.",           font:"'Bangers', cursive",               size:'2.8rem', bg:'#080808', accent:'#fbbf24' },
   ambient:    { name:'Ambient',      desc:'Broadcasts that disappear into the room.',                 font:"'Abril Fatface', serif",           size:'2.2rem', bg:'#081208', accent:'#6ee7b7' },
   news:       { name:'News',         desc:'Shortwave, public radio, wire services still running.',    font:"'Fredericka the Great', serif",    size:'2rem',   bg:'#121000', accent:'#fde68a' },
   country:    { name:'Country',      desc:'Truck stops and back porches, live.',                      font:"'Rye', cursive",                   size:'2.2rem', bg:'#120800', accent:'#d97706' },
-  rnb:        { name:'R&B',          desc:'Late nights on the FM dial.',                              font:"'Lobster', cursive",               size:'2.6rem', bg:'#180a16', accent:'#f472b6' },
+  "r&b":      { name:'R&B',          desc:'Late nights on the FM dial.',                              font:"'Lobster', cursive",               size:'2.6rem', bg:'#180a16', accent:'#f472b6' },
   metal:      { name:'Metal',        desc:'Heavy, thrash & doom.',                                    font:"'Rubik Glitch', sans-serif",       size:'2rem',   bg:'#0a0505', accent:'#ef4444' },
   reggae:     { name:'Reggae',       desc:'Kingston to Bristol to Lagos, live.',                      font:"'Patrick Hand', cursive",          size:'2.2rem', bg:'#061206', accent:'#4ade80' },
   anime:      { name:'Anime / J-Pop',desc:'Direct Japanese broadcasts, no middleman.',               font:"'Righteous', sans-serif",          size:'2rem',   bg:'#0d0818', accent:'#e879f9' },
   folk:       { name:'Folk',         desc:'Recorded in rooms that echo.',                             font:"'Bree Serif', serif",              size:'2.3rem', bg:'#0e0c04', accent:'#a3e635' },
-  lofi:       { name:'Lo-Fi',        desc:'Background signal for wherever you are.',                  font:"'Monoton', cursive",               size:'1.8rem', bg:'#080c12', accent:'#93c5fd' },
+  "lo-fi":    { name:'Lo-Fi',        desc:'Background signal for wherever you are.',                  font:"'Monoton', cursive",               size:'1.8rem', bg:'#080c12', accent:'#93c5fd' },
   '80s':      { name:'80s',          desc:'Stations that never updated their playlist.',              font:"'Press Start 2P', monospace",      size:'1.3rem', bg:'#130810', accent:'#f0abfc' },
   '90s':      { name:'90s',          desc:'Before streaming killed the radio star.',                  font:"'Rajdhani', sans-serif",           size:'2.8rem', bg:'#080c14', accent:'#67e8f9' },
 };
@@ -2030,7 +2030,7 @@ async function _loadGenreOverlayStations(genre, fresh) {
   const moreBtn = document.getElementById('genre-overlay-more');
 
   try {
-    const tag = genre === 'hiphop' ? 'hip-hop' : genre === 'rnb' ? 'r&b' : genre === 'lofi' ? 'lo-fi' : genre === 'anime' ? 'anime' : genre;
+    const tag = genre === 'hip-hop' ? 'hip-hop' : genre === 'r&b' ? 'r&b' : genre === 'lo-fi' ? 'lo-fi' : genre === 'anime' ? 'anime' : genre;
     const r = await fetch(`${_a}stations/search?limit=24&https=true&tag=${encodeURIComponent(tag)}&order=clickcount&reverse=true&offset=${_genreOverlayOffset}`);
     const stations = await r.json();
     _genreOverlayOffset += stations.length;
@@ -2997,7 +2997,7 @@ buildGenreStrip();
 // Card 2 is always the ARG 88.7 FM card — never touched
 async function _loadDynamicFeatured() {
   try {
-    const genres = ["pop","rock","jazz","electronic","ambient","hiphop","classical"];
+    const genres = ["pop","rock","jazz","electronic","ambient","hip-hop","classical"];
     const g1 = genres[Math.floor(Math.random() * genres.length)];
     let g2 = genres[Math.floor(Math.random() * genres.length)];
     while (g2 === g1) g2 = genres[Math.floor(Math.random() * genres.length)];
@@ -3145,7 +3145,7 @@ const LM_CHANNELS = [
     ]
   },
   {
-    id:'lofi',
+    id:'lo-fi',
     name:'WNCORE Lo-Fi',
     genre:'Lo-Fi · Study · Beats',
     desc:'Nightwave Plaza, SomaFM Lush — lo-fi, chill, vaporwave study sessions.',
@@ -3308,7 +3308,7 @@ const LM_CARD_IMAGES = {
   ambient:    'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
   electronic: 'https://images.unsplash.com/photo-1571330735066-03aaa9429d89?w=600&q=80',
   folk:       'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=600&q=80',
-  lofi:       'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80',
+  "lo-fi":    'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80',
   chillout:   'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80',
 };
 
@@ -5338,7 +5338,7 @@ function animateListenerCounts() {
 // Shows quick suggestions as user types in the search box.
 // Pulls from Radio Browser tags + country list for fast matching.
 const SEARCH_SUGGESTIONS = [
-  'jazz', 'classical', 'ambient', 'news', 'talk', 'lofi', 'hip hop',
+  'jazz', 'classical', 'ambient', 'news', 'talk', 'lo-fi', 'hip hop',
   'electronic', 'folk', 'chillout', 'rock', 'pop', 'indie', 'country',
   'reggae', 'blues', 'soul', 'R&B', 'metal', 'punk', 'anime', 'j-pop',
   'k-pop', 'tropical', 'bossa nova', 'flamenco', 'opera', 'world music',
@@ -10598,7 +10598,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try { localStorage.setItem(SEARCH_HIST_KEY, JSON.stringify(h.slice(0, SEARCH_HIST_MAX))); } catch {}
     }
 
-    var GENRE_SUGGESTIONS = ['jazz', 'classical', 'hip-hop', 'rock', 'ambient', 'news', 'electronic', 'country', 'lofi', 'anime', 'reggae', 'metal'];
+    var GENRE_SUGGESTIONS = ['jazz', 'classical', 'hip-hop', 'rock', 'ambient', 'news', 'electronic', 'country', 'lo-fi', 'anime', 'reggae', 'metal'];
 
     function renderSearchSuggestions() {
       var modal = document.getElementById('search-modal');
