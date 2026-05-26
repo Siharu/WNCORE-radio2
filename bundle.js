@@ -244,17 +244,17 @@ const GENRE_TAGS = [
   {label:'Pop',tag:'pop',icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'},
   {label:'Rock',tag:'rock',icon:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'},
   {label:'Electronic',tag:'electronic',icon:'<rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>'},
-  {label:'Hip-Hop',tag:'hiphop',icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/>'},
+  {label:'Hip-Hop',tag:'hip-hop',icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/>'},
   {label:'Ambient',tag:'ambient',icon:'<circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/>'},
   {label:'News',tag:'news',icon:'<path d="M4 22h16a2 2 0 002-2V4a2 2 0 00-2-2H8a2 2 0 00-2 2v16a4 4 0 01-4-4V6a2 2 0 012-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8z"/>'},
   {label:'Talk',tag:'talk',icon:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>'},
   {label:'Country',tag:'country',icon:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>'},
-  {label:'R&B',tag:'rnb',icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>'},
+  {label:'R&B',tag:'r&b',icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>'},
   {label:'Metal',tag:'metal',icon:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>'},
   {label:'Reggae',tag:'reggae',icon:'<circle cx="12" cy="12" r="10"/>'},
-  {label:'J-Pop',tag:'jpop',icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'},
+  {label:'J-Pop',tag:'j-pop',icon:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>'},
   {label:'Anime',tag:'anime',icon:'<circle cx="12" cy="12" r="10"/>'},
-  {label:'Lo-Fi',tag:'lofi',icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>'},
+  {label:'Lo-Fi',tag:'lo-fi',icon:'<path d="M3 18v-6a9 9 0 0118 0v6"/>'},
   {label:'Folk',tag:'folk',icon:'<path d="M9 18V5l12-2v13"/>'},
   {label:'80s',tag:'80s',icon:'<rect x="2" y="3" width="20" height="14" rx="2"/>'},
   {label:'90s',tag:'90s',icon:'<rect x="2" y="3" width="20" height="14" rx="2"/>'},
@@ -417,7 +417,8 @@ async function loadStations(genre='') {
   tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Loading stations…</td></tr>`;
   try {
     const api = await _resolveApi();
-    const offset = Math.floor(Math.random()*30);
+    // Wide random offset so we cycle through the full 12k+ catalog
+    const offset = genre ? 0 : Math.floor(Math.random() * 8000);
     const tag = genre ? `&tag=${encodeURIComponent(genre)}` : '';
     const fetchWithTimeout = url => Promise.race([
       fetch(url),
@@ -425,7 +426,7 @@ async function loadStations(genre='') {
     ]);
     let d;
     try {
-      const r = await fetchWithTimeout(`${api}stations/search?limit=60&https=true&order=clickcount&reverse=true${tag}&offset=${genre?0:offset}`);
+      const r = await fetchWithTimeout(`${api}stations/search?limit=100&https=true&order=clickcount&reverse=true${tag}&offset=${offset}`);
       if (!r.ok) throw new Error('status ' + r.status);
       d = await r.json();
     } catch(innerErr) {
@@ -434,9 +435,22 @@ async function loadStations(genre='') {
     // Filter stations with no valid playable URL before rendering
     const playable = d.filter(s => s.url_resolved && s.url_resolved.startsWith('http'));
     renderTable(playable.length ? playable : d, 'station-tbody');
+    // Add shuffle/load-more row at bottom
+    _appendStationShuffleRow(genre);
   } catch(e) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3);font-size:0.8rem;">Signal degraded. <span style="cursor:pointer;color:var(--accent)" onclick="loadStations('')">Retry</span></td></tr>`;
   }
+}
+
+function _appendStationShuffleRow(genre) {
+  const tbody = document.getElementById('station-tbody');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.id = 'station-shuffle-row';
+  tr.innerHTML = `<td colspan="7" style="text-align:center;padding:10px 24px 16px;">
+    <button onclick="loadStations('${genre || ''}')" style="font-family:var(--font-mono);font-size:0.7rem;letter-spacing:1.5px;padding:7px 20px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='';this.style.color=''">⟳ SHUFFLE 100 MORE</button>
+  </td>`;
+  tbody.appendChild(tr);
 }
 
 // Task 3.2: Charts pagination state
@@ -872,7 +886,7 @@ function setPlayIcon(playing) {
   // Fade-out, replace, fade-in for each player SVG to create a micro-transition
   function fadeReplace(el, content){
     try{
-      const svg = el.closest && el.closest('svg') ? el.closest('svg') : (el.nodeName==='svg'?el:null);
+      const svg = el.nodeName === 'svg' ? el : (el.closest && el.closest('svg') ? el.closest('svg') : null);
       if(!svg){ el.innerHTML = content; return; }
       svg.classList.add('fading');
       // wait for CSS transition out
@@ -886,12 +900,12 @@ function setPlayIcon(playing) {
   }
 
   const pbPath = document.getElementById('pb-play-icon');
-  if(pbPath) fadeReplace(pbPath, playing ? ICON_PAUSE : ICON_PLAY);
+  if(pbPath) fadeReplace(pbPath.nodeName==='svg' ? pbPath : pbPath.closest('svg') || pbPath, playing ? ICON_PAUSE : ICON_PLAY);
   const npPath = document.getElementById('np-play-icon');
-  if(npPath) fadeReplace(npPath, playing ? ICON_PAUSE : ICON_PLAY);
+  if(npPath) fadeReplace(npPath.nodeName==='svg' ? npPath : npPath.closest('svg') || npPath, playing ? ICON_PAUSE : ICON_PLAY);
 
   const mobilePath = document.getElementById('pb-play-icon-mobile');
-  if(mobilePath) fadeReplace(mobilePath, playing ? ICON_PAUSE : ICON_PLAY);
+  if(mobilePath) fadeReplace(mobilePath.nodeName==='svg' ? mobilePath : mobilePath.closest('svg') || mobilePath, playing ? ICON_PAUSE : ICON_PLAY);
 
 
   // Sync bottom nav Playing button icon
@@ -1749,7 +1763,7 @@ async function loadAnimeStationsLive() {
   try {
     const [r1,r2] = await Promise.all([
       fetch(`${_a}stations/search?limit=15&https=true&tag=anime&order=clickcount&reverse=true`),
-      fetch(`${_a}stations/search?limit=15&https=true&tag=jpop&order=clickcount&reverse=true`)
+      fetch(`${_a}stations/search?limit=15&https=true&tag=j-pop&order=clickcount&reverse=true`)
     ]);
     const [d1,d2] = await Promise.all([r1.json(),r2.json()]);
     const combined = [...d1,...d2].filter((s,i,a)=>a.findIndex(x=>x.stationuuid===s.stationuuid)===i).slice(0,25);
@@ -2976,8 +2990,57 @@ function initAnimeVideo() {
 
 // ─── INIT ─────────────────────────────────────────────────────────────────
 // Pre-resolve best API mirror in background before first user click
-_resolveApi().then(() => loadStations()).catch(() => loadStations());
+_resolveApi().then(() => { loadStations(); _loadDynamicFeatured(); }).catch(() => { loadStations(); });
 buildGenreStrip();
+
+// Populate "On the Dial" cards 0 & 1 with live stations from radio-browser
+// Card 2 is always the ARG 88.7 FM card — never touched
+async function _loadDynamicFeatured() {
+  try {
+    const genres = ["pop","rock","jazz","electronic","ambient","hiphop","classical"];
+    const g1 = genres[Math.floor(Math.random() * genres.length)];
+    let g2 = genres[Math.floor(Math.random() * genres.length)];
+    while (g2 === g1) g2 = genres[Math.floor(Math.random() * genres.length)];
+
+    const [r1, r2] = await Promise.all([
+      fetch(_a + "stations/search?limit=20&https=true&order=clickcount&reverse=true&tag=" + g1 + "&offset=" + Math.floor(Math.random()*50)),
+      fetch(_a + "stations/search?limit=20&https=true&order=clickcount&reverse=true&tag=" + g2 + "&offset=" + Math.floor(Math.random()*50))
+    ]);
+    const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
+
+    const pick = (arr) => {
+      const playable = arr.filter(s => s.url_resolved && s.url_resolved.startsWith("https") && s.name);
+      return playable[Math.floor(Math.random() * playable.length)] || null;
+    };
+
+    const s1 = pick(d1), s2 = pick(d2);
+    const cards = document.querySelectorAll(".featured-card");
+
+    function applyStation(card, idx, s) {
+      if (!card || !s) return;
+      const nameEl = card.querySelector(".fc-name");
+      const metaEl = card.querySelector(".fc-meta");
+      const listenEl = card.querySelector(".fc-listeners");
+      const nowEl = card.querySelector(".fc-now");
+      const imgEl = card.querySelector(".fc-cover-img img");
+      if (nameEl) nameEl.textContent = s.name;
+      if (metaEl) metaEl.textContent = (s.tags||"").split(",").slice(0,2).join(" · ") + " · " + (s.country||"—") + " · " + (s.bitrate||"—") + "kbps";
+      if (listenEl && !listenEl.classList.contains("fc-listeners--warn")) listenEl.textContent = (s.votes||0).toLocaleString() + " votes";
+      if (nowEl && !nowEl.classList.contains("fc-now--warn")) nowEl.textContent = "Live broadcast";
+      if (imgEl && s.favicon) { imgEl.src = s.favicon; imgEl.alt = s.name; }
+      FEATURED[idx] = { url: s.url_resolved, name: s.name, meta: metaEl ? metaEl.textContent : "", emoji: "📻" };
+      card.onclick = (function(station, i) { return function() {
+        document.querySelectorAll("[id^=\"fp-badge-\"]").forEach(function(b) { b.classList.remove("show"); });
+        var badge = document.getElementById("fp-badge-" + i);
+        if (badge) badge.classList.add("show");
+        playStation(station.url_resolved, station.name, station.country||"", "📻");
+      }; })(s, idx);
+    }
+
+    if (s1) applyStation(cards[0], 0, s1);
+    if (s2) applyStation(cards[1], 1, s2);
+  } catch(e) { /* silently keep hardcoded fallback */ }
+}
 // Populate home page Top Charts mini-table on first load
 // loadChartsPage() only fires when navigating to page-charts, so we prime it here
 // to populate station-tbody using the same data + cache
