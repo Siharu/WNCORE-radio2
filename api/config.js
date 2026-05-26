@@ -81,7 +81,13 @@ module.exports = async function handler(req, res) {
 
   // ── Radio Browser proxy: GET /api/config?rb=<path> ───────────────────────
   if (req.method === 'GET' && req.query.rb) {
-    const path = req.query.rb.replace(/^\/+/, '').replace(/[^a-zA-Z0-9\/_?=&%.+-]/g, '');
+    // req.query.rb only gets the value up to the first & — everything after
+    // (limit, tag, order, etc.) is silently dropped by the URL parser.
+    // Fix: grab the raw query string and extract everything after rb=
+    const rawQS = (req.url || '').split('?')[1] || '';
+    const rbMatch = rawQS.match(/(?:^|&)rb=(.+)/);
+    const rawRb = rbMatch ? decodeURIComponent(rbMatch[1]) : req.query.rb;
+    const path = rawRb.replace(/^\/+/, '').replace(/[^a-zA-Z0-9\/_?=&%.+-]/g, '');
     return proxyRadioBrowser(path, res);
   }
 
