@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ra04h31m44s / dec+16d41m — CYG X-1</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&family=Modak&family=Rye&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #000;
+  --fg: #39ff14;
+  --accent: #003300;
+  --card-bg: rgba(0,20,0,0.82);
+  --card-border: #39ff14;
+  --font: 'Rubik Glitch', cursive;
+  --noise: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  transition: background 1.8s ease, color 1.8s ease;
+  cursor: crosshair;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: var(--noise);
+  background-size: 200px;
+  opacity: 0.06;
+  pointer-events: none;
+  animation: grain 0.4s steps(1) infinite;
+}
+@keyframes grain {
+  0%,100%{background-position:0 0}
+  10%{background-position:-5% -10%}
+  20%{background-position:-15% 5%}
+  30%{background-position:7% -25%}
+  40%{background-position:-5% 25%}
+  50%{background-position:-15% 10%}
+  60%{background-position:15% 0%}
+  70%{background-position:0% 15%}
+  80%{background-position:3% 35%}
+  90%{background-position:-10% 10%}
+}
+
+/* ── SCANLINES ── */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.08) 2px,
+    rgba(0,0,0,0.08) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── BG TEXT SCROLLER ── */
+#bg-text {
+  position: fixed; inset: 0; z-index: 1;
+  overflow: hidden;
+  opacity: 0.07;
+  font-size: 0.62rem;
+  letter-spacing: 0.04em;
+  line-height: 1.6;
+  padding: 8px;
+  font-family: 'Courier New', monospace;
+  word-break: break-all;
+  white-space: pre-wrap;
+  pointer-events: none;
+  transition: opacity 1s;
+  color: var(--fg);
+}
+
+/* ── BIRDS ── */
+#birds-layer {
+  position: fixed; inset: 0; z-index: 2;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.bird {
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgMTI1IiB3aWR0aD0iOTAwIiBoZWlnaHQ9IjEyNSI+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgMCkiPgogICAgICA8IS0tIGJvZHkgLS0+CiAgICAgIDxlbGxpcHNlIGN4PSI0NS4wIiBjeT0iNjIuNSIgcng9IjE0IiByeT0iNiIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGxlZnQgd2luZyAtLT4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRMjcuNSw2Mi41IDEwLjAsNjIuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSByaWdodCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDYyLjUgODAuMCw2Mi41IiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIGhlYWQgLS0+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gYmVhayAtLT4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gdGFpbCAtLT4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KCiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg5MCwgMCkiPgogICAgICA8IS0tIGJvZHkgLS0+CiAgICAgIDxlbGxpcHNlIGN4PSI0NS4wIiBjeT0iNjIuNSIgcng9IjE0IiByeT0iNiIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGxlZnQgd2luZyAtLT4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRMjcuNSw2NS4zNzI5NjkyMDM5MzU2MSAxMC4wLDcyLjA3NjU2NDAxMzExODczIiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIHJpZ2h0IHdpbmcgLS0+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTYyLjUsNjUuMzcyOTY5MjAzOTM1NjEgODAuMCw3Mi4wNzY1NjQwMTMxMTg3MyIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSBoZWFkIC0tPgogICAgICA8Y2lyY2xlIGN4PSI1OS4wIiBjeT0iNTkuNSIgcj0iNSIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGJlYWsgLS0+CiAgICAgIDxwYXRoIGQ9Ik02My4wLDU5LjUgTDY5LjAsNjAuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIHRhaWwgLS0+CiAgICAgIDxwYXRoIGQ9Ik0yNy4wLDY0LjUgTDE5LjAsNjEuNSBNMjcuMCw2NC41IEwyMC4wLDY3LjUiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L2c+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTgwLCAwKSI+CiAgICAgIDwhLS0gYm9keSAtLT4KICAgICAgPGVsbGlwc2UgY3g9IjQ1LjAiIGN5PSI2Mi41IiByeD0iMTQiIHJ5PSI2IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gbGVmdCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFEyNy41LDY3Ljg5OTQxNTkyMTM2NjkyIDEwLjAsODAuNDk4MDUzMDcxMjIzMSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSByaWdodCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDY3Ljg5OTQxNTkyMTM2NjkyIDgwLjAsODAuNDk4MDUzMDcxMjIzMSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSBoZWFkIC0tPgogICAgICA8Y2lyY2xlIGN4PSI1OS4wIiBjeT0iNTkuNSIgcj0iNSIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGJlYWsgLS0+CiAgICAgIDxwYXRoIGQ9Ik02My4wLDU5LjUgTDY5LjAsNjAuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIHRhaWwgLS0+CiAgICAgIDxwYXRoIGQ9Ik0yNy4wLDY0LjUgTDE5LjAsNjEuNSBNMjcuMCw2NC41IEwyMC4wLDY3LjUiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L2c+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjcwLCAwKSI+CiAgICAgIDwhLS0gYm9keSAtLT4KICAgICAgPGVsbGlwc2UgY3g9IjQ1LjAiIGN5PSI2Mi41IiByeD0iMTQiIHJ5PSI2IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gbGVmdCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFEyNy41LDY5Ljc3NDYxMzM5MTc4OTI5IDEwLjAsODYuNzQ4NzExMzA1OTY0MjgiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gcmlnaHQgd2luZyAtLT4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRNjIuNSw2OS43NzQ2MTMzOTE3ODkyOSA4MC4wLDg2Ljc0ODcxMTMwNTk2NDI4IiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIGhlYWQgLS0+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gYmVhayAtLT4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gdGFpbCAtLT4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KCiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzNjAsIDApIj4KICAgICAgPCEtLSBib2R5IC0tPgogICAgICA8ZWxsaXBzZSBjeD0iNDUuMCIgY3k9IjYyLjUiIHJ4PSIxNCIgcnk9IjYiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPCEtLSBsZWZ0IHdpbmcgLS0+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTI3LjUsNzAuNzcyMzg1MTI1MzAyNTUgMTAuMCw5MC4wNzQ2MTcwODQzNDE4MiIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSByaWdodCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDcwLjc3MjM4NTEyNTMwMjU1IDgwLjAsOTAuMDc0NjE3MDg0MzQxODIiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gaGVhZCAtLT4KICAgICAgPGNpcmNsZSBjeD0iNTkuMCIgY3k9IjU5LjUiIHI9IjUiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPCEtLSBiZWFrIC0tPgogICAgICA8cGF0aCBkPSJNNjMuMCw1OS41IEw2OS4wLDYwLjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSB0YWlsIC0tPgogICAgICA8cGF0aCBkPSJNMjcuMCw2NC41IEwxOS4wLDYxLjUgTTI3LjAsNjQuNSBMMjAuMCw2Ny41IiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPC9nPgoKICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDQ1MCwgMCkiPgogICAgICA8IS0tIGJvZHkgLS0+CiAgICAgIDxlbGxpcHNlIGN4PSI0NS4wIiBjeT0iNjIuNSIgcng9IjE0IiByeT0iNiIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGxlZnQgd2luZyAtLT4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRMjcuNSw3MC43NzIzODUxMjUzMDI1NSAxMC4wLDkwLjA3NDYxNzA4NDM0MTgyIiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIHJpZ2h0IHdpbmcgLS0+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTYyLjUsNzAuNzcyMzg1MTI1MzAyNTUgODAuMCw5MC4wNzQ2MTcwODQzNDE4MiIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSBoZWFkIC0tPgogICAgICA8Y2lyY2xlIGN4PSI1OS4wIiBjeT0iNTkuNSIgcj0iNSIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGJlYWsgLS0+CiAgICAgIDxwYXRoIGQ9Ik02My4wLDU5LjUgTDY5LjAsNjAuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIHRhaWwgLS0+CiAgICAgIDxwYXRoIGQ9Ik0yNy4wLDY0LjUgTDE5LjAsNjEuNSBNMjcuMCw2NC41IEwyMC4wLDY3LjUiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L2c+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoNTQwLCAwKSI+CiAgICAgIDwhLS0gYm9keSAtLT4KICAgICAgPGVsbGlwc2UgY3g9IjQ1LjAiIGN5PSI2Mi41IiByeD0iMTQiIHJ5PSI2IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gbGVmdCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFEyNy41LDY5Ljc3NDYxMzM5MTc4OTI5IDEwLjAsODYuNzQ4NzExMzA1OTY0MjkiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gcmlnaHQgd2luZyAtLT4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRNjIuNSw2OS43NzQ2MTMzOTE3ODkyOSA4MC4wLDg2Ljc0ODcxMTMwNTk2NDI5IiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIGhlYWQgLS0+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gYmVhayAtLT4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gdGFpbCAtLT4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KCiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg2MzAsIDApIj4KICAgICAgPCEtLSBib2R5IC0tPgogICAgICA8ZWxsaXBzZSBjeD0iNDUuMCIgY3k9IjYyLjUiIHJ4PSIxNCIgcnk9IjYiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPCEtLSBsZWZ0IHdpbmcgLS0+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTI3LjUsNjcuODk5NDE1OTIxMzY2OTQgMTAuMCw4MC40OTgwNTMwNzEyMjMxIiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIHJpZ2h0IHdpbmcgLS0+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTYyLjUsNjcuODk5NDE1OTIxMzY2OTQgODAuMCw4MC40OTgwNTMwNzEyMjMxIiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIGhlYWQgLS0+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gYmVhayAtLT4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gdGFpbCAtLT4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KCiAgICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg3MjAsIDApIj4KICAgICAgPCEtLSBib2R5IC0tPgogICAgICA8ZWxsaXBzZSBjeD0iNDUuMCIgY3k9IjYyLjUiIHJ4PSIxNCIgcnk9IjYiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPCEtLSBsZWZ0IHdpbmcgLS0+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTI3LjUsNjUuMzcyOTY5MjAzOTM1NjMgMTAuMCw3Mi4wNzY1NjQwMTMxMTg3MyIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSByaWdodCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDY1LjM3Mjk2OTIwMzkzNTYzIDgwLjAsNzIuMDc2NTY0MDEzMTE4NzMiIAogICAgICAgICAgICBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gaGVhZCAtLT4KICAgICAgPGNpcmNsZSBjeD0iNTkuMCIgY3k9IjU5LjUiIHI9IjUiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPCEtLSBiZWFrIC0tPgogICAgICA8cGF0aCBkPSJNNjMuMCw1OS41IEw2OS4wLDYwLjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSB0YWlsIC0tPgogICAgICA8cGF0aCBkPSJNMjcuMCw2NC41IEwxOS4wLDYxLjUgTTI3LjAsNjQuNSBMMjAuMCw2Ny41IiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPC9nPgoKICAgIDxnIHRyYW5zZm9ybT0idHJhbnNsYXRlKDgxMCwgMCkiPgogICAgICA8IS0tIGJvZHkgLS0+CiAgICAgIDxlbGxpcHNlIGN4PSI0NS4wIiBjeT0iNjIuNSIgcng9IjE0IiByeT0iNiIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8IS0tIGxlZnQgd2luZyAtLT4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRMjcuNSw2Mi41IDEwLjAsNjIuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPCEtLSByaWdodCB3aW5nIC0tPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDYyLjUgODAuMCw2Mi41IiAKICAgICAgICAgICAgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8IS0tIGhlYWQgLS0+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDwhLS0gYmVhayAtLT4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDwhLS0gdGFpbCAtLT4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgCiAgICAgICAgICAgIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KPC9zdmc+');
+  background-size: 1000% auto;
+  width: 88px; height: 125px;
+  will-change: background-position;
+  animation-name: fly-cycle;
+  animation-timing-function: steps(10);
+  animation-iteration-count: infinite;
+  transition: filter 1.8s ease;
+}
+
+/* Bird color per mode — set via JS class on #birds-layer */
+#birds-layer.mode-arg   .bird { filter: invert(34%) sepia(100%) saturate(900%) hue-rotate(80deg) brightness(120%) contrast(120%); }
+#birds-layer.mode-lofi  .bird { filter: invert(60%) sepia(60%) saturate(400%) hue-rotate(260deg) brightness(140%) contrast(90%); }
+#birds-layer.mode-lore  .bird { filter: invert(34%) sepia(80%) saturate(600%) hue-rotate(10deg) brightness(130%) contrast(100%); }
+#birds-layer.mode-chaos .bird { filter: invert(34%) sepia(55%) saturate(427%) hue-rotate(141deg) brightness(93%) contrast(91%); }
+
+/* chaos — individual birds get different hue-rotate via inline style (set by JS) */
+
+.bird-1  { animation-duration:1.00s; animation-delay:-0.50s; }
+.bird-2  { animation-duration:0.90s; animation-delay:-0.75s; }
+.bird-3  { animation-duration:1.25s; animation-delay:-0.25s; }
+.bird-4  { animation-duration:1.10s; animation-delay:-0.50s; }
+.bird-5  { animation-duration:1.05s; animation-delay:-0.90s; }
+.bird-6  { animation-duration:0.85s; animation-delay:-0.30s; }
+.bird-7  { animation-duration:1.30s; animation-delay:-0.60s; }
+.bird-8  { animation-duration:0.95s; animation-delay:-0.10s; }
+.bird-9  { animation-duration:1.15s; animation-delay:-0.80s; }
+.bird-10 { animation-duration:1.00s; animation-delay:-0.40s; }
+.bird-11 { animation-duration:0.88s; animation-delay:-0.55s; }
+.bird-12 { animation-duration:1.20s; animation-delay:-0.20s; }
+
+@keyframes fly-cycle { 100% { background-position: -900px 0; } }
+
+/* Bird containers — 4 waves, 3 birds each */
+.bc { position: absolute; will-change: transform; animation-timing-function: linear; animation-iteration-count: infinite; }
+
+/* Wave 1 — top band */
+.bc-1  { top:8%;  animation-name:flt-a; animation-duration:14s;   animation-delay:0s;    }
+.bc-2  { top:10%; animation-name:flt-b; animation-duration:15.5s; animation-delay:0.8s;  }
+.bc-3  { top:6%;  animation-name:flt-a; animation-duration:16s;   animation-delay:2.5s;  }
+/* Wave 2 — upper-mid */
+.bc-4  { top:22%; animation-name:flt-b; animation-duration:15s;   animation-delay:4s;    }
+.bc-5  { top:25%; animation-name:flt-a; animation-duration:13.5s; animation-delay:5.2s;  }
+.bc-6  { top:20%; animation-name:flt-b; animation-duration:17s;   animation-delay:7s;    }
+/* Wave 3 — lower-mid */
+.bc-7  { top:55%; animation-name:flt-a; animation-duration:16.5s; animation-delay:9.5s;  }
+.bc-8  { top:58%; animation-name:flt-b; animation-duration:14.8s; animation-delay:10.8s; }
+.bc-9  { top:52%; animation-name:flt-a; animation-duration:13s;   animation-delay:12s;   }
+/* Wave 4 — bottom band */
+.bc-10 { top:75%; animation-name:flt-b; animation-duration:15.2s; animation-delay:3.5s;  }
+.bc-11 { top:78%; animation-name:flt-a; animation-duration:16.8s; animation-delay:6.5s;  }
+.bc-12 { top:72%; animation-name:flt-b; animation-duration:14s;   animation-delay:11s;   }
+
+@keyframes flt-a {
+  0%   { transform: translateX(-12vw) translateY(0vh)   scale(0.28); }
+  8%   { transform: translateX(5vw)   translateY(-2vh)  scale(0.33); }
+  20%  { transform: translateX(22vw)  translateY(3vh)   scale(0.40); }
+  32%  { transform: translateX(40vw)  translateY(-1vh)  scale(0.46); }
+  44%  { transform: translateX(58vw)  translateY(4vh)   scale(0.50); }
+  56%  { transform: translateX(74vw)  translateY(1vh)   scale(0.52); }
+  68%  { transform: translateX(88vw)  translateY(-2vh)  scale(0.50); }
+  80%  { transform: translateX(102vw) translateY(2vh)   scale(0.48); }
+  100% { transform: translateX(115vw) translateY(0vh)   scale(0.45); }
+}
+@keyframes flt-b {
+  0%   { transform: translateX(-12vw) translateY(-2vh)  scale(0.35); }
+  10%  { transform: translateX(6vw)   translateY(2vh)   scale(0.30); }
+  22%  { transform: translateX(24vw)  translateY(-3vh)  scale(0.42); }
+  35%  { transform: translateX(42vw)  translateY(2vh)   scale(0.38); }
+  48%  { transform: translateX(60vw)  translateY(-2vh)  scale(0.48); }
+  60%  { transform: translateX(76vw)  translateY(3vh)   scale(0.46); }
+  72%  { transform: translateX(90vw)  translateY(-1vh)  scale(0.44); }
+  85%  { transform: translateX(104vw) translateY(1vh)   scale(0.42); }
+  100% { transform: translateX(115vw) translateY(-2vh)  scale(0.40); }
+}
+
+/* ── MAIN CARD ── */
+#main-card {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 40px 48px 36px;
+  max-width: 560px; width: 90%;
+  text-align: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 0 60px rgba(0,0,0,0.6), 0 0 0 1px var(--card-border), inset 0 0 40px rgba(0,0,0,0.4);
+  transition: background 1.8s, border-color 1.8s, box-shadow 1.8s;
+}
+
+#coord-tag {
+  font-family: 'Courier New', monospace;
+  font-size: 0.58rem;
+  letter-spacing: 0.2em;
+  opacity: 0.5;
+  margin-bottom: 18px;
+  display: block;
+}
+
+#mode-title {
+  font-family: var(--font);
+  font-size: clamp(1.6rem, 5vw, 2.8rem);
+  line-height: 1.1;
+  margin-bottom: 14px;
+  letter-spacing: 0.02em;
+  color: var(--fg);
+  transition: color 1.8s, font-family 1.8s;
+  animation: title-glitch 8s infinite;
+}
+
+@keyframes title-glitch {
+  0%,90%,100% { text-shadow: none; transform: none; }
+  91% { text-shadow: 2px 0 var(--card-border), -2px 0 rgba(255,0,128,0.7); transform: skewX(-1deg); }
+  93% { text-shadow: -3px 0 rgba(0,255,255,0.5), 3px 0 rgba(255,0,128,0.5); transform: skewX(1deg); }
+  95% { text-shadow: none; transform: none; }
+  97% { text-shadow: 1px 0 var(--card-border); transform: translateX(2px); }
+}
+
+#mode-sub {
+  font-family: 'Courier New', monospace;
+  font-size: 0.78rem;
+  opacity: 0.7;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  letter-spacing: 0.05em;
+}
+
+#progress-bar {
+  width: 100%;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+}
+#progress-fill {
+  height: 100%;
+  background: var(--fg);
+  width: 0%;
+  transition: background 1.8s;
+  animation: progress-scan 18s linear infinite;
+}
+@keyframes progress-scan {
+  0%   { width: 0%; opacity: 1; }
+  85%  { width: 100%; opacity: 1; }
+  86%  { width: 100%; opacity: 0; }
+  87%  { width: 0%; opacity: 0; }
+  88%  { opacity: 1; }
+  100% { width: 0%; opacity: 1; }
+}
+
+#signal-dots {
+  display: flex; gap: 6px; justify-content: center;
+  margin-bottom: 16px;
+}
+.sdot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fg);
+  animation: sdot-pulse 1.4s ease-in-out infinite;
+  transition: background 1.8s;
+}
+.sdot:nth-child(2) { animation-delay: 0.2s; }
+.sdot:nth-child(3) { animation-delay: 0.4s; }
+.sdot:nth-child(4) { animation-delay: 0.6s; }
+.sdot:nth-child(5) { animation-delay: 0.8s; }
+@keyframes sdot-pulse { 0%,100%{opacity:0.15;transform:scale(0.7)} 50%{opacity:1;transform:scale(1)} }
+
+#mode-counter {
+  font-family: 'Courier New', monospace;
+  font-size: 0.52rem;
+  opacity: 0.3;
+  letter-spacing: 0.15em;
+}
+
+/* ── MODE THEMES ── */
+body.mode-arg {
+  --bg: #000800;
+  --fg: #39ff14;
+  --accent: #003300;
+  --card-bg: rgba(0,18,0,0.88);
+  --card-border: #39ff14;
+  --font: 'Rubik Glitch', cursive;
+}
+body.mode-lofi {
+  --bg: #1a1424;
+  --fg: #e8b4f8;
+  --accent: #2d1f3d;
+  --card-bg: rgba(26,18,40,0.88);
+  --card-border: #c084f0;
+  --font: 'Modak', cursive;
+}
+body.mode-lore {
+  --bg: #0a0c1a;
+  --fg: #ffb347;
+  --accent: #1a1200;
+  --card-bg: rgba(10,8,20,0.90);
+  --card-border: #d4880a;
+  --font: 'Rye', cursive;
+}
+body.mode-chaos {
+  --bg: #0d0015;
+  --fg: #ff2d78;
+  --accent: #1a001a;
+  --card-bg: rgba(15,0,20,0.85);
+  --card-border: #ff2d78;
+  --font: 'Comic Sans MS', 'Chalkboard SE', cursive;
+}
+
+/* chaos mode extra chaos */
+body.mode-chaos #main-card {
+  animation: chaos-shake 0.15s infinite;
+}
+@keyframes chaos-shake {
+  0%,100% { transform: translate(-50%,-50%); }
+  25%      { transform: translate(calc(-50% + 1px), calc(-50% - 1px)); }
+  75%      { transform: translate(calc(-50% - 1px), calc(-50% + 1px)); }
+}
+
+/* ── TRANSITION FLASH ── */
+#flash {
+  position: fixed; inset: 0; z-index: 99;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.08s;
+}
+#flash.on { opacity: 0.06; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 480px) {
+  #main-card { padding: 28px 24px 24px; }
+  #mode-title { font-size: 1.5rem; }
+  .bird { width: 55px; height: 78px; }
+}
+</style>
+</head>
+<body class="mode-arg">
+
+
+<!-- BACKGROUND CANVAS -->
+<canvas id="bg-canvas" style="position:fixed;inset:0;z-index:0;width:100%;height:100%;pointer-events:none;"></canvas>
+<div id="flash"></div>
+<div id="bg-text"></div>
+
+<!-- BIRDS LAYER -->
+<div id="birds-layer" class="mode-arg">
+  <div class="bc bc-1"><div class="bird bird-1"></div></div>
+  <div class="bc bc-2"><div class="bird bird-2"></div></div>
+  <div class="bc bc-3"><div class="bird bird-3"></div></div>
+  <div class="bc bc-4"><div class="bird bird-4"></div></div>
+  <div class="bc bc-5"><div class="bird bird-5"></div></div>
+  <div class="bc bc-6"><div class="bird bird-6"></div></div>
+  <div class="bc bc-7"><div class="bird bird-7"></div></div>
+  <div class="bc bc-8"><div class="bird bird-8"></div></div>
+  <div class="bc bc-9"><div class="bird bird-9"></div></div>
+  <div class="bc bc-10"><div class="bird bird-10"></div></div>
+  <div class="bc bc-11"><div class="bird bird-11"></div></div>
+  <div class="bc bc-12"><div class="bird bird-12"></div></div>
+</div>
+
+<!-- MAIN CARD -->
+<div id="main-card">
+  <span id="coord-tag">RA 04h 31m 44s / DEC +16° 41′ — CYG X-1 // SECTOR 7-BLANK</span>
+  <div id="mode-title">SIGNAL LOST</div>
+  <div id="mode-sub"></div>
+  <div id="progress-bar"><div id="progress-fill"></div></div>
+  <div id="signal-dots">
+    <div class="sdot"></div><div class="sdot"></div><div class="sdot"></div>
+    <div class="sdot"></div><div class="sdot"></div>
+  </div>
+  <div id="mode-counter">// MODE 1 OF 4 — CYCLING</div>
+</div>
+
+<script>
+(function() {
+
+// ── MODE DEFINITIONS ─────────────────────────────────────────────────
+const MODES = [
+  {
+    id: 'arg',
+    title: 'SIGNAL LOST',
+    subs: [
+      'reconnecting to NODE_' + Math.random().toString(36).slice(2,8).toUpperCase() + '... timeout',
+      'last ping: 88.7 FM // CYGNUS RELAY OFFLINE',
+      'BLANK_ZONE active — carrier signal disrupted',
+      'SIGNAL_KAGE: "they found the frequency"',
+    ],
+    bgLines: () => {
+      const hex = () => Math.floor(Math.random()*0xFFFFFF).toString(16).padStart(6,'0').toUpperCase();
+      const addr = () => '0x'+Math.floor(Math.random()*0xFFFF).toString(16).padStart(4,'0').toUpperCase();
+      const lines = [];
+      const prefixes = ['[KAGE]','[NODE_09]','[BLANK]','[OBSEDIA]','[RELAY]','[CYG-X1]','[WNCORE]','[ERR]'];
+      const msgs = [
+        'carrier wave anomaly detected at freq 88.700MHz',
+        'handshake failed — endpoint unreachable',
+        'dumping core... segmentation fault (core dumped)',
+        `mem_read ${addr()} → ${hex()} ${hex()} ${hex()} ${hex()}`,
+        'TRANSMISSION FRAGMENT: "...do not tr..."',
+        `checksum mismatch: expected ${hex()} got ${hex()}`,
+        'retrying... [attempt ' + Math.floor(Math.random()*999) + '/∞]',
+        'decrypt failed — key schedule corrupted',
+        'timestamp: ' + new Date().toISOString() + ' — INVALID',
+        `route ${addr()} via null — unreachable host`,
+        'SIGNAL_KAGE instance detected on subnet',
+        '>>> BLANK_ZONE boundary breach <<<',
+        'quantization noise exceeding threshold',
+        'survivor_count: ' + Math.floor(Math.random()*12) + ' (unverified)',
+      ];
+      for (let i = 0; i < 120; i++) {
+        lines.push(prefixes[i%prefixes.length] + ' ' + msgs[Math.floor(Math.random()*msgs.length)]);
+      }
+      return lines.join('\n');
+    }
+  },
+  {
+    id: 'lofi',
+    title: 'taking a little nap ♪',
+    subs: [
+      'back soon, probably ☁️',
+      'brewing something warm — hang tight',
+      'the signal fell asleep at 3am',
+      'zzz... someone kick the server gently',
+    ],
+    bgLines: () => {
+      const lines = [
+        'rain on windows  ·  tea going cold  ·  lo-fi beats',
+        'track: somewhereintokyoatmidnight.flac — 128kbps',
+        'playlist: late night / city rain / slow afternoons',
+        'currently: searching for signal in the static',
+        '···  ·  ···  ·  ···  ·  ···',
+        'uptime: unknown  ·  vibe: sleepy  ·  eta: unclear',
+        'do not be afraid of the quiet',
+        'mood board: soft light through paper screens',
+        'signal strength: ▁▂▁▁▂▃▁▂ (weak but warm)',
+        'the server is also tired, please understand',
+        '𝅘𝅥𝅮  𝅘𝅥𝅮  𝅘𝅥𝅮',
+        'recommended: go touch grass, we will still be here',
+        '· · · · · · · · · · · · · · ·',
+        'ambient noise: rain / 528hz / vinyl crackle',
+        'current emotion: loading...',
+        'ETA: when the tea is ready',
+      ];
+      return Array.from({length: 80}, () => lines[Math.floor(Math.random()*lines.length)]).join('\n');
+    }
+  },
+  {
+    id: 'lore',
+    title: 'TRANSMISSION\nINTERRUPTED',
+    subs: [
+      '88.7 FM — BLANK_ZONE ACTIVE — stand by',
+      'WNCORE survivor network: relay offline',
+      'last known coords: RA 04h31m / DEC +16°41′',
+      'CYGNUS signal strength: ██░░░░░░ 22%',
+    ],
+    bgLines: () => {
+      const ts = () => {
+        const d = new Date(Date.now() - Math.random()*1e10);
+        return `[${d.toISOString().replace('T',' ').slice(0,19)}]`;
+      };
+      const logs = [
+        'WNCORE RELAY LOG — SESSION FRAGMENT',
+        '─────────────────────────────────────────',
+        ts() + ' NODE_09 → broadcast initiated on 88.7MHz',
+        ts() + ' SIGNAL_KAGE → carrier acknowledged',
+        ts() + ' BLANK_ZONE boundary: T+00:00:00 — nominal',
+        ts() + ' survivor_net: 8 nodes online, 4 unreachable',
+        ts() + ' OBSEDIA anomaly detected — rain event type',
+        ts() + ' FOG_MEDUSA density: 0.74 — approaching',
+        ts() + ' WNCORE relay → status: INTERRUPTED',
+        ts() + ' cygnus_signal: last burst at freq 88.700MHz',
+        ts() + ' BLANK_ZONE: active duration T+03:14:16',
+        ts() + ' immune count: 8.28% ± 0.03% — holding',
+        ts() + ' GRÜBLER sighting — sector 7 perimeter',
+        ts() + ' NODE_09 → "do not leave frequency"',
+        ts() + ' RELAY: attempting reconnect... [FAILED]',
+        ts() + ' CYGNUS: "...find the signal..."',
+        '─────────────────────────────────────────',
+        'END OF RECOVERABLE LOG FRAGMENT',
+      ];
+      return Array.from({length: 6}, () => logs.join('\n')).join('\n\n');
+    }
+  },
+  {
+    id: 'chaos',
+    title: 'undefined is\nnot a function',
+    subs: [
+      'at maintenance.html:1:1 (yes really)',
+      'TypeError: cannot read property "online" of undefined',
+      'please don\'t look at the console',
+      'Uncaught RangeError: Maximum call stack size exceeded',
+    ],
+    bgLines: () => {
+      const errs = [
+        'TypeError: Cannot read properties of undefined (reading \'signal\')',
+        'ReferenceError: WNCORE is not defined',
+        'SyntaxError: Unexpected token \'<\' in JSON at position 0',
+        'Uncaught RangeError: Maximum call stack size exceeded',
+        '    at Object.<anonymous> (bundle.js:1337:42)',
+        '    at Module._compile (node:internal/modules:1105:14)',
+        '    at Array.forEach (<anonymous>)',
+        '    at recursivelyBreakEverything (bundle.js:404:4)',
+        'Warning: Each child in a list should have a unique "key" prop',
+        'NetworkError: Failed to fetch (but we tried so hard)',
+        'CORS policy: No \'Access-Control-Allow-Origin\'',
+        '[WDS] Disconnected!',
+        '✨ this is fine ✨',
+        'git status: everything is fine actually',
+        'npm ERR! code ENOENT',
+        'docker: Error response from daemon: container is dead',
+        '$ sudo make it work',
+        '> make: *** [Makefile:1: it] Error 1',
+        'SELECT * FROM servers WHERE status = \'up\' LIMIT 0',
+        'ping wncoreradio.net: Request timeout for icmp_seq 0',
+        '💀💀💀',
+        'have you tried turning it off and on again',
+        'the cloud is just someone elses computer and it crashed',
+        'lol',
+        'lmao even',
+      ];
+      return Array.from({length: 100}, () => errs[Math.floor(Math.random()*errs.length)]).join('\n');
+    }
+  }
+];
+
+// ── STATE ─────────────────────────────────────────────────────────────
+let currentMode = 0;
+const CYCLE_MS = 18000;
+
+const body       = document.body;
+const birdsLayer = document.getElementById('birds-layer');
+const titleEl    = document.getElementById('mode-title');
+const subEl      = document.getElementById('mode-sub');
+const bgTextEl   = document.getElementById('bg-text');
+const counterEl  = document.getElementById('mode-counter');
+const flashEl    = document.getElementById('flash');
+const birds      = document.querySelectorAll('.bird');
+
+// ── CHAOS BIRD COLORS ─────────────────────────────────────────────────
+const chaosFilters = [
+  'invert(80%) sepia(100%) saturate(800%) hue-rotate(0deg)',
+  'invert(60%) sepia(100%) saturate(600%) hue-rotate(60deg)',
+  'invert(40%) sepia(100%) saturate(900%) hue-rotate(120deg)',
+  'invert(70%) sepia(80%) saturate(700%) hue-rotate(180deg)',
+  'invert(50%) sepia(100%) saturate(1000%) hue-rotate(240deg)',
+  'invert(80%) sepia(60%) saturate(500%) hue-rotate(300deg)',
+  'invert(30%) sepia(100%) saturate(800%) hue-rotate(30deg)',
+  'invert(90%) sepia(100%) saturate(600%) hue-rotate(90deg)',
+  'invert(60%) sepia(80%) saturate(900%) hue-rotate(150deg)',
+  'invert(40%) sepia(100%) saturate(700%) hue-rotate(210deg)',
+  'invert(70%) sepia(60%) saturate(800%) hue-rotate(270deg)',
+  'invert(50%) sepia(100%) saturate(600%) hue-rotate(330deg)',
+];
+
+function applyChaosColors() {
+  birds.forEach((b, i) => {
+    b.style.filter = chaosFilters[i % chaosFilters.length];
+  });
+}
+
+function clearChaosColors() {
+  birds.forEach(b => { b.style.filter = ''; });
+}
+
+// ── SUB TEXT ROTATOR ─────────────────────────────────────────────────
+let subIdx = 0;
+let subTimer = null;
+function rotateSub(mode) {
+  if (subTimer) clearInterval(subTimer);
+  subIdx = 0;
+  subEl.textContent = mode.subs[0];
+  subTimer = setInterval(() => {
+    subIdx = (subIdx + 1) % mode.subs.length;
+    subEl.style.opacity = '0';
+    setTimeout(() => {
+      subEl.textContent = mode.subs[subIdx];
+      subEl.style.opacity = '0.7';
+    }, 400);
+  }, 4500);
+  subEl.style.transition = 'opacity 0.4s';
+  subEl.style.opacity = '0.7';
+}
+
+// ── BG TEXT ───────────────────────────────────────────────────────────
+function refreshBgText(mode) {
+  bgTextEl.style.opacity = '0';
+  setTimeout(() => {
+    bgTextEl.textContent = mode.bgLines();
+    bgTextEl.style.opacity = '0.11';
+  }, 600);
+}
+
+// ── APPLY MODE ────────────────────────────────────────────────────────
+function applyMode(idx, animate) {
+  const mode = MODES[idx];
+
+  if (animate) {
+    flashEl.classList.add('on');
+    setTimeout(() => flashEl.classList.remove('on'), 120);
+  }
+
+  // Body class
+  body.className = 'mode-' + mode.id;
+  birdsLayer.className = 'mode-' + mode.id;
+
+  // Chaos bird individual colors
+  if (mode.id === 'chaos') {
+    applyChaosColors();
+  } else {
+    clearChaosColors();
+  }
+
+  // Title
+  titleEl.style.fontFamily = getComputedStyle(body).getPropertyValue('--font');
+  titleEl.textContent = mode.title;
+  titleEl.style.whiteSpace = 'pre-line';
+
+  // Sub
+  rotateSub(mode);
+
+  // BG text
+  refreshBgText(mode);
+
+  // Counter
+  counterEl.textContent = `// MODE ${idx + 1} OF ${MODES.length} — CYCLING`;
+  if (window.setBgMode) window.setBgMode(mode.id);
+}
+
+// ── CYCLE ─────────────────────────────────────────────────────────────
+applyMode(0, false);
+
+setInterval(() => {
+  currentMode = (currentMode + 1) % MODES.length;
+  applyMode(currentMode, true);
+}, CYCLE_MS);
+
+// Refresh bg text mid-cycle too so it doesn't go stale
+setInterval(() => {
+  refreshBgText(MODES[currentMode]);
+}, CYCLE_MS / 2);
+
+// ── KONAMI EGG: type "wncore" to show hidden lore message ─────────────
+let konamiBuffer = '';
+const SECRET = 'wncore';
+document.addEventListener('keydown', e => {
+  konamiBuffer = (konamiBuffer + e.key.toLowerCase()).slice(-SECRET.length);
+  if (konamiBuffer === SECRET) {
+    subEl.textContent = '"...the frequency was always 88.7..." — SIGNAL_KAGE';
+    subEl.style.color = '#ff0000';
+    setTimeout(() => { subEl.style.color = ''; }, 6000);
+  }
+});
+
+})();
+
+// ── CANVAS BACKGROUNDS ────────────────────────────────────────────────
+(function() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, raf = null;
+  let currentBg = 'arg';
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // ── MATRIX RAIN (ARG + CHAOS) ──────────────────────────────────────
+  const MATRIX_CHARS = '01アイウエオカキクケコサシスセソタチツテトナニヌネノ∑∆Ω≈ψλ░▒▓│┤╡╢╖╕╣║╗╝╛╜┐└┴┬├─┼';
+  let matrixCols = [];
+  function initMatrix(color) {
+    const fontSize = 13;
+    const cols = Math.floor(W / fontSize);
+    matrixCols = Array.from({length: cols}, () => ({
+      y: Math.random() * H,
+      speed: 0.5 + Math.random() * 2.5,
+      chars: Array.from({length: 32}, () => MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)]),
+      head: Math.floor(Math.random() * 32),
+      glitchTimer: Math.random() * 60,
+    }));
+  }
+
+  function drawMatrix(color, trailColor) {
+    ctx.fillStyle = 'rgba(0,0,0,0.055)';
+    ctx.fillRect(0, 0, W, H);
+    const fontSize = 13;
+    ctx.font = fontSize + 'px "Courier New", monospace';
+    matrixCols.forEach((col, i) => {
+      const x = i * fontSize;
+      // Draw trail
+      col.chars.forEach((ch, row) => {
+        const dist = (row - col.head + col.chars.length) % col.chars.length;
+        if (dist > 18) return;
+        const alpha = 1 - dist / 18;
+        if (dist === 0) {
+          ctx.fillStyle = '#ffffff';
+        } else {
+          ctx.fillStyle = trailColor.replace(')', `,${alpha * 0.7})`).replace('rgb', 'rgba');
+        }
+        const y = (col.y - dist * fontSize + H) % H;
+        ctx.fillText(ch, x, y);
+      });
+      // Advance
+      col.y += col.speed;
+      if (col.y > H + fontSize * col.chars.length) col.y = -fontSize * 2;
+      col.head = (col.head + 1) % col.chars.length;
+      // Randomly glitch a char
+      col.glitchTimer--;
+      if (col.glitchTimer <= 0) {
+        const ri = Math.floor(Math.random() * col.chars.length);
+        col.chars[ri] = MATRIX_CHARS[Math.floor(Math.random() * MATRIX_CHARS.length)];
+        col.glitchTimer = 10 + Math.random() * 50;
+      }
+    });
+  }
+
+  // ── TREES (LOFI) ──────────────────────────────────────────────────
+  let trees = [];
+  function initTrees() {
+    trees = [];
+    // Background layer — small distant trees
+    for (let i = 0; i < 22; i++) {
+      trees.push({
+        x: Math.random() * W,
+        y: H * 0.55 + Math.random() * H * 0.1,
+        h: 40 + Math.random() * 80,
+        w: 8 + Math.random() * 16,
+        layer: 0,
+        sway: Math.random() * Math.PI * 2,
+        swayV: 0.003 + Math.random() * 0.004,
+        type: Math.random() > 0.4 ? 'pine' : 'round',
+      });
+    }
+    // Foreground layer — big close trees
+    for (let i = 0; i < 8; i++) {
+      trees.push({
+        x: (i / 7) * W * 1.1 - W * 0.05,
+        y: H * 0.7 + Math.random() * H * 0.08,
+        h: 120 + Math.random() * 180,
+        w: 22 + Math.random() * 30,
+        layer: 1,
+        sway: Math.random() * Math.PI * 2,
+        swayV: 0.002 + Math.random() * 0.003,
+        type: Math.random() > 0.3 ? 'pine' : 'round',
+      });
+    }
+    trees.sort((a, b) => a.layer - b.layer);
+  }
+
+  function drawPineTree(x, y, h, w, sway) {
+    const lean = Math.sin(sway) * 3;
+    // Trunk
+    ctx.fillRect(x - w * 0.08 + lean, y - h * 0.18, w * 0.16, h * 0.2);
+    // Three tiers of triangles
+    for (let t = 0; t < 3; t++) {
+      const ty = y - h * (0.2 + t * 0.28);
+      const tw = w * (1.2 - t * 0.25);
+      const th = h * 0.38;
+      ctx.beginPath();
+      ctx.moveTo(x + lean * (1 - t * 0.3), ty - th);
+      ctx.lineTo(x - tw / 2 + lean * 0.5, ty);
+      ctx.lineTo(x + tw / 2 + lean * 0.5, ty);
+      ctx.closePath();
+      ctx.fill();
+    }
+  }
+
+  function drawRoundTree(x, y, h, w, sway) {
+    const lean = Math.sin(sway) * 2;
+    // Trunk
+    ctx.fillRect(x - w * 0.07 + lean * 0.5, y - h * 0.25, w * 0.14, h * 0.27);
+    // Canopy blob
+    ctx.beginPath();
+    ctx.ellipse(x + lean, y - h * 0.6, w * 0.55, h * 0.45, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Sub-blob for interest
+    ctx.beginPath();
+    ctx.ellipse(x + lean + w * 0.2, y - h * 0.45, w * 0.3, h * 0.28, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawTrees() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Sky gradient
+    const sky = ctx.createLinearGradient(0, 0, 0, H);
+    sky.addColorStop(0, '#0d0a1a');
+    sky.addColorStop(0.5, '#1a1030');
+    sky.addColorStop(1, '#2a1545');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0, 0, W, H);
+
+    // Moon
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,240,200,0.12)';
+    ctx.beginPath();
+    ctx.arc(W * 0.8, H * 0.15, 60, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,240,200,0.18)';
+    ctx.beginPath();
+    ctx.arc(W * 0.8, H * 0.15, 38, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(255,245,210,0.55)';
+    ctx.beginPath();
+    ctx.arc(W * 0.8, H * 0.15, 22, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Stars
+    for (let i = 0; i < 60; i++) {
+      const sx = ((i * 137.5) % W);
+      const sy = ((i * 97.3) % (H * 0.55));
+      const sa = 0.2 + ((Math.sin(Date.now() * 0.001 + i) + 1) / 2) * 0.5;
+      ctx.fillStyle = `rgba(255,255,255,${sa})`;
+      ctx.fillRect(sx, sy, 1.5, 1.5);
+    }
+
+    // Ground
+    const ground = ctx.createLinearGradient(0, H * 0.72, 0, H);
+    ground.addColorStop(0, '#0f0820');
+    ground.addColorStop(1, '#07041a');
+    ctx.fillStyle = ground;
+    ctx.fillRect(0, H * 0.72, W, H);
+
+    // Fog layer
+    const fog = ctx.createLinearGradient(0, H * 0.6, 0, H * 0.8);
+    fog.addColorStop(0, 'rgba(180,130,220,0)');
+    fog.addColorStop(0.5, 'rgba(140,90,200,0.06)');
+    fog.addColorStop(1, 'rgba(100,60,180,0)');
+    ctx.fillStyle = fog;
+    ctx.fillRect(0, H * 0.6, W, H * 0.25);
+
+    // Trees
+    trees.forEach(t => {
+      t.sway += t.swayV;
+      const alpha = t.layer === 0 ? 0.35 : 0.75;
+      const color = t.layer === 0 ? `rgba(30,15,55,${alpha})` : `rgba(15,8,35,${alpha})`;
+      ctx.fillStyle = color;
+      if (t.type === 'pine') {
+        drawPineTree(t.x, t.y, t.h, t.w, t.sway);
+      } else {
+        drawRoundTree(t.x, t.y, t.h, t.w, t.sway);
+      }
+    });
+  }
+
+  // ── SIGNAL WAVES (LORE) ────────────────────────────────────────────
+  let waveTime = 0;
+  function drawSignalWaves() {
+    ctx.clearRect(0, 0, W, H);
+    // Deep space bg
+    const bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#040610');
+    bg.addColorStop(1, '#0a0c1a');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    waveTime += 0.012;
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(255,179,71,0.04)';
+    ctx.lineWidth = 1;
+    for (let gx = 0; gx < W; gx += 60) {
+      ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
+    }
+    for (let gy = 0; gy < H; gy += 60) {
+      ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
+    }
+
+    // Signal waves — multiple frequencies
+    const waves = [
+      { amp: H * 0.06, freq: 0.012, speed: 1.0, y: H * 0.3, color: 'rgba(255,179,71,0.5)', lw: 1.5 },
+      { amp: H * 0.04, freq: 0.020, speed: 1.6, y: H * 0.45, color: 'rgba(255,179,71,0.3)', lw: 1 },
+      { amp: H * 0.08, freq: 0.008, speed: 0.7, y: H * 0.6, color: 'rgba(255,150,40,0.4)', lw: 2 },
+      { amp: H * 0.03, freq: 0.035, speed: 2.1, y: H * 0.72, color: 'rgba(255,200,100,0.2)', lw: 0.8 },
+    ];
+
+    waves.forEach(w => {
+      ctx.beginPath();
+      ctx.strokeStyle = w.color;
+      ctx.lineWidth = w.lw;
+      for (let x = 0; x <= W; x += 2) {
+        const noise = (Math.random() - 0.5) * 1.5; // signal noise
+        const y = w.y + Math.sin(x * w.freq + waveTime * w.speed) * w.amp + noise;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // Glow version
+      ctx.beginPath();
+      ctx.strokeStyle = w.color.replace('0.', '0.0');
+      ctx.lineWidth = w.lw * 8;
+      for (let x = 0; x <= W; x += 4) {
+        const y = w.y + Math.sin(x * w.freq + waveTime * w.speed) * w.amp;
+        x === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    });
+
+    // Occasional burst
+    if (Math.random() < 0.01) {
+      const bx = Math.random() * W;
+      const by = Math.random() * H;
+      const grad = ctx.createRadialGradient(bx, by, 0, bx, by, 80);
+      grad.addColorStop(0, 'rgba(255,179,71,0.15)');
+      grad.addColorStop(1, 'rgba(255,179,71,0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(bx, by, 80, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ── MAIN LOOP ─────────────────────────────────────────────────────
+  let bgMode = 'arg';
+  let matrixInited = false;
+  let treesInited  = false;
+
+  window.setBgMode = function(mode) {
+    bgMode = mode;
+    if ((mode === 'arg' || mode === 'chaos') && !matrixInited) {
+      initMatrix(); matrixInited = true;
+    }
+    if (mode === 'lofi' && !treesInited) {
+      initTrees(); treesInited = true;
+    }
+    if (mode === 'arg' || mode === 'chaos') {
+      // clear for matrix
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+    }
+  };
+
+  // Also reinit matrix on resize so columns match new width
+  window.addEventListener('resize', () => {
+    matrixInited = false; treesInited = false;
+    if (bgMode === 'arg' || bgMode === 'chaos') { initMatrix(); matrixInited = true; }
+    if (bgMode === 'lofi') { initTrees(); treesInited = true; }
+  });
+
+  function loop() {
+    raf = requestAnimationFrame(loop);
+    if (document.hidden) return;
+    switch(bgMode) {
+      case 'arg':
+        drawMatrix('arg', 'rgb(57,255,20)');
+        break;
+      case 'chaos':
+        drawMatrix('chaos', 'rgb(255,45,120)');
+        break;
+      case 'lofi':
+        drawTrees();
+        break;
+      case 'lore':
+        drawSignalWaves();
+        break;
+    }
+  }
+
+  // Init first mode
+  initMatrix(); matrixInited = true;
+  loop();
+})();
+
+</script>
+</body>
+</html>
