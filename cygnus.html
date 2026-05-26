@@ -268,6 +268,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
+  html,body{overflow-x:hidden;max-width:100vw}
   #lore-panel{width:100%;right:0;top:auto;bottom:52px;height:60vh;
     border-left:none;border-top:1px solid rgba(74,168,255,0.1);
     transform:translateY(100%)}
@@ -276,6 +277,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   #hd-status{display:none}
   #node-badge{display:none}
   .lore-node-label{display:none}
+  #hd{padding:10px 14px;box-sizing:border-box;max-width:100vw}
+  #hd-title{display:none}
 }
 </style>
   <link rel="stylesheet" href="/fonts.css">
