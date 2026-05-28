@@ -108,8 +108,8 @@ body::after{
 #map-canvas{
   position:relative;
   /* Will be sized by JS based on node layout */
-  min-width:2800px;
-  min-height:2200px;
+  min-width:3600px;
+  min-height:2800px;
 }
 
 /* ── SVG CONNECTORS ── */
@@ -353,14 +353,157 @@ body::after{
 }
 #progress-fill{height:100%;background:var(--acc);transition:width 0.5s ease;width:0%}
 
-/* ── MOBILE ── */
+/* ── ZOOM CONTROLS (mobile) ── */
+#zoom-controls{
+  display:none;
+  position:fixed;right:14px;bottom:58px;z-index:300;
+  flex-direction:column;gap:6px;
+}
+#zoom-controls button{
+  width:38px;height:38px;border-radius:4px;
+  background:rgba(4,3,10,0.92);border:1px solid rgba(200,71,42,0.25);
+  color:var(--acc);font-size:1.1rem;line-height:1;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);transition:background 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+#zoom-controls button:active{background:rgba(200,71,42,0.12);}
+#zoom-reset{font-size:0.5rem!important;letter-spacing:1px;padding:0 4px;}
+
+/* ── MOBILE BOTTOM SHEET ── */
+#bottom-sheet{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:8000;
+  background:rgba(4,3,10,0.98);border-top:1px solid rgba(200,71,42,0.3);
+  border-radius:16px 16px 0 0;
+  padding:0 0 env(safe-area-inset-bottom,0);
+  transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+  max-height:75vh;overflow-y:auto;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+}
+#bottom-sheet.open{transform:translateY(0);}
+#bs-handle{
+  width:36px;height:4px;border-radius:2px;
+  background:rgba(255,255,255,0.12);
+  margin:12px auto 0;
+}
+#bs-inner{padding:14px 20px 24px;}
+#bs-tag{font-size:0.42rem;letter-spacing:3px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px;}
+#bs-title{font-family:var(--orb);font-size:1rem;color:var(--acc);letter-spacing:2px;margin-bottom:8px;line-height:1.3;}
+#bs-body{font-size:0.7rem;color:var(--txt2);line-height:1.8;margin-bottom:12px;}
+#bs-unlock{margin-top:14px;border-top:1px solid rgba(200,71,42,0.15);padding-top:14px;display:none;}
+#bs-unlock-label{font-size:0.44rem;letter-spacing:2px;color:rgba(200,71,42,0.5);margin-bottom:8px;text-transform:uppercase;}
+#bs-input{
+  width:100%;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(200,71,42,0.3);border-radius:4px;
+  color:var(--txt);font-family:var(--mono);font-size:0.75rem;letter-spacing:3px;
+  padding:10px 14px;outline:none;text-transform:uppercase;
+  -webkit-appearance:none;
+}
+#bs-input::placeholder{color:var(--txt3);}
+#bs-actions{display:flex;gap:8px;margin-top:10px;}
+#bs-submit{
+  flex:1;font-family:var(--mono);font-size:0.55rem;letter-spacing:2px;text-transform:uppercase;
+  background:rgba(200,71,42,0.12);border:1px solid rgba(200,71,42,0.4);
+  color:var(--acc);padding:10px;cursor:pointer;border-radius:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+#bs-submit:active{background:rgba(200,71,42,0.22);}
+#bs-close{
+  font-family:var(--mono);font-size:0.55rem;letter-spacing:1px;
+  background:transparent;border:1px solid rgba(255,255,255,0.07);
+  color:var(--txt3);padding:10px 16px;cursor:pointer;border-radius:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+#bs-msg{font-size:0.5rem;letter-spacing:2px;margin-top:8px;text-transform:uppercase;}
+#bs-backdrop{
+  display:none;
+  position:fixed;inset:0;z-index:7999;
+  background:rgba(0,0,0,0.5);
+}
+#bs-backdrop.open{display:block;}
+
+/* ── MOBILE LEGEND TOGGLE ── */
+#legend-btn{
+  display:none;
+  position:fixed;bottom:58px;left:14px;z-index:300;
+  width:38px;height:38px;border-radius:4px;
+  background:rgba(4,3,10,0.92);border:1px solid rgba(200,71,42,0.2);
+  color:var(--txt3);font-size:0.5rem;letter-spacing:1px;
+  cursor:pointer;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+  -webkit-tap-highlight-color:transparent;
+}
+#legend-btn:active{background:rgba(200,71,42,0.1);}
+#legend.mobile-open{
+  display:flex!important;
+  bottom:104px;left:14px;
+  max-width:calc(100vw - 28px);
+}
+
+/* ── MOBILE MEDIA QUERY ── */
 @media(max-width:640px){
-  #hd{padding:10px 14px}
-  .hd-title{display:none}
-  #legend{display:none}
-  #minimap{display:none}
-  #unlock-bar{width:90%;flex-wrap:wrap;bottom:50px}
-  #unlock-input{width:100%}
+  /* Header */
+  #hd{padding:10px 14px;gap:6px;}
+  .hd-title{display:none;}
+  .hd-status{display:none;}
+  #back{font-size:0.5rem;padding:6px 10px;}
+
+  /* HUD — single line essentials */
+  #hud{
+    padding:6px 14px;gap:10px;
+    font-size:0.44rem;flex-wrap:nowrap;overflow:hidden;
+  }
+  #hud>span:nth-child(3),
+  #hud>span:nth-child(4){display:none;}
+  #hud-tip{display:none;}
+  #hud-clock{margin-left:auto;}
+
+  /* Hide desktop-only UI */
+  #legend{display:none;}
+  #minimap{display:none;}
+  #tooltip{display:none;}
+
+  /* Unlock bar hidden on mobile — use bottom sheet instead */
+  #unlock-bar{display:none!important;}
+
+  /* Show mobile-specific UI */
+  #zoom-controls{display:flex;}
+  #bottom-sheet{display:block;}
+  #legend-btn{display:flex;}
+
+  /* Nodes — bigger tap targets, slightly larger text */
+  .node{cursor:pointer;}
+  .node:hover{transform:none;}/* disable hover scale — use tap */
+  .node:active{transform:scale(1.04);z-index:10;}
+
+  .node-root{width:160px;}
+  .node-root .n-name{font-size:1.2rem;}
+  .node-root .n-tag{font-size:0.45rem;}
+  .node-root .n-sub{font-size:0.52rem;}
+
+  .node-known{width:148px;}
+  .node-known .n-name{font-size:0.9rem;}
+  .node-known .n-tag{font-size:0.42rem;}
+
+  .node-locked{width:120px;}
+  .node-locked.wide{width:140px;}
+  .node-locked .n-name{font-size:1.05rem;}
+
+  .node-simulunas{width:148px;}
+  .node-blank{width:136px;}
+  .node-faction{width:136px;}
+  .node-event{width:128px;}
+  .node-anomaly{width:128px;}
+  .node-threat{width:124px;}
+
+  /* Section labels bigger */
+  .section-label{font-size:0.42rem;letter-spacing:2px;}
+
+  /* Connectors slightly thicker for small screens */
+  .conn-main{stroke-width:1.5;}
+  .conn{stroke-width:1;}
+  .conn-dashed{stroke-width:0.8;}
 }
 </style>
 </head>
@@ -425,7 +568,7 @@ body::after{
   <div class="tt-unlock-hint" id="tt-hint" style="display:none">// Enter signal key to unlock</div>
 </div>
 
-<!-- UNLOCK BAR -->
+<!-- UNLOCK BAR (desktop) -->
 <div id="unlock-bar">
   <div id="unlock-node-label">NODE: —</div>
   <input id="unlock-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="32" autocomplete="off" spellcheck="false">
@@ -433,6 +576,39 @@ body::after{
   <span id="unlock-msg"></span>
   <button id="unlock-close">✕</button>
 </div>
+
+<!-- MOBILE BOTTOM SHEET -->
+<div id="bs-backdrop"></div>
+<div id="bottom-sheet">
+  <div id="bs-handle"></div>
+  <div id="bs-inner">
+    <div id="bs-tag"></div>
+    <div id="bs-title"></div>
+    <div id="bs-body"></div>
+    <div id="bs-unlock">
+      <div id="bs-unlock-label">// SIGNAL KEY REQUIRED</div>
+      <input id="bs-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="32" autocomplete="off" spellcheck="false" inputmode="text">
+      <div id="bs-actions">
+        <button id="bs-submit">TRANSMIT</button>
+        <button id="bs-close">CLOSE</button>
+      </div>
+      <div id="bs-msg"></div>
+    </div>
+    <div id="bs-close-plain" style="display:none;margin-top:14px;">
+      <button id="bs-dismiss" style="font-family:var(--mono);font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid rgba(255,255,255,0.07);color:var(--txt3);padding:8px 18px;cursor:pointer;border-radius:4px;width:100%;">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<!-- MOBILE ZOOM CONTROLS -->
+<div id="zoom-controls">
+  <button id="zoom-in" aria-label="Zoom in">+</button>
+  <button id="zoom-reset" aria-label="Reset zoom">FIT</button>
+  <button id="zoom-out" aria-label="Zoom out">−</button>
+</div>
+
+<!-- MOBILE LEGEND TOGGLE -->
+<button id="legend-btn" aria-label="Toggle legend">≡</button>
 
 <script>
 'use strict';
@@ -456,298 +632,298 @@ const NODES = [
   /* ── TIER 0: ROOT ── */
   {id:'wncore', type:'root', tag:'ROOT SIGNAL NODE', name:'WNCORE', sub:'Signal Cartography\nArchive / Broadcast',
    tip:'The signal archive. BLANK ZONE cartographic node. Origin unknown. All frequencies referenced to the Sirius baseline.',
-   x:1300, y:80, passkey:''},
+   x:1755, y:104, passkey:''},
 
   /* ── TIER 1: CORE ENTITIES ── */
   {id:'siharu', type:'known', tag:'SIGNAL ENTITY / STRATUM-2', name:'SIHARU', sub:'Cross-ref: OBSEDIA logs\n14 entries — active',
    tip:'Designation: unknown etymology. Appears 14 times in the OBSEDIA clearance logs. Cross-referenced with 9 signal branches. Status: ACTIVE — MONITORED.',
-   x:1300, y:260, passkey:''},
+   x:1755, y:338, passkey:''},
 
   {id:'simulunas', type:'simulunas', tag:'UNCLASSIFIED ENTITY', name:'SIMULUNAS', sub:'No origin on file\nself-inserted entry',
    tip:'Appears once in the archive. The name does not appear in any OBSEDIA log. It appeared in the archive without being added.',
-   x:1800, y:260, passkey:''},
+   x:2430, y:338, passkey:''},
 
   /* ── TIER 1: MAIN CHARACTER (locked) ── */
   {id:'protagonist', type:'locked', tag:'SIGNAL-ZERO / PRIMARY', name:'???  ????', realName:'S — RISER',
    sub:'origin unknown', realSub:'DHAKA NODE / STRATUM-0\nTransferred — Day 0',
    tip:'A signal that should not exist in this archive. Cross-referenced with the Blank Zone transfer log. File sealed.',
    realTip:'Bangladeshi civil engineer. Transferred to Another Sky on March 31, 2032. First to notice the divergence.',
-   passkey:'RISER_DAY0', x:1300, y:440, wide:true},
+   passkey:'RISER_DAY0', x:1755, y:572, wide:true},
 
   /* ── TIER 2: SIHARU BRANCHES (9 paths) ── */
   {id:'p01', type:'locked', tag:'PATH-01 / N-09', name:'NODE 09', realName:'NODE 09',
    sub:'88.7 MHz — active\nSIGNAL_KAGE ref.',
    tip:'The only confirmed active broadcast node. First confirmed signal: 88.7 MHz. Log entry count: 1,847.',
-   passkey:'', x:500, y:600},
+   passkey:'', x:675, y:780},
 
   {id:'p02', type:'locked', tag:'PATH-02', name:'??? ????', realName:'??? ????',
-   sub:'redacted', tip:'REDACTED — OBSEDIA clearance level 5 required.', passkey:'', x:660, y:600},
+   sub:'redacted', tip:'REDACTED — OBSEDIA clearance level 5 required.', passkey:'', x:891, y:780},
 
   {id:'p03', type:'locked', tag:'PATH-03', name:'?? ??? ??', realName:'?? ??? ??',
-   sub:'index entry only', tip:'Classification: MISSING. File exists in the index. No content on record.', passkey:'', x:820, y:600},
+   sub:'index entry only', tip:'Classification: MISSING. File exists in the index. No content on record.', passkey:'', x:1107, y:780},
 
   {id:'p04', type:'locked', tag:'PATH-04', name:'THUBAN\n— NULL', realName:'THUBAN — NULL',
-   sub:'0b — silence', tip:'A recording of silence from a source that should not be silent. Duration: unknown. File size: 0 bytes. Checksum: does not match an empty file.', passkey:'', x:980, y:600},
+   sub:'0b — silence', tip:'A recording of silence from a source that should not be silent. Duration: unknown. File size: 0 bytes. Checksum: does not match an empty file.', passkey:'', x:1323, y:780},
 
   {id:'p05', type:'locked', tag:'PATH-05', name:'?? ?????', realName:'?? ?????',
-   sub:'SAIPH-NULL ref.', tip:'OBSEDIA internal designation: SAIPH-NULL. Active in index, no broadcast on record.', passkey:'', x:1140, y:600},
+   sub:'SAIPH-NULL ref.', tip:'OBSEDIA internal designation: SAIPH-NULL. Active in index, no broadcast on record.', passkey:'', x:1539, y:780},
 
   {id:'p06', type:'locked', tag:'PATH-06', name:'?????? ??', realName:'?????? ??',
-   sub:'PLEIAD-NULL', tip:'Frequency: BLANK. A signal logged under PLEIAD-NULL — one of seven entries, each referencing a different lost broadcast.', passkey:'', x:1300, y:600},
+   sub:'PLEIAD-NULL', tip:'Frequency: BLANK. A signal logged under PLEIAD-NULL — one of seven entries, each referencing a different lost broadcast.', passkey:'', x:1755, y:780},
 
   {id:'p07', type:'locked', tag:'PATH-07', name:'?? ????\n??? ?', realName:'?? ???? ??? ?',
-   sub:'monitor / no TX', tip:'GUARDIAN-CLASS. Monitors without transmitting. Has been monitoring for longer than the archive has existed.', passkey:'', x:1460, y:600},
+   sub:'monitor / no TX', tip:'GUARDIAN-CLASS. Monitors without transmitting. Has been monitoring for longer than the archive has existed.', passkey:'', x:1971, y:780},
 
   {id:'p08', type:'locked', tag:'PATH-08', name:'???? ??\n??????', realName:'???? ?? ??????',
-   sub:'DELTA-class lock', tip:'DELTA-CLASS HANDSHAKE. A two-signal confirmation before priority transmission. Both signals required. One has not been received since 2023-07-14.', passkey:'', x:1620, y:600},
+   sub:'DELTA-class lock', tip:'DELTA-CLASS HANDSHAKE. A two-signal confirmation before priority transmission. Both signals required. One has not been received since 2023-07-14.', passkey:'', x:2187, y:780},
 
   {id:'p09', type:'locked', tag:'PATH-09', name:'??? ????', realName:'??? ????',
-   sub:'ALGEDI-class ×2', tip:'ALGEDI-CLASS: two sources that appear to be one. Optical double — not a true binary.', passkey:'', x:1780, y:600},
+   sub:'ALGEDI-class ×2', tip:'ALGEDI-CLASS: two sources that appear to be one. Optical double — not a true binary.', passkey:'', x:2403, y:780},
 
   /* ── TIER 3: WORLD SPLIT ── */
   {id:'world-origin', type:'locked', tag:'STRATUM-A / ORIGIN', name:'EARTH ??', realName:'ORIGIN EARTH',
    sub:'pre-transfer\nrealm', realSub:'The real world\nPre-2032 baseline',
    tip:'A signal layer beneath the main archive. Frequency: unknown. The archive does not acknowledge its existence.',
    realTip:'The original Earth. Our world. History tracks identically until 1946 when a divergence event creates Another Sky.',
-   passkey:'ORIGIN_SIGNAL', x:900, y:820, wide:true},
+   passkey:'ORIGIN_SIGNAL', x:1215, y:1066, wide:true},
 
   {id:'world-another', type:'locked', tag:'STRATUM-B / ALT', name:'ANOTHER ??', realName:'ANOTHER SKY',
    sub:'divergent layer\npost-transfer', realSub:'Divergence: post-1946\nDay 180+ of outbreak',
    tip:'A secondary frequency overlay. Begins as identical to the primary layer. Something changed after a certain point.',
    realTip:'Another Sky. Diverges from origin Earth post-1946. S is transferred here March 31, 2032. Site of the outbreak.',
-   passkey:'ANOTHER_SKY', x:1300, y:820, wide:true},
+   passkey:'ANOTHER_SKY', x:1755, y:1066, wide:true},
 
   {id:'blank-zone-event', type:'blank', tag:'PROCESS — CLASSIFIED', name:'BLANK ZONE',
    sub:'2028–2031 erased\nnot a location',
    tip:'Not a location. A process. Something continuously forming in a region we cannot see directly. Records: non-existent.',
-   x:1700, y:820},
+   x:2295, y:1066},
 
   /* ── TIER 4: CHARACTERS ── */
   {id:'char-mother', type:'locked', tag:'CHARACTER / STRATUM-1', name:'??? ???', realName:'S\'s MOTHER',
    sub:'classified\nfirst incident', realSub:'Age 68 — BPD survivor\nIncident Zero: Ghuul',
    tip:'A node that predates every other in this archive. Signal type: domestic. Something happened here. The archive flags it as Incident Zero.',
    realTip:'S\'s mother. Age 68. Survived 1971 war, Bhola cyclone, WW3. First known Ghuul. Transformed two weeks post-outbreak.',
-   passkey:'INCIDENT_ZERO', x:700, y:1020},
+   passkey:'INCIDENT_ZERO', x:945, y:1326},
 
   {id:'char-anne', type:'locked', tag:'CHARACTER / SIGNAL-LOST', name:'???\n[ERASED]', realName:'ANNE',
    sub:'signal lost\nface erased', realSub:'Filipina artist\nErased on transfer',
    tip:'A signal that was present and then was not. Not dead. Not blocked. Simply absent. The archive shows the space where it was.',
    realTip:'Anne. S\'s ex-girlfriend. Filipina artist, dancer, singer. All photos and messages erased when S transferred to Another Sky.',
-   passkey:'ANNE_SIGNAL', x:900, y:1020},
+   passkey:'ANNE_SIGNAL', x:1215, y:1326},
 
   {id:'the-nine', type:'locked', tag:'GROUP / ERASED-9', name:'THE ????', realName:'THE NINE',
    sub:'8 others\nfaces unknown', realSub:'4 male 3 female\n+Anne = 9 total',
    tip:'Nine signals that no longer register. They existed. The archive confirms the shapes of their absence. No faces. No frequencies.',
    realTip:'Nine people erased from S\'s memory and photos upon transfer. Anne + 4 guys + 3 girls. S cannot remember their faces.',
-   passkey:'THE_NINE', x:1100, y:1020},
+   passkey:'THE_NINE', x:1485, y:1326},
 
   {id:'char-vulture', type:'locked', tag:'COMPANION / ANOMALY', name:'??? ?????', realName:'THE VULTURE',
    sub:'non-classified\nrecurring', realSub:'White-rumped vulture\n6-7 yrs old',
    tip:'A non-human signal that keeps returning. Species: unknown classification. Behavior: returns monthly. Has been returning for years.',
    realTip:'White-rumped vulture. S saved it in 5th grade. Fed it fried chicken. It followed the bus home. Visits S monthly on the rooftop.',
-   passkey:'VULTURE_ROOF', x:1300, y:1020},
+   passkey:'VULTURE_ROOF', x:1755, y:1326},
 
   {id:'char-signal-kage', type:'locked', tag:'INTERNAL REF.', name:'SIGNAL_KAGE', realName:'SIGNAL_KAGE',
    sub:'43 entries\nobserver — no TX', tip:'Internal designation. Appears in 43 log entries. Cross-references NODE-09, WNCORE, SIHARU. Has never been identified. All entries are observations, never transmissions.',
-   passkey:'', x:1500, y:1020},
+   passkey:'', x:2025, y:1326},
 
   /* ── TIER 5: OUTBREAK + GLOBAL EVENTS ── */
   {id:'ev-transfer', type:'event', tag:'EVENT / T=0', name:'??? ????????', realName:'THE TRANSFER',
    sub:'March 31, 2032\nS displaced', realSub:'March 31, 2032\nS enters Another Sky',
    tip:'A displacement event. Something moved through the signal on this date. The archive does not record what. The archive does not record who.',
    realTip:'March 31, 2032. S wakes in Another Sky. Realises the divergence when his mother mentions WW3 — a war that doesn\'t exist in his world.',
-   passkey:'MARCH_31', x:600, y:1260},
+   passkey:'MARCH_31', x:810, y:1638},
 
   {id:'ev-ww3', type:'event', tag:'EVENT / GLOBAL', name:'??? ????', realName:'WORLD WAR III',
    sub:'pre-outbreak\nglobal', realSub:'2027 ended\n672M civilian deaths',
    tip:'A signal event of immense scale. Two sides. Something ended. The archive does not say who won. The archive does not say what was lost.',
    realTip:'WW3. USA/India/Canada/UK/Israel vs Iran/Pakistan/China/Russia/N.Korea. Ended 2027. 672M civilian deaths. $1.2T devastation.',
-   passkey:'WW3_SIGNAL', x:820, y:1260, wide:true},
+   passkey:'WW3_SIGNAL', x:1107, y:1638, wide:true},
 
   {id:'ev-outbreak', type:'event', tag:'EVENT / DAY-0', name:'??? ????????', realName:'THE OUTBREAK',
    sub:'April 5, 2032\npandemic', realSub:'Nepal → Bangladesh\n→ India → Nigeria',
    tip:'The signal fractures here. Before this point: one pattern. After: something else entirely. Origin: unlogged.',
    realTip:'April 5, 2032. Outbreak starts in Nepal villages. Spreads to Bangladesh rural, then India, then Nigeria. WHO declares pandemic April 9. 286K dead by April 11. 64% zombified by 6 months.',
-   passkey:'DAY_ZERO_APRIL', x:1060, y:1260, wide:true},
+   passkey:'DAY_ZERO_APRIL', x:1431, y:1638, wide:true},
 
   {id:'ev-cygnus', type:'event', tag:'SIGNAL / 2007', name:'????? ???', realName:'CYGNUS SIGNAL',
    sub:'2007 detected\ndecoded 2011', realSub:'Decoded: "They lied.\nSend help."',
    tip:'A transmission that arrived before it was expected. Direction: Cygnus constellation. Content: unknown. Date: before the archive was prepared.',
    realTip:'"They lied to us. Send help. Any way possible. No matter who is out there." — Decoded 2011 from 2007 Cygnus signal.',
-   passkey:'CYGNUS_2011', x:1300, y:1260, wide:true},
+   passkey:'CYGNUS_2011', x:1755, y:1638, wide:true},
 
   {id:'ev-moon-dome', type:'event', tag:'EVENT / 2012', name:'???? ????', realName:'MOON DOME',
    sub:'2012 constructed\nelite refuge', realSub:'Cleaning co. built\nBillionaires inside',
    tip:'Something was built where nothing should be. A structure. A dome. Funded by a cleaning company. The archive does not say why.',
    realTip:'Moon Dome. Built 2012 by a cleaning product company. Elites, billionaires, world leaders evacuated there at outbreak start. Status: unknown.',
-   passkey:'MOON_DOME_2012', x:1560, y:1260, wide:true},
+   passkey:'MOON_DOME_2012', x:2106, y:1638, wide:true},
 
   /* ── TIER 6: ANOMALIES ── */
   {id:'anom-obsedia', type:'anomaly', tag:'PHENOMENON / BLACK RAIN', name:'??? ?? ????????', realName:'RAIN OF OBSEDIA',
    sub:'global\npost-outbreak', realSub:'Black rain worldwide\nCalms infected',
    tip:'A precipitation event with no meteorological precedent. Colour: not a colour. Properties: unlogged. Effect: observed but not explained.',
    realTip:'Deep black rain. Global, two weeks post-outbreak. Acidic but harmless to humans. Infected become calm during it. Sky looks like it\'s bleeding.',
-   passkey:'BLACK_RAIN', x:400, y:1480},
+   passkey:'BLACK_RAIN', x:540, y:1924},
 
   {id:'anom-fog', type:'anomaly', tag:'PHENOMENON / FOG', name:'??? ?? ??????', realName:'FOG OF MEDUSA',
    sub:'Germany only\nkills everything', realSub:'Yellowish fog\nKills all except zombies',
    tip:'A localised atmospheric event. Confined to one region. The archive notes the survivors did not describe it.',
    realTip:'Yellowish fog. Only in Germany (so far). Kills and suffocates everything except full zombies. Even infected die in it.',
-   passkey:'MEDUSA_FOG', x:620, y:1480},
+   passkey:'MEDUSA_FOG', x:837, y:1924},
 
   {id:'anom-cooling', type:'anomaly', tag:'PHENOMENON / CLIMATE', name:'??? ?????', realName:'GREAT COOLING',
    sub:'global chill\nmonthly hail', realSub:'Planet cooling\n5-6 hail events/month',
    tip:'A thermal shift that began independently of the outbreak. The archive theorises it would have happened regardless.',
    realTip:'Global cooling started 2 months post-outbreak. 5-6 hail events per month worldwide. Worsens with black rain. Independent of outbreak.',
-   passkey:'GREAT_COOLING', x:840, y:1480},
+   passkey:'GREAT_COOLING', x:1134, y:1924},
 
   {id:'anom-migration', type:'anomaly', tag:'PHENOMENON / MIGRATION', name:'??? ?????', realName:'GREAT MIGRATION',
    sub:'insects / birds\nmoving North', realSub:'Trillions of ants\nNorth — unknown reason',
    tip:'Something is moving. Not infected. Not human. A mass displacement without apparent cause. Direction: consistent. Reason: unknown.',
    realTip:'Trillions of ants and insects moving north. Birds and wild animals following. Reason unknown. Are they running from something?',
-   passkey:'MIGRATION_NORTH', x:1060, y:1480},
+   passkey:'MIGRATION_NORTH', x:1431, y:1924},
 
   {id:'ghuul-node', type:'anomaly', tag:'ENTITY TYPE / GHUUL', name:'????? — 173', realName:'GHUULS — 173',
    sub:'173 confirmed\nworldwide', realSub:'Bitten by zombie+infected\nExtremely rare',
    tip:'A classification that should not exist. Hybrid origin. 173 confirmed worldwide. The archive has no explanation for their continued existence.',
    realTip:'Created by both zombie AND infected bite. 173 known worldwide. Pure white body/hair. Teleportation-like agility. Kill entire bases in seconds. First: S\'s mother.',
-   passkey:'GHUUL_173', x:1280, y:1480, wide:true},
+   passkey:'GHUUL_173', x:1728, y:1924, wide:true},
 
   {id:'coord-node', type:'anomaly', tag:'COORDINATE / ARG', name:'?.??????', realName:'0.315126',
    sub:'ARG coordinate\norigin unknown', realSub:'Coordinate: 0.315126\nYear Zero origin',
    tip:'A number that appears in the archive without context. It is not GPS. It is not frequency. The archive does not say what it measures.',
    realTip:'0.315126. The ARG coordinate. Appears in the archive without attribution. ALC-2 / ALNILAM encoding. Year Zero origin.',
-   passkey:'COORD_315126', x:1500, y:1480},
+   passkey:'COORD_315126', x:2025, y:1924},
 
   /* ── TIER 7: THREAT TYPES ── */
   {id:'zombie-skoth', type:'threat', tag:'ZOMBIE / TYPE-1', name:'SKOTH', realName:'SKOTH',
    sub:'early type\nbody decays 9mo', tip:'First classification in the field logs. Dogs unaffected. Most mammals: fatal. Appears early — disappears late.',
    realTip:'First zombie type. Appeared at outbreak start. Body decays after 9 months. Dogs unaffected. Cats/cows die if bitten.',
-   passkey:'SKOTH_TYPE', x:200, y:1700},
+   passkey:'SKOTH_TYPE', x:270, y:2210},
 
   {id:'zombie-glowbub', type:'threat', tag:'ZOMBIE / TYPE-2', name:'GLOWBUBS', realName:'GLOWBUBS',
    sub:'light-attracted\ndangerous in dark', tip:'Attracted to light. The log entry notes survivors who switched off a light in a broken shop did not survive to file a second log entry.',
-   passkey:'GLOWBUB_TYPE', x:360, y:1700},
+   passkey:'GLOWBUB_TYPE', x:486, y:2210},
 
   {id:'zombie-jawie', type:'threat', tag:'ZOMBIE / TYPE-3', name:'JAWIES', realName:'JAWIES',
    sub:'crush metal\npowerful jaw', tip:'Jaw strength sufficient to crush metal. Primarily former muscular individuals. Particularly effective against barricades.',
-   passkey:'JAWIE_TYPE', x:520, y:1700},
+   passkey:'JAWIE_TYPE', x:702, y:2210},
 
   {id:'zombie-white', type:'threat', tag:'ZOMBIE / TYPE-4', name:'WHITES', realName:'WHITES',
    sub:'vibration-sensing\nwhite-haired female', tip:'White-haired. Female. Vibration detection range: kilometres. Can feel footsteps through floors from kilometres away.',
-   passkey:'WHITE_TYPE', x:680, y:1700},
+   passkey:'WHITE_TYPE', x:918, y:2210},
 
   {id:'zombie-oldbones', type:'threat', tag:'ZOMBIE / TYPE-5', name:'OLDBONES', realName:'OLDBONES',
    sub:'elderly zombie\nspine weapon', tip:'Former elderly individuals. The spine extrudes from the body during transformation. The process is described as extremely painful. The result is a projectile.',
-   passkey:'OLDBONES_TYPE', x:840, y:1700},
+   passkey:'OLDBONES_TYPE', x:1134, y:2210},
 
   {id:'zombie-disabled', type:'threat', tag:'ZOMBIE / TYPE-6', name:'DISABLED', realName:'DISABLED',
    sub:'enhanced senses\nadaptive limbs', tip:'Former disabled individuals. Blindness becomes enhanced hearing. Deafness becomes long-range sight. Mobility impairment becomes mutated limb propulsion.',
-   passkey:'DISABLED_TYPE', x:1000, y:1700},
+   passkey:'DISABLED_TYPE', x:1350, y:2210},
 
   {id:'zombie-noire', type:'threat', tag:'ZOMBIE / TYPE-7', name:'NOIRE', realName:'NOIRE',
    sub:'nocturnal pack\nambush hunters', tip:'Nocturnal. Ambush-oriented. Operates in groups of two to three. Movement-triggered. No minimum threshold for what constitutes movement.',
-   passkey:'NOIRE_TYPE', x:1160, y:1700},
+   passkey:'NOIRE_TYPE', x:1566, y:2210},
 
   {id:'zombie-bloater', type:'threat', tag:'ZOMBIE / TYPE-8', name:'BLOATERS', realName:'BLOATERS',
    sub:'scream summons\nhorde caller', tip:'Mouth packed with extra musculature. Scream frequency summons other types. Threat multiplier rather than direct threat.',
-   passkey:'BLOATER_TYPE', x:1320, y:1700},
+   passkey:'BLOATER_TYPE', x:1782, y:2210},
 
   {id:'zombie-aquatic', type:'threat', tag:'ZOMBIE / TYPE-9', name:'AQUATIC', realName:'AQUATIC',
    sub:'underwater — Paris\nrare confirmed', tip:'One confirmed sighting. Paris. Underwater. Eating fish. Moving slowly. The archive notes: no environment is confirmed safe.',
-   passkey:'AQUATIC_TYPE', x:1480, y:1700},
+   passkey:'AQUATIC_TYPE', x:1998, y:2210},
 
   /* ── INFECTED TYPES ── */
   {id:'inf-1', type:'threat', tag:'INFECTED / TYPE-1', name:'THEY THINK', realName:'INFECTED T-1',
    sub:'intelligent\nplan attacks', tip:'Retain strategic cognition. Capable of organizing attacks on human settlements. Indistinguishable in behaviour from uninfected tacticians.',
-   passkey:'INFECTED_TYPE1', x:1640, y:1700},
+   passkey:'INFECTED_TYPE1', x:2214, y:2210},
 
   {id:'inf-2', type:'threat', tag:'INFECTED / TYPE-2', name:'THEY TALK', realName:'INFECTED T-2',
    sub:'blend in\nlanguage intact', tip:'Retain speech. Blend into human settlements. Enjoy killing prey. The archive notes they enjoy it.',
-   passkey:'INFECTED_TYPE2', x:1800, y:1700},
+   passkey:'INFECTED_TYPE2', x:2430, y:2210},
 
   {id:'inf-3', type:'threat', tag:'INFECTED / TYPE-3', name:'THEY TRICK', realName:'INFECTED T-3',
    sub:'voice mimicry\nSkinwalker form', tip:'Mimics voices of loved ones. Skinwalker morphology. Active evening to dawn. Classification: psychological weapon.',
-   passkey:'INFECTED_TYPE3', x:1960, y:1700},
+   passkey:'INFECTED_TYPE3', x:2646, y:2210},
 
   {id:'inf-4', type:'threat', tag:'INFECTED / TYPE-4', name:'THEY TAKE', realName:'INFECTED T-4',
    sub:'kidnap / children\nprefers living prey', tip:'Abducts during sleep. Prefers consuming prey while alive. Particularly targets children. The archive does not elaborate on why.',
-   passkey:'INFECTED_TYPE4', x:2120, y:1700},
+   passkey:'INFECTED_TYPE4', x:2862, y:2210},
 
   {id:'inf-5', type:'threat', tag:'INFECTED / TYPE-5', name:'GLITCH', realName:'INFECTED T-5 / GLITCH',
    sub:'flickers\nbetween realities', tip:'Unknown classification. Body flickers. Pathogen appears to have assumed full motor control. Movement exceeds human perception.',
-   passkey:'INFECTED_TYPE5', x:2280, y:1700, wide:true},
+   passkey:'INFECTED_TYPE5', x:3078, y:2210, wide:true},
 
   /* ── TIER 7: FACTIONS ── */
   {id:'fac-govts', type:'faction', tag:'FACTION / AUTHORITY', name:'??? ?????????', realName:'REMAINING GOVTS',
    sub:'Alaska safe zone\nnuke contingency', realSub:'USA/UK/Canada/India etc\nAlaska stronghold',
    tip:'A coalition signal. Originating from the northern edge of the archive. Plans exist. The archive labels them: unknown priority.',
    realTip:'Remaining governments in Alaska safe zone. USA, UK, Canada, India, Africa, France, Germany, South Korea, Finland. Possibly planning nuclear reset.',
-   passkey:'ALASKA_SIGNAL', x:400, y:1960, wide:true},
+   passkey:'ALASKA_SIGNAL', x:540, y:2548, wide:true},
 
   {id:'fac-moon', type:'faction', tag:'FACTION / MOON', name:'MOON ???????', realName:'MOON DWELLERS',
    sub:'Moon Dome\nstatus unknown', realSub:'Elites in Moon Dome\nPossibly all dead',
    tip:'A signal cluster that left the primary frequency range. Last known position: not Earth. Status: unconfirmed.',
    realTip:'High society elites, billionaires, politicians in Moon Dome. Possibly alive. Possibly cannibalised by cleaning company. Possibly terraforming the moon.',
-   passkey:'MOON_DOME_FAC', x:620, y:1960, wide:true},
+   passkey:'MOON_DOME_FAC', x:837, y:2548, wide:true},
 
   {id:'fac-bloodpact', type:'faction', tag:'FACTION / CRIMINAL', name:'BLOOD ????', realName:'BLOOD PACT',
    sub:'Antarctica\norgan smuggling', realSub:'Formerly: Brotherhood Pact\nMexican biker gang',
    tip:'A criminal signal operating from a coordinate that should be uninhabited. Former designation: Brotherhood Pact. Elevated threat classification.',
    realTip:'The Blood Pact. Antarctic base. Organ smuggling. Formerly the Brotherhood Pact — a small Mexican biker gang. How they grew is unknown.',
-   passkey:'BLOOD_PACT', x:840, y:1960, wide:true},
+   passkey:'BLOOD_PACT', x:1134, y:2548, wide:true},
 
   {id:'fac-rooftop', type:'faction', tag:'FACTION / BROADCAST', name:'ROOFTOP ????', realName:'ROOFTOP SEERS',
    sub:'broadcasters\nsecretly infected', realSub:'Ex-religious radio\nInfected hosts',
    tip:'A broadcast signal presenting itself as benign. The archive notes the signal continues transmitting. The archive notes who is transmitting.',
    realTip:'Rooftop Seers. Peaceful broadcasters. Secretly infected. Formerly a religious radio station spreading God\'s word.',
-   passkey:'ROOFTOP_SEERS', x:1060, y:1960, wide:true},
+   passkey:'ROOFTOP_SEERS', x:1431, y:2548, wide:true},
 
   {id:'fac-wncore-radio', type:'faction', tag:'FACTION / WNCORE', name:'WNCORE RADIO', realName:'WNCORE RADIO',
    sub:'post-outbreak\nglobal broadcast', realSub:'WORLD NEWS OF\nCOMPANION RADIO',
    tip:'The broadcast faction. Created after the outbreak to distribute worldwide status reports. 273 Ghuul entries on file.',
-   passkey:'', x:1280, y:1960, wide:true},
+   passkey:'', x:1728, y:2548, wide:true},
 
   {id:'fac-palenode', type:'faction', tag:'FACTION / SIGNAL', name:'PALE NODE', realName:'PALE NODE',
    sub:'emergency TX\nambiguous goals', realSub:'Ex-science podcast\nGoals: unknown',
    tip:'An emergency broadcast signal with unclear intent. Former classification: podcast. Current classification: unknown.',
    realTip:'Pale Node. Emergency signal broadcasters. Formerly a group of scientists who did podcasts every Sunday. Goals ambiguous.',
-   passkey:'PALE_NODE', x:1500, y:1960},
+   passkey:'PALE_NODE', x:2025, y:2548},
 
   {id:'fac-kraken', type:'faction', tag:'FACTION / SEA', name:'KRAKEN\'S PAW', realName:'KRAKEN\'S PAW',
    sub:'Pacific sea\nfishers + oil rigs', realSub:'Stranded sea workers\nSouth Pacific',
    tip:'A signal cluster from the ocean. Moving slowly. Direction: south. Formation: improvised.',
    realTip:'Kraken\'s Paw. Fishermen and oil rig workers stranded in the south Pacific. Banded together post-outbreak.',
-   passkey:'KRAKEN_PAW', x:1700, y:1960},
+   passkey:'KRAKEN_PAW', x:2295, y:2548},
 
   {id:'fac-whiteflag', type:'faction', tag:'FACTION / AID', name:'WHITE FLAG', realName:'WHITE FLAG',
    sub:'cruise ship\nnear London', realSub:'Ex-NGO / Malaysia\nBillionaire leader?',
    tip:'An aid signal operating from a location that should have been evacuated. The ship keeps broadcasting.',
    realTip:'White Flag. Pacifistic aid faction. Cruise ship near London. Formerly an NGO distributing food to homeless in Malaysia. Possible billionaire leader.',
-   passkey:'WHITE_FLAG', x:1920, y:1960},
+   passkey:'WHITE_FLAG', x:2592, y:2548},
 
   {id:'fac-drifters', type:'faction', tag:'FACTION / UNKNOWN', name:'LOGBOOK\nDRIFTERS', realName:'LOGBOOK DRIFTERS',
    sub:'unknown numbers\nOwl+lizard logo', realSub:'Leave logbooks\nat supply points',
    tip:'An undocumented faction. No home base in the archive. No head count. Communicates through physical objects left in abandoned spaces.',
    realTip:'Logbook Drifters. Unknown numbers worldwide. Leave informational logbooks at survival bases and malls. Owl-holding-lizard logo. A counter-faction plants fake logbooks.',
-   passkey:'LOGBOOK_DRIFTERS', x:2140, y:1960},
+   passkey:'LOGBOOK_DRIFTERS', x:2889, y:2548},
 
   /* ── FLOATERS / OBSEDIA / COORD ── */
   {id:'obsedia', type:'locked', tag:'AUTHORITY / ???', name:'OBSEDIA', realName:'OBSEDIA',
    sub:'CL-5 max visible\nCL-6 field: exists', tip:'Clearance levels 1-5. Level 4 referenced in Lyra logs. Level 5 in PATH-02. Level 6 referenced nowhere. The archive contains a field for level 6.',
-   passkey:'', x:2000, y:500},
+   passkey:'', x:2700, y:650},
 
   {id:'sim-child', type:'locked', tag:'ENTITY / UNK', name:'??? ????', realName:'??? ????',
    sub:'file: open\nauthor: none', tip:'No data. The file was found open. No one opened it.',
-   passkey:'', x:1800, y:460},
+   passkey:'', x:2430, y:598},
 
   {id:'unk-float1', type:'locked', tag:'??? — ???', name:'?? ??? ??', realName:'?? ??? ??',
    sub:'no header / no TX', tip:'No signal header. No broadcast timestamp. The log entry exists. The log entry should not exist.',
-   passkey:'', x:2060, y:320},
+   passkey:'', x:2781, y:416},
 
   {id:'unk-float2', type:'locked', tag:'TERMINAL — ???', name:'?????\n??????', realName:'????? ??????',
    sub:'COLD-SPOT ref.', tip:'COLD SPOT. The signal is cold here. No explanation accepted.',
-   passkey:'', x:2200, y:460},
+   passkey:'', x:2970, y:598},
 
 ];
 
@@ -921,6 +1097,23 @@ function buildNodes(){
     el.addEventListener('mousemove', moveTooltip);
     el.addEventListener('click', () => handleNodeClick(n));
 
+    // Mobile: handle touch tap without triggering pan
+    let nodeTouchStart = null;
+    el.addEventListener('touchstart', e => {
+      nodeTouchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+    }, {passive:true});
+    el.addEventListener('touchend', e => {
+      if(!nodeTouchStart) return;
+      const dx = Math.abs(e.changedTouches[0].clientX - nodeTouchStart.x);
+      const dy = Math.abs(e.changedTouches[0].clientY - nodeTouchStart.y);
+      if(dx < 10 && dy < 10){
+        e.preventDefault();
+        e.stopPropagation();
+        openBottomSheet(n);
+      }
+      nodeTouchStart = null;
+    });
+
     canvas.appendChild(el);
   });
 
@@ -1020,8 +1213,14 @@ function moveTooltip(e){
    NODE CLICK
 ══════════════════════════════════════════ */
 function handleNodeClick(n){
-  if(unlockedNodes.has(n.id)) return; // already unlocked
-  if(!n.passkey) return; // not unlockable yet
+  // Mobile: always open bottom sheet
+  if(isMobile()){
+    openBottomSheet(n);
+    return;
+  }
+  // Desktop: existing unlock bar flow
+  if(unlockedNodes.has(n.id)) return;
+  if(!n.passkey) return;
 
   activeNodeId = n.id;
   const bar = document.getElementById('unlock-bar');
@@ -1123,19 +1322,215 @@ window.addEventListener('mousemove', e => {
   updateMinimap();
 });
 
-/* Touch drag */
-let touchStart = null;
-wrap.addEventListener('touchstart', e => {
-  if(e.touches.length !== 1) return;
-  touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY, sl:wrap.scrollLeft, st:wrap.scrollTop};
-});
-wrap.addEventListener('touchmove', e => {
-  if(!touchStart || e.touches.length !== 1) return;
-  e.preventDefault();
-  wrap.scrollLeft = touchStart.sl - (e.touches[0].clientX - touchStart.x);
-  wrap.scrollTop  = touchStart.st - (e.touches[0].clientY - touchStart.y);
+/* ══════════════════════════════════════════
+   MOBILE: PINCH-TO-ZOOM + PAN + BOTTOM SHEET
+══════════════════════════════════════════ */
+const isMobile = () => window.innerWidth <= 640;
+
+let currentScale = 1;
+const MIN_SCALE = 0.25;
+const MAX_SCALE = 2.0;
+
+function applyScale(scale, originX, originY){
+  currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.transform = `scale(${currentScale})`;
+  // Adjust wrap scroll so origin point stays fixed
   updateMinimap();
+}
+
+function setScaleFromButton(newScale){
+  const cx = wrap.clientWidth / 2;
+  const cy = wrap.clientHeight / 2;
+  const worldX = (wrap.scrollLeft + cx) / currentScale;
+  const worldY = (wrap.scrollTop + cy) / currentScale;
+  currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
+  canvas.style.transformOrigin = '0 0';
+  canvas.style.transform = `scale(${currentScale})`;
+  wrap.scrollLeft = worldX * currentScale - cx;
+  wrap.scrollTop = worldY * currentScale - cy;
+  updateMinimap();
+}
+
+// Zoom buttons
+const zoomIn = document.getElementById('zoom-in');
+const zoomOut = document.getElementById('zoom-out');
+const zoomReset = document.getElementById('zoom-reset');
+if(zoomIn) zoomIn.addEventListener('click', () => setScaleFromButton(currentScale * 1.3));
+if(zoomOut) zoomOut.addEventListener('click', () => setScaleFromButton(currentScale / 1.3));
+if(zoomReset) zoomReset.addEventListener('click', () => {
+  // Fit the whole map
+  const fitScale = Math.min(
+    wrap.clientWidth / (canvas.scrollWidth || 3600),
+    wrap.clientHeight / (canvas.scrollHeight || 2800)
+  ) * 0.9;
+  setScaleFromButton(fitScale);
+  wrap.scrollLeft = 0; wrap.scrollTop = 0;
+  updateMinimap();
+});
+
+// Touch: single-finger pan + two-finger pinch
+let touchStart = null;
+let pinchStart = null;
+
+function getTouchDist(t){ 
+  const dx = t[1].clientX - t[0].clientX;
+  const dy = t[1].clientY - t[0].clientY;
+  return Math.sqrt(dx*dx + dy*dy);
+}
+
+wrap.addEventListener('touchstart', e => {
+  if(e.touches.length === 1){
+    // Check if touched a node — don't start pan
+    if(e.target.closest('.node')){ touchStart = null; return; }
+    touchStart = {
+      x:e.touches[0].clientX, y:e.touches[0].clientY,
+      sl:wrap.scrollLeft, st:wrap.scrollTop,
+      moved: false
+    };
+    pinchStart = null;
+  } else if(e.touches.length === 2){
+    e.preventDefault();
+    touchStart = null;
+    pinchStart = {
+      dist: getTouchDist(e.touches),
+      scale: currentScale,
+      midX: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+      midY: (e.touches[0].clientY + e.touches[1].clientY) / 2,
+      sl: wrap.scrollLeft,
+      st: wrap.scrollTop,
+    };
+  }
 }, {passive:false});
+
+wrap.addEventListener('touchmove', e => {
+  if(e.touches.length === 2 && pinchStart){
+    e.preventDefault();
+    const newDist = getTouchDist(e.touches);
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStart.scale * (newDist / pinchStart.dist)));
+    
+    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    
+    // World point under pinch center
+    const worldX = (pinchStart.sl + pinchStart.midX) / pinchStart.scale;
+    const worldY = (pinchStart.st + pinchStart.midY) / pinchStart.scale;
+    
+    currentScale = newScale;
+    canvas.style.transformOrigin = '0 0';
+    canvas.style.transform = `scale(${currentScale})`;
+    
+    wrap.scrollLeft = worldX * currentScale - midX;
+    wrap.scrollTop = worldY * currentScale - midY;
+    updateMinimap();
+  } else if(e.touches.length === 1 && touchStart){
+    e.preventDefault();
+    const dx = e.touches[0].clientX - touchStart.x;
+    const dy = e.touches[0].clientY - touchStart.y;
+    if(Math.abs(dx) > 3 || Math.abs(dy) > 3) touchStart.moved = true;
+    wrap.scrollLeft = touchStart.sl - dx;
+    wrap.scrollTop  = touchStart.st - dy;
+    updateMinimap();
+  }
+}, {passive:false});
+
+wrap.addEventListener('touchend', e => {
+  if(e.changedTouches.length === 1 && touchStart && !touchStart.moved){
+    // Tap on background — close bottom sheet
+    if(!e.target.closest('.node') && !e.target.closest('#bottom-sheet')){
+      closeBottomSheet();
+    }
+  }
+  if(e.touches.length < 2) pinchStart = null;
+  if(e.touches.length === 0) touchStart = null;
+});
+
+/* ══════════════════════════════════════════
+   BOTTOM SHEET
+══════════════════════════════════════════ */
+let bsActiveNodeId = null;
+
+function openBottomSheet(n){
+  const isUnlocked = unlockedNodes.has(n.id);
+  document.getElementById('bs-tag').textContent = n.tag || '';
+  document.getElementById('bs-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
+  document.getElementById('bs-body').textContent = isUnlocked && n.realTip ? n.realTip : n.tip;
+  
+  const unlockDiv = document.getElementById('bs-unlock');
+  const closePlain = document.getElementById('bs-close-plain');
+  if(!isUnlocked && n.passkey){
+    unlockDiv.style.display = 'block';
+    closePlain.style.display = 'none';
+    bsActiveNodeId = n.id;
+    document.getElementById('bs-input').value = '';
+    document.getElementById('bs-msg').textContent = '';
+    document.getElementById('bs-msg').style.color = '';
+  } else {
+    unlockDiv.style.display = 'none';
+    closePlain.style.display = 'block';
+    bsActiveNodeId = null;
+  }
+
+  document.getElementById('bottom-sheet').classList.add('open');
+  document.getElementById('bs-backdrop').classList.add('open');
+}
+
+function closeBottomSheet(){
+  document.getElementById('bottom-sheet').classList.remove('open');
+  document.getElementById('bs-backdrop').classList.remove('open');
+  bsActiveNodeId = null;
+}
+
+document.getElementById('bs-backdrop').addEventListener('click', closeBottomSheet);
+document.getElementById('bs-close').addEventListener('click', closeBottomSheet);
+document.getElementById('bs-dismiss').addEventListener('click', closeBottomSheet);
+
+document.getElementById('bs-submit').addEventListener('click', tryUnlockMobile);
+document.getElementById('bs-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') tryUnlockMobile();
+});
+
+function tryUnlockMobile(){
+  if(!bsActiveNodeId) return;
+  const n = nodeMap[bsActiveNodeId];
+  const input = document.getElementById('bs-input').value.trim().toUpperCase();
+  const key = (n.passkey || '').toUpperCase();
+  const msg = document.getElementById('bs-msg');
+  if(input === key){
+    unlockedNodes.add(bsActiveNodeId);
+    saveUnlocked(unlockedNodes);
+    applyUnlock(bsActiveNodeId, n);
+    msg.textContent = '// SIGNAL ACQUIRED';
+    msg.style.color = 'rgba(40,200,100,0.8)';
+    setTimeout(() => {
+      // Refresh sheet content to show unlocked info
+      document.getElementById('bs-title').textContent = n.realName || n.name;
+      document.getElementById('bs-body').textContent = n.realTip || n.tip;
+      document.getElementById('bs-unlock').style.display = 'none';
+      document.getElementById('bs-close-plain').style.display = 'block';
+    }, 1000);
+  } else {
+    msg.textContent = '// KEY REJECTED';
+    msg.style.color = 'rgba(200,71,42,0.8)';
+    document.getElementById('bs-input').value = '';
+  }
+}
+
+/* Legend toggle */
+const legendBtn = document.getElementById('legend-btn');
+const legend = document.getElementById('legend');
+legendBtn.addEventListener('click', () => {
+  legend.classList.toggle('mobile-open');
+  legendBtn.textContent = legend.classList.contains('mobile-open') ? '✕' : '≡';
+});
+
+// Close legend when tapping outside
+document.addEventListener('click', e => {
+  if(!e.target.closest('#legend') && !e.target.closest('#legend-btn')){
+    legend.classList.remove('mobile-open');
+    legendBtn.textContent = '≡';
+  }
+});
 
 /* ══════════════════════════════════════════
    MINIMAP
@@ -1173,13 +1568,14 @@ function drawMinimap(){
 }
 
 function updateMinimap(){
-  const cW = canvas.scrollWidth, cH = canvas.scrollHeight;
+  const cW = canvas.scrollWidth * currentScale;
+  const cH = canvas.scrollHeight * currentScale;
   const scaleX = mmW / cW, scaleY = mmH / cH;
   const vp = document.getElementById('minimap-viewport');
   const vpW = wrap.clientWidth * scaleX;
   const vpH = wrap.clientHeight * scaleY;
   vp.style.left = (wrap.scrollLeft * scaleX) + 'px';
-  vp.style.top = ((wrap.scrollTop) * scaleY) + 'px';
+  vp.style.top = (wrap.scrollTop * scaleY) + 'px';
   vp.style.width = vpW + 'px';
   vp.style.height = vpH + 'px';
 }
@@ -1235,16 +1631,16 @@ function rotateTip(){ document.getElementById('hud-tip').textContent = HUD_TIPS[
    SECTION LABELS
 ══════════════════════════════════════════ */
 const LABELS = [
-  {text:'CORE SIGNAL CHAIN', x:1100, y:50},
-  {text:'LATERAL ENTITIES', x:1750, y:50},
-  {text:'SIHARU — 9 BRANCH PATHS', x:400, y:570},
-  {text:'WORLD SPLIT / STRATUM-A vs STRATUM-B', x:700, y:790},
-  {text:'CHARACTERS / PERSONS OF INTEREST', x:580, y:990},
-  {text:'TIMELINE / GLOBAL EVENTS', x:480, y:1230},
-  {text:'ANOMALIES / PHENOMENA', x:280, y:1450},
-  {text:'ZOMBIE CLASSIFICATION — 9 TYPES', x:100, y:1670},
-  {text:'INFECTED CLASSIFICATION — 5 TYPES', x:1520, y:1670},
-  {text:'FACTION INDEX', x:280, y:1930},
+  {text:'CORE SIGNAL CHAIN', x:1485, y:65},
+  {text:'LATERAL ENTITIES', x:2362, y:65},
+  {text:'SIHARU — 9 BRANCH PATHS', x:540, y:741},
+  {text:'WORLD SPLIT / STRATUM-A vs STRATUM-B', x:945, y:1027},
+  {text:'CHARACTERS / PERSONS OF INTEREST', x:783, y:1287},
+  {text:'TIMELINE / GLOBAL EVENTS', x:648, y:1599},
+  {text:'ANOMALIES / PHENOMENA', x:378, y:1885},
+  {text:'ZOMBIE CLASSIFICATION — 9 TYPES', x:135, y:2171},
+  {text:'INFECTED CLASSIFICATION — 5 TYPES', x:2052, y:2171},
+  {text:'FACTION INDEX', x:378, y:2509},
 ];
 
 function buildLabels(){
@@ -1269,8 +1665,22 @@ function init(){
     drawMinimap();
     updateMinimap();
     // Centre view on root
-    wrap.scrollLeft = 1300 - wrap.clientWidth/2;
-    wrap.scrollTop = 0;
+    if(isMobile()){
+      // Start zoomed out to show context, centered on root
+      const fitScale = Math.min(
+        wrap.clientWidth / 3600,
+        wrap.clientHeight / 2800
+      ) * 1.6; // slightly zoomed in from full fit
+      currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
+      canvas.style.transformOrigin = '0 0';
+      canvas.style.transform = `scale(${currentScale})`;
+      // Center on WNCORE root node (x:1755, y:104)
+      wrap.scrollLeft = 1755 * currentScale - wrap.clientWidth / 2;
+      wrap.scrollTop = 0;
+    } else {
+      wrap.scrollLeft = 1755 - wrap.clientWidth/2;
+      wrap.scrollTop = 0;
+    }
     updateMinimap();
   }, 120);
 
