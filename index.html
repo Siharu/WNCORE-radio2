@@ -240,6 +240,12 @@ try {
       <a href="/constellation.html" class="search-btn" title="Signal Cartography" style="color:var(--accent)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </a>
+      <!-- ABERRANT STAR — flowchart link, locked until 1 constellation solved -->
+      <button class="nav-aberrant-star" id="aber-star-desktop" onclick="openFlowchart()" title="Signal Cartography — CLASSIFIED">
+        <span class="aber-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <span class="aber-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="6" stroke-width="1.2" opacity="0.5"/><line x1="22" y1="9.27" x2="18.5" y2="10.5" stroke-width="1.2" opacity="0.5"/><line x1="18.18" y1="21.02" x2="16" y2="18" stroke-width="1.2" opacity="0.5"/></svg>
+      </button>
       <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()">Sign In</button>
       <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
@@ -293,6 +299,18 @@ try {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="8"/></svg>
     Signal Cartography ↗
   </a>
+  <!-- ABERRANT STAR — flowchart link -->
+  <button class="mobile-aber-link" id="aber-star-mobile" onclick="openFlowchart();toggleMobileMenu()">
+    <div class="nav-aberrant-star" style="pointer-events:none">
+      <span class="aber-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+      <span class="aber-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="6" stroke-width="1.2" opacity="0.5"/><line x1="22" y1="9.27" x2="18.5" y2="10.5" stroke-width="1.2" opacity="0.5"/></svg>
+    </div>
+    <span class="aber-label">
+      <span id="aber-mobile-label">Signal Cartography — CLASSIFIED</span>
+      <span class="aber-sub" id="aber-mobile-sub">complete a constellation to unlock</span>
+    </span>
+  </button>
   <div class="mobile-nav-actions">
     <div style="display:flex;gap:10px">
       <button onclick="toggleDark();return false" class="mobile-action-btn">
@@ -1490,6 +1508,108 @@ try {
   55% { transform: translate(5px,1px);  opacity: 0.5; }
   75% { transform: translate(2px,6px);  opacity: 0.5; }
 }
+
+/* ── ABERRANT STAR (flowchart link) ── */
+.nav-aberrant-star {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.nav-aberrant-star svg {
+  width: 18px;
+  height: 18px;
+  color: var(--accent, #c8472a);
+  animation: aber-drift 4.1s ease-in-out infinite;
+  filter: drop-shadow(0 0 4px rgba(200,71,42,0.5));
+}
+.nav-aberrant-star .aber-r,
+.nav-aberrant-star .aber-b {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+.nav-aberrant-star .aber-r svg { color: #f16f6f; opacity: 0; animation: aber-chroma-r 4.1s ease-in-out infinite; }
+.nav-aberrant-star .aber-b svg { color: #67f3da; opacity: 0; animation: aber-chroma-b 4.1s ease-in-out infinite; }
+.nav-aberrant-star.locked svg { color: rgba(200,71,42,0.3); filter: none; animation: aber-locked-pulse 3s ease-in-out infinite; }
+.nav-aberrant-star.locked .aber-r svg,
+.nav-aberrant-star.locked .aber-b svg { display: none; }
+@keyframes aber-drift {
+  0%,100% { transform: translate(0,0) rotate(0deg); }
+  12%     { transform: translate(-0.5px, 0.5px) rotate(-1.5deg); }
+  24%     { transform: translate(0,0); }
+  51%     { transform: translate(0.5px,-0.5px) skewX(2deg); opacity:0.85; }
+  52%     { transform: translate(0,0); opacity:1; }
+  78%     { transform: translate(0.5px,0.5px) rotate(1deg); }
+}
+@keyframes aber-chroma-r {
+  0%,90%,100% { opacity:0; transform:translate(0,0); }
+  91%         { opacity:0.55; transform:translate(-2px,0); }
+  93%         { opacity:0; }
+  94%         { opacity:0.4; transform:translate(-1px,1px); }
+  96%         { opacity:0; }
+}
+@keyframes aber-chroma-b {
+  0%,90%,100% { opacity:0; transform:translate(0,0); }
+  91%         { opacity:0.55; transform:translate(2px,0); }
+  93%         { opacity:0; }
+  94%         { opacity:0.4; transform:translate(1px,-1px); }
+  96%         { opacity:0; }
+}
+@keyframes aber-locked-pulse {
+  0%,100% { opacity:0.3; } 50% { opacity:0.5; }
+}
+/* locked tooltip */
+.aber-lock-toast {
+  position: fixed;
+  bottom: 72px;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  background: rgba(13,11,9,0.96);
+  border: 1px solid rgba(200,71,42,0.3);
+  border-radius: 6px;
+  padding: 10px 18px;
+  font-size: 0.58rem;
+  letter-spacing: 2px;
+  color: rgba(232,228,223,0.6);
+  text-transform: uppercase;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 9999;
+  white-space: nowrap;
+}
+.aber-lock-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+/* mobile nav aberrant star row */
+.mobile-aber-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  text-decoration: none;
+  font-size: 0.78rem;
+  letter-spacing: 0.5px;
+  color: rgba(200,71,42,0.5);
+  cursor: pointer;
+  background: none;
+  border: none;
+  width: 100%;
+  font-family: inherit;
+}
+.mobile-aber-link.unlocked { color: var(--accent, #c8472a); }
+.mobile-aber-link .aber-label { display: flex; flex-direction: column; gap: 2px; }
+.mobile-aber-link .aber-sub { font-size: 0.52rem; letter-spacing: 2px; color: rgba(232,228,223,0.25); text-transform: uppercase; }
 </style>
 
 
@@ -2246,6 +2366,57 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 </div>
+
+<!-- ABERRANT STAR LOCK TOAST -->
+<div class="aber-lock-toast" id="aber-lock-toast">⚠ SIGNAL LOCKED — MAP A CONSTELLATION FIRST</div>
+
+<script>
+/* ── ABERRANT STAR — flowchart gate ── */
+(function() {
+  function isFlowchartUnlocked() {
+    try {
+      var solved = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
+      return Array.isArray(solved) && solved.length >= 1;
+    } catch(e) { return false; }
+  }
+
+  function applyAberrantState() {
+    var unlocked = isFlowchartUnlocked();
+    // Desktop
+    var ds = document.getElementById('aber-star-desktop');
+    if (ds) {
+      ds.classList.toggle('locked', !unlocked);
+      ds.title = unlocked ? 'Signal Cartography — CLASSIFIED ↗' : 'LOCKED — complete a constellation';
+    }
+    // Mobile
+    var ms = document.getElementById('aber-star-mobile');
+    var ml = document.getElementById('aber-mobile-label');
+    var msub = document.getElementById('aber-mobile-sub');
+    if (ms) ms.classList.toggle('unlocked', unlocked);
+    if (ms && ms.querySelector('.nav-aberrant-star')) ms.querySelector('.nav-aberrant-star').classList.toggle('locked', !unlocked);
+    if (ml) ml.textContent = unlocked ? 'Signal Cartography — CLASSIFIED ↗' : 'Signal Cartography — CLASSIFIED';
+    if (msub) msub.textContent = unlocked ? 'flowchart.html' : 'complete a constellation to unlock';
+  }
+
+  window.openFlowchart = function() {
+    if (isFlowchartUnlocked()) {
+      window.location.href = '/flowchart.html';
+    } else {
+      var t = document.getElementById('aber-lock-toast');
+      if (!t) return;
+      t.classList.add('show');
+      clearTimeout(t._tid);
+      t._tid = setTimeout(function() { t.classList.remove('show'); }, 2600);
+    }
+  };
+
+  // Init on load + re-check when constellation page unlocks something
+  document.addEventListener('DOMContentLoaded', applyAberrantState);
+  window.addEventListener('storage', function(e) {
+    if (e.key === 'wncore-constellation-solved') applyAberrantState();
+  });
+})();
+</script>
 
 </body>
 </html>
