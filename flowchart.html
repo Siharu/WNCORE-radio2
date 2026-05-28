@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WNCORE — SIGNAL CARTOGRAPHY / ARG MAP</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04030a;
+  --bg2:#07060f;
+  --acc:#c8472a;
+  --acc2:#e8824a;
+  --acc3:#f0a060;
+  --txt:#e8e4df;
+  --txt2:rgba(232,228,223,0.55);
+  --txt3:rgba(232,228,223,0.22);
+  --glow:rgba(200,71,42,0.4);
+  --scan:rgba(0,0,0,0.08);
+  --mono:'Share Tech Mono',monospace;
+  --vt:'VT323',monospace;
+  --orb:'Orbitron',monospace;
+  --locked-bg:#0d0b1a;
+  --locked-border:rgba(255,255,255,0.06);
+  --locked-txt:rgba(232,228,223,0.18);
+  --unk-bg:#0a0814;
+  --unk-border:rgba(200,71,42,0.12);
+}
+html,body{
+  width:100%;min-height:100vh;background:var(--bg);
+  color:var(--txt);font-family:var(--mono);overflow-x:hidden;
+}
+
+/* ── SCANLINES ── */
+body::before{
+  content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:repeating-linear-gradient(
+    0deg,
+    var(--scan) 0px,var(--scan) 1px,
+    transparent 1px,transparent 4px
+  );
+  animation:scanroll 8s linear infinite;
+}
+@keyframes scanroll{
+  from{background-position:0 0}
+  to{background-position:0 400px}
+}
+
+/* ── VIGNETTE ── */
+body::after{
+  content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.7) 100%);
+}
+
+/* ── GRAIN ── */
+#grain{
+  position:fixed;inset:0;z-index:9997;pointer-events:none;opacity:0.04;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:256px;
+}
+
+/* ── HEADER ── */
+#hd{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 24px;border-bottom:1px solid rgba(200,71,42,0.2);
+  background:rgba(4,3,10,0.9);backdrop-filter:blur(12px);
+}
+.hd-logo{font-family:var(--orb);font-size:0.75rem;color:var(--acc);letter-spacing:3px;text-decoration:none}
+.hd-title{font-size:0.5rem;letter-spacing:3px;color:var(--txt3);text-transform:uppercase}
+.hd-status{font-size:0.55rem;letter-spacing:2px;color:var(--txt3);display:flex;align-items:center;gap:8px}
+.hd-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulse-dot 2s ease-in-out infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 6px var(--acc)}50%{opacity:0.4;box-shadow:none}}
+#back{font-size:0.5rem;letter-spacing:2px;color:var(--txt3);text-decoration:none;padding:4px 8px;border:1px solid var(--locked-border);border-radius:3px;transition:all 0.15s}
+#back:hover{color:var(--txt);border-color:rgba(255,255,255,0.15)}
+
+/* ── CANVAS WRAPPER ── */
+#map-wrap{
+  position:relative;padding-top:57px;min-height:100vh;
+  overflow:auto;
+}
+#map{
+  position:relative;
+  min-width:1100px;
+  min-height:900px;
+  margin:0 auto;
+  padding:60px 60px 120px;
+}
+
+/* ── SVG CONNECTOR LAYER ── */
+#connectors{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;overflow:visible;
+}
+
+/* ── NODE BASE ── */
+.node{
+  position:absolute;
+  border-radius:4px;
+  cursor:pointer;
+  transition:transform 0.15s;
+  user-select:none;
+}
+.node:hover{transform:scale(1.04)}
+.node:hover .n-glow{opacity:1}
+.n-glow{
+  position:absolute;inset:-8px;border-radius:8px;
+  opacity:0;transition:opacity 0.2s;pointer-events:none;
+  box-shadow:0 0 24px var(--glow),0 0 48px rgba(200,71,42,0.2);
+}
+
+/* ── WNCORE ROOT NODE ── */
+.node-root{
+  background:var(--bg2);
+  border:1px solid var(--acc);
+  box-shadow:0 0 18px rgba(200,71,42,0.25),inset 0 0 40px rgba(200,71,42,0.04);
+  width:180px;
+}
+.node-root .n-inner{padding:14px 18px}
+.node-root .n-tag{font-size:0.42rem;letter-spacing:3px;color:var(--acc);margin-bottom:6px}
+.node-root .n-name{font-family:var(--orb);font-size:1.1rem;color:var(--txt);letter-spacing:2px;animation:glitch-root 4s infinite}
+.node-root .n-sub{font-size:0.52rem;letter-spacing:1px;color:var(--txt2);margin-top:5px;line-height:1.5}
+.node-root .n-status{
+  border-top:1px solid rgba(200,71,42,0.2);
+  padding:6px 18px 10px;
+  display:flex;align-items:center;gap:6px;
+  font-size:0.45rem;letter-spacing:2px;color:var(--acc)
+}
+.n-status-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:pulse-dot 1.5s ease-in-out infinite}
+
+@keyframes glitch-root{
+  0%,92%,100%{text-shadow:none;transform:none}
+  93%{text-shadow:2px 0 var(--acc2),−2px 0 rgba(0,120,255,0.6);transform:translateX(1px)}
+  95%{text-shadow:−2px 0 var(--acc2),2px 0 rgba(0,120,255,0.6);transform:translateX(-1px)}
+  97%{text-shadow:none;transform:none}
+  98%{text-shadow:1px 0 var(--acc3);transform:translateX(2px)}
+}
+
+/* ── SIHARU NODE ── */
+.node-siharu{
+  background:rgba(12,8,22,0.95);
+  border:1px solid rgba(200,71,42,0.5);
+  width:160px;
+}
+.node-siharu .n-inner{padding:12px 16px}
+.node-siharu .n-tag{font-size:0.4rem;letter-spacing:3px;color:rgba(200,71,42,0.6);margin-bottom:5px}
+.node-siharu .n-name{font-family:var(--orb);font-size:0.9rem;color:var(--acc2);letter-spacing:2px}
+.node-siharu .n-sub{font-size:0.48rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
+.node-siharu .n-paths{
+  border-top:1px solid rgba(200,71,42,0.15);
+  padding:5px 16px 9px;
+  font-size:0.42rem;letter-spacing:2px;color:rgba(200,71,42,0.5)
+}
+
+/* ── SIMULUNAS NODE ── */
+.node-simulunas{
+  background:rgba(8,6,20,0.95);
+  border:1px solid rgba(148,88,200,0.4);
+  box-shadow:0 0 12px rgba(148,88,200,0.12);
+  width:160px;
+}
+.node-simulunas .n-inner{padding:12px 16px}
+.node-simulunas .n-tag{font-size:0.4rem;letter-spacing:3px;color:rgba(148,88,200,0.6);margin-bottom:5px}
+.node-simulunas .n-name{font-family:var(--orb);font-size:0.85rem;color:rgba(185,130,240,0.9);letter-spacing:1px;animation:glitch-purple 6s infinite}
+.node-simulunas .n-sub{font-size:0.48rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
+.node-simulunas .n-arrow{
+  border-top:1px solid rgba(148,88,200,0.12);
+  padding:5px 16px 9px;
+  font-size:0.42rem;letter-spacing:2px;color:rgba(148,88,200,0.5)
+}
+
+@keyframes glitch-purple{
+  0%,90%,100%{text-shadow:none}
+  91%{text-shadow:2px 0 rgba(255,60,120,0.7),-2px 0 rgba(60,120,255,0.7)}
+  93%{text-shadow:none}
+  95%{text-shadow:-1px 0 rgba(255,60,120,0.5),1px 0 rgba(60,120,255,0.5)}
+}
+
+/* ── PATH NODES (9 branches from SIHARU) ── */
+.node-path{
+  width:110px;
+  border-radius:3px;
+}
+.node-path.unlocked{
+  background:rgba(10,7,20,0.95);
+  border:1px solid rgba(200,71,42,0.25);
+}
+.node-path.locked{
+  background:var(--locked-bg);
+  border:1px solid var(--locked-border);
+  animation:flicker-lock 8s infinite;
+}
+.node-path .n-inner{padding:9px 12px}
+.node-path .n-id{font-size:0.38rem;letter-spacing:2px;color:var(--txt3);margin-bottom:4px}
+.node-path.unlocked .n-id{color:rgba(200,71,42,0.5)}
+.node-path .n-name{font-family:var(--vt);font-size:1rem;line-height:1.1}
+.node-path.locked .n-name{color:var(--locked-txt);animation:glitch-q 5s infinite}
+.node-path.unlocked .n-name{color:var(--acc)}
+.node-path .n-sub{font-size:0.42rem;letter-spacing:1px;color:var(--txt3);margin-top:3px;line-height:1.4}
+.node-path.unlocked .n-sub{color:var(--txt2)}
+
+@keyframes flicker-lock{
+  0%,95%,100%{opacity:1}
+  96%{opacity:0.6}
+  97%{opacity:1}
+  98%{opacity:0.4}
+  99%{opacity:1}
+}
+
+@keyframes glitch-q{
+  0%,85%,100%{text-shadow:none;transform:none;filter:none}
+  86%{text-shadow:2px 0 rgba(200,71,42,0.5),-2px 0 rgba(0,80,200,0.4);transform:skewX(1deg)}
+  88%{text-shadow:none;transform:skewX(-1deg)}
+  90%{text-shadow:-1px 0 rgba(200,71,42,0.3);transform:none}
+}
+
+/* ── UNKNOWN TERMINAL NODES ── */
+.node-unk{
+  width:120px;
+  background:var(--unk-bg);
+  border:1px solid var(--unk-border);
+  border-radius:3px;
+  animation:flicker-lock 6s infinite;
+}
+.node-unk .n-inner{padding:9px 12px}
+.node-unk .n-tag{font-size:0.36rem;letter-spacing:2px;color:var(--locked-txt);margin-bottom:4px}
+.node-unk .n-name{font-family:var(--vt);font-size:1.1rem;color:rgba(200,71,42,0.2);animation:glitch-q 3s infinite}
+.node-unk .n-sub{font-size:0.4rem;color:var(--locked-txt);margin-top:4px;line-height:1.4}
+
+/* ── BLANK ZONE NODE ── */
+.node-blank{
+  width:140px;
+  background:rgba(4,3,10,0.98);
+  border:1px dashed rgba(200,71,42,0.15);
+  border-radius:2px;
+  animation:bz-pulse 3s ease-in-out infinite;
+}
+.node-blank .n-inner{padding:10px 14px}
+.node-blank .n-tag{font-size:0.36rem;letter-spacing:3px;color:rgba(200,71,42,0.3);margin-bottom:4px}
+.node-blank .n-name{font-family:var(--vt);font-size:1.05rem;color:rgba(200,71,42,0.35)}
+.node-blank .n-sub{font-size:0.4rem;color:rgba(232,228,223,0.12);margin-top:4px;line-height:1.4}
+
+@keyframes bz-pulse{
+  0%,100%{border-color:rgba(200,71,42,0.15);box-shadow:none}
+  50%{border-color:rgba(200,71,42,0.3);box-shadow:0 0 16px rgba(200,71,42,0.08)}
+}
+
+/* ── CONNECTOR LINES ── */
+.conn{stroke:rgba(200,71,42,0.3);stroke-width:0.8;fill:none}
+.conn-main{stroke:rgba(200,71,42,0.55);stroke-width:1.2;fill:none}
+.conn-siharu{stroke:rgba(200,71,42,0.4);stroke-width:0.8;fill:none;stroke-dasharray:3 4}
+.conn-purple{stroke:rgba(148,88,200,0.3);stroke-width:0.8;fill:none;stroke-dasharray:2 3}
+.conn-unknown{stroke:rgba(232,228,223,0.08);stroke-width:0.6;fill:none;stroke-dasharray:1 5}
+.conn-bz{stroke:rgba(200,71,42,0.15);stroke-width:0.6;fill:none;stroke-dasharray:1 6}
+.conn-glitch{stroke:rgba(200,71,42,0.2);stroke-width:0.6;fill:none;stroke-dasharray:4 3;animation:dash-crawl 3s linear infinite}
+@keyframes dash-crawl{to{stroke-dashoffset:-28}}
+
+/* ── LEGEND ── */
+#legend{
+  position:fixed;bottom:20px;left:24px;z-index:200;
+  font-size:0.45rem;letter-spacing:1.5px;color:var(--txt3);
+  display:flex;flex-direction:column;gap:5px;
+}
+.leg-row{display:flex;align-items:center;gap:7px}
+.leg-dot{width:5px;height:5px;border-radius:50%}
+.leg-dash{width:16px;height:1px;border-top:1px dashed}
+
+/* ── HUD ── */
+#hud{
+  position:fixed;bottom:0;left:0;right:0;z-index:300;
+  padding:8px 24px;border-top:1px solid rgba(255,255,255,0.05);
+  background:rgba(4,3,10,0.9);backdrop-filter:blur(8px);
+  display:flex;align-items:center;gap:16px;
+  font-size:0.45rem;letter-spacing:1.5px;color:var(--txt3)
+}
+#hud-counter{color:var(--acc)}
+#hud-tip{margin-left:auto;font-style:italic;animation:hud-blink 4s ease-in-out infinite}
+@keyframes hud-blink{0%,80%,100%{opacity:0.4}90%{opacity:0.9}}
+
+/* ── TOOLTIP ── */
+#tooltip{
+  position:fixed;z-index:9000;pointer-events:none;
+  background:rgba(4,3,10,0.97);border:1px solid rgba(200,71,42,0.3);
+  border-radius:4px;padding:10px 14px;font-size:0.55rem;letter-spacing:0.5px;
+  color:var(--txt2);max-width:260px;line-height:1.7;
+  opacity:0;transform:translateY(4px);transition:opacity 0.15s,transform 0.15s;
+}
+#tooltip.show{opacity:1;transform:translateY(0)}
+#tooltip .tt-title{font-family:var(--orb);font-size:0.6rem;color:var(--acc);margin-bottom:5px;letter-spacing:1.5px}
+#tooltip .tt-corrupt{color:var(--txt3);font-family:var(--vt);font-size:0.9rem;letter-spacing:1px}
+
+/* ── GLITCH FLASH OVERLAY ── */
+#glitch-overlay{
+  position:fixed;inset:0;z-index:9990;pointer-events:none;
+  opacity:0;background:rgba(200,71,42,0.03);
+  mix-blend-mode:screen;
+}
+
+/* ── SECTION LABELS ── */
+.section-label{
+  position:absolute;
+  font-size:0.38rem;letter-spacing:3px;color:var(--txt3);
+  text-transform:uppercase;
+  border-left:1px solid rgba(255,255,255,0.06);
+  padding-left:8px;
+}
+
+/* ── REDACTED STRIPE ── */
+.redacted{
+  display:inline-block;
+  background:repeating-linear-gradient(
+    90deg,rgba(255,255,255,0.06) 0px,rgba(255,255,255,0.06) 4px,
+    transparent 4px,transparent 8px
+  );
+  border-radius:2px;padding:1px 4px;color:transparent;
+  user-select:none;font-size:0.6rem;letter-spacing:0;
+}
+.redacted::after{content:'██████';color:rgba(232,228,223,0.08)}
+</style>
+</head>
+<body>
+<div id="grain"></div>
+<div id="glitch-overlay"></div>
+
+<!-- HEADER -->
+<header id="hd">
+  <a href="constellation.html" class="hd-logo">WNCORE</a>
+  <div class="hd-title">SIGNAL CARTOGRAPHY / ARG STRUCTURE MAP — CLEARANCE: OBSEDIA-4</div>
+  <div class="hd-status">
+    <div class="hd-dot"></div>
+    <span>LIVE — <span id="node-count" style="color:var(--acc)">0</span> NODES MAPPED</span>
+  </div>
+  <a href="index.html" id="back">← RETURN</a>
+</header>
+
+<!-- MAP CONTAINER -->
+<div id="map-wrap">
+<div id="map">
+
+<!-- SVG CONNECTOR LAYER -->
+<svg id="connectors" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arr-red" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M1 1L7 4L1 7" fill="none" stroke="rgba(200,71,42,0.5)" stroke-width="1.2" stroke-linecap="round"/>
+    </marker>
+    <marker id="arr-dim" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+      <path d="M1 1L7 4L1 7" fill="none" stroke="rgba(232,228,223,0.12)" stroke-width="1.2" stroke-linecap="round"/>
+    </marker>
+    <marker id="arr-purple" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4" markerHeight="4" orient="auto">
+      <path d="M1 1L7 4L1 7" fill="none" stroke="rgba(148,88,200,0.4)" stroke-width="1.2" stroke-linecap="round"/>
+    </marker>
+    <filter id="glitch-filter">
+      <feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="1" seed="2" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- SECTION LABEL: CORE -->
+<div class="section-label" style="top:68px;left:60px">CORE SIGNAL CHAIN</div>
+<!-- SECTION LABEL: BRANCHES -->
+<div class="section-label" style="top:338px;left:60px">SIHARU BRANCH ARRAY — 9 NODES</div>
+<!-- SECTION LABEL: LATERAL -->
+<div class="section-label" style="top:68px;right:60px;border-left:none;border-right:1px solid rgba(255,255,255,0.06);padding-left:0;padding-right:8px;text-align:right">LATERAL ENTITIES</div>
+
+<!-- ══════════════════════════════════════════
+     ROW 1 — WNCORE ROOT
+══════════════════════════════════════════ -->
+<div class="node node-root" id="n-wncore" style="left:450px;top:80px" data-tip-title="WNCORE" data-tip="The signal archive. BLANK ZONE cartographic node. Origin unknown. First log entry: July 23, 2016 — 03:47 AM. All frequencies referenced to the Sirius baseline.">
+  <div class="n-glow"></div>
+  <div class="n-inner">
+    <div class="n-tag">ROOT SIGNAL NODE</div>
+    <div class="n-name">WNCORE</div>
+    <div class="n-sub">Signal Cartography<br>Archive / Broadcast</div>
+  </div>
+  <div class="n-status">
+    <div class="n-status-dot"></div>
+    <span>TRANSMITTING</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ROW 2 — SIHARU
+══════════════════════════════════════════ -->
+<div class="node node-siharu" id="n-siharu" style="left:460px;top:220px" data-tip-title="SIHARU" data-tip="Designation: unknown etymology. Appears 14 times in the OBSEDIA clearance logs. Cross-referenced with 9 signal branches. Status: ACTIVE — MONITORED.">
+  <div class="n-glow"></div>
+  <div class="n-inner">
+    <div class="n-tag">SIGNAL ENTITY / STRATUM-2</div>
+    <div class="n-name">SIHARU</div>
+    <div class="n-sub">Cross-ref: OBSEDIA logs<br>14 entries — active</div>
+  </div>
+  <div class="n-paths">→ 9 BRANCH PATHS</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ROW 3 — 9 BRANCH PATHS from SIHARU
+══════════════════════════════════════════ -->
+
+<!-- PATH-01 — NODE 09 (known) -->
+<div class="node node-path unlocked" id="n-p01" style="left:80px;top:365px" data-tip-title="PATH-01 / NODE-09" data-tip="The only confirmed active broadcast node. First confirmed signal: 88.7 MHz. Log entry count: 1,847. Anomaly flag: WATCH. Geolocation: withheld.">
+  <div class="n-inner">
+    <div class="n-id">PATH-01 / N-09</div>
+    <div class="n-name">NODE 09</div>
+    <div class="n-sub">88.7 MHz — active<br>SIGNAL_KAGE ref.</div>
+  </div>
+</div>
+
+<!-- PATH-02 — LOCKED -->
+<div class="node node-path locked" id="n-p02" style="left:205px;top:365px" data-tip-title="PATH-02" data-tip="REDACTED — OBSEDIA clearance level 5 required. File reference: OBS-STRM-7742. Last access: 2021-11-03. Access log modified.">
+  <div class="n-inner">
+    <div class="n-id">PATH-02</div>
+    <div class="n-name">??? ????</div>
+    <div class="n-sub"><span class="redacted">██████████</span></div>
+  </div>
+</div>
+
+<!-- PATH-03 — LOCKED -->
+<div class="node node-path locked" id="n-p03" style="left:330px;top:365px" data-tip-title="PATH-03" data-tip="Classification: MISSING. File exists in the index. No content on record. Added 2019-09. Entry author: unknown.">
+  <div class="n-inner">
+    <div class="n-id">PATH-03</div>
+    <div class="n-name">?? ??? ??</div>
+    <div class="n-sub">index entry only</div>
+  </div>
+</div>
+
+<!-- PATH-04 — LOCKED -->
+<div class="node node-path locked" id="n-p04" style="left:455px;top:365px" data-tip-title="PATH-04" data-tip="THUBAN-NULL: a recording of silence from a source that should not be silent. Duration: unknown. Date: unknown. File size: 0 bytes. Checksum: does not match an empty file.">
+  <div class="n-inner">
+    <div class="n-id">PATH-04</div>
+    <div class="n-name">THUBAN<br>— NULL</div>
+    <div class="n-sub">0b — silence</div>
+  </div>
+</div>
+
+<!-- PATH-05 — LOCKED -->
+<div class="node node-path locked" id="n-p05" style="left:580px;top:365px" data-tip-title="PATH-05" data-tip="OBSEDIA internal designation: SAIPH-NULL. Active in index, no broadcast on record. Possibly decommissioned. Possibly something else.">
+  <div class="n-inner">
+    <div class="n-id">PATH-05</div>
+    <div class="n-name">?? ?????</div>
+    <div class="n-sub">SAIPH-NULL ref.</div>
+  </div>
+</div>
+
+<!-- PATH-06 — LOCKED (row 2) -->
+<div class="node node-path locked" id="n-p06" style="left:140px;top:490px" data-tip-title="PATH-06" data-tip="Frequency: BLANK. A signal logged under PLEIAD-NULL — one of seven entries, each referencing a different lost broadcast.">
+  <div class="n-inner">
+    <div class="n-id">PATH-06</div>
+    <div class="n-name">?????? ??</div>
+    <div class="n-sub">PLEIAD-NULL</div>
+  </div>
+</div>
+
+<!-- PATH-07 — LOCKED -->
+<div class="node node-path locked" id="n-p07" style="left:268px;top:490px" data-tip-title="PATH-07" data-tip="GUARDIAN-CLASS. Monitors without transmitting. Has been monitoring for longer than the archive has existed. Source log: KOCHAB-FORMER.">
+  <div class="n-inner">
+    <div class="n-id">PATH-07</div>
+    <div class="n-name">?? ????<br>??? ?</div>
+    <div class="n-sub">monitor / no TX</div>
+  </div>
+</div>
+
+<!-- PATH-08 — LOCKED -->
+<div class="node node-path locked" id="n-p08" style="left:396px;top:490px" data-tip-title="PATH-08" data-tip="DELTA-CLASS HANDSHAKE. A two-signal confirmation before priority transmission. Both signals required. One has not been received since 2023-07-14.">
+  <div class="n-inner">
+    <div class="n-id">PATH-08</div>
+    <div class="n-name">???? ??<br>??????</div>
+    <div class="n-sub">DELTA-class lock</div>
+  </div>
+</div>
+
+<!-- PATH-09 — LOCKED -->
+<div class="node node-path locked" id="n-p09" style="left:524px;top:490px" data-tip-title="PATH-09" data-tip="ALGEDI-CLASS: two sources that appear to be one. Optical double — not a true binary. Classification applies to signals, not stars.">
+  <div class="n-inner">
+    <div class="n-id">PATH-09</div>
+    <div class="n-name">??? ????</div>
+    <div class="n-sub">ALGEDI-class ×2</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LATERAL — SIMULUNAS
+══════════════════════════════════════════ -->
+<div class="node node-simulunas" id="n-simulunas" style="left:840px;top:200px" data-tip-title="SIMULUNAS" data-tip="Appears once in the archive. Cross-reference: WNCORE. No origin on file. No clearance level assigned. The name does not appear in any OBSEDIA log. It appeared in the archive without being added.">
+  <div class="n-glow"></div>
+  <div class="n-inner">
+    <div class="n-tag">UNCLASSIFIED ENTITY</div>
+    <div class="n-name">SIMULUNAS</div>
+    <div class="n-sub">No origin on file<br>self-inserted entry</div>
+  </div>
+  <div class="n-arrow">→ ???</div>
+</div>
+
+<!-- SIMULUNAS → ??? child -->
+<div class="node node-unk" id="n-sim-unk" style="left:858px;top:340px" data-tip-title="???" data-tip="No data. The file was found open. No one opened it.">
+  <div class="n-inner">
+    <div class="n-tag">ENTITY / UNK</div>
+    <div class="n-name">??? ????</div>
+    <div class="n-sub">file: open<br>author: none</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     FLOATING UNKNOWNS
+══════════════════════════════════════════ -->
+
+<!-- ?? → ?? lateral entity 1 -->
+<div class="node node-unk" id="n-unk1" style="left:840px;top:460px" data-tip-title="???" data-tip="No signal header. No broadcast timestamp. The log entry exists. The log entry should not exist.">
+  <div class="n-inner">
+    <div class="n-tag">??? — ???</div>
+    <div class="n-name">?? ??? ??</div>
+    <div class="n-sub">no header / no TX</div>
+  </div>
+</div>
+
+<!-- → ??? terminal 1 -->
+<div class="node node-unk" id="n-unk2" style="left:840px;top:570px" data-tip-title="???" data-tip="COLD SPOT. The signal is cold here. No explanation accepted.">
+  <div class="n-inner">
+    <div class="n-tag">TERMINAL — ???</div>
+    <div class="n-name">?????<br>??????</div>
+    <div class="n-sub">COLD-SPOT ref.</div>
+  </div>
+</div>
+
+<!-- BLANK ZONE -->
+<div class="node node-blank" id="n-bz" style="left:80px;top:620px" data-tip-title="BLANK ZONE" data-tip="Not a location. A process. Something continuously forming in a region we cannot see directly. Origin: Monoceros / Rosette. Classification: OPEN.">
+  <div class="n-inner">
+    <div class="n-tag">PROCESS — CLASSIFIED</div>
+    <div class="n-name">BLANK ZONE</div>
+    <div class="n-sub">not a location<br>a process — ongoing</div>
+  </div>
+</div>
+
+<!-- OBSEDIA -->
+<div class="node node-unk" id="n-obsedia" style="left:240px;top:630px" data-tip-title="OBSEDIA" data-tip="Clearance levels 1-5. Level 4 referenced in Lyra logs. Level 5 referenced in PATH-02. Level 6 referenced nowhere. The archive contains a field for level 6.">
+  <div class="n-inner">
+    <div class="n-tag">AUTHORITY / ???</div>
+    <div class="n-name">OBSEDIA</div>
+    <div class="n-sub">CL-5 max visible<br>CL-6 field: exists</div>
+  </div>
+</div>
+
+<!-- SIGNAL_KAGE -->
+<div class="node" id="n-kage" style="left:400px;top:630px;background:rgba(8,6,18,0.95);border:1px solid rgba(232,228,223,0.08);width:130px;border-radius:3px" data-tip-title="SIGNAL_KAGE" data-tip="Internal designation. Appears in 43 log entries. Cross-references NODE-09, WNCORE, SIHARU. Has never been identified. Has never responded directly. All SIGNAL_KAGE entries are observations, never transmissions.">
+  <div class="n-inner" style="padding:9px 12px">
+    <div class="n-id" style="font-size:0.38rem;letter-spacing:2px;color:var(--txt3);margin-bottom:4px">INTERNAL REF.</div>
+    <div class="n-name" style="font-family:var(--vt);font-size:0.95rem;color:rgba(232,228,223,0.3)">SIGNAL_KAGE</div>
+    <div class="n-sub" style="font-size:0.4rem;letter-spacing:1px;color:var(--txt3);margin-top:3px;line-height:1.4">43 entries — observer<br>no TX on record</div>
+  </div>
+</div>
+
+<!-- ARG ENTRY POINT -->
+<div class="node" id="n-arg" style="left:560px;top:630px;background:rgba(10,8,2,0.95);border:1px solid rgba(200,100,20,0.2);width:120px;border-radius:3px" data-tip-title="ARG COORDINATE SYSTEM" data-tip="ALC-2 = Alnilam. The median. Transmissions routed through the median are considered unattributed. ARG coordinate encoding system: origin unknown, in use since Year Zero.">
+  <div class="n-inner" style="padding:9px 12px">
+    <div class="n-id" style="font-size:0.38rem;letter-spacing:2px;color:rgba(200,100,20,0.4);margin-bottom:4px">ARG / ENCODING</div>
+    <div class="n-name" style="font-family:var(--vt);font-size:0.95rem;color:rgba(200,130,40,0.45)">COORD SYS</div>
+    <div class="n-sub" style="font-size:0.4rem;letter-spacing:1px;color:var(--txt3);margin-top:3px;line-height:1.4">ALC-2: ALNILAM<br>Year Zero origin</div>
+  </div>
+</div>
+
+</div><!-- end #map -->
+</div><!-- end #map-wrap -->
+
+<!-- LEGEND -->
+<div id="legend">
+  <div class="leg-row">
+    <div class="leg-dot" style="background:var(--acc)"></div>
+    <span>KNOWN / ACTIVE</span>
+  </div>
+  <div class="leg-row">
+    <div class="leg-dot" style="background:rgba(148,88,200,0.6)"></div>
+    <span>UNCLASSIFIED ENTITY</span>
+  </div>
+  <div class="leg-row">
+    <div class="leg-dot" style="background:rgba(232,228,223,0.12)"></div>
+    <span>REDACTED / LOCKED</span>
+  </div>
+  <div class="leg-row">
+    <div class="leg-dash" style="border-top-color:rgba(200,71,42,0.4)"></div>
+    <span>SIGNAL PATH</span>
+  </div>
+  <div class="leg-row">
+    <div class="leg-dash" style="border-top-style:dashed;border-top-color:rgba(232,228,223,0.1)"></div>
+    <span>UNKNOWN CONNECTION</span>
+  </div>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <span>TOTAL NODES: <span id="node-count-hud" style="color:var(--acc)">21</span></span>
+  <span>RESOLVED: <span id="hud-counter">2 / 21</span></span>
+  <span>BLANK ZONE: OPEN</span>
+  <span>OBSEDIA: CL-5 — ACCESS DENIED</span>
+  <span id="hud-tip">HOVER NODES FOR SIGNAL DATA</span>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip">
+  <div class="tt-title" id="tt-title"></div>
+  <div id="tt-body"></div>
+</div>
+
+<script>
+const svg = document.getElementById('connectors');
+const map = document.getElementById('map');
+const tooltip = document.getElementById('tooltip');
+
+function getCenter(el){
+  const mr = map.getBoundingClientRect();
+  const er = el.getBoundingClientRect();
+  return {
+    x: er.left - mr.left + er.width/2,
+    y: er.top  - mr.top  + er.height/2,
+    top:  er.top  - mr.top,
+    bot:  er.top  - mr.top + er.height,
+    left: er.left - mr.left,
+    right:er.left - mr.left + er.width,
+    w: er.width,
+    h: er.height
+  };
+}
+
+function line(x1,y1,x2,y2,cls,marker){
+  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
+  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+  l.setAttribute('class',cls);
+  if(marker) l.setAttribute('marker-end','url(#'+marker+')');
+  svg.appendChild(l);
+}
+function path(d,cls,marker){
+  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+  p.setAttribute('d',d); p.setAttribute('class',cls);
+  if(marker) p.setAttribute('marker-end','url(#'+marker+')');
+  svg.appendChild(p);
+}
+function corner(x1,y1,x2,y2,cls,marker){
+  const mx = x1, my = y2;
+  path(`M${x1},${y1} L${mx},${my} L${x2},${y2}`,cls,marker);
+}
+
+function drawConnectors(){
+  while(svg.childNodes.length > 1) svg.removeChild(svg.lastChild);
+
+  const wncore   = getCenter(document.getElementById('n-wncore'));
+  const siharu   = getCenter(document.getElementById('n-siharu'));
+  const simulunas= getCenter(document.getElementById('n-simulunas'));
+  const simunk   = getCenter(document.getElementById('n-sim-unk'));
+  const unk1     = getCenter(document.getElementById('n-unk1'));
+  const unk2     = getCenter(document.getElementById('n-unk2'));
+  const bz       = getCenter(document.getElementById('n-bz'));
+  const obsedia  = getCenter(document.getElementById('n-obsedia'));
+  const kage     = getCenter(document.getElementById('n-kage'));
+  const arg      = getCenter(document.getElementById('n-arg'));
+  const p01      = getCenter(document.getElementById('n-p01'));
+  const p02      = getCenter(document.getElementById('n-p02'));
+  const p03      = getCenter(document.getElementById('n-p03'));
+  const p04      = getCenter(document.getElementById('n-p04'));
+  const p05      = getCenter(document.getElementById('n-p05'));
+  const p06      = getCenter(document.getElementById('n-p06'));
+  const p07      = getCenter(document.getElementById('n-p07'));
+  const p08      = getCenter(document.getElementById('n-p08'));
+  const p09      = getCenter(document.getElementById('n-p09'));
+
+  // WNCORE → SIHARU (main spine)
+  line(wncore.x, wncore.bot, siharu.x, siharu.top, 'conn-main', 'arr-red');
+
+  // SIHARU → PATH nodes (fan out)
+  const paths = [p01,p02,p03,p04,p05,p06,p07,p08,p09];
+  paths.forEach((p,i)=>{
+    const cls = i===0 ? 'conn conn-glitch' : 'conn-siharu';
+    const mk  = i===0 ? 'arr-red' : 'arr-dim';
+    const midY = (siharu.bot + p.top)/2;
+    path(`M${siharu.x},${siharu.bot} L${siharu.x},${midY} L${p.x},${midY} L${p.x},${p.top}`,cls,mk);
+  });
+
+  // SIMULUNAS → ???
+  line(simulunas.x, simulunas.bot, simunk.x, simunk.top,'conn-purple','arr-purple');
+
+  // ??? → ???
+  line(unk1.x, unk1.bot, unk2.x, unk2.top,'conn-unknown','arr-dim');
+
+  // WNCORE ↔ SIMULUNAS (dashed lateral)
+  path(`M${wncore.right},${wncore.y} L${simulunas.left},${simulunas.y}`,'conn-purple');
+
+  // SIHARU → BLANK_ZONE
+  const bzMid = (siharu.bot + bz.top)/2 + 30;
+  path(`M${siharu.x},${siharu.bot} L${siharu.x},${bzMid} L${bz.x},${bzMid} L${bz.x},${bz.top}`,'conn-bz');
+
+  // WNCORE → OBSEDIA (faint)
+  path(`M${wncore.x},${wncore.bot} L${wncore.x},${obsedia.y} L${obsedia.right},${obsedia.y}`,'conn-unknown');
+
+  // Signal_KAGE ← → NODE09
+  path(`M${kage.x},${kage.top} L${kage.x},${p01.y} L${p01.right},${p01.y}`,'conn-unknown');
+
+  // ARG → WNCORE (faint)
+  path(`M${arg.x},${arg.top} L${arg.x},${wncore.bot + 30} L${wncore.right},${wncore.bot + 30} L${wncore.right},${wncore.bot}`,'conn-bz');
+
+  // unk1 → SIHARU path (faint lateral)
+  path(`M${unk1.left},${unk1.y} L${p09.right + 10},${unk1.y} L${p09.right + 10},${p09.y}`,'conn-unknown');
+}
+
+// Tooltip
+document.querySelectorAll('.node[data-tip]').forEach(node=>{
+  node.addEventListener('mouseenter', e=>{
+    document.getElementById('tt-title').textContent = node.dataset.tipTitle || '???';
+    document.getElementById('tt-body').textContent  = node.dataset.tip;
+    tooltip.classList.add('show');
+  });
+  node.addEventListener('mouseleave',()=>tooltip.classList.remove('show'));
+  node.addEventListener('mousemove', e=>{
+    const x = Math.min(e.clientX + 16, window.innerWidth - 280);
+    const y = Math.min(e.clientY + 16, window.innerHeight - 160);
+    tooltip.style.left = x + 'px';
+    tooltip.style.top  = y + 'px';
+  });
+});
+
+// Count nodes
+const total = document.querySelectorAll('.node').length;
+document.getElementById('node-count').textContent = total;
+document.getElementById('node-count-hud').textContent = total;
+
+// Draw connectors after fonts/layout settle
+window.addEventListener('load', ()=>{ setTimeout(drawConnectors, 120); });
+window.addEventListener('resize', drawConnectors);
+
+// Random glitch flash
+function randomGlitch(){
+  const overlay = document.getElementById('glitch-overlay');
+  overlay.style.opacity = '1';
+  setTimeout(()=>{ overlay.style.opacity='0'; }, 60 + Math.random()*80);
+  // Occasionally glitch a locked node text
+  const locked = Array.from(document.querySelectorAll('.node-path.locked .n-name, .node-unk .n-name'));
+  if(locked.length && Math.random()>0.5){
+    const el = locked[Math.floor(Math.random()*locked.length)];
+    const orig = el.textContent;
+    const chars = '█▓▒░╬╫╪│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌';
+    el.textContent = Array.from({length:orig.length},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+    setTimeout(()=>{ el.textContent = orig; }, 80 + Math.random()*120);
+  }
+  setTimeout(randomGlitch, 2500 + Math.random()*6000);
+}
+randomGlitch();
+
+// Crawling status text
+const statuses = [
+  'SIGNAL: LOST — 88.7 MHz',
+  'ARCHIVE: 1,847 ENTRIES',
+  'BLANK ZONE: UNCHARTED',
+  'NODE-09: LAST SEEN 03:47',
+  'OBSEDIA: NO RESPONSE',
+  'SIHARU: 9 BRANCHES ACTIVE',
+  'COLD SPOT: LISTENING...',
+  'SIGNAL_KAGE: OBSERVED',
+];
+let si = 0;
+setInterval(()=>{
+  document.getElementById('hud-tip').textContent = statuses[si++ % statuses.length];
+},4000);
+</script>
+</body>
+</html>
