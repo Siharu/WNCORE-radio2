@@ -28,69 +28,91 @@
   --locked-txt:rgba(232,228,223,0.18);
   --unk-bg:#0a0814;
   --unk-border:rgba(200,71,42,0.12);
+  --purple:rgba(148,88,200,0.6);
+  --green-node:rgba(40,180,100,0.5);
+  --amber-node:rgba(220,160,40,0.6);
+  --blue-node:rgba(60,120,200,0.5);
 }
 html,body{
   width:100%;min-height:100vh;background:var(--bg);
   color:var(--txt);font-family:var(--mono);overflow-x:hidden;
 }
-
-/* ── SCANLINES ── */
 body::before{
   content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
-  background:repeating-linear-gradient(
-    0deg,
-    var(--scan) 0px,var(--scan) 1px,
-    transparent 1px,transparent 4px
-  );
+  background:repeating-linear-gradient(0deg,var(--scan) 0px,var(--scan) 1px,transparent 1px,transparent 4px);
   animation:scanroll 8s linear infinite;
 }
-@keyframes scanroll{
-  from{background-position:0 0}
-  to{background-position:0 400px}
-}
-
-/* ── VIGNETTE ── */
+@keyframes scanroll{from{background-position:0 0}to{background-position:0 400px}}
 body::after{
   content:'';position:fixed;inset:0;z-index:9998;pointer-events:none;
   background:radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,0.7) 100%);
 }
-
-/* ── GRAIN ── */
-#grain{
-  position:fixed;inset:0;z-index:9997;pointer-events:none;opacity:0.04;
+#grain{position:fixed;inset:0;z-index:9997;pointer-events:none;opacity:0.04;
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:256px;
-}
+  background-size:256px;}
 
 /* ── HEADER ── */
 #hd{
   position:fixed;top:0;left:0;right:0;z-index:100;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 24px;border-bottom:1px solid rgba(200,71,42,0.2);
-  background:rgba(4,3,10,0.9);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  padding:12px 24px;border-bottom:1px solid rgba(200,71,42,0.2);
+  background:rgba(4,3,10,0.94);backdrop-filter:blur(12px);
 }
 .hd-logo{font-family:var(--orb);font-size:0.75rem;color:var(--acc);letter-spacing:3px;text-decoration:none}
-.hd-title{font-size:0.5rem;letter-spacing:3px;color:var(--txt3);text-transform:uppercase}
-.hd-status{font-size:0.55rem;letter-spacing:2px;color:var(--txt3);display:flex;align-items:center;gap:8px}
+.hd-title{font-size:0.46rem;letter-spacing:3px;color:var(--txt3);text-transform:uppercase}
+.hd-status{font-size:0.5rem;letter-spacing:2px;color:var(--txt3);display:flex;align-items:center;gap:8px}
 .hd-dot{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:pulse-dot 2s ease-in-out infinite}
 @keyframes pulse-dot{0%,100%{opacity:1;box-shadow:0 0 6px var(--acc)}50%{opacity:0.4;box-shadow:none}}
-#back{font-size:0.5rem;letter-spacing:2px;color:var(--txt3);text-decoration:none;padding:4px 8px;border:1px solid var(--locked-border);border-radius:3px;transition:all 0.15s}
+#back{font-size:0.46rem;letter-spacing:2px;color:var(--txt3);text-decoration:none;padding:4px 8px;border:1px solid rgba(255,255,255,0.07);border-radius:3px;transition:all 0.15s}
 #back:hover{color:var(--txt);border-color:rgba(255,255,255,0.15)}
 
-/* ── CANVAS WRAPPER ── */
-#map-wrap{
-  position:relative;padding-top:57px;min-height:100vh;
-  overflow:auto;
+/* ── UNLOCK BAR ── */
+#unlock-bar{
+  position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
+  z-index:9995;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(4,3,10,0.97);border:1px solid rgba(200,71,42,0.3);
+  padding:10px 18px;border-radius:4px;
+  box-shadow:0 0 28px rgba(200,71,42,0.12);
+  opacity:0;pointer-events:none;transition:opacity 0.25s;
 }
-#map{
+#unlock-bar.show{opacity:1;pointer-events:all}
+#unlock-input{
+  background:transparent;border:none;border-bottom:1px solid rgba(200,71,42,0.4);
+  color:var(--txt);font-family:var(--mono);font-size:0.6rem;letter-spacing:3px;
+  width:200px;padding:4px 0;outline:none;text-transform:uppercase;
+}
+#unlock-input::placeholder{color:var(--txt3)}
+#unlock-submit{
+  font-family:var(--mono);font-size:0.46rem;letter-spacing:2px;text-transform:uppercase;
+  background:transparent;border:1px solid rgba(200,71,42,0.4);
+  color:var(--acc);padding:4px 12px;cursor:pointer;transition:all 0.15s;border-radius:2px;
+}
+#unlock-submit:hover{background:rgba(200,71,42,0.12)}
+#unlock-msg{font-size:0.44rem;letter-spacing:2px;color:rgba(200,71,42,0.6)}
+#unlock-close{
+  font-family:var(--mono);font-size:0.5rem;color:var(--txt3);
+  background:transparent;border:none;cursor:pointer;padding:2px 6px;
+}
+#unlock-close:hover{color:var(--txt)}
+#unlock-node-label{font-size:0.42rem;letter-spacing:2px;color:var(--txt3);white-space:nowrap}
+
+/* ── CANVAS ── */
+#map-wrap{
+  position:relative;padding-top:57px;
+  overflow:auto;
+  min-height:100vh;
+  cursor:grab;
+}
+#map-wrap.grabbing{cursor:grabbing}
+#map-canvas{
   position:relative;
-  min-width:1100px;
-  min-height:900px;
-  margin:0 auto;
-  padding:60px 60px 120px;
+  /* Will be sized by JS based on node layout */
+  min-width:2800px;
+  min-height:2200px;
 }
 
-/* ── SVG CONNECTOR LAYER ── */
+/* ── SVG CONNECTORS ── */
 #connectors{
   position:absolute;top:0;left:0;width:100%;height:100%;
   pointer-events:none;overflow:visible;
@@ -98,668 +120,1168 @@ body::after{
 
 /* ── NODE BASE ── */
 .node{
-  position:absolute;
-  border-radius:4px;
-  cursor:pointer;
-  transition:transform 0.15s;
+  position:absolute;border-radius:3px;cursor:pointer;
+  transition:transform 0.15s,box-shadow 0.15s;
   user-select:none;
 }
-.node:hover{transform:scale(1.04)}
+.node:hover{transform:scale(1.05);z-index:10}
 .node:hover .n-glow{opacity:1}
-.n-glow{
-  position:absolute;inset:-8px;border-radius:8px;
-  opacity:0;transition:opacity 0.2s;pointer-events:none;
-  box-shadow:0 0 24px var(--glow),0 0 48px rgba(200,71,42,0.2);
-}
+.n-glow{position:absolute;inset:-8px;border-radius:8px;opacity:0;transition:opacity 0.2s;pointer-events:none;box-shadow:0 0 24px var(--glow),0 0 48px rgba(200,71,42,0.15);}
 
-/* ── WNCORE ROOT NODE ── */
-.node-root{
-  background:var(--bg2);
-  border:1px solid var(--acc);
-  box-shadow:0 0 18px rgba(200,71,42,0.25),inset 0 0 40px rgba(200,71,42,0.04);
-  width:180px;
-}
+/* Unlocked glow */
+.node.unlocked-node:hover .n-glow{box-shadow:0 0 28px rgba(200,71,42,0.6),0 0 56px rgba(200,71,42,0.2)}
+
+/* ── NODE TYPES ── */
+.node-root{background:var(--bg2);border:1px solid var(--acc);box-shadow:0 0 18px rgba(200,71,42,0.25),inset 0 0 40px rgba(200,71,42,0.04);width:190px}
 .node-root .n-inner{padding:14px 18px}
-.node-root .n-tag{font-size:0.42rem;letter-spacing:3px;color:var(--acc);margin-bottom:6px}
+.node-root .n-tag{font-size:0.38rem;letter-spacing:3px;color:var(--acc);margin-bottom:6px}
 .node-root .n-name{font-family:var(--orb);font-size:1.1rem;color:var(--txt);letter-spacing:2px;animation:glitch-root 4s infinite}
-.node-root .n-sub{font-size:0.52rem;letter-spacing:1px;color:var(--txt2);margin-top:5px;line-height:1.5}
-.node-root .n-status{
-  border-top:1px solid rgba(200,71,42,0.2);
-  padding:6px 18px 10px;
-  display:flex;align-items:center;gap:6px;
-  font-size:0.45rem;letter-spacing:2px;color:var(--acc)
-}
+.node-root .n-sub{font-size:0.48rem;letter-spacing:1px;color:var(--txt2);margin-top:5px;line-height:1.5}
+.node-root .n-status{border-top:1px solid rgba(200,71,42,0.2);padding:6px 18px 10px;display:flex;align-items:center;gap:6px;font-size:0.42rem;letter-spacing:2px;color:var(--acc)}
 .n-status-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:pulse-dot 1.5s ease-in-out infinite}
 
 @keyframes glitch-root{
   0%,92%,100%{text-shadow:none;transform:none}
-  93%{text-shadow:2px 0 var(--acc2),−2px 0 rgba(0,120,255,0.6);transform:translateX(1px)}
-  95%{text-shadow:−2px 0 var(--acc2),2px 0 rgba(0,120,255,0.6);transform:translateX(-1px)}
+  93%{text-shadow:2px 0 var(--acc2),-2px 0 rgba(0,120,255,0.6);transform:translateX(1px)}
+  95%{text-shadow:-2px 0 var(--acc2),2px 0 rgba(0,120,255,0.6);transform:translateX(-1px)}
   97%{text-shadow:none;transform:none}
   98%{text-shadow:1px 0 var(--acc3);transform:translateX(2px)}
 }
 
-/* ── SIHARU NODE ── */
-.node-siharu{
-  background:rgba(12,8,22,0.95);
-  border:1px solid rgba(200,71,42,0.5);
-  width:160px;
-}
-.node-siharu .n-inner{padding:12px 16px}
-.node-siharu .n-tag{font-size:0.4rem;letter-spacing:3px;color:rgba(200,71,42,0.6);margin-bottom:5px}
-.node-siharu .n-name{font-family:var(--orb);font-size:0.9rem;color:var(--acc2);letter-spacing:2px}
-.node-siharu .n-sub{font-size:0.48rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
-.node-siharu .n-paths{
-  border-top:1px solid rgba(200,71,42,0.15);
-  padding:5px 16px 9px;
-  font-size:0.42rem;letter-spacing:2px;color:rgba(200,71,42,0.5)
-}
+/* Main character / known entity nodes */
+.node-known{background:rgba(12,8,22,0.95);border:1px solid rgba(200,71,42,0.5);width:168px}
+.node-known .n-inner{padding:12px 16px}
+.node-known .n-tag{font-size:0.37rem;letter-spacing:3px;color:rgba(200,71,42,0.55);margin-bottom:5px}
+.node-known .n-name{font-family:var(--orb);font-size:0.88rem;color:var(--acc2);letter-spacing:1.5px}
+.node-known .n-sub{font-size:0.44rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
+.node-known .n-footer{border-top:1px solid rgba(200,71,42,0.12);padding:5px 16px 8px;font-size:0.38rem;letter-spacing:2px;color:rgba(200,71,42,0.45)}
 
-/* ── SIMULUNAS NODE ── */
-.node-simulunas{
-  background:rgba(8,6,20,0.95);
-  border:1px solid rgba(148,88,200,0.4);
-  box-shadow:0 0 12px rgba(148,88,200,0.12);
-  width:160px;
+/* Locked / unknown */
+.node-locked{
+  background:var(--locked-bg);border:1px solid var(--locked-border);
+  width:128px;animation:flicker-lock 9s infinite;
 }
+.node-locked.wide{width:152px}
+.node-locked .n-inner{padding:10px 13px}
+.node-locked .n-id{font-size:0.36rem;letter-spacing:2px;color:var(--txt3);margin-bottom:4px;text-transform:uppercase}
+.node-locked .n-name{font-family:var(--vt);font-size:1rem;color:var(--locked-txt);line-height:1.15;animation:glitch-q 5s infinite}
+.node-locked .n-sub{font-size:0.38rem;letter-spacing:1px;color:rgba(232,228,223,0.1);margin-top:3px;line-height:1.35}
+.node-locked .n-lock{font-size:0.36rem;letter-spacing:2px;color:rgba(200,71,42,0.2);margin-top:5px;border-top:1px solid rgba(255,255,255,0.04);padding-top:4px}
+
+/* Unlocked state override */
+.node-locked.unlocked-node{
+  background:rgba(12,8,22,0.97);
+  border:1px solid rgba(200,71,42,0.45);
+  animation:none;
+  box-shadow:0 0 14px rgba(200,71,42,0.1);
+}
+.node-locked.unlocked-node .n-name{color:var(--acc2);animation:none}
+.node-locked.unlocked-node .n-sub{color:var(--txt2)}
+.node-locked.unlocked-node .n-lock{display:none}
+.node-locked.unlocked-node .n-id{color:rgba(200,71,42,0.5)}
+
+/* Simulunas-type: purple */
+.node-simulunas{background:rgba(8,6,20,0.95);border:1px solid rgba(148,88,200,0.4);box-shadow:0 0 12px rgba(148,88,200,0.1);width:164px}
 .node-simulunas .n-inner{padding:12px 16px}
-.node-simulunas .n-tag{font-size:0.4rem;letter-spacing:3px;color:rgba(148,88,200,0.6);margin-bottom:5px}
+.node-simulunas .n-tag{font-size:0.37rem;letter-spacing:3px;color:rgba(148,88,200,0.55);margin-bottom:5px}
 .node-simulunas .n-name{font-family:var(--orb);font-size:0.85rem;color:rgba(185,130,240,0.9);letter-spacing:1px;animation:glitch-purple 6s infinite}
-.node-simulunas .n-sub{font-size:0.48rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
-.node-simulunas .n-arrow{
-  border-top:1px solid rgba(148,88,200,0.12);
-  padding:5px 16px 9px;
-  font-size:0.42rem;letter-spacing:2px;color:rgba(148,88,200,0.5)
-}
+.node-simulunas .n-sub{font-size:0.44rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
+.node-simulunas .n-footer{border-top:1px solid rgba(148,88,200,0.1);padding:5px 16px 8px;font-size:0.38rem;letter-spacing:2px;color:rgba(148,88,200,0.4)}
 
-@keyframes glitch-purple{
-  0%,90%,100%{text-shadow:none}
-  91%{text-shadow:2px 0 rgba(255,60,120,0.7),-2px 0 rgba(60,120,255,0.7)}
-  93%{text-shadow:none}
-  95%{text-shadow:-1px 0 rgba(255,60,120,0.5),1px 0 rgba(60,120,255,0.5)}
-}
-
-/* ── PATH NODES (9 branches from SIHARU) ── */
-.node-path{
-  width:110px;
-  border-radius:3px;
-}
-.node-path.unlocked{
-  background:rgba(10,7,20,0.95);
-  border:1px solid rgba(200,71,42,0.25);
-}
-.node-path.locked{
-  background:var(--locked-bg);
-  border:1px solid var(--locked-border);
-  animation:flicker-lock 8s infinite;
-}
-.node-path .n-inner{padding:9px 12px}
-.node-path .n-id{font-size:0.38rem;letter-spacing:2px;color:var(--txt3);margin-bottom:4px}
-.node-path.unlocked .n-id{color:rgba(200,71,42,0.5)}
-.node-path .n-name{font-family:var(--vt);font-size:1rem;line-height:1.1}
-.node-path.locked .n-name{color:var(--locked-txt);animation:glitch-q 5s infinite}
-.node-path.unlocked .n-name{color:var(--acc)}
-.node-path .n-sub{font-size:0.42rem;letter-spacing:1px;color:var(--txt3);margin-top:3px;line-height:1.4}
-.node-path.unlocked .n-sub{color:var(--txt2)}
-
-@keyframes flicker-lock{
-  0%,95%,100%{opacity:1}
-  96%{opacity:0.6}
-  97%{opacity:1}
-  98%{opacity:0.4}
-  99%{opacity:1}
-}
-
-@keyframes glitch-q{
-  0%,85%,100%{text-shadow:none;transform:none;filter:none}
-  86%{text-shadow:2px 0 rgba(200,71,42,0.5),-2px 0 rgba(0,80,200,0.4);transform:skewX(1deg)}
-  88%{text-shadow:none;transform:skewX(-1deg)}
-  90%{text-shadow:-1px 0 rgba(200,71,42,0.3);transform:none}
-}
-
-/* ── UNKNOWN TERMINAL NODES ── */
-.node-unk{
-  width:120px;
-  background:var(--unk-bg);
-  border:1px solid var(--unk-border);
-  border-radius:3px;
-  animation:flicker-lock 6s infinite;
-}
-.node-unk .n-inner{padding:9px 12px}
-.node-unk .n-tag{font-size:0.36rem;letter-spacing:2px;color:var(--locked-txt);margin-bottom:4px}
-.node-unk .n-name{font-family:var(--vt);font-size:1.1rem;color:rgba(200,71,42,0.2);animation:glitch-q 3s infinite}
-.node-unk .n-sub{font-size:0.4rem;color:var(--locked-txt);margin-top:4px;line-height:1.4}
-
-/* ── BLANK ZONE NODE ── */
-.node-blank{
-  width:140px;
-  background:rgba(4,3,10,0.98);
-  border:1px dashed rgba(200,71,42,0.15);
-  border-radius:2px;
-  animation:bz-pulse 3s ease-in-out infinite;
-}
+/* Blank zone */
+.node-blank{width:150px;background:rgba(4,3,10,0.98);border:1px dashed rgba(200,71,42,0.18);border-radius:2px;animation:bz-pulse 3s ease-in-out infinite}
 .node-blank .n-inner{padding:10px 14px}
 .node-blank .n-tag{font-size:0.36rem;letter-spacing:3px;color:rgba(200,71,42,0.3);margin-bottom:4px}
-.node-blank .n-name{font-family:var(--vt);font-size:1.05rem;color:rgba(200,71,42,0.35)}
-.node-blank .n-sub{font-size:0.4rem;color:rgba(232,228,223,0.12);margin-top:4px;line-height:1.4}
+.node-blank .n-name{font-family:var(--vt);font-size:1.05rem;color:rgba(200,71,42,0.38)}
+.node-blank .n-sub{font-size:0.38rem;color:rgba(232,228,223,0.12);margin-top:4px;line-height:1.35}
 
-@keyframes bz-pulse{
-  0%,100%{border-color:rgba(200,71,42,0.15);box-shadow:none}
-  50%{border-color:rgba(200,71,42,0.3);box-shadow:0 0 16px rgba(200,71,42,0.08)}
+/* Faction nodes */
+.node-faction{width:148px;background:rgba(6,5,16,0.97);border:1px solid rgba(60,120,200,0.22)}
+.node-faction .n-inner{padding:10px 13px}
+.node-faction .n-tag{font-size:0.36rem;letter-spacing:2px;color:rgba(60,120,200,0.4);margin-bottom:4px}
+.node-faction .n-name{font-family:var(--vt);font-size:1rem;color:rgba(100,160,240,0.35);line-height:1.1;animation:glitch-q 7s infinite}
+.node-faction .n-sub{font-size:0.38rem;color:rgba(232,228,223,0.1);margin-top:3px;line-height:1.35}
+.node-faction.unlocked-node .n-name{color:rgba(100,160,240,0.8);animation:none}
+.node-faction.unlocked-node .n-sub{color:var(--txt2)}
+.node-faction.unlocked-node{border-color:rgba(60,120,200,0.5);background:rgba(8,10,28,0.97)}
+
+/* Event nodes */
+.node-event{width:140px;background:rgba(8,5,4,0.97);border:1px solid rgba(200,71,42,0.15)}
+.node-event .n-inner{padding:10px 12px}
+.node-event .n-tag{font-size:0.35rem;letter-spacing:2px;color:rgba(200,71,42,0.3);margin-bottom:4px}
+.node-event .n-name{font-family:var(--vt);font-size:0.95rem;color:rgba(200,100,60,0.25);line-height:1.1;animation:glitch-q 6s infinite 1s}
+.node-event .n-sub{font-size:0.37rem;color:rgba(232,228,223,0.08);margin-top:3px;line-height:1.3}
+.node-event.unlocked-node .n-name{color:rgba(200,100,60,0.8);animation:none}
+.node-event.unlocked-node .n-sub{color:var(--txt2)}
+.node-event.unlocked-node{border-color:rgba(200,71,42,0.4)}
+
+/* Anomaly nodes — greenish */
+.node-anomaly{width:140px;background:rgba(4,10,6,0.97);border:1px solid rgba(40,180,100,0.12)}
+.node-anomaly .n-inner{padding:10px 12px}
+.node-anomaly .n-tag{font-size:0.35rem;letter-spacing:2px;color:rgba(40,180,100,0.3);margin-bottom:4px}
+.node-anomaly .n-name{font-family:var(--vt);font-size:0.95rem;color:rgba(40,180,100,0.2);line-height:1.1;animation:glitch-q 8s infinite 0.5s}
+.node-anomaly .n-sub{font-size:0.37rem;color:rgba(232,228,223,0.08);margin-top:3px;line-height:1.3}
+.node-anomaly.unlocked-node .n-name{color:rgba(60,200,120,0.8);animation:none}
+.node-anomaly.unlocked-node .n-sub{color:var(--txt2)}
+.node-anomaly.unlocked-node{border-color:rgba(40,180,100,0.4)}
+
+/* Zombie/threat nodes — amber */
+.node-threat{width:136px;background:rgba(10,6,2,0.97);border:1px solid rgba(220,140,20,0.12)}
+.node-threat .n-inner{padding:9px 12px}
+.node-threat .n-tag{font-size:0.35rem;letter-spacing:2px;color:rgba(220,140,20,0.28);margin-bottom:4px}
+.node-threat .n-name{font-family:var(--vt);font-size:0.93rem;color:rgba(220,140,20,0.2);line-height:1.1;animation:glitch-q 5s infinite 1.5s}
+.node-threat .n-sub{font-size:0.36rem;color:rgba(232,228,223,0.07);margin-top:3px;line-height:1.3}
+.node-threat.unlocked-node .n-name{color:rgba(240,160,40,0.8);animation:none}
+.node-threat.unlocked-node .n-sub{color:var(--txt2)}
+.node-threat.unlocked-node{border-color:rgba(220,140,20,0.4)}
+
+/* Section labels */
+.section-label{
+  position:absolute;font-family:var(--mono);
+  font-size:0.36rem;letter-spacing:3.5px;color:rgba(232,228,223,0.08);
+  text-transform:uppercase;
+  border-left:1px solid rgba(255,255,255,0.04);
+  padding-left:8px;pointer-events:none;
 }
 
-/* ── CONNECTOR LINES ── */
-.conn{stroke:rgba(200,71,42,0.3);stroke-width:0.8;fill:none}
+/* Connectors */
+.conn{stroke:rgba(200,71,42,0.25);stroke-width:0.7;fill:none}
 .conn-main{stroke:rgba(200,71,42,0.55);stroke-width:1.2;fill:none}
-.conn-siharu{stroke:rgba(200,71,42,0.4);stroke-width:0.8;fill:none;stroke-dasharray:3 4}
-.conn-purple{stroke:rgba(148,88,200,0.3);stroke-width:0.8;fill:none;stroke-dasharray:2 3}
-.conn-unknown{stroke:rgba(232,228,223,0.08);stroke-width:0.6;fill:none;stroke-dasharray:1 5}
-.conn-bz{stroke:rgba(200,71,42,0.15);stroke-width:0.6;fill:none;stroke-dasharray:1 6}
-.conn-glitch{stroke:rgba(200,71,42,0.2);stroke-width:0.6;fill:none;stroke-dasharray:4 3;animation:dash-crawl 3s linear infinite}
+.conn-dashed{stroke:rgba(200,71,42,0.2);stroke-width:0.6;fill:none;stroke-dasharray:3 4}
+.conn-purple{stroke:rgba(148,88,200,0.28);stroke-width:0.7;fill:none;stroke-dasharray:2 3}
+.conn-unknown{stroke:rgba(232,228,223,0.06);stroke-width:0.5;fill:none;stroke-dasharray:1 5}
+.conn-bz{stroke:rgba(200,71,42,0.12);stroke-width:0.5;fill:none;stroke-dasharray:1 6}
+.conn-blue{stroke:rgba(60,120,200,0.2);stroke-width:0.6;fill:none;stroke-dasharray:2 4}
+.conn-green{stroke:rgba(40,180,100,0.2);stroke-width:0.6;fill:none;stroke-dasharray:2 4}
+.conn-amber{stroke:rgba(220,140,20,0.2);stroke-width:0.6;fill:none;stroke-dasharray:2 4}
+.conn-glitch{stroke:rgba(200,71,42,0.3);stroke-width:0.8;fill:none;stroke-dasharray:4 3;animation:dash-crawl 3s linear infinite}
 @keyframes dash-crawl{to{stroke-dashoffset:-28}}
+
+@keyframes flicker-lock{0%,95%,100%{opacity:1}96%{opacity:0.5}97%{opacity:1}98%{opacity:0.3}99%{opacity:1}}
+@keyframes glitch-q{
+  0%,88%,100%{text-shadow:none;transform:none;filter:none}
+  89%{text-shadow:2px 0 rgba(200,71,42,0.5),-2px 0 rgba(0,80,200,0.4);transform:skewX(1deg)}
+  91%{text-shadow:none;transform:skewX(-1deg)}
+  93%{text-shadow:-1px 0 rgba(200,71,42,0.3);transform:none}
+}
+@keyframes glitch-purple{
+  0%,90%,100%{text-shadow:none}
+  91%{text-shadow:2px 0 rgba(255,60,120,0.6),-2px 0 rgba(60,120,255,0.6)}
+  93%{text-shadow:none}
+  95%{text-shadow:-1px 0 rgba(255,60,120,0.4),1px 0 rgba(60,120,255,0.4)}
+}
+@keyframes bz-pulse{
+  0%,100%{border-color:rgba(200,71,42,0.18);box-shadow:none}
+  50%{border-color:rgba(200,71,42,0.35);box-shadow:0 0 20px rgba(200,71,42,0.07)}
+}
+
+/* Unlock flash */
+@keyframes unlock-flash{
+  0%{box-shadow:0 0 0 0 rgba(200,71,42,0)}
+  30%{box-shadow:0 0 40px 10px rgba(200,71,42,0.6)}
+  100%{box-shadow:0 0 0 0 rgba(200,71,42,0)}
+}
+.unlock-anim{animation:unlock-flash 1s ease-out forwards}
+
+/* Redacted */
+.redacted{display:inline-block;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0px,rgba(255,255,255,0.05) 4px,transparent 4px,transparent 8px);border-radius:1px;padding:1px 3px;color:transparent;user-select:none;font-size:0.55rem}
+.redacted::after{content:'████';color:rgba(232,228,223,0.07)}
 
 /* ── LEGEND ── */
 #legend{
-  position:fixed;bottom:20px;left:24px;z-index:200;
-  font-size:0.45rem;letter-spacing:1.5px;color:var(--txt3);
+  position:fixed;bottom:60px;left:20px;z-index:200;
+  font-size:0.42rem;letter-spacing:1.5px;color:var(--txt3);
   display:flex;flex-direction:column;gap:5px;
+  background:rgba(4,3,10,0.85);border:1px solid rgba(255,255,255,0.04);
+  padding:12px 14px;border-radius:3px;
+  backdrop-filter:blur(8px);
 }
+#legend-title{font-size:0.38rem;letter-spacing:3px;color:rgba(200,71,42,0.4);margin-bottom:4px;text-transform:uppercase}
 .leg-row{display:flex;align-items:center;gap:7px}
-.leg-dot{width:5px;height:5px;border-radius:50%}
-.leg-dash{width:16px;height:1px;border-top:1px dashed}
+.leg-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.leg-dash{width:16px;height:1px;border-top:1px dashed;flex-shrink:0}
 
 /* ── HUD ── */
 #hud{
   position:fixed;bottom:0;left:0;right:0;z-index:300;
-  padding:8px 24px;border-top:1px solid rgba(255,255,255,0.05);
-  background:rgba(4,3,10,0.9);backdrop-filter:blur(8px);
-  display:flex;align-items:center;gap:16px;
-  font-size:0.45rem;letter-spacing:1.5px;color:var(--txt3)
+  padding:7px 20px;border-top:1px solid rgba(255,255,255,0.04);
+  background:rgba(4,3,10,0.94);backdrop-filter:blur(8px);
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  font-size:0.42rem;letter-spacing:1.5px;color:var(--txt3)
 }
-#hud-counter{color:var(--acc)}
+#hud-unlocked{color:var(--acc)}
 #hud-tip{margin-left:auto;font-style:italic;animation:hud-blink 4s ease-in-out infinite}
-@keyframes hud-blink{0%,80%,100%{opacity:0.4}90%{opacity:0.9}}
+@keyframes hud-blink{0%,80%,100%{opacity:0.35}90%{opacity:0.8}}
+#hud-clock{font-variant-numeric:tabular-nums}
 
 /* ── TOOLTIP ── */
 #tooltip{
   position:fixed;z-index:9000;pointer-events:none;
   background:rgba(4,3,10,0.97);border:1px solid rgba(200,71,42,0.3);
-  border-radius:4px;padding:10px 14px;font-size:0.55rem;letter-spacing:0.5px;
-  color:var(--txt2);max-width:260px;line-height:1.7;
+  border-radius:4px;padding:10px 14px;font-size:0.52rem;letter-spacing:0.5px;
+  color:var(--txt2);max-width:280px;line-height:1.7;
   opacity:0;transform:translateY(4px);transition:opacity 0.15s,transform 0.15s;
 }
 #tooltip.show{opacity:1;transform:translateY(0)}
-#tooltip .tt-title{font-family:var(--orb);font-size:0.6rem;color:var(--acc);margin-bottom:5px;letter-spacing:1.5px}
-#tooltip .tt-corrupt{color:var(--txt3);font-family:var(--vt);font-size:0.9rem;letter-spacing:1px}
+#tooltip .tt-title{font-family:var(--orb);font-size:0.58rem;color:var(--acc);margin-bottom:5px;letter-spacing:1.5px}
+#tooltip .tt-tag{font-size:0.38rem;letter-spacing:2px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase}
+#tooltip .tt-unlock-hint{margin-top:7px;font-size:0.42rem;letter-spacing:1.5px;color:rgba(200,71,42,0.4);border-top:1px solid rgba(200,71,42,0.1);padding-top:6px}
 
-/* ── GLITCH FLASH OVERLAY ── */
-#glitch-overlay{
-  position:fixed;inset:0;z-index:9990;pointer-events:none;
-  opacity:0;background:rgba(200,71,42,0.03);
-  mix-blend-mode:screen;
+/* ── MINIMAP ── */
+#minimap{
+  position:fixed;top:70px;right:20px;z-index:200;
+  width:160px;height:100px;
+  background:rgba(4,3,10,0.88);border:1px solid rgba(200,71,42,0.15);
+  border-radius:3px;overflow:hidden;
+  backdrop-filter:blur(6px);
 }
-
-/* ── SECTION LABELS ── */
-.section-label{
+#minimap-canvas{width:100%;height:100%}
+#minimap-viewport{
   position:absolute;
-  font-size:0.38rem;letter-spacing:3px;color:var(--txt3);
-  text-transform:uppercase;
-  border-left:1px solid rgba(255,255,255,0.06);
-  padding-left:8px;
+  border:1px solid rgba(200,71,42,0.5);
+  background:rgba(200,71,42,0.04);
+  pointer-events:none;
 }
 
-/* ── REDACTED STRIPE ── */
-.redacted{
-  display:inline-block;
-  background:repeating-linear-gradient(
-    90deg,rgba(255,255,255,0.06) 0px,rgba(255,255,255,0.06) 4px,
-    transparent 4px,transparent 8px
-  );
-  border-radius:2px;padding:1px 4px;color:transparent;
-  user-select:none;font-size:0.6rem;letter-spacing:0;
+/* ── GLITCH OVERLAY ── */
+#glitch-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none;opacity:0;background:rgba(200,71,42,0.025);mix-blend-mode:screen}
+
+/* ── PROGRESS BAR ── */
+#progress-bar{
+  position:fixed;top:57px;left:0;right:0;z-index:99;
+  height:2px;background:rgba(200,71,42,0.06);
 }
-.redacted::after{content:'██████';color:rgba(232,228,223,0.08)}
+#progress-fill{height:100%;background:var(--acc);transition:width 0.5s ease;width:0%}
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  #hd{padding:10px 14px}
+  .hd-title{display:none}
+  #legend{display:none}
+  #minimap{display:none}
+  #unlock-bar{width:90%;flex-wrap:wrap;bottom:50px}
+  #unlock-input{width:100%}
+}
 </style>
 </head>
 <body>
 <div id="grain"></div>
 <div id="glitch-overlay"></div>
 
-<!-- HEADER -->
 <header id="hd">
   <a href="constellation.html" class="hd-logo">WNCORE</a>
-  <div class="hd-title">SIGNAL CARTOGRAPHY / ARG STRUCTURE MAP — CLEARANCE: OBSEDIA-4</div>
+  <div class="hd-title">SIGNAL CARTOGRAPHY / ARG STRUCTURE MAP — CLEARANCE: OBSEDIA-?</div>
   <div class="hd-status">
     <div class="hd-dot"></div>
-    <span>LIVE — <span id="node-count" style="color:var(--acc)">0</span> NODES MAPPED</span>
+    <span>LIVE — <span id="node-count-hd" style="color:var(--acc)">—</span> NODES MAPPED</span>
   </div>
   <a href="index.html" id="back">← RETURN</a>
 </header>
 
-<!-- MAP CONTAINER -->
+<div id="progress-bar"><div id="progress-fill"></div></div>
+
+<!-- MINIMAP -->
+<div id="minimap">
+  <canvas id="minimap-canvas"></canvas>
+  <div id="minimap-viewport"></div>
+</div>
+
+<!-- MAP -->
 <div id="map-wrap">
-<div id="map">
-
-<!-- SVG CONNECTOR LAYER -->
-<svg id="connectors" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <marker id="arr-red" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto">
-      <path d="M1 1L7 4L1 7" fill="none" stroke="rgba(200,71,42,0.5)" stroke-width="1.2" stroke-linecap="round"/>
-    </marker>
-    <marker id="arr-dim" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4" markerHeight="4" orient="auto">
-      <path d="M1 1L7 4L1 7" fill="none" stroke="rgba(232,228,223,0.12)" stroke-width="1.2" stroke-linecap="round"/>
-    </marker>
-    <marker id="arr-purple" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="4" markerHeight="4" orient="auto">
-      <path d="M1 1L7 4L1 7" fill="none" stroke="rgba(148,88,200,0.4)" stroke-width="1.2" stroke-linecap="round"/>
-    </marker>
-    <filter id="glitch-filter">
-      <feTurbulence type="turbulence" baseFrequency="0.9" numOctaves="1" seed="2" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="0" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-  </defs>
-</svg>
-
-<!-- SECTION LABEL: CORE -->
-<div class="section-label" style="top:68px;left:60px">CORE SIGNAL CHAIN</div>
-<!-- SECTION LABEL: BRANCHES -->
-<div class="section-label" style="top:338px;left:60px">SIHARU BRANCH ARRAY — 9 NODES</div>
-<!-- SECTION LABEL: LATERAL -->
-<div class="section-label" style="top:68px;right:60px;border-left:none;border-right:1px solid rgba(255,255,255,0.06);padding-left:0;padding-right:8px;text-align:right">LATERAL ENTITIES</div>
-
-<!-- ══════════════════════════════════════════
-     ROW 1 — WNCORE ROOT
-══════════════════════════════════════════ -->
-<div class="node node-root" id="n-wncore" style="left:450px;top:80px" data-tip-title="WNCORE" data-tip="The signal archive. BLANK ZONE cartographic node. Origin unknown. First log entry: July 23, 2016 — 03:47 AM. All frequencies referenced to the Sirius baseline.">
-  <div class="n-glow"></div>
-  <div class="n-inner">
-    <div class="n-tag">ROOT SIGNAL NODE</div>
-    <div class="n-name">WNCORE</div>
-    <div class="n-sub">Signal Cartography<br>Archive / Broadcast</div>
-  </div>
-  <div class="n-status">
-    <div class="n-status-dot"></div>
-    <span>TRANSMITTING</span>
+  <div id="map-canvas">
+    <svg id="connectors" xmlns="http://www.w3.org/2000/svg"></svg>
+    <!-- Nodes injected by JS -->
   </div>
 </div>
-
-<!-- ══════════════════════════════════════════
-     ROW 2 — SIHARU
-══════════════════════════════════════════ -->
-<div class="node node-siharu" id="n-siharu" style="left:460px;top:220px" data-tip-title="SIHARU" data-tip="Designation: unknown etymology. Appears 14 times in the OBSEDIA clearance logs. Cross-referenced with 9 signal branches. Status: ACTIVE — MONITORED.">
-  <div class="n-glow"></div>
-  <div class="n-inner">
-    <div class="n-tag">SIGNAL ENTITY / STRATUM-2</div>
-    <div class="n-name">SIHARU</div>
-    <div class="n-sub">Cross-ref: OBSEDIA logs<br>14 entries — active</div>
-  </div>
-  <div class="n-paths">→ 9 BRANCH PATHS</div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     ROW 3 — 9 BRANCH PATHS from SIHARU
-══════════════════════════════════════════ -->
-
-<!-- PATH-01 — NODE 09 (known) -->
-<div class="node node-path unlocked" id="n-p01" style="left:80px;top:365px" data-tip-title="PATH-01 / NODE-09" data-tip="The only confirmed active broadcast node. First confirmed signal: 88.7 MHz. Log entry count: 1,847. Anomaly flag: WATCH. Geolocation: withheld.">
-  <div class="n-inner">
-    <div class="n-id">PATH-01 / N-09</div>
-    <div class="n-name">NODE 09</div>
-    <div class="n-sub">88.7 MHz — active<br>SIGNAL_KAGE ref.</div>
-  </div>
-</div>
-
-<!-- PATH-02 — LOCKED -->
-<div class="node node-path locked" id="n-p02" style="left:205px;top:365px" data-tip-title="PATH-02" data-tip="REDACTED — OBSEDIA clearance level 5 required. File reference: OBS-STRM-7742. Last access: 2021-11-03. Access log modified.">
-  <div class="n-inner">
-    <div class="n-id">PATH-02</div>
-    <div class="n-name">??? ????</div>
-    <div class="n-sub"><span class="redacted">██████████</span></div>
-  </div>
-</div>
-
-<!-- PATH-03 — LOCKED -->
-<div class="node node-path locked" id="n-p03" style="left:330px;top:365px" data-tip-title="PATH-03" data-tip="Classification: MISSING. File exists in the index. No content on record. Added 2019-09. Entry author: unknown.">
-  <div class="n-inner">
-    <div class="n-id">PATH-03</div>
-    <div class="n-name">?? ??? ??</div>
-    <div class="n-sub">index entry only</div>
-  </div>
-</div>
-
-<!-- PATH-04 — LOCKED -->
-<div class="node node-path locked" id="n-p04" style="left:455px;top:365px" data-tip-title="PATH-04" data-tip="THUBAN-NULL: a recording of silence from a source that should not be silent. Duration: unknown. Date: unknown. File size: 0 bytes. Checksum: does not match an empty file.">
-  <div class="n-inner">
-    <div class="n-id">PATH-04</div>
-    <div class="n-name">THUBAN<br>— NULL</div>
-    <div class="n-sub">0b — silence</div>
-  </div>
-</div>
-
-<!-- PATH-05 — LOCKED -->
-<div class="node node-path locked" id="n-p05" style="left:580px;top:365px" data-tip-title="PATH-05" data-tip="OBSEDIA internal designation: SAIPH-NULL. Active in index, no broadcast on record. Possibly decommissioned. Possibly something else.">
-  <div class="n-inner">
-    <div class="n-id">PATH-05</div>
-    <div class="n-name">?? ?????</div>
-    <div class="n-sub">SAIPH-NULL ref.</div>
-  </div>
-</div>
-
-<!-- PATH-06 — LOCKED (row 2) -->
-<div class="node node-path locked" id="n-p06" style="left:140px;top:490px" data-tip-title="PATH-06" data-tip="Frequency: BLANK. A signal logged under PLEIAD-NULL — one of seven entries, each referencing a different lost broadcast.">
-  <div class="n-inner">
-    <div class="n-id">PATH-06</div>
-    <div class="n-name">?????? ??</div>
-    <div class="n-sub">PLEIAD-NULL</div>
-  </div>
-</div>
-
-<!-- PATH-07 — LOCKED -->
-<div class="node node-path locked" id="n-p07" style="left:268px;top:490px" data-tip-title="PATH-07" data-tip="GUARDIAN-CLASS. Monitors without transmitting. Has been monitoring for longer than the archive has existed. Source log: KOCHAB-FORMER.">
-  <div class="n-inner">
-    <div class="n-id">PATH-07</div>
-    <div class="n-name">?? ????<br>??? ?</div>
-    <div class="n-sub">monitor / no TX</div>
-  </div>
-</div>
-
-<!-- PATH-08 — LOCKED -->
-<div class="node node-path locked" id="n-p08" style="left:396px;top:490px" data-tip-title="PATH-08" data-tip="DELTA-CLASS HANDSHAKE. A two-signal confirmation before priority transmission. Both signals required. One has not been received since 2023-07-14.">
-  <div class="n-inner">
-    <div class="n-id">PATH-08</div>
-    <div class="n-name">???? ??<br>??????</div>
-    <div class="n-sub">DELTA-class lock</div>
-  </div>
-</div>
-
-<!-- PATH-09 — LOCKED -->
-<div class="node node-path locked" id="n-p09" style="left:524px;top:490px" data-tip-title="PATH-09" data-tip="ALGEDI-CLASS: two sources that appear to be one. Optical double — not a true binary. Classification applies to signals, not stars.">
-  <div class="n-inner">
-    <div class="n-id">PATH-09</div>
-    <div class="n-name">??? ????</div>
-    <div class="n-sub">ALGEDI-class ×2</div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     LATERAL — SIMULUNAS
-══════════════════════════════════════════ -->
-<div class="node node-simulunas" id="n-simulunas" style="left:840px;top:200px" data-tip-title="SIMULUNAS" data-tip="Appears once in the archive. Cross-reference: WNCORE. No origin on file. No clearance level assigned. The name does not appear in any OBSEDIA log. It appeared in the archive without being added.">
-  <div class="n-glow"></div>
-  <div class="n-inner">
-    <div class="n-tag">UNCLASSIFIED ENTITY</div>
-    <div class="n-name">SIMULUNAS</div>
-    <div class="n-sub">No origin on file<br>self-inserted entry</div>
-  </div>
-  <div class="n-arrow">→ ???</div>
-</div>
-
-<!-- SIMULUNAS → ??? child -->
-<div class="node node-unk" id="n-sim-unk" style="left:858px;top:340px" data-tip-title="???" data-tip="No data. The file was found open. No one opened it.">
-  <div class="n-inner">
-    <div class="n-tag">ENTITY / UNK</div>
-    <div class="n-name">??? ????</div>
-    <div class="n-sub">file: open<br>author: none</div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     FLOATING UNKNOWNS
-══════════════════════════════════════════ -->
-
-<!-- ?? → ?? lateral entity 1 -->
-<div class="node node-unk" id="n-unk1" style="left:840px;top:460px" data-tip-title="???" data-tip="No signal header. No broadcast timestamp. The log entry exists. The log entry should not exist.">
-  <div class="n-inner">
-    <div class="n-tag">??? — ???</div>
-    <div class="n-name">?? ??? ??</div>
-    <div class="n-sub">no header / no TX</div>
-  </div>
-</div>
-
-<!-- → ??? terminal 1 -->
-<div class="node node-unk" id="n-unk2" style="left:840px;top:570px" data-tip-title="???" data-tip="COLD SPOT. The signal is cold here. No explanation accepted.">
-  <div class="n-inner">
-    <div class="n-tag">TERMINAL — ???</div>
-    <div class="n-name">?????<br>??????</div>
-    <div class="n-sub">COLD-SPOT ref.</div>
-  </div>
-</div>
-
-<!-- BLANK ZONE -->
-<div class="node node-blank" id="n-bz" style="left:80px;top:620px" data-tip-title="BLANK ZONE" data-tip="Not a location. A process. Something continuously forming in a region we cannot see directly. Origin: Monoceros / Rosette. Classification: OPEN.">
-  <div class="n-inner">
-    <div class="n-tag">PROCESS — CLASSIFIED</div>
-    <div class="n-name">BLANK ZONE</div>
-    <div class="n-sub">not a location<br>a process — ongoing</div>
-  </div>
-</div>
-
-<!-- OBSEDIA -->
-<div class="node node-unk" id="n-obsedia" style="left:240px;top:630px" data-tip-title="OBSEDIA" data-tip="Clearance levels 1-5. Level 4 referenced in Lyra logs. Level 5 referenced in PATH-02. Level 6 referenced nowhere. The archive contains a field for level 6.">
-  <div class="n-inner">
-    <div class="n-tag">AUTHORITY / ???</div>
-    <div class="n-name">OBSEDIA</div>
-    <div class="n-sub">CL-5 max visible<br>CL-6 field: exists</div>
-  </div>
-</div>
-
-<!-- SIGNAL_KAGE -->
-<div class="node" id="n-kage" style="left:400px;top:630px;background:rgba(8,6,18,0.95);border:1px solid rgba(232,228,223,0.08);width:130px;border-radius:3px" data-tip-title="SIGNAL_KAGE" data-tip="Internal designation. Appears in 43 log entries. Cross-references NODE-09, WNCORE, SIHARU. Has never been identified. Has never responded directly. All SIGNAL_KAGE entries are observations, never transmissions.">
-  <div class="n-inner" style="padding:9px 12px">
-    <div class="n-id" style="font-size:0.38rem;letter-spacing:2px;color:var(--txt3);margin-bottom:4px">INTERNAL REF.</div>
-    <div class="n-name" style="font-family:var(--vt);font-size:0.95rem;color:rgba(232,228,223,0.3)">SIGNAL_KAGE</div>
-    <div class="n-sub" style="font-size:0.4rem;letter-spacing:1px;color:var(--txt3);margin-top:3px;line-height:1.4">43 entries — observer<br>no TX on record</div>
-  </div>
-</div>
-
-<!-- ARG ENTRY POINT -->
-<div class="node" id="n-arg" style="left:560px;top:630px;background:rgba(10,8,2,0.95);border:1px solid rgba(200,100,20,0.2);width:120px;border-radius:3px" data-tip-title="ARG COORDINATE SYSTEM" data-tip="ALC-2 = Alnilam. The median. Transmissions routed through the median are considered unattributed. ARG coordinate encoding system: origin unknown, in use since Year Zero.">
-  <div class="n-inner" style="padding:9px 12px">
-    <div class="n-id" style="font-size:0.38rem;letter-spacing:2px;color:rgba(200,100,20,0.4);margin-bottom:4px">ARG / ENCODING</div>
-    <div class="n-name" style="font-family:var(--vt);font-size:0.95rem;color:rgba(200,130,40,0.45)">COORD SYS</div>
-    <div class="n-sub" style="font-size:0.4rem;letter-spacing:1px;color:var(--txt3);margin-top:3px;line-height:1.4">ALC-2: ALNILAM<br>Year Zero origin</div>
-  </div>
-</div>
-
-</div><!-- end #map -->
-</div><!-- end #map-wrap -->
 
 <!-- LEGEND -->
 <div id="legend">
-  <div class="leg-row">
-    <div class="leg-dot" style="background:var(--acc)"></div>
-    <span>KNOWN / ACTIVE</span>
-  </div>
-  <div class="leg-row">
-    <div class="leg-dot" style="background:rgba(148,88,200,0.6)"></div>
-    <span>UNCLASSIFIED ENTITY</span>
-  </div>
-  <div class="leg-row">
-    <div class="leg-dot" style="background:rgba(232,228,223,0.12)"></div>
-    <span>REDACTED / LOCKED</span>
-  </div>
-  <div class="leg-row">
-    <div class="leg-dash" style="border-top-color:rgba(200,71,42,0.4)"></div>
-    <span>SIGNAL PATH</span>
-  </div>
-  <div class="leg-row">
-    <div class="leg-dash" style="border-top-style:dashed;border-top-color:rgba(232,228,223,0.1)"></div>
-    <span>UNKNOWN CONNECTION</span>
-  </div>
+  <div id="legend-title">Signal Index</div>
+  <div class="leg-row"><div class="leg-dot" style="background:var(--acc)"></div><span>Core / Known</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:rgba(148,88,200,0.6)"></div><span>Unclassified entity</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:rgba(60,120,200,0.5)"></div><span>Faction</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:rgba(40,180,100,0.5)"></div><span>Anomaly / Phenomenon</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:rgba(220,140,20,0.5)"></div><span>Threat type</span></div>
+  <div class="leg-row"><div class="leg-dot" style="background:rgba(232,228,223,0.15)"></div><span>Redacted / Locked</span></div>
+  <div class="leg-row" style="margin-top:6px"><div class="leg-dash" style="border-top-color:rgba(200,71,42,0.4)"></div><span>Signal path</span></div>
+  <div class="leg-row"><div class="leg-dash" style="border-top-style:dashed;border-top-color:rgba(232,228,223,0.1)"></div><span>Unknown connection</span></div>
 </div>
 
 <!-- HUD -->
 <div id="hud">
-  <span>TOTAL NODES: <span id="node-count-hud" style="color:var(--acc)">21</span></span>
-  <span>RESOLVED: <span id="hud-counter">2 / 21</span></span>
+  <span>TOTAL NODES: <span id="node-count-hud" style="color:var(--acc)">—</span></span>
+  <span>UNLOCKED: <span id="hud-unlocked">0</span> / <span id="hud-total">—</span></span>
   <span>BLANK ZONE: OPEN</span>
-  <span>OBSEDIA: CL-5 — ACCESS DENIED</span>
-  <span id="hud-tip">HOVER NODES FOR SIGNAL DATA</span>
+  <span>CLEARANCE: ??</span>
+  <span id="hud-clock">——:——:——</span>
+  <span id="hud-tip">CLICK NODE TO INTERACT</span>
 </div>
 
 <!-- TOOLTIP -->
 <div id="tooltip">
+  <div class="tt-tag" id="tt-tag"></div>
   <div class="tt-title" id="tt-title"></div>
   <div id="tt-body"></div>
+  <div class="tt-unlock-hint" id="tt-hint" style="display:none">// Enter signal key to unlock</div>
+</div>
+
+<!-- UNLOCK BAR -->
+<div id="unlock-bar">
+  <div id="unlock-node-label">NODE: —</div>
+  <input id="unlock-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="32" autocomplete="off" spellcheck="false">
+  <button id="unlock-submit">TRANSMIT</button>
+  <span id="unlock-msg"></span>
+  <button id="unlock-close">✕</button>
 </div>
 
 <script>
-const svg = document.getElementById('connectors');
-const map = document.getElementById('map');
-const tooltip = document.getElementById('tooltip');
+'use strict';
 
-function getCenter(el){
-  const mr = map.getBoundingClientRect();
-  const er = el.getBoundingClientRect();
+/* ══════════════════════════════════════════
+   NODE DEFINITIONS
+   type: root | known | locked | simulunas | blank | faction | event | anomaly | threat
+   tag: short category label
+   name: display name (??? if locked)
+   realName: actual name (revealed on unlock)
+   sub: subtitle / flavor text
+   passkey: unlock code (set later per chapter — blank = cannot unlock yet)
+   tip: tooltip text (shown locked)
+   realTip: full tooltip (shown unlocked)
+   color: optional override class
+   x, y: pixel position on canvas
+══════════════════════════════════════════ */
+
+const NODES = [
+
+  /* ── TIER 0: ROOT ── */
+  {id:'wncore', type:'root', tag:'ROOT SIGNAL NODE', name:'WNCORE', sub:'Signal Cartography\nArchive / Broadcast',
+   tip:'The signal archive. BLANK ZONE cartographic node. Origin unknown. All frequencies referenced to the Sirius baseline.',
+   x:1300, y:80, passkey:''},
+
+  /* ── TIER 1: CORE ENTITIES ── */
+  {id:'siharu', type:'known', tag:'SIGNAL ENTITY / STRATUM-2', name:'SIHARU', sub:'Cross-ref: OBSEDIA logs\n14 entries — active',
+   tip:'Designation: unknown etymology. Appears 14 times in the OBSEDIA clearance logs. Cross-referenced with 9 signal branches. Status: ACTIVE — MONITORED.',
+   x:1300, y:260, passkey:''},
+
+  {id:'simulunas', type:'simulunas', tag:'UNCLASSIFIED ENTITY', name:'SIMULUNAS', sub:'No origin on file\nself-inserted entry',
+   tip:'Appears once in the archive. The name does not appear in any OBSEDIA log. It appeared in the archive without being added.',
+   x:1800, y:260, passkey:''},
+
+  /* ── TIER 1: MAIN CHARACTER (locked) ── */
+  {id:'protagonist', type:'locked', tag:'SIGNAL-ZERO / PRIMARY', name:'???  ????', realName:'S — RISER',
+   sub:'origin unknown', realSub:'DHAKA NODE / STRATUM-0\nTransferred — Day 0',
+   tip:'A signal that should not exist in this archive. Cross-referenced with the Blank Zone transfer log. File sealed.',
+   realTip:'Bangladeshi civil engineer. Transferred to Another Sky on March 31, 2032. First to notice the divergence.',
+   passkey:'RISER_DAY0', x:1300, y:440, wide:true},
+
+  /* ── TIER 2: SIHARU BRANCHES (9 paths) ── */
+  {id:'p01', type:'locked', tag:'PATH-01 / N-09', name:'NODE 09', realName:'NODE 09',
+   sub:'88.7 MHz — active\nSIGNAL_KAGE ref.',
+   tip:'The only confirmed active broadcast node. First confirmed signal: 88.7 MHz. Log entry count: 1,847.',
+   passkey:'', x:500, y:600},
+
+  {id:'p02', type:'locked', tag:'PATH-02', name:'??? ????', realName:'??? ????',
+   sub:'redacted', tip:'REDACTED — OBSEDIA clearance level 5 required.', passkey:'', x:660, y:600},
+
+  {id:'p03', type:'locked', tag:'PATH-03', name:'?? ??? ??', realName:'?? ??? ??',
+   sub:'index entry only', tip:'Classification: MISSING. File exists in the index. No content on record.', passkey:'', x:820, y:600},
+
+  {id:'p04', type:'locked', tag:'PATH-04', name:'THUBAN\n— NULL', realName:'THUBAN — NULL',
+   sub:'0b — silence', tip:'A recording of silence from a source that should not be silent. Duration: unknown. File size: 0 bytes. Checksum: does not match an empty file.', passkey:'', x:980, y:600},
+
+  {id:'p05', type:'locked', tag:'PATH-05', name:'?? ?????', realName:'?? ?????',
+   sub:'SAIPH-NULL ref.', tip:'OBSEDIA internal designation: SAIPH-NULL. Active in index, no broadcast on record.', passkey:'', x:1140, y:600},
+
+  {id:'p06', type:'locked', tag:'PATH-06', name:'?????? ??', realName:'?????? ??',
+   sub:'PLEIAD-NULL', tip:'Frequency: BLANK. A signal logged under PLEIAD-NULL — one of seven entries, each referencing a different lost broadcast.', passkey:'', x:1300, y:600},
+
+  {id:'p07', type:'locked', tag:'PATH-07', name:'?? ????\n??? ?', realName:'?? ???? ??? ?',
+   sub:'monitor / no TX', tip:'GUARDIAN-CLASS. Monitors without transmitting. Has been monitoring for longer than the archive has existed.', passkey:'', x:1460, y:600},
+
+  {id:'p08', type:'locked', tag:'PATH-08', name:'???? ??\n??????', realName:'???? ?? ??????',
+   sub:'DELTA-class lock', tip:'DELTA-CLASS HANDSHAKE. A two-signal confirmation before priority transmission. Both signals required. One has not been received since 2023-07-14.', passkey:'', x:1620, y:600},
+
+  {id:'p09', type:'locked', tag:'PATH-09', name:'??? ????', realName:'??? ????',
+   sub:'ALGEDI-class ×2', tip:'ALGEDI-CLASS: two sources that appear to be one. Optical double — not a true binary.', passkey:'', x:1780, y:600},
+
+  /* ── TIER 3: WORLD SPLIT ── */
+  {id:'world-origin', type:'locked', tag:'STRATUM-A / ORIGIN', name:'EARTH ??', realName:'ORIGIN EARTH',
+   sub:'pre-transfer\nrealm', realSub:'The real world\nPre-2032 baseline',
+   tip:'A signal layer beneath the main archive. Frequency: unknown. The archive does not acknowledge its existence.',
+   realTip:'The original Earth. Our world. History tracks identically until 1946 when a divergence event creates Another Sky.',
+   passkey:'ORIGIN_SIGNAL', x:900, y:820, wide:true},
+
+  {id:'world-another', type:'locked', tag:'STRATUM-B / ALT', name:'ANOTHER ??', realName:'ANOTHER SKY',
+   sub:'divergent layer\npost-transfer', realSub:'Divergence: post-1946\nDay 180+ of outbreak',
+   tip:'A secondary frequency overlay. Begins as identical to the primary layer. Something changed after a certain point.',
+   realTip:'Another Sky. Diverges from origin Earth post-1946. S is transferred here March 31, 2032. Site of the outbreak.',
+   passkey:'ANOTHER_SKY', x:1300, y:820, wide:true},
+
+  {id:'blank-zone-event', type:'blank', tag:'PROCESS — CLASSIFIED', name:'BLANK ZONE',
+   sub:'2028–2031 erased\nnot a location',
+   tip:'Not a location. A process. Something continuously forming in a region we cannot see directly. Records: non-existent.',
+   x:1700, y:820},
+
+  /* ── TIER 4: CHARACTERS ── */
+  {id:'char-mother', type:'locked', tag:'CHARACTER / STRATUM-1', name:'??? ???', realName:'S\'s MOTHER',
+   sub:'classified\nfirst incident', realSub:'Age 68 — BPD survivor\nIncident Zero: Ghuul',
+   tip:'A node that predates every other in this archive. Signal type: domestic. Something happened here. The archive flags it as Incident Zero.',
+   realTip:'S\'s mother. Age 68. Survived 1971 war, Bhola cyclone, WW3. First known Ghuul. Transformed two weeks post-outbreak.',
+   passkey:'INCIDENT_ZERO', x:700, y:1020},
+
+  {id:'char-anne', type:'locked', tag:'CHARACTER / SIGNAL-LOST', name:'???\n[ERASED]', realName:'ANNE',
+   sub:'signal lost\nface erased', realSub:'Filipina artist\nErased on transfer',
+   tip:'A signal that was present and then was not. Not dead. Not blocked. Simply absent. The archive shows the space where it was.',
+   realTip:'Anne. S\'s ex-girlfriend. Filipina artist, dancer, singer. All photos and messages erased when S transferred to Another Sky.',
+   passkey:'ANNE_SIGNAL', x:900, y:1020},
+
+  {id:'the-nine', type:'locked', tag:'GROUP / ERASED-9', name:'THE ????', realName:'THE NINE',
+   sub:'8 others\nfaces unknown', realSub:'4 male 3 female\n+Anne = 9 total',
+   tip:'Nine signals that no longer register. They existed. The archive confirms the shapes of their absence. No faces. No frequencies.',
+   realTip:'Nine people erased from S\'s memory and photos upon transfer. Anne + 4 guys + 3 girls. S cannot remember their faces.',
+   passkey:'THE_NINE', x:1100, y:1020},
+
+  {id:'char-vulture', type:'locked', tag:'COMPANION / ANOMALY', name:'??? ?????', realName:'THE VULTURE',
+   sub:'non-classified\nrecurring', realSub:'White-rumped vulture\n6-7 yrs old',
+   tip:'A non-human signal that keeps returning. Species: unknown classification. Behavior: returns monthly. Has been returning for years.',
+   realTip:'White-rumped vulture. S saved it in 5th grade. Fed it fried chicken. It followed the bus home. Visits S monthly on the rooftop.',
+   passkey:'VULTURE_ROOF', x:1300, y:1020},
+
+  {id:'char-signal-kage', type:'locked', tag:'INTERNAL REF.', name:'SIGNAL_KAGE', realName:'SIGNAL_KAGE',
+   sub:'43 entries\nobserver — no TX', tip:'Internal designation. Appears in 43 log entries. Cross-references NODE-09, WNCORE, SIHARU. Has never been identified. All entries are observations, never transmissions.',
+   passkey:'', x:1500, y:1020},
+
+  /* ── TIER 5: OUTBREAK + GLOBAL EVENTS ── */
+  {id:'ev-transfer', type:'event', tag:'EVENT / T=0', name:'??? ????????', realName:'THE TRANSFER',
+   sub:'March 31, 2032\nS displaced', realSub:'March 31, 2032\nS enters Another Sky',
+   tip:'A displacement event. Something moved through the signal on this date. The archive does not record what. The archive does not record who.',
+   realTip:'March 31, 2032. S wakes in Another Sky. Realises the divergence when his mother mentions WW3 — a war that doesn\'t exist in his world.',
+   passkey:'MARCH_31', x:600, y:1260},
+
+  {id:'ev-ww3', type:'event', tag:'EVENT / GLOBAL', name:'??? ????', realName:'WORLD WAR III',
+   sub:'pre-outbreak\nglobal', realSub:'2027 ended\n672M civilian deaths',
+   tip:'A signal event of immense scale. Two sides. Something ended. The archive does not say who won. The archive does not say what was lost.',
+   realTip:'WW3. USA/India/Canada/UK/Israel vs Iran/Pakistan/China/Russia/N.Korea. Ended 2027. 672M civilian deaths. $1.2T devastation.',
+   passkey:'WW3_SIGNAL', x:820, y:1260, wide:true},
+
+  {id:'ev-outbreak', type:'event', tag:'EVENT / DAY-0', name:'??? ????????', realName:'THE OUTBREAK',
+   sub:'April 5, 2032\npandemic', realSub:'Nepal → Bangladesh\n→ India → Nigeria',
+   tip:'The signal fractures here. Before this point: one pattern. After: something else entirely. Origin: unlogged.',
+   realTip:'April 5, 2032. Outbreak starts in Nepal villages. Spreads to Bangladesh rural, then India, then Nigeria. WHO declares pandemic April 9. 286K dead by April 11. 64% zombified by 6 months.',
+   passkey:'DAY_ZERO_APRIL', x:1060, y:1260, wide:true},
+
+  {id:'ev-cygnus', type:'event', tag:'SIGNAL / 2007', name:'????? ???', realName:'CYGNUS SIGNAL',
+   sub:'2007 detected\ndecoded 2011', realSub:'Decoded: "They lied.\nSend help."',
+   tip:'A transmission that arrived before it was expected. Direction: Cygnus constellation. Content: unknown. Date: before the archive was prepared.',
+   realTip:'"They lied to us. Send help. Any way possible. No matter who is out there." — Decoded 2011 from 2007 Cygnus signal.',
+   passkey:'CYGNUS_2011', x:1300, y:1260, wide:true},
+
+  {id:'ev-moon-dome', type:'event', tag:'EVENT / 2012', name:'???? ????', realName:'MOON DOME',
+   sub:'2012 constructed\nelite refuge', realSub:'Cleaning co. built\nBillionaires inside',
+   tip:'Something was built where nothing should be. A structure. A dome. Funded by a cleaning company. The archive does not say why.',
+   realTip:'Moon Dome. Built 2012 by a cleaning product company. Elites, billionaires, world leaders evacuated there at outbreak start. Status: unknown.',
+   passkey:'MOON_DOME_2012', x:1560, y:1260, wide:true},
+
+  /* ── TIER 6: ANOMALIES ── */
+  {id:'anom-obsedia', type:'anomaly', tag:'PHENOMENON / BLACK RAIN', name:'??? ?? ????????', realName:'RAIN OF OBSEDIA',
+   sub:'global\npost-outbreak', realSub:'Black rain worldwide\nCalms infected',
+   tip:'A precipitation event with no meteorological precedent. Colour: not a colour. Properties: unlogged. Effect: observed but not explained.',
+   realTip:'Deep black rain. Global, two weeks post-outbreak. Acidic but harmless to humans. Infected become calm during it. Sky looks like it\'s bleeding.',
+   passkey:'BLACK_RAIN', x:400, y:1480},
+
+  {id:'anom-fog', type:'anomaly', tag:'PHENOMENON / FOG', name:'??? ?? ??????', realName:'FOG OF MEDUSA',
+   sub:'Germany only\nkills everything', realSub:'Yellowish fog\nKills all except zombies',
+   tip:'A localised atmospheric event. Confined to one region. The archive notes the survivors did not describe it.',
+   realTip:'Yellowish fog. Only in Germany (so far). Kills and suffocates everything except full zombies. Even infected die in it.',
+   passkey:'MEDUSA_FOG', x:620, y:1480},
+
+  {id:'anom-cooling', type:'anomaly', tag:'PHENOMENON / CLIMATE', name:'??? ?????', realName:'GREAT COOLING',
+   sub:'global chill\nmonthly hail', realSub:'Planet cooling\n5-6 hail events/month',
+   tip:'A thermal shift that began independently of the outbreak. The archive theorises it would have happened regardless.',
+   realTip:'Global cooling started 2 months post-outbreak. 5-6 hail events per month worldwide. Worsens with black rain. Independent of outbreak.',
+   passkey:'GREAT_COOLING', x:840, y:1480},
+
+  {id:'anom-migration', type:'anomaly', tag:'PHENOMENON / MIGRATION', name:'??? ?????', realName:'GREAT MIGRATION',
+   sub:'insects / birds\nmoving North', realSub:'Trillions of ants\nNorth — unknown reason',
+   tip:'Something is moving. Not infected. Not human. A mass displacement without apparent cause. Direction: consistent. Reason: unknown.',
+   realTip:'Trillions of ants and insects moving north. Birds and wild animals following. Reason unknown. Are they running from something?',
+   passkey:'MIGRATION_NORTH', x:1060, y:1480},
+
+  {id:'ghuul-node', type:'anomaly', tag:'ENTITY TYPE / GHUUL', name:'????? — 173', realName:'GHUULS — 173',
+   sub:'173 confirmed\nworldwide', realSub:'Bitten by zombie+infected\nExtremely rare',
+   tip:'A classification that should not exist. Hybrid origin. 173 confirmed worldwide. The archive has no explanation for their continued existence.',
+   realTip:'Created by both zombie AND infected bite. 173 known worldwide. Pure white body/hair. Teleportation-like agility. Kill entire bases in seconds. First: S\'s mother.',
+   passkey:'GHUUL_173', x:1280, y:1480, wide:true},
+
+  {id:'coord-node', type:'anomaly', tag:'COORDINATE / ARG', name:'?.??????', realName:'0.315126',
+   sub:'ARG coordinate\norigin unknown', realSub:'Coordinate: 0.315126\nYear Zero origin',
+   tip:'A number that appears in the archive without context. It is not GPS. It is not frequency. The archive does not say what it measures.',
+   realTip:'0.315126. The ARG coordinate. Appears in the archive without attribution. ALC-2 / ALNILAM encoding. Year Zero origin.',
+   passkey:'COORD_315126', x:1500, y:1480},
+
+  /* ── TIER 7: THREAT TYPES ── */
+  {id:'zombie-skoth', type:'threat', tag:'ZOMBIE / TYPE-1', name:'SKOTH', realName:'SKOTH',
+   sub:'early type\nbody decays 9mo', tip:'First classification in the field logs. Dogs unaffected. Most mammals: fatal. Appears early — disappears late.',
+   realTip:'First zombie type. Appeared at outbreak start. Body decays after 9 months. Dogs unaffected. Cats/cows die if bitten.',
+   passkey:'SKOTH_TYPE', x:200, y:1700},
+
+  {id:'zombie-glowbub', type:'threat', tag:'ZOMBIE / TYPE-2', name:'GLOWBUBS', realName:'GLOWBUBS',
+   sub:'light-attracted\ndangerous in dark', tip:'Attracted to light. The log entry notes survivors who switched off a light in a broken shop did not survive to file a second log entry.',
+   passkey:'GLOWBUB_TYPE', x:360, y:1700},
+
+  {id:'zombie-jawie', type:'threat', tag:'ZOMBIE / TYPE-3', name:'JAWIES', realName:'JAWIES',
+   sub:'crush metal\npowerful jaw', tip:'Jaw strength sufficient to crush metal. Primarily former muscular individuals. Particularly effective against barricades.',
+   passkey:'JAWIE_TYPE', x:520, y:1700},
+
+  {id:'zombie-white', type:'threat', tag:'ZOMBIE / TYPE-4', name:'WHITES', realName:'WHITES',
+   sub:'vibration-sensing\nwhite-haired female', tip:'White-haired. Female. Vibration detection range: kilometres. Can feel footsteps through floors from kilometres away.',
+   passkey:'WHITE_TYPE', x:680, y:1700},
+
+  {id:'zombie-oldbones', type:'threat', tag:'ZOMBIE / TYPE-5', name:'OLDBONES', realName:'OLDBONES',
+   sub:'elderly zombie\nspine weapon', tip:'Former elderly individuals. The spine extrudes from the body during transformation. The process is described as extremely painful. The result is a projectile.',
+   passkey:'OLDBONES_TYPE', x:840, y:1700},
+
+  {id:'zombie-disabled', type:'threat', tag:'ZOMBIE / TYPE-6', name:'DISABLED', realName:'DISABLED',
+   sub:'enhanced senses\nadaptive limbs', tip:'Former disabled individuals. Blindness becomes enhanced hearing. Deafness becomes long-range sight. Mobility impairment becomes mutated limb propulsion.',
+   passkey:'DISABLED_TYPE', x:1000, y:1700},
+
+  {id:'zombie-noire', type:'threat', tag:'ZOMBIE / TYPE-7', name:'NOIRE', realName:'NOIRE',
+   sub:'nocturnal pack\nambush hunters', tip:'Nocturnal. Ambush-oriented. Operates in groups of two to three. Movement-triggered. No minimum threshold for what constitutes movement.',
+   passkey:'NOIRE_TYPE', x:1160, y:1700},
+
+  {id:'zombie-bloater', type:'threat', tag:'ZOMBIE / TYPE-8', name:'BLOATERS', realName:'BLOATERS',
+   sub:'scream summons\nhorde caller', tip:'Mouth packed with extra musculature. Scream frequency summons other types. Threat multiplier rather than direct threat.',
+   passkey:'BLOATER_TYPE', x:1320, y:1700},
+
+  {id:'zombie-aquatic', type:'threat', tag:'ZOMBIE / TYPE-9', name:'AQUATIC', realName:'AQUATIC',
+   sub:'underwater — Paris\nrare confirmed', tip:'One confirmed sighting. Paris. Underwater. Eating fish. Moving slowly. The archive notes: no environment is confirmed safe.',
+   passkey:'AQUATIC_TYPE', x:1480, y:1700},
+
+  /* ── INFECTED TYPES ── */
+  {id:'inf-1', type:'threat', tag:'INFECTED / TYPE-1', name:'THEY THINK', realName:'INFECTED T-1',
+   sub:'intelligent\nplan attacks', tip:'Retain strategic cognition. Capable of organizing attacks on human settlements. Indistinguishable in behaviour from uninfected tacticians.',
+   passkey:'INFECTED_TYPE1', x:1640, y:1700},
+
+  {id:'inf-2', type:'threat', tag:'INFECTED / TYPE-2', name:'THEY TALK', realName:'INFECTED T-2',
+   sub:'blend in\nlanguage intact', tip:'Retain speech. Blend into human settlements. Enjoy killing prey. The archive notes they enjoy it.',
+   passkey:'INFECTED_TYPE2', x:1800, y:1700},
+
+  {id:'inf-3', type:'threat', tag:'INFECTED / TYPE-3', name:'THEY TRICK', realName:'INFECTED T-3',
+   sub:'voice mimicry\nSkinwalker form', tip:'Mimics voices of loved ones. Skinwalker morphology. Active evening to dawn. Classification: psychological weapon.',
+   passkey:'INFECTED_TYPE3', x:1960, y:1700},
+
+  {id:'inf-4', type:'threat', tag:'INFECTED / TYPE-4', name:'THEY TAKE', realName:'INFECTED T-4',
+   sub:'kidnap / children\nprefers living prey', tip:'Abducts during sleep. Prefers consuming prey while alive. Particularly targets children. The archive does not elaborate on why.',
+   passkey:'INFECTED_TYPE4', x:2120, y:1700},
+
+  {id:'inf-5', type:'threat', tag:'INFECTED / TYPE-5', name:'GLITCH', realName:'INFECTED T-5 / GLITCH',
+   sub:'flickers\nbetween realities', tip:'Unknown classification. Body flickers. Pathogen appears to have assumed full motor control. Movement exceeds human perception.',
+   passkey:'INFECTED_TYPE5', x:2280, y:1700, wide:true},
+
+  /* ── TIER 7: FACTIONS ── */
+  {id:'fac-govts', type:'faction', tag:'FACTION / AUTHORITY', name:'??? ?????????', realName:'REMAINING GOVTS',
+   sub:'Alaska safe zone\nnuke contingency', realSub:'USA/UK/Canada/India etc\nAlaska stronghold',
+   tip:'A coalition signal. Originating from the northern edge of the archive. Plans exist. The archive labels them: unknown priority.',
+   realTip:'Remaining governments in Alaska safe zone. USA, UK, Canada, India, Africa, France, Germany, South Korea, Finland. Possibly planning nuclear reset.',
+   passkey:'ALASKA_SIGNAL', x:400, y:1960, wide:true},
+
+  {id:'fac-moon', type:'faction', tag:'FACTION / MOON', name:'MOON ???????', realName:'MOON DWELLERS',
+   sub:'Moon Dome\nstatus unknown', realSub:'Elites in Moon Dome\nPossibly all dead',
+   tip:'A signal cluster that left the primary frequency range. Last known position: not Earth. Status: unconfirmed.',
+   realTip:'High society elites, billionaires, politicians in Moon Dome. Possibly alive. Possibly cannibalised by cleaning company. Possibly terraforming the moon.',
+   passkey:'MOON_DOME_FAC', x:620, y:1960, wide:true},
+
+  {id:'fac-bloodpact', type:'faction', tag:'FACTION / CRIMINAL', name:'BLOOD ????', realName:'BLOOD PACT',
+   sub:'Antarctica\norgan smuggling', realSub:'Formerly: Brotherhood Pact\nMexican biker gang',
+   tip:'A criminal signal operating from a coordinate that should be uninhabited. Former designation: Brotherhood Pact. Elevated threat classification.',
+   realTip:'The Blood Pact. Antarctic base. Organ smuggling. Formerly the Brotherhood Pact — a small Mexican biker gang. How they grew is unknown.',
+   passkey:'BLOOD_PACT', x:840, y:1960, wide:true},
+
+  {id:'fac-rooftop', type:'faction', tag:'FACTION / BROADCAST', name:'ROOFTOP ????', realName:'ROOFTOP SEERS',
+   sub:'broadcasters\nsecretly infected', realSub:'Ex-religious radio\nInfected hosts',
+   tip:'A broadcast signal presenting itself as benign. The archive notes the signal continues transmitting. The archive notes who is transmitting.',
+   realTip:'Rooftop Seers. Peaceful broadcasters. Secretly infected. Formerly a religious radio station spreading God\'s word.',
+   passkey:'ROOFTOP_SEERS', x:1060, y:1960, wide:true},
+
+  {id:'fac-wncore-radio', type:'faction', tag:'FACTION / WNCORE', name:'WNCORE RADIO', realName:'WNCORE RADIO',
+   sub:'post-outbreak\nglobal broadcast', realSub:'WORLD NEWS OF\nCOMPANION RADIO',
+   tip:'The broadcast faction. Created after the outbreak to distribute worldwide status reports. 273 Ghuul entries on file.',
+   passkey:'', x:1280, y:1960, wide:true},
+
+  {id:'fac-palenode', type:'faction', tag:'FACTION / SIGNAL', name:'PALE NODE', realName:'PALE NODE',
+   sub:'emergency TX\nambiguous goals', realSub:'Ex-science podcast\nGoals: unknown',
+   tip:'An emergency broadcast signal with unclear intent. Former classification: podcast. Current classification: unknown.',
+   realTip:'Pale Node. Emergency signal broadcasters. Formerly a group of scientists who did podcasts every Sunday. Goals ambiguous.',
+   passkey:'PALE_NODE', x:1500, y:1960},
+
+  {id:'fac-kraken', type:'faction', tag:'FACTION / SEA', name:'KRAKEN\'S PAW', realName:'KRAKEN\'S PAW',
+   sub:'Pacific sea\nfishers + oil rigs', realSub:'Stranded sea workers\nSouth Pacific',
+   tip:'A signal cluster from the ocean. Moving slowly. Direction: south. Formation: improvised.',
+   realTip:'Kraken\'s Paw. Fishermen and oil rig workers stranded in the south Pacific. Banded together post-outbreak.',
+   passkey:'KRAKEN_PAW', x:1700, y:1960},
+
+  {id:'fac-whiteflag', type:'faction', tag:'FACTION / AID', name:'WHITE FLAG', realName:'WHITE FLAG',
+   sub:'cruise ship\nnear London', realSub:'Ex-NGO / Malaysia\nBillionaire leader?',
+   tip:'An aid signal operating from a location that should have been evacuated. The ship keeps broadcasting.',
+   realTip:'White Flag. Pacifistic aid faction. Cruise ship near London. Formerly an NGO distributing food to homeless in Malaysia. Possible billionaire leader.',
+   passkey:'WHITE_FLAG', x:1920, y:1960},
+
+  {id:'fac-drifters', type:'faction', tag:'FACTION / UNKNOWN', name:'LOGBOOK\nDRIFTERS', realName:'LOGBOOK DRIFTERS',
+   sub:'unknown numbers\nOwl+lizard logo', realSub:'Leave logbooks\nat supply points',
+   tip:'An undocumented faction. No home base in the archive. No head count. Communicates through physical objects left in abandoned spaces.',
+   realTip:'Logbook Drifters. Unknown numbers worldwide. Leave informational logbooks at survival bases and malls. Owl-holding-lizard logo. A counter-faction plants fake logbooks.',
+   passkey:'LOGBOOK_DRIFTERS', x:2140, y:1960},
+
+  /* ── FLOATERS / OBSEDIA / COORD ── */
+  {id:'obsedia', type:'locked', tag:'AUTHORITY / ???', name:'OBSEDIA', realName:'OBSEDIA',
+   sub:'CL-5 max visible\nCL-6 field: exists', tip:'Clearance levels 1-5. Level 4 referenced in Lyra logs. Level 5 in PATH-02. Level 6 referenced nowhere. The archive contains a field for level 6.',
+   passkey:'', x:2000, y:500},
+
+  {id:'sim-child', type:'locked', tag:'ENTITY / UNK', name:'??? ????', realName:'??? ????',
+   sub:'file: open\nauthor: none', tip:'No data. The file was found open. No one opened it.',
+   passkey:'', x:1800, y:460},
+
+  {id:'unk-float1', type:'locked', tag:'??? — ???', name:'?? ??? ??', realName:'?? ??? ??',
+   sub:'no header / no TX', tip:'No signal header. No broadcast timestamp. The log entry exists. The log entry should not exist.',
+   passkey:'', x:2060, y:320},
+
+  {id:'unk-float2', type:'locked', tag:'TERMINAL — ???', name:'?????\n??????', realName:'????? ??????',
+   sub:'COLD-SPOT ref.', tip:'COLD SPOT. The signal is cold here. No explanation accepted.',
+   passkey:'', x:2200, y:460},
+
+];
+
+/* ══════════════════════════════════════════
+   CONNECTOR DEFINITIONS
+   from/to: node ids
+   style: conn class
+   route: 'straight' | 'l' | 'custom'
+══════════════════════════════════════════ */
+const CONNECTIONS = [
+  {from:'wncore', to:'siharu', style:'conn-main'},
+  {from:'wncore', to:'simulunas', style:'conn-dashed'},
+  {from:'wncore', to:'obsedia', style:'conn-unknown'},
+  {from:'siharu', to:'protagonist', style:'conn-main'},
+  {from:'siharu', to:'p01', style:'conn-glitch'},
+  {from:'siharu', to:'p02', style:'conn-dashed'},
+  {from:'siharu', to:'p03', style:'conn-dashed'},
+  {from:'siharu', to:'p04', style:'conn-dashed'},
+  {from:'siharu', to:'p05', style:'conn-dashed'},
+  {from:'siharu', to:'p06', style:'conn-dashed'},
+  {from:'siharu', to:'p07', style:'conn-dashed'},
+  {from:'siharu', to:'p08', style:'conn-dashed'},
+  {from:'siharu', to:'p09', style:'conn-dashed'},
+  {from:'simulunas', to:'sim-child', style:'conn-purple'},
+  {from:'simulunas', to:'unk-float1', style:'conn-unknown'},
+  {from:'unk-float1', to:'unk-float2', style:'conn-unknown'},
+  {from:'protagonist', to:'world-origin', style:'conn-bz'},
+  {from:'protagonist', to:'world-another', style:'conn-bz'},
+  {from:'protagonist', to:'char-mother', style:'conn-dashed'},
+  {from:'protagonist', to:'char-anne', style:'conn-dashed'},
+  {from:'protagonist', to:'the-nine', style:'conn-dashed'},
+  {from:'protagonist', to:'char-vulture', style:'conn-dashed'},
+  {from:'world-another', to:'blank-zone-event', style:'conn-bz'},
+  {from:'world-another', to:'ev-outbreak', style:'conn-dashed'},
+  {from:'world-another', to:'ev-ww3', style:'conn-dashed'},
+  {from:'world-another', to:'ev-transfer', style:'conn-dashed'},
+  {from:'world-another', to:'ev-cygnus', style:'conn-dashed'},
+  {from:'world-another', to:'ev-moon-dome', style:'conn-dashed'},
+  {from:'char-mother', to:'ghuul-node', style:'conn-dashed'},
+  {from:'ev-outbreak', to:'zombie-skoth', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-glowbub', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-jawie', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-white', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-oldbones', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-disabled', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-noire', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-bloater', style:'conn-amber'},
+  {from:'ev-outbreak', to:'zombie-aquatic', style:'conn-amber'},
+  {from:'ev-outbreak', to:'inf-1', style:'conn-amber'},
+  {from:'ev-outbreak', to:'inf-2', style:'conn-amber'},
+  {from:'ev-outbreak', to:'inf-3', style:'conn-amber'},
+  {from:'ev-outbreak', to:'inf-4', style:'conn-amber'},
+  {from:'ev-outbreak', to:'inf-5', style:'conn-amber'},
+  {from:'ev-outbreak', to:'anom-obsedia', style:'conn-green'},
+  {from:'ev-outbreak', to:'anom-fog', style:'conn-green'},
+  {from:'ev-outbreak', to:'anom-cooling', style:'conn-green'},
+  {from:'ev-outbreak', to:'anom-migration', style:'conn-green'},
+  {from:'ev-outbreak', to:'ghuul-node', style:'conn-green'},
+  {from:'ev-outbreak', to:'fac-govts', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-moon', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-bloodpact', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-rooftop', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-wncore-radio', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-palenode', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-kraken', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-whiteflag', style:'conn-blue'},
+  {from:'ev-outbreak', to:'fac-drifters', style:'conn-blue'},
+  {from:'p01', to:'char-signal-kage', style:'conn-unknown'},
+  {from:'coord-node', to:'wncore', style:'conn-bz'},
+  {from:'ghuul-node', to:'coord-node', style:'conn-unknown'},
+];
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+const STORAGE_KEY = 'wncore-unlocked-nodes';
+function loadUnlocked(){
+  try{ return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')); }
+  catch{ return new Set(); }
+}
+function saveUnlocked(s){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...s]));
+  // Sync with community system
+  const count = s.size;
+  localStorage.setItem('wncore-cygnus-sections', Math.min(10, count));
+}
+let unlockedNodes = loadUnlocked();
+// Un-lock always-visible nodes
+['wncore','siharu','simulunas','p01'].forEach(id => unlockedNodes.add(id));
+
+let activeNodeId = null;
+
+/* ══════════════════════════════════════════
+   BUILD NODES
+══════════════════════════════════════════ */
+const canvas = document.getElementById('map-canvas');
+const nodeMap = {};
+
+function buildNodes(){
+  NODES.forEach(n => {
+    nodeMap[n.id] = n;
+    const isUnlocked = unlockedNodes.has(n.id);
+
+    const el = document.createElement('div');
+    const typeClass = 'node-' + n.type;
+    el.className = 'node ' + typeClass + (isUnlocked ? ' unlocked-node' : '') + (n.wide ? ' wide' : '');
+    el.id = 'node-' + n.id;
+    el.style.left = n.x + 'px';
+    el.style.top = n.y + 'px';
+    el.dataset.id = n.id;
+
+    const glow = document.createElement('div');
+    glow.className = 'n-glow';
+    el.appendChild(glow);
+
+    const inner = document.createElement('div');
+    inner.className = 'n-inner';
+
+    if(n.tag){
+      const tag = document.createElement('div');
+      tag.className = 'n-tag';
+      tag.textContent = n.tag;
+      inner.appendChild(tag);
+    }
+
+    const name = document.createElement('div');
+    name.className = 'n-name';
+    name.textContent = isUnlocked && n.realName ? n.realName : n.name;
+    inner.appendChild(name);
+
+    if(n.sub || n.realSub){
+      const sub = document.createElement('div');
+      sub.className = 'n-sub';
+      sub.textContent = isUnlocked && n.realSub ? n.realSub : (n.sub||'');
+      inner.appendChild(sub);
+    }
+
+    if(n.type === 'locked' || n.type === 'faction' || n.type === 'event' || n.type === 'anomaly' || n.type === 'threat'){
+      if(!isUnlocked){
+        const lock = document.createElement('div');
+        lock.className = 'n-lock';
+        lock.textContent = n.passkey ? '// KEY REQUIRED' : '// ENCRYPTED';
+        inner.appendChild(lock);
+      }
+    }
+
+    if(n.type === 'root'){
+      el.innerHTML = '';
+      el.appendChild(glow);
+      el.appendChild(inner);
+      const status = document.createElement('div');
+      status.className = 'n-status';
+      status.innerHTML = '<div class="n-status-dot"></div><span>TRANSMITTING</span>';
+      el.appendChild(status);
+    } else if(n.type === 'known' || n.type === 'simulunas'){
+      el.innerHTML = '';
+      el.appendChild(glow);
+      el.appendChild(inner);
+      const footer = document.createElement('div');
+      footer.className = 'n-footer';
+      footer.textContent = n.type === 'simulunas' ? '→ ???' : '→ ' + (n.footerTxt || '9 BRANCH PATHS');
+      el.appendChild(footer);
+    } else {
+      el.innerHTML = '';
+      el.appendChild(glow);
+      el.appendChild(inner);
+    }
+
+    el.addEventListener('mouseenter', e => showTooltip(e, n));
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('mousemove', moveTooltip);
+    el.addEventListener('click', () => handleNodeClick(n));
+
+    canvas.appendChild(el);
+  });
+
+  updateCounters();
+}
+
+/* ══════════════════════════════════════════
+   CONNECTORS
+══════════════════════════════════════════ */
+const svg = document.getElementById('connectors');
+
+function getNodeCenter(id){
+  const el = document.getElementById('node-' + id);
+  if(!el) return null;
   return {
-    x: er.left - mr.left + er.width/2,
-    y: er.top  - mr.top  + er.height/2,
-    top:  er.top  - mr.top,
-    bot:  er.top  - mr.top + er.height,
-    left: er.left - mr.left,
-    right:er.left - mr.left + er.width,
-    w: er.width,
-    h: er.height
+    x: parseFloat(el.style.left) + el.offsetWidth/2,
+    y: parseFloat(el.style.top) + el.offsetHeight/2,
+    top: parseFloat(el.style.top),
+    bot: parseFloat(el.style.top) + el.offsetHeight,
+    left: parseFloat(el.style.left),
+    right: parseFloat(el.style.left) + el.offsetWidth,
+    w: el.offsetWidth, h: el.offsetHeight
   };
 }
 
-function line(x1,y1,x2,y2,cls,marker){
-  const l = document.createElementNS('http://www.w3.org/2000/svg','line');
-  l.setAttribute('x1',x1); l.setAttribute('y1',y1);
-  l.setAttribute('x2',x2); l.setAttribute('y2',y2);
-  l.setAttribute('class',cls);
-  if(marker) l.setAttribute('marker-end','url(#'+marker+')');
-  svg.appendChild(l);
-}
-function path(d,cls,marker){
-  const p = document.createElementNS('http://www.w3.org/2000/svg','path');
-  p.setAttribute('d',d); p.setAttribute('class',cls);
-  if(marker) p.setAttribute('marker-end','url(#'+marker+')');
-  svg.appendChild(p);
-}
-function corner(x1,y1,x2,y2,cls,marker){
-  const mx = x1, my = y2;
-  path(`M${x1},${y1} L${mx},${my} L${x2},${y2}`,cls,marker);
+function mkEl(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,v));
+  return el;
 }
 
 function drawConnectors(){
-  while(svg.childNodes.length > 1) svg.removeChild(svg.lastChild);
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
 
-  const wncore   = getCenter(document.getElementById('n-wncore'));
-  const siharu   = getCenter(document.getElementById('n-siharu'));
-  const simulunas= getCenter(document.getElementById('n-simulunas'));
-  const simunk   = getCenter(document.getElementById('n-sim-unk'));
-  const unk1     = getCenter(document.getElementById('n-unk1'));
-  const unk2     = getCenter(document.getElementById('n-unk2'));
-  const bz       = getCenter(document.getElementById('n-bz'));
-  const obsedia  = getCenter(document.getElementById('n-obsedia'));
-  const kage     = getCenter(document.getElementById('n-kage'));
-  const arg      = getCenter(document.getElementById('n-arg'));
-  const p01      = getCenter(document.getElementById('n-p01'));
-  const p02      = getCenter(document.getElementById('n-p02'));
-  const p03      = getCenter(document.getElementById('n-p03'));
-  const p04      = getCenter(document.getElementById('n-p04'));
-  const p05      = getCenter(document.getElementById('n-p05'));
-  const p06      = getCenter(document.getElementById('n-p06'));
-  const p07      = getCenter(document.getElementById('n-p07'));
-  const p08      = getCenter(document.getElementById('n-p08'));
-  const p09      = getCenter(document.getElementById('n-p09'));
+  // Arrow marker
+  const defs = mkEl('defs', {});
+  const marker = mkEl('marker', {id:'arr',viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'5',markerHeight:'5',orient:'auto'});
+  const mp = mkEl('path', {d:'M2 1L8 5L2 9',fill:'none',stroke:'rgba(200,71,42,0.35)','stroke-width':'1.2','stroke-linecap':'round'});
+  marker.appendChild(mp);
+  defs.appendChild(marker);
+  svg.appendChild(defs);
 
-  // WNCORE → SIHARU (main spine)
-  line(wncore.x, wncore.bot, siharu.x, siharu.top, 'conn-main', 'arr-red');
+  CONNECTIONS.forEach(c => {
+    const a = getNodeCenter(c.from);
+    const b = getNodeCenter(c.to);
+    if(!a || !b) return;
 
-  // SIHARU → PATH nodes (fan out)
-  const paths = [p01,p02,p03,p04,p05,p06,p07,p08,p09];
-  paths.forEach((p,i)=>{
-    const cls = i===0 ? 'conn conn-glitch' : 'conn-siharu';
-    const mk  = i===0 ? 'arr-red' : 'arr-dim';
-    const midY = (siharu.bot + p.top)/2;
-    path(`M${siharu.x},${siharu.bot} L${siharu.x},${midY} L${p.x},${midY} L${p.x},${p.top}`,cls,mk);
+    // Choose exit/entry points based on direction
+    let x1,y1,x2,y2;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+
+    if(Math.abs(dy) > Math.abs(dx)){
+      // Mostly vertical
+      x1 = a.x; y1 = dy > 0 ? a.bot : a.top;
+      x2 = b.x; y2 = dy > 0 ? b.top : b.bot;
+    } else {
+      // Mostly horizontal
+      x1 = dx > 0 ? a.right : a.left; y1 = a.y;
+      x2 = dx > 0 ? b.left : b.right; y2 = b.y;
+    }
+
+    // L-route: vertical then horizontal
+    const midY = y1 + (y2 - y1) * 0.5;
+    const d = `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
+    const path = mkEl('path', {d, class: c.style, fill:'none'});
+    svg.appendChild(path);
   });
-
-  // SIMULUNAS → ???
-  line(simulunas.x, simulunas.bot, simunk.x, simunk.top,'conn-purple','arr-purple');
-
-  // ??? → ???
-  line(unk1.x, unk1.bot, unk2.x, unk2.top,'conn-unknown','arr-dim');
-
-  // WNCORE ↔ SIMULUNAS (dashed lateral)
-  path(`M${wncore.right},${wncore.y} L${simulunas.left},${simulunas.y}`,'conn-purple');
-
-  // SIHARU → BLANK_ZONE
-  const bzMid = (siharu.bot + bz.top)/2 + 30;
-  path(`M${siharu.x},${siharu.bot} L${siharu.x},${bzMid} L${bz.x},${bzMid} L${bz.x},${bz.top}`,'conn-bz');
-
-  // WNCORE → OBSEDIA (faint)
-  path(`M${wncore.x},${wncore.bot} L${wncore.x},${obsedia.y} L${obsedia.right},${obsedia.y}`,'conn-unknown');
-
-  // Signal_KAGE ← → NODE09
-  path(`M${kage.x},${kage.top} L${kage.x},${p01.y} L${p01.right},${p01.y}`,'conn-unknown');
-
-  // ARG → WNCORE (faint)
-  path(`M${arg.x},${arg.top} L${arg.x},${wncore.bot + 30} L${wncore.right},${wncore.bot + 30} L${wncore.right},${wncore.bot}`,'conn-bz');
-
-  // unk1 → SIHARU path (faint lateral)
-  path(`M${unk1.left},${unk1.y} L${p09.right + 10},${unk1.y} L${p09.right + 10},${p09.y}`,'conn-unknown');
 }
 
-// Tooltip
-document.querySelectorAll('.node[data-tip]').forEach(node=>{
-  node.addEventListener('mouseenter', e=>{
-    document.getElementById('tt-title').textContent = node.dataset.tipTitle || '???';
-    document.getElementById('tt-body').textContent  = node.dataset.tip;
-    tooltip.classList.add('show');
-  });
-  node.addEventListener('mouseleave',()=>tooltip.classList.remove('show'));
-  node.addEventListener('mousemove', e=>{
-    const x = Math.min(e.clientX + 16, window.innerWidth - 280);
-    const y = Math.min(e.clientY + 16, window.innerHeight - 160);
-    tooltip.style.left = x + 'px';
-    tooltip.style.top  = y + 'px';
-  });
+/* ══════════════════════════════════════════
+   TOOLTIP
+══════════════════════════════════════════ */
+const tooltip = document.getElementById('tooltip');
+function showTooltip(e, n){
+  const isUnlocked = unlockedNodes.has(n.id);
+  document.getElementById('tt-tag').textContent = n.tag || '';
+  document.getElementById('tt-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
+  document.getElementById('tt-body').textContent = isUnlocked && n.realTip ? n.realTip : n.tip;
+  const hint = document.getElementById('tt-hint');
+  if(!isUnlocked && n.passkey){
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+  tooltip.classList.add('show');
+}
+function hideTooltip(){ tooltip.classList.remove('show'); }
+function moveTooltip(e){
+  const x = Math.min(e.clientX + 16, window.innerWidth - 300);
+  const y = Math.min(e.clientY + 16, window.innerHeight - 180);
+  tooltip.style.left = x + 'px';
+  tooltip.style.top = y + 'px';
+}
+
+/* ══════════════════════════════════════════
+   NODE CLICK
+══════════════════════════════════════════ */
+function handleNodeClick(n){
+  if(unlockedNodes.has(n.id)) return; // already unlocked
+  if(!n.passkey) return; // not unlockable yet
+
+  activeNodeId = n.id;
+  const bar = document.getElementById('unlock-bar');
+  document.getElementById('unlock-node-label').textContent = 'NODE: ' + n.name.replace('\n',' ');
+  document.getElementById('unlock-input').value = '';
+  document.getElementById('unlock-msg').textContent = '';
+  bar.classList.add('show');
+  document.getElementById('unlock-input').focus();
+}
+
+/* Unlock submit */
+function tryUnlock(){
+  if(!activeNodeId) return;
+  const n = nodeMap[activeNodeId];
+  const input = document.getElementById('unlock-input').value.trim().toUpperCase();
+  const key = (n.passkey || '').toUpperCase();
+
+  if(input === key){
+    unlockedNodes.add(activeNodeId);
+    saveUnlocked(unlockedNodes);
+    applyUnlock(activeNodeId, n);
+    document.getElementById('unlock-msg').textContent = '// SIGNAL ACQUIRED';
+    document.getElementById('unlock-msg').style.color = 'rgba(40,200,100,0.7)';
+    setTimeout(() => {
+      document.getElementById('unlock-bar').classList.remove('show');
+      activeNodeId = null;
+    }, 1500);
+  } else {
+    document.getElementById('unlock-msg').textContent = '// KEY REJECTED';
+    document.getElementById('unlock-msg').style.color = 'rgba(200,71,42,0.7)';
+    document.getElementById('unlock-input').value = '';
+  }
+}
+
+function applyUnlock(id, n){
+  const el = document.getElementById('node-' + id);
+  if(!el) return;
+  el.classList.add('unlocked-node');
+  el.classList.add('unlock-anim');
+  // Update name
+  const nameEl = el.querySelector('.n-name');
+  if(nameEl && n.realName) nameEl.textContent = n.realName;
+  const subEl = el.querySelector('.n-sub');
+  if(subEl && n.realSub) subEl.textContent = n.realSub;
+  const lockEl = el.querySelector('.n-lock');
+  if(lockEl) lockEl.remove();
+  setTimeout(() => el.classList.remove('unlock-anim'), 1200);
+  updateCounters();
+
+  // Update progress bar
+  const pct = (unlockedNodes.size / NODES.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+document.getElementById('unlock-submit').addEventListener('click', tryUnlock);
+document.getElementById('unlock-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') tryUnlock();
+  if(e.key === 'Escape') {
+    document.getElementById('unlock-bar').classList.remove('show');
+    activeNodeId = null;
+  }
+});
+document.getElementById('unlock-close').addEventListener('click', () => {
+  document.getElementById('unlock-bar').classList.remove('show');
+  activeNodeId = null;
 });
 
-// Count nodes
-const total = document.querySelectorAll('.node').length;
-document.getElementById('node-count').textContent = total;
-document.getElementById('node-count-hud').textContent = total;
+/* ══════════════════════════════════════════
+   COUNTERS
+══════════════════════════════════════════ */
+function updateCounters(){
+  const total = NODES.length;
+  const unlocked = unlockedNodes.size;
+  document.getElementById('node-count-hd').textContent = total;
+  document.getElementById('node-count-hud').textContent = total;
+  document.getElementById('hud-unlocked').textContent = unlocked;
+  document.getElementById('hud-total').textContent = total;
+  const pct = (unlocked / total) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
 
-// Draw connectors after fonts/layout settle
-window.addEventListener('load', ()=>{ setTimeout(drawConnectors, 120); });
-window.addEventListener('resize', drawConnectors);
+/* ══════════════════════════════════════════
+   PAN / DRAG
+══════════════════════════════════════════ */
+const wrap = document.getElementById('map-wrap');
+let isDragging = false, startX, startY, scrollX, scrollY;
+wrap.addEventListener('mousedown', e => {
+  if(e.target.closest('.node')) return;
+  isDragging = true;
+  startX = e.clientX; startY = e.clientY;
+  scrollX = wrap.scrollLeft; scrollY = wrap.scrollTop;
+  wrap.classList.add('grabbing');
+});
+window.addEventListener('mouseup', () => { isDragging = false; wrap.classList.remove('grabbing'); });
+window.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  wrap.scrollLeft = scrollX - (e.clientX - startX);
+  wrap.scrollTop = scrollY - (e.clientY - startY);
+  updateMinimap();
+});
 
-// Random glitch flash
+/* Touch drag */
+let touchStart = null;
+wrap.addEventListener('touchstart', e => {
+  if(e.touches.length !== 1) return;
+  touchStart = {x:e.touches[0].clientX, y:e.touches[0].clientY, sl:wrap.scrollLeft, st:wrap.scrollTop};
+});
+wrap.addEventListener('touchmove', e => {
+  if(!touchStart || e.touches.length !== 1) return;
+  e.preventDefault();
+  wrap.scrollLeft = touchStart.sl - (e.touches[0].clientX - touchStart.x);
+  wrap.scrollTop  = touchStart.st - (e.touches[0].clientY - touchStart.y);
+  updateMinimap();
+}, {passive:false});
+
+/* ══════════════════════════════════════════
+   MINIMAP
+══════════════════════════════════════════ */
+const mmCanvas = document.getElementById('minimap-canvas');
+const mmCtx = mmCanvas.getContext('2d');
+const mmW = 160, mmH = 100;
+mmCanvas.width = mmW; mmCanvas.height = mmH;
+
+function drawMinimap(){
+  const cW = canvas.scrollWidth, cH = canvas.scrollHeight;
+  const scaleX = mmW / cW, scaleY = mmH / cH;
+  mmCtx.clearRect(0, 0, mmW, mmH);
+  mmCtx.fillStyle = 'rgba(4,3,10,0.8)';
+  mmCtx.fillRect(0,0,mmW,mmH);
+
+  NODES.forEach(n => {
+    const el = document.getElementById('node-' + n.id);
+    if(!el) return;
+    const isUnlocked = unlockedNodes.has(n.id);
+    const mx = n.x * scaleX, my = n.y * scaleY;
+    const mw = el.offsetWidth * scaleX, mh = el.offsetHeight * scaleY;
+
+    let color = 'rgba(232,228,223,0.07)';
+    if(n.type === 'root' || n.type === 'known') color = 'rgba(200,71,42,0.6)';
+    else if(n.type === 'simulunas') color = 'rgba(148,88,200,0.4)';
+    else if(n.type === 'faction') color = 'rgba(60,120,200,0.35)';
+    else if(n.type === 'anomaly') color = 'rgba(40,180,100,0.35)';
+    else if(n.type === 'threat') color = 'rgba(220,140,20,0.35)';
+    else if(isUnlocked) color = 'rgba(200,71,42,0.4)';
+
+    mmCtx.fillStyle = color;
+    mmCtx.fillRect(mx, my, Math.max(mw,3), Math.max(mh,2));
+  });
+}
+
+function updateMinimap(){
+  const cW = canvas.scrollWidth, cH = canvas.scrollHeight;
+  const scaleX = mmW / cW, scaleY = mmH / cH;
+  const vp = document.getElementById('minimap-viewport');
+  const vpW = wrap.clientWidth * scaleX;
+  const vpH = wrap.clientHeight * scaleY;
+  vp.style.left = (wrap.scrollLeft * scaleX) + 'px';
+  vp.style.top = ((wrap.scrollTop) * scaleY) + 'px';
+  vp.style.width = vpW + 'px';
+  vp.style.height = vpH + 'px';
+}
+
+/* Click minimap to navigate */
+document.getElementById('minimap').addEventListener('click', e => {
+  const rect = mmCanvas.getBoundingClientRect();
+  const px = (e.clientX - rect.left) / mmW;
+  const py = (e.clientY - rect.top) / mmH;
+  wrap.scrollLeft = px * canvas.scrollWidth - wrap.clientWidth/2;
+  wrap.scrollTop  = py * canvas.scrollHeight - wrap.clientHeight/2;
+  updateMinimap();
+});
+
+/* ══════════════════════════════════════════
+   CLOCK
+══════════════════════════════════════════ */
+function updateClock(){
+  const n = new Date();
+  const p = v => String(v).padStart(2,'0');
+  document.getElementById('hud-clock').textContent = p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
+}
+
+/* ══════════════════════════════════════════
+   AMBIENT GLITCH
+══════════════════════════════════════════ */
 function randomGlitch(){
   const overlay = document.getElementById('glitch-overlay');
   overlay.style.opacity = '1';
-  setTimeout(()=>{ overlay.style.opacity='0'; }, 60 + Math.random()*80);
-  // Occasionally glitch a locked node text
-  const locked = Array.from(document.querySelectorAll('.node-path.locked .n-name, .node-unk .n-name'));
-  if(locked.length && Math.random()>0.5){
+  setTimeout(()=>overlay.style.opacity='0', 50 + Math.random()*80);
+  const locked = [...document.querySelectorAll('.node-locked:not(.unlocked-node) .n-name, .node-threat:not(.unlocked-node) .n-name, .node-faction:not(.unlocked-node) .n-name')];
+  if(locked.length && Math.random() > 0.5){
     const el = locked[Math.floor(Math.random()*locked.length)];
     const orig = el.textContent;
-    const chars = '█▓▒░╬╫╪│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌';
+    const chars = '█▓▒░╬╫╪│┤╡╢╖╣║╗╝┐└┴┬├─┼╠═╬╧╤╙╒╓┘┌';
     el.textContent = Array.from({length:orig.length},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
-    setTimeout(()=>{ el.textContent = orig; }, 80 + Math.random()*120);
+    setTimeout(()=>el.textContent=orig, 80+Math.random()*120);
   }
-  setTimeout(randomGlitch, 2500 + Math.random()*6000);
+  setTimeout(randomGlitch, 2200+Math.random()*5000);
 }
-randomGlitch();
 
-// Crawling status text
-const statuses = [
-  'SIGNAL: LOST — 88.7 MHz',
-  'ARCHIVE: 1,847 ENTRIES',
-  'BLANK ZONE: UNCHARTED',
-  'NODE-09: LAST SEEN 03:47',
-  'OBSEDIA: NO RESPONSE',
-  'SIHARU: 9 BRANCHES ACTIVE',
-  'COLD SPOT: LISTENING...',
-  'SIGNAL_KAGE: OBSERVED',
+/* HUD rotating tips */
+const HUD_TIPS = [
+  'CLICK NODE TO INTERACT','SIGNAL CARTOGRAPHY — INCOMPLETE','DRAG TO NAVIGATE THE ARCHIVE',
+  'BLANK ZONE: 2028–2031 ERASED','SIGNAL_KAGE: OBSERVER — NO TX','88.7 MHz — LAST CONFIRMED',
+  'OBSEDIA CL-6: FIELD EXISTS, REF: NONE','0.315126 — NOT GPS. NOT FREQUENCY.','173 GHUULS CONFIRMED WORLDWIDE',
+  'APRIL 5, 2032 — OUTBREAK ZERO','ANOTHER SKY — THE SKY KNOWS',
 ];
-let si = 0;
-setInterval(()=>{
-  document.getElementById('hud-tip').textContent = statuses[si++ % statuses.length];
-},4000);
+let tipIdx = 0;
+function rotateTip(){ document.getElementById('hud-tip').textContent = HUD_TIPS[tipIdx++ % HUD_TIPS.length]; }
+
+/* ══════════════════════════════════════════
+   SECTION LABELS
+══════════════════════════════════════════ */
+const LABELS = [
+  {text:'CORE SIGNAL CHAIN', x:1100, y:50},
+  {text:'LATERAL ENTITIES', x:1750, y:50},
+  {text:'SIHARU — 9 BRANCH PATHS', x:400, y:570},
+  {text:'WORLD SPLIT / STRATUM-A vs STRATUM-B', x:700, y:790},
+  {text:'CHARACTERS / PERSONS OF INTEREST', x:580, y:990},
+  {text:'TIMELINE / GLOBAL EVENTS', x:480, y:1230},
+  {text:'ANOMALIES / PHENOMENA', x:280, y:1450},
+  {text:'ZOMBIE CLASSIFICATION — 9 TYPES', x:100, y:1670},
+  {text:'INFECTED CLASSIFICATION — 5 TYPES', x:1520, y:1670},
+  {text:'FACTION INDEX', x:280, y:1930},
+];
+
+function buildLabels(){
+  LABELS.forEach(l => {
+    const el = document.createElement('div');
+    el.className = 'section-label';
+    el.style.left = l.x + 'px';
+    el.style.top = l.y + 'px';
+    el.textContent = l.text;
+    canvas.appendChild(el);
+  });
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function init(){
+  buildLabels();
+  buildNodes();
+  setTimeout(() => {
+    drawConnectors();
+    drawMinimap();
+    updateMinimap();
+    // Centre view on root
+    wrap.scrollLeft = 1300 - wrap.clientWidth/2;
+    wrap.scrollTop = 0;
+    updateMinimap();
+  }, 120);
+
+  updateClock();
+  setInterval(updateClock, 1000);
+  setInterval(rotateTip, 4500);
+  randomGlitch();
+  wrap.addEventListener('scroll', updateMinimap);
+}
+window.addEventListener('load', init);
+window.addEventListener('resize', () => { drawConnectors(); drawMinimap(); updateMinimap(); });
 </script>
 </body>
 </html>
