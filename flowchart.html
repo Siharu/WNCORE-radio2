@@ -51,7 +51,7 @@ body::after{
   background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:256px;}
 
-/* ── HEADER ── */
+/* HEADER */
 #hd{
   position:fixed;top:0;left:0;right:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
@@ -66,7 +66,7 @@ body::after{
 #back{font-size:0.46rem;letter-spacing:2px;color:var(--txt3);text-decoration:none;padding:4px 8px;border:1px solid rgba(255,255,255,0.07);border-radius:3px;transition:all 0.15s}
 #back:hover{color:var(--txt);border-color:rgba(255,255,255,0.15)}
 
-/* ── UNLOCK BAR ── */
+/* UNLOCK BAR */
 #unlock-bar{
   position:fixed;bottom:40px;left:50%;transform:translateX(-50%);
   z-index:9995;
@@ -97,7 +97,7 @@ body::after{
 #unlock-close:hover{color:var(--txt)}
 #unlock-node-label{font-size:0.42rem;letter-spacing:2px;color:var(--txt3);white-space:nowrap}
 
-/* ── CANVAS ── */
+/* CANVAS */
 #map-wrap{
   position:relative;padding-top:57px;
   overflow:auto;
@@ -107,18 +107,21 @@ body::after{
 #map-wrap.grabbing{cursor:grabbing}
 #map-canvas{
   position:relative;
-  /* Will be sized by JS based on node layout */
   min-width:3600px;
-  min-height:2800px;
+  min-height:3120px;
+}
+#map-canvas-shell{
+  position:relative;
+  transform-origin:0 0;
 }
 
-/* ── SVG CONNECTORS ── */
+/* SVG CONNECTORS */
 #connectors{
   position:absolute;top:0;left:0;width:100%;height:100%;
   pointer-events:none;overflow:visible;
 }
 
-/* ── NODE BASE ── */
+/* NODE BASE */
 .node{
   position:absolute;border-radius:3px;cursor:pointer;
   transition:transform 0.15s,box-shadow 0.15s;
@@ -127,11 +130,9 @@ body::after{
 .node:hover{transform:scale(1.05);z-index:10}
 .node:hover .n-glow{opacity:1}
 .n-glow{position:absolute;inset:-8px;border-radius:8px;opacity:0;transition:opacity 0.2s;pointer-events:none;box-shadow:0 0 24px var(--glow),0 0 48px rgba(200,71,42,0.15);}
-
-/* Unlocked glow */
 .node.unlocked-node:hover .n-glow{box-shadow:0 0 28px rgba(200,71,42,0.6),0 0 56px rgba(200,71,42,0.2)}
 
-/* ── NODE TYPES ── */
+/* NODE TYPES */
 .node-root{background:var(--bg2);border:1px solid var(--acc);box-shadow:0 0 18px rgba(200,71,42,0.25),inset 0 0 40px rgba(200,71,42,0.04);width:190px}
 .node-root .n-inner{padding:14px 18px}
 .node-root .n-tag{font-size:0.38rem;letter-spacing:3px;color:var(--acc);margin-bottom:6px}
@@ -148,7 +149,6 @@ body::after{
   98%{text-shadow:1px 0 var(--acc3);transform:translateX(2px)}
 }
 
-/* Main character / known entity nodes */
 .node-known{background:rgba(12,8,22,0.95);border:1px solid rgba(200,71,42,0.5);width:168px}
 .node-known .n-inner{padding:12px 16px}
 .node-known .n-tag{font-size:0.37rem;letter-spacing:3px;color:rgba(200,71,42,0.55);margin-bottom:5px}
@@ -156,7 +156,6 @@ body::after{
 .node-known .n-sub{font-size:0.44rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
 .node-known .n-footer{border-top:1px solid rgba(200,71,42,0.12);padding:5px 16px 8px;font-size:0.38rem;letter-spacing:2px;color:rgba(200,71,42,0.45)}
 
-/* Locked / unknown */
 .node-locked{
   background:var(--locked-bg);border:1px solid var(--locked-border);
   width:128px;animation:flicker-lock 9s infinite;
@@ -168,7 +167,6 @@ body::after{
 .node-locked .n-sub{font-size:0.38rem;letter-spacing:1px;color:rgba(232,228,223,0.1);margin-top:3px;line-height:1.35}
 .node-locked .n-lock{font-size:0.36rem;letter-spacing:2px;color:rgba(200,71,42,0.2);margin-top:5px;border-top:1px solid rgba(255,255,255,0.04);padding-top:4px}
 
-/* Unlocked state override */
 .node-locked.unlocked-node{
   background:rgba(12,8,22,0.97);
   border:1px solid rgba(200,71,42,0.45);
@@ -180,7 +178,6 @@ body::after{
 .node-locked.unlocked-node .n-lock{display:none}
 .node-locked.unlocked-node .n-id{color:rgba(200,71,42,0.5)}
 
-/* Simulunas-type: purple */
 .node-simulunas{background:rgba(8,6,20,0.95);border:1px solid rgba(148,88,200,0.4);box-shadow:0 0 12px rgba(148,88,200,0.1);width:164px}
 .node-simulunas .n-inner{padding:12px 16px}
 .node-simulunas .n-tag{font-size:0.37rem;letter-spacing:3px;color:rgba(148,88,200,0.55);margin-bottom:5px}
@@ -188,14 +185,12 @@ body::after{
 .node-simulunas .n-sub{font-size:0.44rem;letter-spacing:1px;color:var(--txt2);margin-top:4px;line-height:1.5}
 .node-simulunas .n-footer{border-top:1px solid rgba(148,88,200,0.1);padding:5px 16px 8px;font-size:0.38rem;letter-spacing:2px;color:rgba(148,88,200,0.4)}
 
-/* Blank zone */
 .node-blank{width:150px;background:rgba(4,3,10,0.98);border:1px dashed rgba(200,71,42,0.18);border-radius:2px;animation:bz-pulse 3s ease-in-out infinite}
 .node-blank .n-inner{padding:10px 14px}
 .node-blank .n-tag{font-size:0.36rem;letter-spacing:3px;color:rgba(200,71,42,0.3);margin-bottom:4px}
 .node-blank .n-name{font-family:var(--vt);font-size:1.05rem;color:rgba(200,71,42,0.38)}
 .node-blank .n-sub{font-size:0.38rem;color:rgba(232,228,223,0.12);margin-top:4px;line-height:1.35}
 
-/* Faction nodes */
 .node-faction{width:148px;background:rgba(6,5,16,0.97);border:1px solid rgba(60,120,200,0.22)}
 .node-faction .n-inner{padding:10px 13px}
 .node-faction .n-tag{font-size:0.36rem;letter-spacing:2px;color:rgba(60,120,200,0.4);margin-bottom:4px}
@@ -205,7 +200,6 @@ body::after{
 .node-faction.unlocked-node .n-sub{color:var(--txt2)}
 .node-faction.unlocked-node{border-color:rgba(60,120,200,0.5);background:rgba(8,10,28,0.97)}
 
-/* Event nodes */
 .node-event{width:140px;background:rgba(8,5,4,0.97);border:1px solid rgba(200,71,42,0.15)}
 .node-event .n-inner{padding:10px 12px}
 .node-event .n-tag{font-size:0.35rem;letter-spacing:2px;color:rgba(200,71,42,0.3);margin-bottom:4px}
@@ -215,7 +209,6 @@ body::after{
 .node-event.unlocked-node .n-sub{color:var(--txt2)}
 .node-event.unlocked-node{border-color:rgba(200,71,42,0.4)}
 
-/* Anomaly nodes — greenish */
 .node-anomaly{width:140px;background:rgba(4,10,6,0.97);border:1px solid rgba(40,180,100,0.12)}
 .node-anomaly .n-inner{padding:10px 12px}
 .node-anomaly .n-tag{font-size:0.35rem;letter-spacing:2px;color:rgba(40,180,100,0.3);margin-bottom:4px}
@@ -225,7 +218,6 @@ body::after{
 .node-anomaly.unlocked-node .n-sub{color:var(--txt2)}
 .node-anomaly.unlocked-node{border-color:rgba(40,180,100,0.4)}
 
-/* Zombie/threat nodes — amber */
 .node-threat{width:136px;background:rgba(10,6,2,0.97);border:1px solid rgba(220,140,20,0.12)}
 .node-threat .n-inner{padding:9px 12px}
 .node-threat .n-tag{font-size:0.35rem;letter-spacing:2px;color:rgba(220,140,20,0.28);margin-bottom:4px}
@@ -234,6 +226,143 @@ body::after{
 .node-threat.unlocked-node .n-name{color:rgba(240,160,40,0.8);animation:none}
 .node-threat.unlocked-node .n-sub{color:var(--txt2)}
 .node-threat.unlocked-node{border-color:rgba(220,140,20,0.4)}
+
+/* Ghost nodes — barely visible scattered ??? */
+.node-ghost{
+  width:90px;
+  background:rgba(4,3,10,0.3);
+  border:1px solid rgba(232,228,223,0.04);
+  border-radius:2px;
+  opacity:0.28;
+  pointer-events:none;
+  animation:ghost-flicker 7s ease-in-out infinite;
+}
+.node-ghost .n-inner{padding:7px 9px}
+.node-ghost .n-tag{font-size:0.3rem;letter-spacing:2px;color:rgba(232,228,223,0.08);margin-bottom:3px}
+.node-ghost .n-name{font-family:var(--vt);font-size:0.82rem;color:rgba(232,228,223,0.12);line-height:1.1;animation:glitch-q 4s infinite}
+.node-ghost .n-sub{font-size:0.3rem;color:rgba(232,228,223,0.05);margin-top:2px}
+@keyframes ghost-flicker{
+  0%,100%{opacity:0.28;filter:none}
+  20%{opacity:0.08;filter:blur(0.3px)}
+  21%{opacity:0.32}
+  60%{opacity:0.18;filter:blur(0.2px)}
+  61%{opacity:0.28}
+  80%{opacity:0.05}
+  81%{opacity:0.25}
+}
+
+/* Reality distortion node — the final one */
+.node-void{
+  width:180px;
+  background:rgba(2,1,6,0.6);
+  border:1px solid rgba(200,71,42,0.06);
+  border-radius:2px;
+  animation:void-distort 1.8s ease-in-out infinite;
+  mix-blend-mode:screen;
+}
+.node-void .n-inner{padding:12px 14px}
+.node-void .n-tag{font-size:0.32rem;letter-spacing:3px;color:rgba(200,71,42,0.12);margin-bottom:5px;animation:void-tag 2.3s ease-in-out infinite}
+.node-void .n-name{font-family:var(--vt);font-size:1.15rem;color:rgba(200,71,42,0.08);line-height:1.1;animation:void-name 1.4s ease-in-out infinite}
+.node-void .n-sub{font-size:0.34rem;color:rgba(232,228,223,0.04);margin-top:4px;line-height:1.4;animation:void-sub 2.7s ease-in-out infinite}
+
+@keyframes void-distort{
+  0%,100%{
+    transform:none;
+    filter:none;
+    opacity:0.4;
+    border-color:rgba(200,71,42,0.06);
+    box-shadow:none;
+  }
+  8%{
+    transform:skewX(4deg) translateX(2px);
+    filter:blur(0.4px);
+    opacity:0.6;
+  }
+  9%{
+    transform:skewX(-6deg) translateX(-3px) scaleY(1.03);
+    filter:blur(0.8px);
+    border-color:rgba(200,71,42,0.2);
+    box-shadow:2px 0 8px rgba(200,71,42,0.15),-2px 0 8px rgba(60,120,255,0.1);
+    opacity:0.7;
+  }
+  10%{transform:none;filter:none;opacity:0.35;}
+  30%{
+    transform:translateX(3px) skewY(1deg);
+    filter:blur(0.3px);
+    opacity:0.55;
+    border-color:rgba(148,88,200,0.1);
+    box-shadow:-3px 0 12px rgba(148,88,200,0.12);
+  }
+  31%{transform:translateX(-4px);opacity:0.2;}
+  32%{transform:none;opacity:0.4;}
+  55%{
+    transform:scaleX(1.04) skewX(-2deg);
+    filter:blur(0.6px) brightness(1.4);
+    border-color:rgba(200,71,42,0.15);
+    opacity:0.65;
+  }
+  56%{transform:none;filter:none;opacity:0.3;}
+  78%{
+    transform:translateY(2px) skewX(3deg);
+    filter:blur(0.5px);
+    box-shadow:0 0 20px rgba(200,71,42,0.08),4px 0 6px rgba(60,200,120,0.06);
+    opacity:0.5;
+  }
+  79%{transform:none;opacity:0.4;}
+}
+
+@keyframes void-name{
+  0%,100%{
+    color:rgba(200,71,42,0.08);
+    text-shadow:none;
+    transform:none;
+    filter:none;
+  }
+  10%{
+    color:rgba(200,71,42,0.25);
+    text-shadow:3px 0 rgba(200,71,42,0.4),-3px 0 rgba(60,120,255,0.3);
+    transform:skewX(5deg);
+    filter:blur(0.3px);
+  }
+  11%{
+    color:rgba(232,228,223,0.04);
+    text-shadow:none;
+    transform:skewX(-8deg) scaleX(1.05);
+  }
+  12%{
+    color:rgba(200,71,42,0.15);
+    text-shadow:-2px 0 rgba(200,71,42,0.3),2px 0 rgba(103,243,218,0.25);
+    transform:none;
+  }
+  13%{color:rgba(200,71,42,0.06);text-shadow:none;}
+  40%{
+    color:rgba(148,88,200,0.2);
+    text-shadow:2px 0 rgba(148,88,200,0.3),-2px 0 rgba(200,71,42,0.2);
+    transform:translateX(2px);
+  }
+  41%{color:rgba(200,71,42,0.05);transform:translateX(-3px);}
+  42%{color:rgba(200,71,42,0.1);transform:none;}
+  70%{
+    color:rgba(232,228,223,0.12);
+    text-shadow:0 0 8px rgba(232,228,223,0.1);
+    filter:blur(0.4px);
+  }
+  71%{color:rgba(200,71,42,0.04);filter:none;}
+}
+
+@keyframes void-tag{
+  0%,100%{opacity:0.5;letter-spacing:3px}
+  25%{opacity:0.1;letter-spacing:5px}
+  26%{opacity:0.7;letter-spacing:2px}
+  50%{opacity:0.2;letter-spacing:4px}
+  75%{opacity:0.6;letter-spacing:1px}
+}
+
+@keyframes void-sub{
+  0%,100%{opacity:1;transform:none}
+  33%{opacity:0.2;transform:translateX(2px)}
+  66%{opacity:0.5;transform:translateX(-1px)}
+}
 
 /* Section labels */
 .section-label{
@@ -275,7 +404,6 @@ body::after{
   50%{border-color:rgba(200,71,42,0.35);box-shadow:0 0 20px rgba(200,71,42,0.07)}
 }
 
-/* Unlock flash */
 @keyframes unlock-flash{
   0%{box-shadow:0 0 0 0 rgba(200,71,42,0)}
   30%{box-shadow:0 0 40px 10px rgba(200,71,42,0.6)}
@@ -283,11 +411,10 @@ body::after{
 }
 .unlock-anim{animation:unlock-flash 1s ease-out forwards}
 
-/* Redacted */
 .redacted{display:inline-block;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.05) 0px,rgba(255,255,255,0.05) 4px,transparent 4px,transparent 8px);border-radius:1px;padding:1px 3px;color:transparent;user-select:none;font-size:0.55rem}
 .redacted::after{content:'████';color:rgba(232,228,223,0.07)}
 
-/* ── LEGEND ── */
+/* LEGEND */
 #legend{
   position:fixed;bottom:60px;left:20px;z-index:200;
   font-size:0.42rem;letter-spacing:1.5px;color:var(--txt3);
@@ -301,7 +428,7 @@ body::after{
 .leg-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
 .leg-dash{width:16px;height:1px;border-top:1px dashed;flex-shrink:0}
 
-/* ── HUD ── */
+/* HUD */
 #hud{
   position:fixed;bottom:0;left:0;right:0;z-index:300;
   padding:7px 20px;border-top:1px solid rgba(255,255,255,0.04);
@@ -314,7 +441,7 @@ body::after{
 @keyframes hud-blink{0%,80%,100%{opacity:0.35}90%{opacity:0.8}}
 #hud-clock{font-variant-numeric:tabular-nums}
 
-/* ── TOOLTIP ── */
+/* TOOLTIP */
 #tooltip{
   position:fixed;z-index:9000;pointer-events:none;
   background:rgba(4,3,10,0.97);border:1px solid rgba(200,71,42,0.3);
@@ -327,7 +454,7 @@ body::after{
 #tooltip .tt-tag{font-size:0.38rem;letter-spacing:2px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase}
 #tooltip .tt-unlock-hint{margin-top:7px;font-size:0.42rem;letter-spacing:1.5px;color:rgba(200,71,42,0.4);border-top:1px solid rgba(200,71,42,0.1);padding-top:6px}
 
-/* ── MINIMAP ── */
+/* MINIMAP */
 #minimap{
   position:fixed;top:70px;right:20px;z-index:200;
   width:160px;height:100px;
@@ -343,17 +470,178 @@ body::after{
   pointer-events:none;
 }
 
-/* ── GLITCH OVERLAY ── */
+/* ═══════════════════════════════════════════
+   ANALOG / CHROMATIC ABERRATION GLITCH SYSTEM
+   ═══════════════════════════════════════════ */
+
+/* Main glitch overlay — RGB channel split layers */
 #glitch-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none;opacity:0;background:rgba(200,71,42,0.025);mix-blend-mode:screen}
 
-/* ── PROGRESS BAR ── */
+/* Chromatic red channel */
+#chroma-r{
+  position:fixed;inset:0;z-index:9989;pointer-events:none;
+  opacity:0;mix-blend-mode:screen;
+  background:rgba(255,0,0,0.04);
+  transition:none;
+}
+/* Chromatic blue channel */
+#chroma-b{
+  position:fixed;inset:0;z-index:9988;pointer-events:none;
+  opacity:0;mix-blend-mode:screen;
+  background:rgba(0,80,255,0.04);
+  transition:none;
+}
+/* Horizontal scanline tear — the analog VHS rip */
+#scan-tear{
+  position:fixed;left:0;right:0;z-index:9987;pointer-events:none;
+  height:3px;opacity:0;
+  background:rgba(200,71,42,0.6);
+  filter:blur(0.5px);
+  mix-blend-mode:screen;
+}
+/* Vertical noise bars — phosphor burn */
+#noise-bar{
+  position:fixed;top:0;bottom:0;z-index:9986;pointer-events:none;
+  width:4px;opacity:0;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(200,71,42,0.15) 20%,
+    rgba(0,80,255,0.1) 40%,
+    rgba(200,71,42,0.2) 60%,
+    transparent 100%);
+  mix-blend-mode:screen;
+  filter:blur(0.3px);
+}
+/* RGB pixel scatter layer */
+#pixel-scatter{
+  position:fixed;inset:0;z-index:9985;pointer-events:none;
+  opacity:0;mix-blend-mode:screen;
+}
+/* Static noise overlay — analog tape hiss visualised */
+#static-overlay{
+  position:fixed;inset:0;z-index:9984;pointer-events:none;
+  opacity:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 128 128' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='1' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23s)'/%3E%3C/svg%3E");
+  background-size:128px;
+  mix-blend-mode:overlay;
+}
+
+/* Node-level chromatic aberration on hover */
+.node:hover .n-name{
+  animation: node-chroma-hover 0.3s ease-out;
+}
+@keyframes node-chroma-hover{
+  0%{text-shadow:none}
+  20%{text-shadow:2px 0 rgba(255,0,0,0.6),-2px 0 rgba(0,80,255,0.6)}
+  40%{text-shadow:-3px 0 rgba(255,0,0,0.4),3px 0 rgba(0,80,255,0.4),0 0 8px rgba(200,71,42,0.3)}
+  70%{text-shadow:1px 0 rgba(255,0,0,0.2),-1px 0 rgba(0,80,255,0.2)}
+  100%{text-shadow:none}
+}
+
+/* Unlocked node — persistent subtle chroma shimmer */
+.unlocked-node .n-name{
+  animation:chroma-shimmer 8s ease-in-out infinite!important;
+}
+@keyframes chroma-shimmer{
+  0%,85%,100%{text-shadow:none;filter:none}
+  86%{text-shadow:2px 0 rgba(255,0,50,0.45),-2px 0 rgba(0,100,255,0.45);filter:brightness(1.05)}
+  87%{text-shadow:-1px 0 rgba(255,0,50,0.25),1px 0 rgba(0,100,255,0.25)}
+  88%{text-shadow:none}
+  92%{text-shadow:3px 0 rgba(255,0,50,0.35),-3px 0 rgba(0,100,255,0.35);filter:brightness(1.08)}
+  93%{text-shadow:none;filter:none}
+}
+
+/* Enhanced root node glitch — full RGB split */
+@keyframes glitch-root{
+  0%,88%,100%{text-shadow:none;transform:none;filter:none}
+  89%{text-shadow:3px 0 rgba(255,0,0,0.7),-3px 0 rgba(0,80,255,0.7);transform:translateX(2px);filter:brightness(1.1)}
+  90%{text-shadow:-4px 0 rgba(255,40,0,0.5),4px 0 rgba(0,60,255,0.5);transform:translateX(-3px) skewX(1deg)}
+  91%{text-shadow:2px 0 rgba(255,0,0,0.3),-2px 0 rgba(0,80,255,0.3);transform:translateX(1px)}
+  92%{text-shadow:none;transform:none;filter:none}
+  95%{text-shadow:1px 0 rgba(255,100,0,0.5),-1px 0 rgba(0,40,255,0.5);transform:skewX(-0.5deg)}
+  96%{text-shadow:none;transform:none}
+  98%{text-shadow:4px 0 rgba(255,0,0,0.4),-4px 0 rgba(0,80,255,0.4),0 2px rgba(200,71,42,0.2);transform:translateX(3px) scaleX(1.01)}
+  99%{text-shadow:none;transform:none}
+}
+
+/* VHS tracking error — horizontal bar sweep */
+@keyframes tracking-sweep{
+  0%{top:-10%;opacity:0}
+  5%{opacity:1}
+  95%{opacity:0.8}
+  100%{top:110%;opacity:0}
+}
+
+/* Analog signal dropout — full frame corrupts briefly */
+@keyframes signal-dropout{
+  0%,100%{filter:none;transform:none;opacity:1}
+  50%{filter:brightness(0.1) contrast(2);transform:skewX(0.5deg);opacity:0.7}
+  51%{filter:none;opacity:1}
+  52%{filter:brightness(1.4) saturate(2);transform:skewX(-0.3deg)}
+  53%{filter:none;transform:none}
+}
+
+/* Ghost node enhanced — now with chromatic drift */
+@keyframes ghost-flicker{
+  0%,100%{opacity:0.28;filter:none;transform:none}
+  10%{opacity:0.06;filter:blur(0.4px) brightness(0.5)}
+  11%{opacity:0.35;filter:none;transform:translateX(1px)}
+  12%{opacity:0.28;transform:none}
+  40%{opacity:0.14;filter:blur(0.2px)}
+  41%{opacity:0.32;filter:none}
+  60%{opacity:0.18;filter:blur(0.3px);transform:translateX(-1px)}
+  61%{opacity:0.28;transform:none}
+  75%{opacity:0.04;filter:blur(0.6px) brightness(2);transform:skewX(2deg)}
+  76%{opacity:0.25;filter:none;transform:none}
+  80%{opacity:0.05}
+  81%{opacity:0.28}
+}
+
+/* Section label glitch drift */
+.section-label{
+  position:absolute;font-family:var(--mono);
+  font-size:0.36rem;letter-spacing:3.5px;color:rgba(232,228,223,0.08);
+  text-transform:uppercase;
+  border-left:1px solid rgba(255,255,255,0.04);
+  padding-left:8px;pointer-events:none;
+  animation:label-drift 12s ease-in-out infinite;
+}
+@keyframes label-drift{
+  0%,90%,100%{letter-spacing:3.5px;opacity:0.08;text-shadow:none}
+  91%{letter-spacing:4px;opacity:0.14;text-shadow:1px 0 rgba(200,71,42,0.3),-1px 0 rgba(0,80,255,0.2)}
+  92%{letter-spacing:3px;opacity:0.06}
+  93%{letter-spacing:3.5px;opacity:0.1;text-shadow:none}
+}
+
+/* Connector animated pulse on main lines */
+.conn-main{
+  stroke:rgba(200,71,42,0.55);stroke-width:1.2;fill:none;
+  animation:conn-pulse 6s ease-in-out infinite;
+}
+@keyframes conn-pulse{
+  0%,100%{stroke-opacity:0.55}
+  50%{stroke-opacity:0.8}
+}
+.conn-glitch{
+  stroke:rgba(200,71,42,0.3);stroke-width:0.8;fill:none;
+  stroke-dasharray:4 3;animation:dash-crawl 3s linear infinite,conn-chroma 7s ease-in-out infinite;
+}
+@keyframes conn-chroma{
+  0%,80%,100%{stroke:rgba(200,71,42,0.3);filter:none}
+  85%{stroke:rgba(255,40,0,0.5);filter:drop-shadow(1px 0 1px rgba(0,80,255,0.4))}
+  86%{stroke:rgba(0,80,255,0.4)}
+  87%{stroke:rgba(200,71,42,0.3)}
+}
+@keyframes dash-crawl{to{stroke-dashoffset:-28}}
+
+/* PROGRESS BAR */
 #progress-bar{
   position:fixed;top:57px;left:0;right:0;z-index:99;
   height:2px;background:rgba(200,71,42,0.06);
 }
 #progress-fill{height:100%;background:var(--acc);transition:width 0.5s ease;width:0%}
 
-/* ── ZOOM CONTROLS (mobile) ── */
+/* ZOOM CONTROLS */
 #zoom-controls{
   display:none;
   position:fixed;right:14px;bottom:58px;z-index:300;
@@ -370,7 +658,7 @@ body::after{
 #zoom-controls button:active{background:rgba(200,71,42,0.12);}
 #zoom-reset{font-size:0.5rem!important;letter-spacing:1px;padding:0 4px;}
 
-/* ── MOBILE BOTTOM SHEET ── */
+/* MOBILE BOTTOM SHEET */
 #bottom-sheet{
   display:none;
   position:fixed;bottom:0;left:0;right:0;z-index:8000;
@@ -423,7 +711,7 @@ body::after{
 }
 #bs-backdrop.open{display:block;}
 
-/* ── MOBILE LEGEND TOGGLE ── */
+/* MOBILE LEGEND TOGGLE */
 #legend-btn{
   display:none;
   position:fixed;bottom:58px;left:14px;z-index:300;
@@ -441,66 +729,43 @@ body::after{
   max-width:calc(100vw - 28px);
 }
 
-/* ── MOBILE MEDIA QUERY ── */
+/* MOBILE MEDIA QUERY */
 @media(max-width:640px){
-  /* Header */
   #hd{padding:10px 14px;gap:6px;}
   .hd-title{display:none;}
   .hd-status{display:none;}
   #back{font-size:0.5rem;padding:6px 10px;}
-
-  /* HUD — single line essentials */
-  #hud{
-    padding:6px 14px;gap:10px;
-    font-size:0.44rem;flex-wrap:nowrap;overflow:hidden;
-  }
-  #hud>span:nth-child(3),
-  #hud>span:nth-child(4){display:none;}
+  #hud{padding:6px 14px;gap:10px;font-size:0.44rem;flex-wrap:nowrap;overflow:hidden;}
+  #hud>span:nth-child(3),#hud>span:nth-child(4){display:none;}
   #hud-tip{display:none;}
   #hud-clock{margin-left:auto;}
-
-  /* Hide desktop-only UI */
   #legend{display:none;}
   #minimap{display:none;}
   #tooltip{display:none;}
-
-  /* Unlock bar hidden on mobile — use bottom sheet instead */
   #unlock-bar{display:none!important;}
-
-  /* Show mobile-specific UI */
   #zoom-controls{display:flex;}
   #bottom-sheet{display:block;}
   #legend-btn{display:flex;}
-
-  /* Nodes — bigger tap targets, slightly larger text */
   .node{cursor:pointer;}
-  .node:hover{transform:none;}/* disable hover scale — use tap */
+  .node:hover{transform:none;}
   .node:active{transform:scale(1.04);z-index:10;}
-
   .node-root{width:160px;}
   .node-root .n-name{font-size:1.2rem;}
   .node-root .n-tag{font-size:0.45rem;}
   .node-root .n-sub{font-size:0.52rem;}
-
   .node-known{width:148px;}
   .node-known .n-name{font-size:0.9rem;}
   .node-known .n-tag{font-size:0.42rem;}
-
   .node-locked{width:120px;}
   .node-locked.wide{width:140px;}
   .node-locked .n-name{font-size:1.05rem;}
-
   .node-simulunas{width:148px;}
   .node-blank{width:136px;}
   .node-faction{width:136px;}
   .node-event{width:128px;}
   .node-anomaly{width:128px;}
   .node-threat{width:124px;}
-
-  /* Section labels bigger */
   .section-label{font-size:0.42rem;letter-spacing:2px;}
-
-  /* Connectors slightly thicker for small screens */
   .conn-main{stroke-width:1.5;}
   .conn{stroke-width:1;}
   .conn-dashed{stroke-width:0.8;}
@@ -510,6 +775,12 @@ body::after{
 <body>
 <div id="grain"></div>
 <div id="glitch-overlay"></div>
+<div id="chroma-r"></div>
+<div id="chroma-b"></div>
+<div id="scan-tear"></div>
+<div id="noise-bar"></div>
+<canvas id="pixel-scatter" width="1" height="1"></canvas>
+<div id="static-overlay"></div>
 
 <header id="hd">
   <a href="constellation.html" class="hd-logo">WNCORE</a>
@@ -523,21 +794,19 @@ body::after{
 
 <div id="progress-bar"><div id="progress-fill"></div></div>
 
-<!-- MINIMAP -->
 <div id="minimap">
   <canvas id="minimap-canvas"></canvas>
   <div id="minimap-viewport"></div>
 </div>
 
-<!-- MAP -->
 <div id="map-wrap">
+  <div id="map-canvas-shell">
   <div id="map-canvas">
     <svg id="connectors" xmlns="http://www.w3.org/2000/svg"></svg>
-    <!-- Nodes injected by JS -->
+  </div>
   </div>
 </div>
 
-<!-- LEGEND -->
 <div id="legend">
   <div id="legend-title">Signal Index</div>
   <div class="leg-row"><div class="leg-dot" style="background:var(--acc)"></div><span>Core / Known</span></div>
@@ -550,7 +819,6 @@ body::after{
   <div class="leg-row"><div class="leg-dash" style="border-top-style:dashed;border-top-color:rgba(232,228,223,0.1)"></div><span>Unknown connection</span></div>
 </div>
 
-<!-- HUD -->
 <div id="hud">
   <span>TOTAL NODES: <span id="node-count-hud" style="color:var(--acc)">—</span></span>
   <span>UNLOCKED: <span id="hud-unlocked">0</span> / <span id="hud-total">—</span></span>
@@ -560,7 +828,6 @@ body::after{
   <span id="hud-tip">CLICK NODE TO INTERACT</span>
 </div>
 
-<!-- TOOLTIP -->
 <div id="tooltip">
   <div class="tt-tag" id="tt-tag"></div>
   <div class="tt-title" id="tt-title"></div>
@@ -568,7 +835,6 @@ body::after{
   <div class="tt-unlock-hint" id="tt-hint" style="display:none">// Enter signal key to unlock</div>
 </div>
 
-<!-- UNLOCK BAR (desktop) -->
 <div id="unlock-bar">
   <div id="unlock-node-label">NODE: —</div>
   <input id="unlock-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="32" autocomplete="off" spellcheck="false">
@@ -577,7 +843,6 @@ body::after{
   <button id="unlock-close">✕</button>
 </div>
 
-<!-- MOBILE BOTTOM SHEET -->
 <div id="bs-backdrop"></div>
 <div id="bottom-sheet">
   <div id="bs-handle"></div>
@@ -600,41 +865,24 @@ body::after{
   </div>
 </div>
 
-<!-- MOBILE ZOOM CONTROLS -->
 <div id="zoom-controls">
   <button id="zoom-in" aria-label="Zoom in">+</button>
   <button id="zoom-reset" aria-label="Reset zoom">FIT</button>
   <button id="zoom-out" aria-label="Zoom out">−</button>
 </div>
 
-<!-- MOBILE LEGEND TOGGLE -->
 <button id="legend-btn" aria-label="Toggle legend">≡</button>
 
 <script>
 'use strict';
 
-/* ══════════════════════════════════════════
-   NODE DEFINITIONS
-   type: root | known | locked | simulunas | blank | faction | event | anomaly | threat
-   tag: short category label
-   name: display name (??? if locked)
-   realName: actual name (revealed on unlock)
-   sub: subtitle / flavor text
-   passkey: unlock code (set later per chapter — blank = cannot unlock yet)
-   tip: tooltip text (shown locked)
-   realTip: full tooltip (shown unlocked)
-   color: optional override class
-   x, y: pixel position on canvas
-══════════════════════════════════════════ */
-
 const NODES = [
-
-  /* ── TIER 0: ROOT ── */
+  /* TIER 0: ROOT */
   {id:'wncore', type:'root', tag:'ROOT SIGNAL NODE', name:'WNCORE', sub:'Signal Cartography\nArchive / Broadcast',
    tip:'The signal archive. BLANK ZONE cartographic node. Origin unknown. All frequencies referenced to the Sirius baseline.',
    x:1755, y:104, passkey:''},
 
-  /* ── TIER 1: CORE ENTITIES ── */
+  /* TIER 1: CORE ENTITIES */
   {id:'siharu', type:'known', tag:'SIGNAL ENTITY / STRATUM-2', name:'SIHARU', sub:'Cross-ref: OBSEDIA logs\n14 entries — active',
    tip:'Designation: unknown etymology. Appears 14 times in the OBSEDIA clearance logs. Cross-referenced with 9 signal branches. Status: ACTIVE — MONITORED.',
    x:1755, y:338, passkey:''},
@@ -643,14 +891,14 @@ const NODES = [
    tip:'Appears once in the archive. The name does not appear in any OBSEDIA log. It appeared in the archive without being added.',
    x:2430, y:338, passkey:''},
 
-  /* ── TIER 1: MAIN CHARACTER (locked) ── */
+  /* TIER 1: MAIN CHARACTER */
   {id:'protagonist', type:'locked', tag:'SIGNAL-ZERO / PRIMARY', name:'???  ????', realName:'S — RISER',
    sub:'origin unknown', realSub:'DHAKA NODE / STRATUM-0\nTransferred — Day 0',
    tip:'A signal that should not exist in this archive. Cross-referenced with the Blank Zone transfer log. File sealed.',
    realTip:'Bangladeshi civil engineer. Transferred to Another Sky on March 31, 2032. First to notice the divergence.',
    passkey:'RISER_DAY0', x:1755, y:572, wide:true},
 
-  /* ── TIER 2: SIHARU BRANCHES (9 paths) ── */
+  /* TIER 2: SIHARU BRANCHES */
   {id:'p01', type:'locked', tag:'PATH-01 / N-09', name:'NODE 09', realName:'NODE 09',
    sub:'88.7 MHz — active\nSIGNAL_KAGE ref.',
    tip:'The only confirmed active broadcast node. First confirmed signal: 88.7 MHz. Log entry count: 1,847.',
@@ -680,7 +928,7 @@ const NODES = [
   {id:'p09', type:'locked', tag:'PATH-09', name:'??? ????', realName:'??? ????',
    sub:'ALGEDI-class ×2', tip:'ALGEDI-CLASS: two sources that appear to be one. Optical double — not a true binary.', passkey:'', x:2403, y:780},
 
-  /* ── TIER 3: WORLD SPLIT ── */
+  /* TIER 3: WORLD SPLIT */
   {id:'world-origin', type:'locked', tag:'STRATUM-A / ORIGIN', name:'EARTH ??', realName:'ORIGIN EARTH',
    sub:'pre-transfer\nrealm', realSub:'The real world\nPre-2032 baseline',
    tip:'A signal layer beneath the main archive. Frequency: unknown. The archive does not acknowledge its existence.',
@@ -698,40 +946,40 @@ const NODES = [
    tip:'Not a location. A process. Something continuously forming in a region we cannot see directly. Records: non-existent.',
    x:2295, y:1066},
 
-  /* ── TIER 4: CHARACTERS ── */
-  {id:'char-mother', type:'locked', tag:'CHARACTER / STRATUM-1', name:'??? ???', realName:'S\'s MOTHER',
+  /* TIER 4: CHARACTERS */
+  {id:'char-mother', type:'locked', tag:'CHARACTER / STRATUM-1', name:'??? ???', realName:"S's MOTHER",
    sub:'classified\nfirst incident', realSub:'Age 68 — BPD survivor\nIncident Zero: Ghuul',
    tip:'A node that predates every other in this archive. Signal type: domestic. Something happened here. The archive flags it as Incident Zero.',
-   realTip:'S\'s mother. Age 68. Survived 1971 war, Bhola cyclone, WW3. First known Ghuul. Transformed two weeks post-outbreak.',
+   realTip:"S's mother. Age 68. Survived 1971 war, Bhola cyclone, WW3. First known Ghuul. Transformed two weeks post-outbreak.",
    passkey:'INCIDENT_ZERO', x:945, y:1326},
 
   {id:'char-anne', type:'locked', tag:'CHARACTER / SIGNAL-LOST', name:'???\n[ERASED]', realName:'ANNE',
    sub:'signal lost\nface erased', realSub:'Filipina artist\nErased on transfer',
    tip:'A signal that was present and then was not. Not dead. Not blocked. Simply absent. The archive shows the space where it was.',
-   realTip:'Anne. S\'s ex-girlfriend. Filipina artist, dancer, singer. All photos and messages erased when S transferred to Another Sky.',
+   realTip:"Anne. S's ex-girlfriend. Filipina artist, dancer, singer. All photos and messages erased when S transferred to Another Sky.",
    passkey:'ANNE_SIGNAL', x:1215, y:1326},
 
   {id:'the-nine', type:'locked', tag:'GROUP / ERASED-9', name:'THE ????', realName:'THE NINE',
    sub:'8 others\nfaces unknown', realSub:'4 male 3 female\n+Anne = 9 total',
    tip:'Nine signals that no longer register. They existed. The archive confirms the shapes of their absence. No faces. No frequencies.',
-   realTip:'Nine people erased from S\'s memory and photos upon transfer. Anne + 4 guys + 3 girls. S cannot remember their faces.',
+   realTip:"Nine people erased from S's memory and photos upon transfer. Anne + 4 guys + 3 girls. S cannot remember their faces.",
    passkey:'THE_NINE', x:1485, y:1326},
 
   {id:'char-vulture', type:'locked', tag:'COMPANION / ANOMALY', name:'??? ?????', realName:'THE VULTURE',
    sub:'non-classified\nrecurring', realSub:'White-rumped vulture\n6-7 yrs old',
    tip:'A non-human signal that keeps returning. Species: unknown classification. Behavior: returns monthly. Has been returning for years.',
-   realTip:'White-rumped vulture. S saved it in 5th grade. Fed it fried chicken. It followed the bus home. Visits S monthly on the rooftop.',
+   realTip:"White-rumped vulture. S saved it in 5th grade. Fed it fried chicken. It followed the bus home. Visits S monthly on the rooftop.",
    passkey:'VULTURE_ROOF', x:1755, y:1326},
 
   {id:'char-signal-kage', type:'locked', tag:'INTERNAL REF.', name:'SIGNAL_KAGE', realName:'SIGNAL_KAGE',
    sub:'43 entries\nobserver — no TX', tip:'Internal designation. Appears in 43 log entries. Cross-references NODE-09, WNCORE, SIHARU. Has never been identified. All entries are observations, never transmissions.',
    passkey:'', x:2025, y:1326},
 
-  /* ── TIER 5: OUTBREAK + GLOBAL EVENTS ── */
+  /* TIER 5: EVENTS */
   {id:'ev-transfer', type:'event', tag:'EVENT / T=0', name:'??? ????????', realName:'THE TRANSFER',
    sub:'March 31, 2032\nS displaced', realSub:'March 31, 2032\nS enters Another Sky',
    tip:'A displacement event. Something moved through the signal on this date. The archive does not record what. The archive does not record who.',
-   realTip:'March 31, 2032. S wakes in Another Sky. Realises the divergence when his mother mentions WW3 — a war that doesn\'t exist in his world.',
+   realTip:"March 31, 2032. S wakes in Another Sky. Realises the divergence when his mother mentions WW3 — a war that doesn't exist in his world.",
    passkey:'MARCH_31', x:810, y:1638},
 
   {id:'ev-ww3', type:'event', tag:'EVENT / GLOBAL', name:'??? ????', realName:'WORLD WAR III',
@@ -758,11 +1006,11 @@ const NODES = [
    realTip:'Moon Dome. Built 2012 by a cleaning product company. Elites, billionaires, world leaders evacuated there at outbreak start. Status: unknown.',
    passkey:'MOON_DOME_2012', x:2106, y:1638, wide:true},
 
-  /* ── TIER 6: ANOMALIES ── */
+  /* TIER 6: ANOMALIES */
   {id:'anom-obsedia', type:'anomaly', tag:'PHENOMENON / BLACK RAIN', name:'??? ?? ????????', realName:'RAIN OF OBSEDIA',
    sub:'global\npost-outbreak', realSub:'Black rain worldwide\nCalms infected',
    tip:'A precipitation event with no meteorological precedent. Colour: not a colour. Properties: unlogged. Effect: observed but not explained.',
-   realTip:'Deep black rain. Global, two weeks post-outbreak. Acidic but harmless to humans. Infected become calm during it. Sky looks like it\'s bleeding.',
+   realTip:"Deep black rain. Global, two weeks post-outbreak. Acidic but harmless to humans. Infected become calm during it. Sky looks like it's bleeding.",
    passkey:'BLACK_RAIN', x:540, y:1924},
 
   {id:'anom-fog', type:'anomaly', tag:'PHENOMENON / FOG', name:'??? ?? ??????', realName:'FOG OF MEDUSA',
@@ -786,7 +1034,7 @@ const NODES = [
   {id:'ghuul-node', type:'anomaly', tag:'ENTITY TYPE / GHUUL', name:'????? — 173', realName:'GHUULS — 173',
    sub:'173 confirmed\nworldwide', realSub:'Bitten by zombie+infected\nExtremely rare',
    tip:'A classification that should not exist. Hybrid origin. 173 confirmed worldwide. The archive has no explanation for their continued existence.',
-   realTip:'Created by both zombie AND infected bite. 173 known worldwide. Pure white body/hair. Teleportation-like agility. Kill entire bases in seconds. First: S\'s mother.',
+   realTip:"Created by both zombie AND infected bite. 173 known worldwide. Pure white body/hair. Teleportation-like agility. Kill entire bases in seconds. First: S's mother.",
    passkey:'GHUUL_173', x:1728, y:1924, wide:true},
 
   {id:'coord-node', type:'anomaly', tag:'COORDINATE / ARG', name:'?.??????', realName:'0.315126',
@@ -795,7 +1043,7 @@ const NODES = [
    realTip:'0.315126. The ARG coordinate. Appears in the archive without attribution. ALC-2 / ALNILAM encoding. Year Zero origin.',
    passkey:'COORD_315126', x:2025, y:1924},
 
-  /* ── TIER 7: THREAT TYPES ── */
+  /* TIER 7: THREAT TYPES */
   {id:'zombie-skoth', type:'threat', tag:'ZOMBIE / TYPE-1', name:'SKOTH', realName:'SKOTH',
    sub:'early type\nbody decays 9mo', tip:'First classification in the field logs. Dogs unaffected. Most mammals: fatal. Appears early — disappears late.',
    realTip:'First zombie type. Appeared at outbreak start. Body decays after 9 months. Dogs unaffected. Cats/cows die if bitten.',
@@ -833,7 +1081,6 @@ const NODES = [
    sub:'underwater — Paris\nrare confirmed', tip:'One confirmed sighting. Paris. Underwater. Eating fish. Moving slowly. The archive notes: no environment is confirmed safe.',
    passkey:'AQUATIC_TYPE', x:1998, y:2210},
 
-  /* ── INFECTED TYPES ── */
   {id:'inf-1', type:'threat', tag:'INFECTED / TYPE-1', name:'THEY THINK', realName:'INFECTED T-1',
    sub:'intelligent\nplan attacks', tip:'Retain strategic cognition. Capable of organizing attacks on human settlements. Indistinguishable in behaviour from uninfected tacticians.',
    passkey:'INFECTED_TYPE1', x:2214, y:2210},
@@ -854,7 +1101,7 @@ const NODES = [
    sub:'flickers\nbetween realities', tip:'Unknown classification. Body flickers. Pathogen appears to have assumed full motor control. Movement exceeds human perception.',
    passkey:'INFECTED_TYPE5', x:3078, y:2210, wide:true},
 
-  /* ── TIER 7: FACTIONS ── */
+  /* TIER 7: FACTIONS */
   {id:'fac-govts', type:'faction', tag:'FACTION / AUTHORITY', name:'??? ?????????', realName:'REMAINING GOVTS',
    sub:'Alaska safe zone\nnuke contingency', realSub:'USA/UK/Canada/India etc\nAlaska stronghold',
    tip:'A coalition signal. Originating from the northern edge of the archive. Plans exist. The archive labels them: unknown priority.',
@@ -876,7 +1123,7 @@ const NODES = [
   {id:'fac-rooftop', type:'faction', tag:'FACTION / BROADCAST', name:'ROOFTOP ????', realName:'ROOFTOP SEERS',
    sub:'broadcasters\nsecretly infected', realSub:'Ex-religious radio\nInfected hosts',
    tip:'A broadcast signal presenting itself as benign. The archive notes the signal continues transmitting. The archive notes who is transmitting.',
-   realTip:'Rooftop Seers. Peaceful broadcasters. Secretly infected. Formerly a religious radio station spreading God\'s word.',
+   realTip:"Rooftop Seers. Peaceful broadcasters. Secretly infected. Formerly a religious radio station spreading God's word.",
    passkey:'ROOFTOP_SEERS', x:1431, y:2548, wide:true},
 
   {id:'fac-wncore-radio', type:'faction', tag:'FACTION / WNCORE', name:'WNCORE RADIO', realName:'WNCORE RADIO',
@@ -890,10 +1137,10 @@ const NODES = [
    realTip:'Pale Node. Emergency signal broadcasters. Formerly a group of scientists who did podcasts every Sunday. Goals ambiguous.',
    passkey:'PALE_NODE', x:2025, y:2548},
 
-  {id:'fac-kraken', type:'faction', tag:'FACTION / SEA', name:'KRAKEN\'S PAW', realName:'KRAKEN\'S PAW',
+  {id:'fac-kraken', type:'faction', tag:'FACTION / SEA', name:"KRAKEN'S PAW", realName:"KRAKEN'S PAW",
    sub:'Pacific sea\nfishers + oil rigs', realSub:'Stranded sea workers\nSouth Pacific',
    tip:'A signal cluster from the ocean. Moving slowly. Direction: south. Formation: improvised.',
-   realTip:'Kraken\'s Paw. Fishermen and oil rig workers stranded in the south Pacific. Banded together post-outbreak.',
+   realTip:"Kraken's Paw. Fishermen and oil rig workers stranded in the south Pacific. Banded together post-outbreak.",
    passkey:'KRAKEN_PAW', x:2295, y:2548},
 
   {id:'fac-whiteflag', type:'faction', tag:'FACTION / AID', name:'WHITE FLAG', realName:'WHITE FLAG',
@@ -908,7 +1155,7 @@ const NODES = [
    realTip:'Logbook Drifters. Unknown numbers worldwide. Leave informational logbooks at survival bases and malls. Owl-holding-lizard logo. A counter-faction plants fake logbooks.',
    passkey:'LOGBOOK_DRIFTERS', x:2889, y:2548},
 
-  /* ── FLOATERS / OBSEDIA / COORD ── */
+  /* FLOATERS */
   {id:'obsedia', type:'locked', tag:'AUTHORITY / ???', name:'OBSEDIA', realName:'OBSEDIA',
    sub:'CL-5 max visible\nCL-6 field: exists', tip:'Clearance levels 1-5. Level 4 referenced in Lyra logs. Level 5 in PATH-02. Level 6 referenced nowhere. The archive contains a field for level 6.',
    passkey:'', x:2700, y:650},
@@ -925,14 +1172,45 @@ const NODES = [
    sub:'COLD-SPOT ref.', tip:'COLD SPOT. The signal is cold here. No explanation accepted.',
    passkey:'', x:2970, y:598},
 
+  /* 30 GHOST NODES — scattered, barely visible */
+  {id:'gh01', type:'ghost', tag:'???', name:'?? ???', sub:'no freq', tip:'', x:120,  y:200},
+  {id:'gh02', type:'ghost', tag:'???', name:'??? ??', sub:'——', tip:'', x:380,  y:140},
+  {id:'gh03', type:'ghost', tag:'???', name:'?????', sub:'——', tip:'', x:600,  y:260},
+  {id:'gh04', type:'ghost', tag:'???', name:'?? ??', sub:'no log', tip:'', x:3200, y:180},
+  {id:'gh05', type:'ghost', tag:'???', name:'???', sub:'——', tip:'', x:3350, y:340},
+  {id:'gh06', type:'ghost', tag:'???', name:'?? ?????', sub:'——', tip:'', x:80,   y:960},
+  {id:'gh07', type:'ghost', tag:'???', name:'???', sub:'——', tip:'', x:420,  y:1100},
+  {id:'gh08', type:'ghost', tag:'???', name:'?????', sub:'no TX', tip:'', x:3280, y:900},
+  {id:'gh09', type:'ghost', tag:'???', name:'?? ??', sub:'——', tip:'', x:3450, y:1050},
+  {id:'gh10', type:'ghost', tag:'???', name:'??????', sub:'——', tip:'', x:150,  y:1520},
+  {id:'gh11', type:'ghost', tag:'???', name:'??? ?', sub:'——', tip:'', x:3300, y:1400},
+  {id:'gh12', type:'ghost', tag:'???', name:'??', sub:'——', tip:'', x:60,   y:1740},
+  {id:'gh13', type:'ghost', tag:'???', name:'?????', sub:'——', tip:'', x:3480, y:1680},
+  {id:'gh14', type:'ghost', tag:'???', name:'?? ??', sub:'——', tip:'', x:200,  y:2060},
+  {id:'gh15', type:'ghost', tag:'???', name:'??????', sub:'——', tip:'', x:3360, y:1950},
+  {id:'gh16', type:'ghost', tag:'???', name:'???', sub:'——', tip:'', x:100,  y:2320},
+  {id:'gh17', type:'ghost', tag:'???', name:'?? ???', sub:'no log', tip:'', x:3200, y:2280},
+  {id:'gh18', type:'ghost', tag:'???', name:'?????', sub:'——', tip:'', x:420,  y:2420},
+  {id:'gh19', type:'ghost', tag:'???', name:'?? ??', sub:'——', tip:'', x:3420, y:2420},
+  {id:'gh20', type:'ghost', tag:'???', name:'???', sub:'——', tip:'', x:700,  y:104},
+  {id:'gh21', type:'ghost', tag:'???', name:'?????', sub:'——', tip:'', x:1100, y:70},
+  {id:'gh22', type:'ghost', tag:'???', name:'?? ??', sub:'——', tip:'', x:2600, y:104},
+  {id:'gh23', type:'ghost', tag:'???', name:'???', sub:'——', tip:'', x:2950, y:200},
+  {id:'gh24', type:'ghost', tag:'???', name:'??????', sub:'——', tip:'', x:1900, y:2700},
+  {id:'gh25', type:'ghost', tag:'???', name:'?? ???', sub:'——', tip:'', x:1200, y:2750},
+  {id:'gh26', type:'ghost', tag:'???', name:'???', sub:'——', tip:'', x:2500, y:2700},
+  {id:'gh27', type:'ghost', tag:'???', name:'?????', sub:'——', tip:'', x:800,  y:2700},
+  {id:'gh28', type:'ghost', tag:'???', name:'?? ??', sub:'——', tip:'', x:3100, y:2650},
+  {id:'gh29', type:'ghost', tag:'???', name:'???', sub:'no freq', tip:'', x:450,  y:2700},
+  {id:'gh30', type:'ghost', tag:'???', name:'??????', sub:'——', tip:'', x:1600, y:2780},
+
+  /* THE FINAL NODE — reality distorted, unconnected, at the very bottom */
+  {id:'void-final', type:'void', tag:'???? / ????-?', name:'?? ???? ??\n???? ????',
+   sub:'not in the archive\nnot in any log\nit should not render',
+   tip:'',
+   x:1660, y:3000},
 ];
 
-/* ══════════════════════════════════════════
-   CONNECTOR DEFINITIONS
-   from/to: node ids
-   style: conn class
-   route: 'straight' | 'l' | 'custom'
-══════════════════════════════════════════ */
 const CONNECTIONS = [
   {from:'wncore', to:'siharu', style:'conn-main'},
   {from:'wncore', to:'simulunas', style:'conn-dashed'},
@@ -996,9 +1274,7 @@ const CONNECTIONS = [
   {from:'ghuul-node', to:'coord-node', style:'conn-unknown'},
 ];
 
-/* ══════════════════════════════════════════
-   STATE
-══════════════════════════════════════════ */
+/* STATE */
 const STORAGE_KEY = 'wncore-unlocked-nodes';
 function loadUnlocked(){
   try{ return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]')); }
@@ -1006,19 +1282,14 @@ function loadUnlocked(){
 }
 function saveUnlocked(s){
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...s]));
-  // Sync with community system
   const count = s.size;
   localStorage.setItem('wncore-cygnus-sections', Math.min(10, count));
 }
 let unlockedNodes = loadUnlocked();
-// Un-lock always-visible nodes
 ['wncore','siharu','simulunas','p01'].forEach(id => unlockedNodes.add(id));
-
 let activeNodeId = null;
 
-/* ══════════════════════════════════════════
-   BUILD NODES
-══════════════════════════════════════════ */
+/* BUILD NODES */
 const canvas = document.getElementById('map-canvas');
 const nodeMap = {};
 
@@ -1092,27 +1363,29 @@ function buildNodes(){
       el.appendChild(inner);
     }
 
-    el.addEventListener('mouseenter', e => showTooltip(e, n));
-    el.addEventListener('mouseleave', hideTooltip);
-    el.addEventListener('mousemove', moveTooltip);
-    el.addEventListener('click', () => handleNodeClick(n));
+    /* ghost and void nodes: no interactions */
+    if(n.type !== 'ghost' && n.type !== 'void'){
+      el.addEventListener('mouseenter', e => showTooltip(e, n));
+      el.addEventListener('mouseleave', hideTooltip);
+      el.addEventListener('mousemove', moveTooltip);
+      el.addEventListener('click', () => handleNodeClick(n));
 
-    // Mobile: handle touch tap without triggering pan
-    let nodeTouchStart = null;
-    el.addEventListener('touchstart', e => {
-      nodeTouchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
-    }, {passive:true});
-    el.addEventListener('touchend', e => {
-      if(!nodeTouchStart) return;
-      const dx = Math.abs(e.changedTouches[0].clientX - nodeTouchStart.x);
-      const dy = Math.abs(e.changedTouches[0].clientY - nodeTouchStart.y);
-      if(dx < 10 && dy < 10){
-        e.preventDefault();
-        e.stopPropagation();
-        openBottomSheet(n);
-      }
-      nodeTouchStart = null;
-    });
+      let nodeTouchStart = null;
+      el.addEventListener('touchstart', e => {
+        nodeTouchStart = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+      }, {passive:true});
+      el.addEventListener('touchend', e => {
+        if(!nodeTouchStart) return;
+        const dx = Math.abs(e.changedTouches[0].clientX - nodeTouchStart.x);
+        const dy = Math.abs(e.changedTouches[0].clientY - nodeTouchStart.y);
+        if(dx < 10 && dy < 10){
+          e.preventDefault();
+          e.stopPropagation();
+          openBottomSheet(n);
+        }
+        nodeTouchStart = null;
+      });
+    }
 
     canvas.appendChild(el);
   });
@@ -1120,9 +1393,7 @@ function buildNodes(){
   updateCounters();
 }
 
-/* ══════════════════════════════════════════
-   CONNECTORS
-══════════════════════════════════════════ */
+/* CONNECTORS */
 const svg = document.getElementById('connectors');
 
 function getNodeCenter(id){
@@ -1148,7 +1419,6 @@ function mkEl(tag, attrs){
 function drawConnectors(){
   while(svg.firstChild) svg.removeChild(svg.firstChild);
 
-  // Arrow marker
   const defs = mkEl('defs', {});
   const marker = mkEl('marker', {id:'arr',viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'5',markerHeight:'5',orient:'auto'});
   const mp = mkEl('path', {d:'M2 1L8 5L2 9',fill:'none',stroke:'rgba(200,71,42,0.35)','stroke-width':'1.2','stroke-linecap':'round'});
@@ -1161,22 +1431,18 @@ function drawConnectors(){
     const b = getNodeCenter(c.to);
     if(!a || !b) return;
 
-    // Choose exit/entry points based on direction
     let x1,y1,x2,y2;
     const dx = b.x - a.x;
     const dy = b.y - a.y;
 
     if(Math.abs(dy) > Math.abs(dx)){
-      // Mostly vertical
       x1 = a.x; y1 = dy > 0 ? a.bot : a.top;
       x2 = b.x; y2 = dy > 0 ? b.top : b.bot;
     } else {
-      // Mostly horizontal
       x1 = dx > 0 ? a.right : a.left; y1 = a.y;
       x2 = dx > 0 ? b.left : b.right; y2 = b.y;
     }
 
-    // L-route: vertical then horizontal
     const midY = y1 + (y2 - y1) * 0.5;
     const d = `M${x1},${y1} L${x1},${midY} L${x2},${midY} L${x2},${y2}`;
     const path = mkEl('path', {d, class: c.style, fill:'none'});
@@ -1184,9 +1450,7 @@ function drawConnectors(){
   });
 }
 
-/* ══════════════════════════════════════════
-   TOOLTIP
-══════════════════════════════════════════ */
+/* TOOLTIP */
 const tooltip = document.getElementById('tooltip');
 function showTooltip(e, n){
   const isUnlocked = unlockedNodes.has(n.id);
@@ -1194,11 +1458,7 @@ function showTooltip(e, n){
   document.getElementById('tt-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
   document.getElementById('tt-body').textContent = isUnlocked && n.realTip ? n.realTip : n.tip;
   const hint = document.getElementById('tt-hint');
-  if(!isUnlocked && n.passkey){
-    hint.style.display = 'block';
-  } else {
-    hint.style.display = 'none';
-  }
+  hint.style.display = (!isUnlocked && n.passkey) ? 'block' : 'none';
   tooltip.classList.add('show');
 }
 function hideTooltip(){ tooltip.classList.remove('show'); }
@@ -1209,16 +1469,9 @@ function moveTooltip(e){
   tooltip.style.top = y + 'px';
 }
 
-/* ══════════════════════════════════════════
-   NODE CLICK
-══════════════════════════════════════════ */
+/* NODE CLICK */
 function handleNodeClick(n){
-  // Mobile: always open bottom sheet
-  if(isMobile()){
-    openBottomSheet(n);
-    return;
-  }
-  // Desktop: existing unlock bar flow
+  if(isMobile()){ openBottomSheet(n); return; }
   if(unlockedNodes.has(n.id)) return;
   if(!n.passkey) return;
 
@@ -1231,13 +1484,11 @@ function handleNodeClick(n){
   document.getElementById('unlock-input').focus();
 }
 
-/* Unlock submit */
 function tryUnlock(){
   if(!activeNodeId) return;
   const n = nodeMap[activeNodeId];
   const input = document.getElementById('unlock-input').value.trim().toUpperCase();
   const key = (n.passkey || '').toUpperCase();
-
   if(input === key){
     unlockedNodes.add(activeNodeId);
     saveUnlocked(unlockedNodes);
@@ -1260,7 +1511,6 @@ function applyUnlock(id, n){
   if(!el) return;
   el.classList.add('unlocked-node');
   el.classList.add('unlock-anim');
-  // Update name
   const nameEl = el.querySelector('.n-name');
   if(nameEl && n.realName) nameEl.textContent = n.realName;
   const subEl = el.querySelector('.n-sub');
@@ -1269,8 +1519,6 @@ function applyUnlock(id, n){
   if(lockEl) lockEl.remove();
   setTimeout(() => el.classList.remove('unlock-anim'), 1200);
   updateCounters();
-
-  // Update progress bar
   const pct = (unlockedNodes.size / NODES.length) * 100;
   document.getElementById('progress-fill').style.width = pct + '%';
 }
@@ -1278,7 +1526,7 @@ function applyUnlock(id, n){
 document.getElementById('unlock-submit').addEventListener('click', tryUnlock);
 document.getElementById('unlock-input').addEventListener('keydown', e => {
   if(e.key === 'Enter') tryUnlock();
-  if(e.key === 'Escape') {
+  if(e.key === 'Escape'){
     document.getElementById('unlock-bar').classList.remove('show');
     activeNodeId = null;
   }
@@ -1288,9 +1536,7 @@ document.getElementById('unlock-close').addEventListener('click', () => {
   activeNodeId = null;
 });
 
-/* ══════════════════════════════════════════
-   COUNTERS
-══════════════════════════════════════════ */
+/* COUNTERS */
 function updateCounters(){
   const total = NODES.length;
   const unlocked = unlockedNodes.size;
@@ -1302,9 +1548,7 @@ function updateCounters(){
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
-/* ══════════════════════════════════════════
-   PAN / DRAG
-══════════════════════════════════════════ */
+/* PAN / DRAG */
 const wrap = document.getElementById('map-wrap');
 let isDragging = false, startX, startY, scrollX, scrollY;
 wrap.addEventListener('mousedown', e => {
@@ -1322,22 +1566,12 @@ window.addEventListener('mousemove', e => {
   updateMinimap();
 });
 
-/* ══════════════════════════════════════════
-   MOBILE: PINCH-TO-ZOOM + PAN + BOTTOM SHEET
-══════════════════════════════════════════ */
+/* MOBILE */
 const isMobile = () => window.innerWidth <= 640;
 
 let currentScale = 1;
 const MIN_SCALE = 0.25;
 const MAX_SCALE = 2.0;
-
-function applyScale(scale, originX, originY){
-  currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, scale));
-  canvas.style.transformOrigin = '0 0';
-  canvas.style.transform = `scale(${currentScale})`;
-  // Adjust wrap scroll so origin point stays fixed
-  updateMinimap();
-}
 
 function setScaleFromButton(newScale){
   const cx = wrap.clientWidth / 2;
@@ -1345,35 +1579,40 @@ function setScaleFromButton(newScale){
   const worldX = (wrap.scrollLeft + cx) / currentScale;
   const worldY = (wrap.scrollTop + cy) / currentScale;
   currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
-  canvas.style.transformOrigin = '0 0';
-  canvas.style.transform = `scale(${currentScale})`;
+  if(isMobile()){
+    const shell = document.getElementById('map-canvas-shell');
+    shell.style.transformOrigin = '0 0';
+    shell.style.transform = `scale(${currentScale})`;
+    shell.style.width = (3600 * currentScale) + 'px';
+    shell.style.height = (3120 * currentScale) + 'px';
+  } else {
+    canvas.style.transformOrigin = '0 0';
+    canvas.style.transform = `scale(${currentScale})`;
+  }
   wrap.scrollLeft = worldX * currentScale - cx;
   wrap.scrollTop = worldY * currentScale - cy;
   updateMinimap();
 }
 
-// Zoom buttons
 const zoomIn = document.getElementById('zoom-in');
 const zoomOut = document.getElementById('zoom-out');
 const zoomReset = document.getElementById('zoom-reset');
 if(zoomIn) zoomIn.addEventListener('click', () => setScaleFromButton(currentScale * 1.3));
 if(zoomOut) zoomOut.addEventListener('click', () => setScaleFromButton(currentScale / 1.3));
 if(zoomReset) zoomReset.addEventListener('click', () => {
-  // Fit the whole map
   const fitScale = Math.min(
-    wrap.clientWidth / (canvas.scrollWidth || 3600),
-    wrap.clientHeight / (canvas.scrollHeight || 2800)
+    wrap.clientWidth / 3600,
+    wrap.clientHeight / 3120
   ) * 0.9;
   setScaleFromButton(fitScale);
   wrap.scrollLeft = 0; wrap.scrollTop = 0;
   updateMinimap();
 });
 
-// Touch: single-finger pan + two-finger pinch
 let touchStart = null;
 let pinchStart = null;
 
-function getTouchDist(t){ 
+function getTouchDist(t){
   const dx = t[1].clientX - t[0].clientX;
   const dy = t[1].clientY - t[0].clientY;
   return Math.sqrt(dx*dx + dy*dy);
@@ -1381,7 +1620,6 @@ function getTouchDist(t){
 
 wrap.addEventListener('touchstart', e => {
   if(e.touches.length === 1){
-    // Check if touched a node — don't start pan
     if(e.target.closest('.node')){ touchStart = null; return; }
     touchStart = {
       x:e.touches[0].clientX, y:e.touches[0].clientY,
@@ -1408,18 +1646,13 @@ wrap.addEventListener('touchmove', e => {
     e.preventDefault();
     const newDist = getTouchDist(e.touches);
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStart.scale * (newDist / pinchStart.dist)));
-    
     const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
     const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-    
-    // World point under pinch center
     const worldX = (pinchStart.sl + pinchStart.midX) / pinchStart.scale;
     const worldY = (pinchStart.st + pinchStart.midY) / pinchStart.scale;
-    
     currentScale = newScale;
     canvas.style.transformOrigin = '0 0';
     canvas.style.transform = `scale(${currentScale})`;
-    
     wrap.scrollLeft = worldX * currentScale - midX;
     wrap.scrollTop = worldY * currentScale - midY;
     updateMinimap();
@@ -1436,7 +1669,6 @@ wrap.addEventListener('touchmove', e => {
 
 wrap.addEventListener('touchend', e => {
   if(e.changedTouches.length === 1 && touchStart && !touchStart.moved){
-    // Tap on background — close bottom sheet
     if(!e.target.closest('.node') && !e.target.closest('#bottom-sheet')){
       closeBottomSheet();
     }
@@ -1445,9 +1677,7 @@ wrap.addEventListener('touchend', e => {
   if(e.touches.length === 0) touchStart = null;
 });
 
-/* ══════════════════════════════════════════
-   BOTTOM SHEET
-══════════════════════════════════════════ */
+/* BOTTOM SHEET */
 let bsActiveNodeId = null;
 
 function openBottomSheet(n){
@@ -1455,7 +1685,6 @@ function openBottomSheet(n){
   document.getElementById('bs-tag').textContent = n.tag || '';
   document.getElementById('bs-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
   document.getElementById('bs-body').textContent = isUnlocked && n.realTip ? n.realTip : n.tip;
-  
   const unlockDiv = document.getElementById('bs-unlock');
   const closePlain = document.getElementById('bs-close-plain');
   if(!isUnlocked && n.passkey){
@@ -1470,7 +1699,6 @@ function openBottomSheet(n){
     closePlain.style.display = 'block';
     bsActiveNodeId = null;
   }
-
   document.getElementById('bottom-sheet').classList.add('open');
   document.getElementById('bs-backdrop').classList.add('open');
 }
@@ -1484,7 +1712,6 @@ function closeBottomSheet(){
 document.getElementById('bs-backdrop').addEventListener('click', closeBottomSheet);
 document.getElementById('bs-close').addEventListener('click', closeBottomSheet);
 document.getElementById('bs-dismiss').addEventListener('click', closeBottomSheet);
-
 document.getElementById('bs-submit').addEventListener('click', tryUnlockMobile);
 document.getElementById('bs-input').addEventListener('keydown', e => {
   if(e.key === 'Enter') tryUnlockMobile();
@@ -1503,7 +1730,6 @@ function tryUnlockMobile(){
     msg.textContent = '// SIGNAL ACQUIRED';
     msg.style.color = 'rgba(40,200,100,0.8)';
     setTimeout(() => {
-      // Refresh sheet content to show unlocked info
       document.getElementById('bs-title').textContent = n.realName || n.name;
       document.getElementById('bs-body').textContent = n.realTip || n.tip;
       document.getElementById('bs-unlock').style.display = 'none';
@@ -1516,15 +1742,13 @@ function tryUnlockMobile(){
   }
 }
 
-/* Legend toggle */
+/* LEGEND TOGGLE */
 const legendBtn = document.getElementById('legend-btn');
 const legend = document.getElementById('legend');
 legendBtn.addEventListener('click', () => {
   legend.classList.toggle('mobile-open');
   legendBtn.textContent = legend.classList.contains('mobile-open') ? '✕' : '≡';
 });
-
-// Close legend when tapping outside
 document.addEventListener('click', e => {
   if(!e.target.closest('#legend') && !e.target.closest('#legend-btn')){
     legend.classList.remove('mobile-open');
@@ -1532,9 +1756,7 @@ document.addEventListener('click', e => {
   }
 });
 
-/* ══════════════════════════════════════════
-   MINIMAP
-══════════════════════════════════════════ */
+/* MINIMAP */
 const mmCanvas = document.getElementById('minimap-canvas');
 const mmCtx = mmCanvas.getContext('2d');
 const mmW = 160, mmH = 100;
@@ -1548,6 +1770,7 @@ function drawMinimap(){
   mmCtx.fillRect(0,0,mmW,mmH);
 
   NODES.forEach(n => {
+    if(n.type === 'ghost' || n.type === 'void') return;
     const el = document.getElementById('node-' + n.id);
     if(!el) return;
     const isUnlocked = unlockedNodes.has(n.id);
@@ -1572,15 +1795,12 @@ function updateMinimap(){
   const cH = canvas.scrollHeight * currentScale;
   const scaleX = mmW / cW, scaleY = mmH / cH;
   const vp = document.getElementById('minimap-viewport');
-  const vpW = wrap.clientWidth * scaleX;
-  const vpH = wrap.clientHeight * scaleY;
   vp.style.left = (wrap.scrollLeft * scaleX) + 'px';
   vp.style.top = (wrap.scrollTop * scaleY) + 'px';
-  vp.style.width = vpW + 'px';
-  vp.style.height = vpH + 'px';
+  vp.style.width = (wrap.clientWidth * scaleX) + 'px';
+  vp.style.height = (wrap.clientHeight * scaleY) + 'px';
 }
 
-/* Click minimap to navigate */
 document.getElementById('minimap').addEventListener('click', e => {
   const rect = mmCanvas.getBoundingClientRect();
   const px = (e.clientX - rect.left) / mmW;
@@ -1590,34 +1810,145 @@ document.getElementById('minimap').addEventListener('click', e => {
   updateMinimap();
 });
 
-/* ══════════════════════════════════════════
-   CLOCK
-══════════════════════════════════════════ */
+/* CLOCK */
 function updateClock(){
   const n = new Date();
   const p = v => String(v).padStart(2,'0');
   document.getElementById('hud-clock').textContent = p(n.getHours())+':'+p(n.getMinutes())+':'+p(n.getSeconds());
 }
 
-/* ══════════════════════════════════════════
-   AMBIENT GLITCH
-══════════════════════════════════════════ */
-function randomGlitch(){
-  const overlay = document.getElementById('glitch-overlay');
-  overlay.style.opacity = '1';
-  setTimeout(()=>overlay.style.opacity='0', 50 + Math.random()*80);
-  const locked = [...document.querySelectorAll('.node-locked:not(.unlocked-node) .n-name, .node-threat:not(.unlocked-node) .n-name, .node-faction:not(.unlocked-node) .n-name')];
-  if(locked.length && Math.random() > 0.5){
-    const el = locked[Math.floor(Math.random()*locked.length)];
-    const orig = el.textContent;
-    const chars = '█▓▒░╬╫╪│┤╡╢╖╣║╗╝┐└┴┬├─┼╠═╬╧╤╙╒╓┘┌';
-    el.textContent = Array.from({length:orig.length},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
-    setTimeout(()=>el.textContent=orig, 80+Math.random()*120);
+/* ── ANALOG / CHROMATIC GLITCH ENGINE ── */
+const chromaR = document.getElementById('chroma-r');
+const chromaB = document.getElementById('chroma-b');
+const scanTear = document.getElementById('scan-tear');
+const noiseBar = document.getElementById('noise-bar');
+const staticOv = document.getElementById('static-overlay');
+const pixelCv  = document.getElementById('pixel-scatter');
+pixelCv.width = window.innerWidth; pixelCv.height = window.innerHeight;
+window.addEventListener('resize', () => { pixelCv.width = window.innerWidth; pixelCv.height = window.innerHeight; });
+
+function spawnPixelScatter(){
+  const ctx = pixelCv.getContext('2d');
+  ctx.clearRect(0,0,pixelCv.width,pixelCv.height);
+  const count = 18 + Math.floor(Math.random()*24);
+  for(let i=0;i<count;i++){
+    const x = Math.random()*pixelCv.width;
+    const y = Math.random()*pixelCv.height;
+    const w = 1 + Math.random()*4;
+    const h = 1 + Math.random()*2;
+    const c = Math.random();
+    if(c < 0.4) ctx.fillStyle = `rgba(255,${Math.floor(Math.random()*40)},0,${0.5+Math.random()*0.4})`;
+    else if(c < 0.75) ctx.fillStyle = `rgba(0,${Math.floor(40+Math.random()*60)},255,${0.4+Math.random()*0.4})`;
+    else ctx.fillStyle = `rgba(200,71,42,${0.6+Math.random()*0.3})`;
+    ctx.fillRect(x,y,w,h);
   }
-  setTimeout(randomGlitch, 2200+Math.random()*5000);
+  pixelCv.style.opacity = '1';
+  setTimeout(()=>{ pixelCv.style.opacity='0'; ctx.clearRect(0,0,pixelCv.width,pixelCv.height); },
+    40 + Math.random()*80);
 }
 
-/* HUD rotating tips */
+function doScanTear(){
+  const y = Math.random() * window.innerHeight;
+  const h = 1 + Math.random() * 5;
+  const dur = 30 + Math.random() * 100;
+  const intense = Math.random() > 0.7;
+  scanTear.style.top = y + 'px';
+  scanTear.style.height = h + 'px';
+  scanTear.style.opacity = intense ? '0.9' : '0.5';
+  scanTear.style.background = intense
+    ? 'linear-gradient(90deg,transparent,rgba(255,40,0,0.7) 20%,rgba(200,71,42,0.8) 50%,rgba(0,80,255,0.5) 80%,transparent)'
+    : 'linear-gradient(90deg,transparent,rgba(200,71,42,0.4) 30%,rgba(200,71,42,0.5) 60%,transparent)';
+  if(intense){
+    scanTear.style.filter = 'blur(0.3px)';
+    scanTear.style.transform = `translateX(${(Math.random()-0.5)*8}px)`;
+  }
+  setTimeout(()=>{
+    scanTear.style.opacity='0';
+    scanTear.style.filter='none';
+    scanTear.style.transform='none';
+  }, dur);
+}
+
+function doNoiseBar(){
+  const x = Math.random() * window.innerWidth;
+  const w = 2 + Math.random() * 6;
+  noiseBar.style.left = x + 'px';
+  noiseBar.style.width = w + 'px';
+  noiseBar.style.opacity = String(0.3 + Math.random() * 0.5);
+  setTimeout(()=>noiseBar.style.opacity='0', 60+Math.random()*80);
+}
+
+function doChromaShift(intensity){
+  /* offset the R and B layers in opposite directions */
+  const off = intensity ? (4 + Math.random()*8) : (1 + Math.random()*4);
+  chromaR.style.transform = `translateX(${off}px)`;
+  chromaB.style.transform = `translateX(${-off}px)`;
+  chromaR.style.opacity = String(0.06 + Math.random()*0.1);
+  chromaB.style.opacity = String(0.06 + Math.random()*0.1);
+  const dur = intensity ? (120 + Math.random()*200) : (40 + Math.random()*80);
+  setTimeout(()=>{
+    chromaR.style.opacity='0'; chromaB.style.opacity='0';
+    chromaR.style.transform='none'; chromaB.style.transform='none';
+  }, dur);
+}
+
+function doStaticBurst(){
+  staticOv.style.backgroundSize = (64 + Math.floor(Math.random()*128)) + 'px';
+  staticOv.style.opacity = String(0.04 + Math.random()*0.08);
+  setTimeout(()=>staticOv.style.opacity='0', 50+Math.random()*100);
+}
+
+function glitchLockedName(){
+  const locked = [...document.querySelectorAll('.node-locked:not(.unlocked-node) .n-name, .node-threat:not(.unlocked-node) .n-name, .node-faction:not(.unlocked-node) .n-name')];
+  if(!locked.length) return;
+  const el = locked[Math.floor(Math.random()*locked.length)];
+  const orig = el.textContent;
+  const chars = '█▓▒░╬╫╪│┤╡╢╖╣║╗╝┐└┴┬├─┼╠═╬╧╤╙╒╓┘┌';
+  el.textContent = Array.from({length:orig.length},()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  /* brief chroma on the corrupted name */
+  el.style.textShadow = `${2+Math.random()*3}px 0 rgba(255,0,0,0.7),${-(2+Math.random()*3)}px 0 rgba(0,80,255,0.7)`;
+  setTimeout(()=>{ el.textContent=orig; el.style.textShadow=''; }, 80+Math.random()*140);
+}
+
+function randomGlitch(){
+  const overlay = document.getElementById('glitch-overlay');
+  const roll = Math.random();
+
+  if(roll < 0.12){
+    /* HEAVY EVENT — full analog breakdown */
+    overlay.style.opacity = '1';
+    doChromaShift(true);
+    doScanTear(); doScanTear();
+    doNoiseBar();
+    spawnPixelScatter();
+    doStaticBurst();
+    if(Math.random() > 0.4) glitchLockedName();
+    setTimeout(()=>{
+      overlay.style.opacity='0';
+      doScanTear();
+      doChromaShift(false);
+    }, 60+Math.random()*100);
+    setTimeout(randomGlitch, 1800+Math.random()*3000);
+  } else if(roll < 0.4){
+    /* MEDIUM EVENT — chroma + tear */
+    doChromaShift(false);
+    doScanTear();
+    if(Math.random() > 0.5) spawnPixelScatter();
+    if(Math.random() > 0.6) glitchLockedName();
+    setTimeout(randomGlitch, 2200+Math.random()*3500);
+  } else if(roll < 0.65){
+    /* LIGHT EVENT — just a tear or scatter */
+    if(Math.random() > 0.5) doScanTear();
+    else spawnPixelScatter();
+    if(Math.random() > 0.7) doNoiseBar();
+    setTimeout(randomGlitch, 1000+Math.random()*2000);
+  } else {
+    /* IDLE — barely perceptible static */
+    doStaticBurst();
+    setTimeout(randomGlitch, 600+Math.random()*1400);
+  }
+}
+
 const HUD_TIPS = [
   'CLICK NODE TO INTERACT','SIGNAL CARTOGRAPHY — INCOMPLETE','DRAG TO NAVIGATE THE ARCHIVE',
   'BLANK ZONE: 2028–2031 ERASED','SIGNAL_KAGE: OBSERVER — NO TX','88.7 MHz — LAST CONFIRMED',
@@ -1627,9 +1958,7 @@ const HUD_TIPS = [
 let tipIdx = 0;
 function rotateTip(){ document.getElementById('hud-tip').textContent = HUD_TIPS[tipIdx++ % HUD_TIPS.length]; }
 
-/* ══════════════════════════════════════════
-   SECTION LABELS
-══════════════════════════════════════════ */
+/* SECTION LABELS */
 const LABELS = [
   {text:'CORE SIGNAL CHAIN', x:1485, y:65},
   {text:'LATERAL ENTITIES', x:2362, y:65},
@@ -1654,9 +1983,7 @@ function buildLabels(){
   });
 }
 
-/* ══════════════════════════════════════════
-   INIT
-══════════════════════════════════════════ */
+/* INIT */
 function init(){
   buildLabels();
   buildNodes();
@@ -1664,17 +1991,18 @@ function init(){
     drawConnectors();
     drawMinimap();
     updateMinimap();
-    // Centre view on root
     if(isMobile()){
-      // Start zoomed out to show context, centered on root
       const fitScale = Math.min(
         wrap.clientWidth / 3600,
-        wrap.clientHeight / 2800
-      ) * 1.6; // slightly zoomed in from full fit
+        wrap.clientHeight / 3120
+      ) * 1.6;
       currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
-      canvas.style.transformOrigin = '0 0';
-      canvas.style.transform = `scale(${currentScale})`;
-      // Center on WNCORE root node (x:1755, y:104)
+      const shell = document.getElementById('map-canvas-shell');
+      shell.style.transformOrigin = '0 0';
+      shell.style.transform = `scale(${currentScale})`;
+      shell.style.width = (3600 * currentScale) + 'px';
+      shell.style.height = (3120 * currentScale) + 'px';
+      canvas.style.transform = '';
       wrap.scrollLeft = 1755 * currentScale - wrap.clientWidth / 2;
       wrap.scrollTop = 0;
     } else {
@@ -1690,6 +2018,72 @@ function init(){
   randomGlitch();
   wrap.addEventListener('scroll', updateMinimap);
 }
+
+/* ── MYSTERY DEEPENERS ── */
+
+/* Signal Intercept: locked node briefly shows a redacted fragment then re-locks */
+function signalIntercept(){
+  const locked = [...document.querySelectorAll('.node-locked:not(.unlocked-node), .node-threat:not(.unlocked-node), .node-event:not(.unlocked-node)')];
+  if(!locked.length){ setTimeout(signalIntercept, 18000+Math.random()*12000); return; }
+  const el = locked[Math.floor(Math.random()*locked.length)];
+  const id = el.dataset.id;
+  const n = nodeMap[id];
+  if(!n || !n.realName) { setTimeout(signalIntercept, 12000+Math.random()*10000); return; }
+  /* Show 1–3 chars of realName through the static */
+  const nameEl = el.querySelector('.n-name');
+  if(!nameEl){ setTimeout(signalIntercept, 12000+Math.random()*10000); return; }
+  const orig = nameEl.textContent;
+  const reveal = n.realName.substring(0, 1 + Math.floor(Math.random()*2)) + '?';
+  const chars = '█▓▒░';
+  const masked = Array.from({length: orig.length - reveal.length}, ()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+  nameEl.textContent = reveal + masked;
+  nameEl.style.textShadow = '2px 0 rgba(255,0,0,0.5),-2px 0 rgba(0,80,255,0.5)';
+  nameEl.style.color = 'rgba(232,228,223,0.35)';
+  doChromaShift(false);
+  /* Re-lock after 280–600ms */
+  setTimeout(()=>{
+    nameEl.textContent = orig;
+    nameEl.style.textShadow = '';
+    nameEl.style.color = '';
+  }, 280 + Math.random()*320);
+  setTimeout(signalIntercept, 18000 + Math.random()*14000);
+}
+
+/* Connector ghost pulse — a connector briefly lights up as if data is transmitting */
+function connectorPulse(){
+  const paths = [...document.querySelectorAll('#connectors path')];
+  if(!paths.length){ setTimeout(connectorPulse, 8000+Math.random()*6000); return; }
+  const path = paths[Math.floor(Math.random()*paths.length)];
+  const orig = path.style.stroke || '';
+  const origOp = path.style.strokeOpacity || '';
+  path.style.stroke = 'rgba(200,71,42,0.9)';
+  path.style.strokeOpacity = '1';
+  path.style.filter = 'drop-shadow(0 0 3px rgba(200,71,42,0.6))';
+  setTimeout(()=>{
+    path.style.stroke = orig;
+    path.style.strokeOpacity = origOp;
+    path.style.filter = '';
+  }, 80 + Math.random()*160);
+  setTimeout(connectorPulse, 5000 + Math.random()*8000);
+}
+
+/* HUD frequency flicker — the clearance level briefly shows a higher number */
+function hudFlicker(){
+  const hudItems = document.querySelectorAll('#hud span');
+  if(!hudItems.length){ setTimeout(hudFlicker, 12000+Math.random()*8000); return; }
+  const el = hudItems[Math.floor(Math.random()*(hudItems.length-1))];
+  const orig = el.textContent;
+  const glitchTexts = ['CLEARANCE: CL-6','BLANK ZONE: ACTIVE','OBSEDIA: ONLINE','NODE-09: TX','SIGNAL: LOST'];
+  el.textContent = glitchTexts[Math.floor(Math.random()*glitchTexts.length)];
+  el.style.color = 'rgba(200,71,42,0.8)';
+  setTimeout(()=>{ el.textContent = orig; el.style.color = ''; }, 120+Math.random()*180);
+  setTimeout(hudFlicker, 14000 + Math.random()*10000);
+}
+
+setTimeout(signalIntercept, 8000+Math.random()*6000);
+setTimeout(connectorPulse, 4000+Math.random()*4000);
+setTimeout(hudFlicker, 20000+Math.random()*10000);
+
 window.addEventListener('load', init);
 window.addEventListener('resize', () => { drawConnectors(); drawMinimap(); updateMinimap(); });
 </script>
