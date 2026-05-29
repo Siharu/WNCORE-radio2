@@ -108,7 +108,7 @@ body::after{
 #map-canvas{
   position:relative;
   min-width:3600px;
-  min-height:3120px;
+  min-height:4900px;
 }
 #map-canvas-shell{
   position:relative;
@@ -729,7 +729,450 @@ body::after{
   max-width:calc(100vw - 28px);
 }
 
-/* MOBILE MEDIA QUERY */
+
+/* ═══════════════════════════════════════
+   CRT STATIC DEPTH SYSTEM
+   nodes get progressively more unstable the deeper they are
+   ═══════════════════════════════════════ */
+
+/* depth-1: factions row ~2548 — mild static */
+.crt-depth-1{
+  position:relative;
+  overflow:hidden;
+}
+.crt-depth-1::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+  background-size:64px;
+  mix-blend-mode:overlay;
+  animation:crt-roll-1 4s linear infinite;
+}
+@keyframes crt-roll-1{
+  0%,100%{opacity:0.4}30%{opacity:0.6}70%{opacity:0.3}
+}
+
+/* depth-2: ghost rows ~2700 — moderate static with occasional tears */
+.crt-depth-2{position:relative;overflow:hidden;}
+.crt-depth-2::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 48 48' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+  background-size:48px;
+  mix-blend-mode:overlay;
+  animation:crt-roll-2 2.5s linear infinite;
+}
+@keyframes crt-roll-2{
+  0%,100%{opacity:0.5;transform:none}
+  25%{opacity:0.8}
+  50%{opacity:0.3;transform:translateY(1px)}
+  75%{opacity:0.7}
+}
+
+/* depth-3: void row ~3000 — heavy static + scan corruption */
+.crt-depth-3{position:relative;overflow:hidden;}
+.crt-depth-3::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:5;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.97' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.22'/%3E%3C/svg%3E");
+  background-size:32px;
+  mix-blend-mode:overlay;
+  animation:crt-roll-3 1.4s linear infinite;
+}
+.crt-depth-3::before{
+  content:'';position:absolute;left:0;right:0;height:2px;z-index:6;pointer-events:none;
+  background:rgba(200,71,42,0.3);
+  animation:crt-scan-line 1.8s linear infinite;
+}
+@keyframes crt-roll-3{
+  0%,100%{opacity:0.6}20%{opacity:1}40%{opacity:0.4;transform:skewX(0.3deg)}60%{opacity:0.8}80%{opacity:0.2}
+}
+@keyframes crt-scan-line{
+  from{top:-4px}to{top:calc(100% + 4px)}
+}
+
+/* ═══════════════════════════════════════
+   DESCENT CHAIN — vertical nodes below void
+   ═══════════════════════════════════════ */
+
+/* Base descent node — gets overridden per tier */
+.node-descent{
+  width:160px;
+  background:rgba(2,1,6,0.92);
+  border:1px solid rgba(200,71,42,0.1);
+  border-radius:2px;
+  position:absolute;
+  pointer-events:none; /* pure visual — no interaction */
+}
+.node-descent .n-inner{padding:10px 13px}
+.node-descent .n-tag{font-size:0.32rem;letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
+.node-descent .n-name{font-family:var(--vt);line-height:1.1}
+.node-descent .n-sub{font-size:0.32rem;margin-top:3px;line-height:1.3}
+
+/* Tier 1 — faint, barely there */
+.descent-t1{
+  border-color:rgba(200,71,42,0.12);
+  animation:desc-flicker-1 6s ease-in-out infinite;
+}
+.descent-t1 .n-tag{color:rgba(200,71,42,0.2)}
+.descent-t1 .n-name{font-size:0.85rem;color:rgba(232,228,223,0.12);animation:glitch-q 9s infinite}
+.descent-t1 .n-sub{color:rgba(232,228,223,0.06)}
+@keyframes desc-flicker-1{0%,100%{opacity:0.5}50%{opacity:0.3}}
+
+/* Tier 2 */
+.descent-t2{
+  border-color:rgba(200,71,42,0.18);
+  animation:desc-flicker-2 4s ease-in-out infinite;
+}
+.descent-t2 .n-tag{color:rgba(200,71,42,0.28)}
+.descent-t2 .n-name{font-size:0.9rem;color:rgba(232,228,223,0.16);animation:glitch-q 7s infinite 0.5s}
+.descent-t2 .n-sub{color:rgba(232,228,223,0.08)}
+@keyframes desc-flicker-2{0%,100%{opacity:0.6}30%{opacity:0.2;filter:blur(0.2px)}60%{opacity:0.7}}
+
+/* Tier 3 */
+.descent-t3{
+  border-color:rgba(200,71,42,0.25);
+  animation:desc-flicker-3 3s ease-in-out infinite;
+}
+.descent-t3 .n-tag{color:rgba(200,71,42,0.38)}
+.descent-t3 .n-name{font-size:0.95rem;color:rgba(232,228,223,0.22);animation:glitch-q 5s infinite 1s;text-shadow:1px 0 rgba(255,0,0,0.15),-1px 0 rgba(0,80,255,0.15)}
+.descent-t3 .n-sub{color:rgba(232,228,223,0.1)}
+@keyframes desc-flicker-3{0%,100%{opacity:0.7}20%{opacity:0.1;filter:blur(0.4px);transform:translateX(1px)}50%{opacity:0.8}80%{opacity:0.3}}
+
+/* Tier 4 */
+.descent-t4{
+  border-color:rgba(200,71,42,0.35);
+  animation:desc-flicker-4 2.2s ease-in-out infinite;
+}
+.descent-t4 .n-tag{color:rgba(200,71,42,0.5)}
+.descent-t4 .n-name{font-size:1rem;color:rgba(232,228,223,0.3);animation:glitch-q 4s infinite;text-shadow:2px 0 rgba(255,0,0,0.3),-2px 0 rgba(0,80,255,0.3)}
+.descent-t4 .n-sub{color:rgba(232,228,223,0.14)}
+@keyframes desc-flicker-4{
+  0%,100%{opacity:0.8;transform:none}
+  15%{opacity:0.05;filter:blur(0.5px);transform:skewX(1deg)}
+  30%{opacity:0.9}
+  55%{opacity:0.2;transform:translateX(-2px)}
+  70%{opacity:0.85}
+}
+
+/* Tier 5 */
+.descent-t5{
+  border-color:rgba(200,71,42,0.45);
+  box-shadow:0 0 8px rgba(200,71,42,0.06);
+  animation:desc-flicker-5 1.8s ease-in-out infinite;
+}
+.descent-t5 .n-tag{color:rgba(200,71,42,0.6)}
+.descent-t5 .n-name{font-size:1rem;color:rgba(232,228,223,0.38);animation:glitch-q 3s infinite;text-shadow:3px 0 rgba(255,0,0,0.4),-3px 0 rgba(0,80,255,0.4)}
+.descent-t5 .n-sub{color:rgba(232,228,223,0.18)}
+@keyframes desc-flicker-5{
+  0%,100%{opacity:0.85;transform:none;filter:none}
+  10%{opacity:0;filter:blur(1px);transform:skewX(2deg)}
+  12%{opacity:1;transform:translateX(3px)}
+  14%{opacity:0.85;transform:none}
+  50%{opacity:0.3;filter:blur(0.3px)}
+  52%{opacity:0.9}
+}
+
+/* Tier 6 */
+.descent-t6{
+  border-color:rgba(200,71,42,0.6);
+  box-shadow:0 0 14px rgba(200,71,42,0.1),inset 0 0 20px rgba(200,71,42,0.03);
+  animation:desc-flicker-6 1.3s ease-in-out infinite;
+}
+.descent-t6 .n-tag{color:rgba(200,71,42,0.7)}
+.descent-t6 .n-name{font-size:1.05rem;color:rgba(232,228,223,0.48);animation:glitch-q 2s infinite;text-shadow:4px 0 rgba(255,0,0,0.55),-4px 0 rgba(0,80,255,0.55)}
+.descent-t6 .n-sub{color:rgba(232,228,223,0.24)}
+@keyframes desc-flicker-6{
+  0%,100%{opacity:0.9;transform:none;filter:none}
+  8%{opacity:0;filter:blur(1.5px);transform:skewX(-3deg) scaleX(1.02)}
+  9%{opacity:1;transform:translateX(-4px)}
+  10%{opacity:0.9;transform:none}
+  35%{opacity:0.1;filter:blur(0.5px)}
+  37%{opacity:0.95}
+  60%{opacity:0.2;transform:skewX(1deg)}
+  62%{opacity:0.9;transform:none}
+}
+
+/* Tier 7 */
+.descent-t7{
+  border-color:rgba(200,71,42,0.75);
+  box-shadow:0 0 20px rgba(200,71,42,0.15),2px 0 6px rgba(255,0,0,0.1),-2px 0 6px rgba(0,80,255,0.1);
+  animation:desc-flicker-7 1s ease-in-out infinite;
+}
+.descent-t7 .n-tag{color:rgba(200,71,42,0.8)}
+.descent-t7 .n-name{font-size:1.1rem;color:rgba(232,228,223,0.6);animation:glitch-q 1.5s infinite;text-shadow:5px 0 rgba(255,0,0,0.65),-5px 0 rgba(0,80,255,0.65),0 0 8px rgba(200,71,42,0.3)}
+.descent-t7 .n-sub{color:rgba(232,228,223,0.3)}
+@keyframes desc-flicker-7{
+  0%,100%{opacity:0.92;transform:none;filter:none}
+  5%{opacity:0;filter:blur(2px);transform:skewX(4deg) translateX(3px)}
+  7%{opacity:1;transform:translateX(-5px)}
+  9%{opacity:0.92;transform:none}
+  25%{opacity:0.05;filter:blur(1px)}
+  27%{opacity:0.95;filter:none}
+  50%{transform:skewX(-1.5deg);filter:blur(0.3px)}
+  52%{transform:none;filter:none}
+  75%{opacity:0.15;transform:translateX(2px)}
+  77%{opacity:0.92;transform:none}
+}
+
+/* Tier 8 */
+.descent-t8{
+  border-color:rgba(200,71,42,0.88);
+  box-shadow:0 0 28px rgba(200,71,42,0.2),4px 0 10px rgba(255,0,0,0.15),-4px 0 10px rgba(0,80,255,0.15);
+  animation:desc-flicker-8 0.7s ease-in-out infinite;
+}
+.descent-t8 .n-tag{color:rgba(255,80,30,0.85)}
+.descent-t8 .n-name{font-size:1.1rem;color:rgba(232,228,223,0.72);animation:glitch-q 1s infinite;text-shadow:6px 0 rgba(255,0,0,0.75),-6px 0 rgba(0,80,255,0.75),0 0 12px rgba(200,71,42,0.5)}
+.descent-t8 .n-sub{color:rgba(232,228,223,0.38)}
+@keyframes desc-flicker-8{
+  0%,100%{opacity:0.95;transform:none;filter:none}
+  3%{opacity:0;filter:blur(3px);transform:skewX(-6deg) translateX(5px) scaleY(1.04)}
+  5%{opacity:1;transform:translateX(-7px)}
+  7%{opacity:0.95;transform:none}
+  20%{opacity:0;transform:skewX(3deg);filter:blur(1px)}
+  22%{opacity:0.95;transform:none;filter:none}
+  40%{transform:translateX(4px);filter:brightness(1.5)}
+  42%{transform:none;filter:none}
+  65%{opacity:0.1;filter:blur(1.5px);transform:skewX(-2deg)}
+  67%{opacity:0.95;transform:none;filter:none}
+  85%{transform:scaleX(1.03) skewX(1deg)}
+  87%{transform:none}
+}
+
+/* Tier 9 */
+.descent-t9{
+  border-color:rgba(200,71,42,0.95);
+  box-shadow:0 0 36px rgba(200,71,42,0.28),6px 0 14px rgba(255,0,0,0.22),-6px 0 14px rgba(0,80,255,0.22);
+  animation:desc-flicker-9 0.5s ease-in-out infinite;
+}
+.descent-t9 .n-tag{color:rgba(255,100,40,0.9)}
+.descent-t9 .n-name{font-size:1.15rem;color:rgba(232,228,223,0.8);animation:glitch-q 0.7s infinite;text-shadow:7px 0 rgba(255,0,0,0.82),-7px 0 rgba(0,80,255,0.82),0 0 16px rgba(200,71,42,0.6)}
+.descent-t9 .n-sub{color:rgba(232,228,223,0.44)}
+@keyframes desc-flicker-9{
+  0%,100%{opacity:0.97;transform:none;filter:none}
+  2%{opacity:0;filter:blur(4px);transform:skewX(8deg) translateX(-6px) scaleY(1.06)}
+  4%{opacity:1;transform:translateX(8px)}
+  6%{opacity:0.97;transform:none}
+  15%{opacity:0;transform:skewX(-4deg);filter:blur(2px)}
+  17%{opacity:0.97;transform:none;filter:none}
+  30%{transform:translateX(-5px) scaleX(1.04);filter:brightness(1.8)}
+  32%{transform:none;filter:none}
+  48%{opacity:0.05;filter:blur(2px);transform:skewX(3deg)}
+  50%{opacity:0.97;transform:none;filter:none}
+  70%{transform:scaleX(1.05) skewX(-2deg);filter:brightness(1.4)}
+  72%{transform:none;filter:none}
+  85%{opacity:0.08;transform:translateX(4px)}
+  87%{opacity:0.97;transform:none}
+}
+
+/* ═══════════════════════════════════════
+   FINAL NODE — ME BEFORE YOU EXISTED
+   cosmic terror held back by calm blue-red glow
+   ═══════════════════════════════════════ */
+.node-terminus{
+  width:200px;
+  position:absolute;
+  border:1px solid rgba(200,71,42,0.15);
+  border-radius:3px;
+  background:rgba(1,0,4,0.97);
+  /* the calm — gentle blue-red aura surrounding it */
+  box-shadow:
+    0 0 60px 20px rgba(60,0,120,0.18),
+    0 0 120px 40px rgba(200,0,60,0.08),
+    0 0 200px 80px rgba(0,40,120,0.06),
+    inset 0 0 40px rgba(60,0,100,0.04);
+  animation:terminus-distort 0.4s ease-in-out infinite;
+  mix-blend-mode:normal;
+  z-index:2;
+}
+/* the glow aura — a separate div built in JS */
+.terminus-aura{
+  position:absolute;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(ellipse at center,
+    transparent 20%,
+    rgba(120,0,200,0.06) 40%,
+    rgba(200,0,60,0.04) 60%,
+    rgba(0,60,200,0.05) 75%,
+    transparent 100%
+  );
+  animation:aura-breathe 3s ease-in-out infinite;
+  mix-blend-mode:screen;
+}
+@keyframes aura-breathe{
+  0%,100%{opacity:0.7;transform:scale(1)}
+  50%{opacity:1;transform:scale(1.05)}
+}
+.node-terminus .n-inner{padding:14px 16px}
+.node-terminus .n-tag{
+  font-size:0.3rem;letter-spacing:3px;margin-bottom:6px;text-transform:uppercase;
+  color:rgba(120,60,200,0.4);
+  animation:terminus-tag 1.2s ease-in-out infinite;
+}
+.node-terminus .n-name{
+  font-family:var(--vt);font-size:1.2rem;line-height:1.15;
+  color:rgba(232,228,223,0.06);
+  animation:terminus-name 0.35s ease-in-out infinite;
+}
+.node-terminus .n-sub{
+  font-size:0.3rem;color:rgba(232,228,223,0.03);
+  margin-top:5px;line-height:1.4;
+  animation:terminus-sub 0.6s ease-in-out infinite;
+}
+
+@keyframes terminus-distort{
+  0%,100%{
+    transform:none;filter:none;
+    border-color:rgba(200,71,42,0.12);
+    box-shadow:
+      0 0 60px 20px rgba(60,0,120,0.18),
+      0 0 120px 40px rgba(200,0,60,0.08),
+      0 0 200px 80px rgba(0,40,120,0.06),
+      inset 0 0 40px rgba(60,0,100,0.04);
+  }
+  4%{
+    transform:skewX(10deg) translateX(-6px) scaleY(1.08);
+    filter:blur(1.5px) brightness(2);
+    border-color:rgba(255,0,0,0.5);
+    box-shadow:
+      0 0 80px 30px rgba(200,0,60,0.35),
+      0 0 160px 60px rgba(0,40,200,0.2),
+      8px 0 20px rgba(255,0,0,0.4),-8px 0 20px rgba(0,80,255,0.4),
+      inset 0 0 40px rgba(200,0,80,0.08);
+  }
+  6%{
+    transform:skewX(-14deg) translateX(9px) scaleX(1.04);
+    filter:blur(2px);
+    border-color:rgba(0,80,255,0.6);
+  }
+  8%{transform:none;filter:none;}
+  18%{
+    transform:translateX(8px) skewY(2deg);
+    filter:blur(1px) brightness(1.6);
+    border-color:rgba(200,71,42,0.5);
+    box-shadow:
+      0 0 60px 20px rgba(60,0,120,0.25),
+      10px 0 30px rgba(255,0,0,0.3),-10px 0 30px rgba(0,80,255,0.3);
+  }
+  20%{transform:translateX(-10px);filter:blur(0.5px);}
+  22%{transform:none;filter:none;}
+  35%{
+    transform:scaleX(1.07) skewX(-5deg);
+    filter:blur(2.5px) brightness(2.2) contrast(1.5);
+    border-color:rgba(255,40,0,0.7);
+  }
+  37%{transform:scaleX(0.95) skewX(3deg);filter:blur(0.8px);}
+  39%{transform:none;filter:none;}
+  52%{
+    transform:translateY(4px) skewX(7deg);
+    filter:blur(1.8px);
+    box-shadow:
+      0 0 100px 40px rgba(200,0,60,0.3),
+      0 0 60px 20px rgba(60,0,120,0.3),
+      6px 0 25px rgba(255,0,80,0.5),-6px 0 25px rgba(0,80,255,0.5);
+  }
+  54%{transform:translateY(-6px) skewX(-5deg);filter:blur(1px);}
+  56%{transform:none;filter:none;}
+  68%{
+    transform:scaleY(1.1) skewX(-8deg) translateX(-4px);
+    filter:blur(3px) brightness(3) contrast(2);
+    border-color:rgba(255,0,100,0.8);
+  }
+  70%{transform:scaleY(0.92) skewX(6deg);filter:blur(1px);}
+  72%{transform:none;filter:none;}
+  82%{
+    transform:skewX(12deg) scaleX(1.06) translateX(6px);
+    filter:blur(2px) brightness(1.8);
+  }
+  84%{transform:skewX(-8deg) translateX(-8px);}
+  86%{transform:none;filter:none;}
+}
+
+@keyframes terminus-name{
+  0%,100%{
+    color:rgba(232,228,223,0.06);
+    text-shadow:none;transform:none;filter:none;
+  }
+  5%{
+    color:rgba(232,228,223,0.55);
+    text-shadow:8px 0 rgba(255,0,0,0.9),-8px 0 rgba(0,80,255,0.9),0 0 20px rgba(200,71,42,0.7);
+    transform:skewX(6deg);filter:blur(0.5px);
+  }
+  7%{color:rgba(232,228,223,0.02);text-shadow:none;transform:skewX(-10deg);}
+  9%{color:rgba(232,228,223,0.08);transform:none;}
+  25%{
+    color:rgba(200,71,42,0.5);
+    text-shadow:5px 0 rgba(255,0,0,0.6),-5px 0 rgba(0,80,255,0.6);
+    filter:blur(1px);transform:translateX(-3px);
+  }
+  27%{color:rgba(232,228,223,0.04);filter:none;transform:translateX(5px);}
+  29%{transform:none;}
+  55%{
+    color:rgba(180,100,255,0.4);
+    text-shadow:6px 0 rgba(255,0,100,0.7),-6px 0 rgba(0,60,255,0.7);
+    transform:skewX(-4deg);
+  }
+  57%{color:rgba(232,228,223,0.03);transform:none;}
+  80%{
+    color:rgba(232,228,223,0.35);
+    text-shadow:10px 0 rgba(255,0,0,1),-10px 0 rgba(0,80,255,1),0 0 30px rgba(255,255,255,0.2);
+    filter:blur(0.3px);transform:scaleX(1.04);
+  }
+  82%{color:rgba(232,228,223,0.02);text-shadow:none;filter:none;transform:none;}
+}
+
+@keyframes terminus-tag{
+  0%,100%{opacity:0.3;letter-spacing:3px;color:rgba(120,60,200,0.4)}
+  30%{opacity:0.05;letter-spacing:6px;color:rgba(255,0,100,0.3)}
+  60%{opacity:0.6;letter-spacing:2px;color:rgba(60,120,255,0.5)}
+  61%{opacity:0.1}
+  62%{opacity:0.5}
+}
+
+@keyframes terminus-sub{
+  0%,100%{opacity:0.5;transform:none}
+  20%{opacity:0.05;transform:translateX(3px)}
+  40%{opacity:0.8;transform:translateX(-2px)}
+  60%{opacity:0.1;transform:skewX(1deg)}
+  80%{opacity:0.6;transform:none}
+}
+
+/* descent connector line */
+.conn-descent{
+  stroke:rgba(200,71,42,0.08);stroke-width:0.5;fill:none;
+  stroke-dasharray:2 8;
+}
+.conn-descent-heavy{
+  stroke:rgba(200,71,42,0.2);stroke-width:0.6;fill:none;
+  stroke-dasharray:1 4;
+  animation:dash-crawl 4s linear infinite;
+}
+
+/* Simulunas scatter nodes — purple ghost floaters */
+.node-sim-scatter{
+  width:100px;
+  background:rgba(6,2,18,0.4);
+  border:1px solid rgba(148,88,200,0.1);
+  border-radius:2px;
+  opacity:0.22;
+  pointer-events:none;
+  animation:sim-scatter-flicker 5s ease-in-out infinite;
+}
+.node-sim-scatter .n-inner{padding:7px 9px}
+.node-sim-scatter .n-tag{font-size:0.28rem;letter-spacing:2px;color:rgba(148,88,200,0.2);margin-bottom:3px}
+.node-sim-scatter .n-name{font-family:var(--vt);font-size:0.78rem;color:rgba(185,130,240,0.15);line-height:1.1;animation:glitch-purple 4s infinite}
+.node-sim-scatter .n-sub{font-size:0.26rem;color:rgba(148,88,200,0.08);margin-top:2px}
+@keyframes sim-scatter-flicker{
+  0%,100%{opacity:0.22;filter:none;transform:none}
+  15%{opacity:0.04;filter:blur(0.4px)}
+  16%{opacity:0.3;transform:translateX(1px)}
+  17%{opacity:0.22;transform:none}
+  45%{opacity:0.1;filter:blur(0.2px)}
+  46%{opacity:0.25}
+  70%{opacity:0.05;transform:translateY(-1px)}
+  71%{opacity:0.22;transform:none}
+  85%{opacity:0.15;filter:blur(0.3px);transform:skewX(0.5deg)}
+  86%{opacity:0.22;transform:none;filter:none}
+}
+
 @media(max-width:640px){
   #hd{padding:10px 14px;gap:6px;}
   .hd-title{display:none;}
@@ -875,6 +1318,8 @@ body::after{
 
 <script>
 'use strict';
+
+const CANVAS_H = 4900; /* total canvas height including descent chain */
 
 const NODES = [
   /* TIER 0: ROOT */
@@ -1204,11 +1649,40 @@ const NODES = [
   {id:'gh29', type:'ghost', tag:'???', name:'???', sub:'no freq', tip:'', x:450,  y:2700},
   {id:'gh30', type:'ghost', tag:'???', name:'??????', sub:'——', tip:'', x:1600, y:2780},
 
-  /* THE FINAL NODE — reality distorted, unconnected, at the very bottom */
+  /* THE EXISTING VOID NODE */
   {id:'void-final', type:'void', tag:'???? / ????-?', name:'?? ???? ??\n???? ????',
    sub:'not in the archive\nnot in any log\nit should not render',
    tip:'',
    x:1660, y:3000},
+
+  /* ═══════════════════════════════════════
+     DESCENT CHAIN — 9 vertical nodes, escalating instability
+     centered around x:1760, starting below void-final
+     ═══════════════════════════════════════ */
+  {id:'dc01', type:'descent', descentTier:1, tag:'LAYER / -1', name:'???', sub:'signal dropping', tip:'', x:1720, y:3200},
+  {id:'dc02', type:'descent', descentTier:2, tag:'LAYER / -2', name:'?? ???', sub:'no reference', tip:'', x:1730, y:3360},
+  {id:'dc03', type:'descent', descentTier:3, tag:'LAYER / -3', name:'??? ??', sub:'depth unknown', tip:'', x:1710, y:3520},
+  {id:'dc04', type:'descent', descentTier:4, tag:'LAYER / -4', name:'???? ?', sub:'archive cannot read', tip:'', x:1740, y:3680},
+  {id:'dc05', type:'descent', descentTier:5, tag:'LAYER / -5', name:'?? ?????', sub:'signal corruption', tip:'', x:1720, y:3840},
+  {id:'dc06', type:'descent', descentTier:6, tag:'LAYER / -6', name:'?????? ??', sub:'below the archive', tip:'', x:1735, y:4000},
+  {id:'dc07', type:'descent', descentTier:7, tag:'LAYER / -7', name:'?? ?? ???', sub:'terminal collapse', tip:'', x:1715, y:4160},
+  {id:'dc08', type:'descent', descentTier:8, tag:'LAYER / -8', name:'????? ????', sub:'reality fracture', tip:'', x:1745, y:4320},
+  {id:'dc09', type:'descent', descentTier:9, tag:'LAYER / -9', name:'?? ??? ?? ??', sub:'pre-signal void', tip:'', x:1720, y:4480},
+
+  /* THE TERMINUS NODE */
+  {id:'terminus', type:'terminus', tag:'???-0 / PRE-EXISTENCE', name:'me before\nyou existed',
+   sub:'this node should not be here\nthe archive did not create it\nit was here first',
+   tip:'',
+   x:1650, y:4680},
+
+  /* SIMULUNAS SCATTER NODES — purple ghost floaters around Simulunas (x:2430,y:338) */
+  {id:'ss01', type:'sim-scatter', tag:'SIM / ???', name:'??? ??', sub:'no entry', tip:'', x:2580, y:220},
+  {id:'ss02', type:'sim-scatter', tag:'SIM / ???', name:'?????', sub:'——', tip:'', x:2650, y:400},
+  {id:'ss03', type:'sim-scatter', tag:'SIM / ???', name:'?? ???', sub:'unlogged', tip:'', x:2220, y:180},
+  {id:'ss04', type:'sim-scatter', tag:'SIM / ???', name:'??????', sub:'——', tip:'', x:2180, y:420},
+  {id:'ss05', type:'sim-scatter', tag:'SIM / ???', name:'??? ?', sub:'orphan', tip:'', x:2520, y:540},
+  {id:'ss06', type:'sim-scatter', tag:'SIM / ???', name:'??', sub:'——', tip:'', x:2730, y:280},
+  {id:'ss07', type:'sim-scatter', tag:'SIM / ???', name:'?? ????', sub:'leaked', tip:'', x:2300, y:560},
 ];
 
 const CONNECTIONS = [
@@ -1272,6 +1746,17 @@ const CONNECTIONS = [
   {from:'p01', to:'char-signal-kage', style:'conn-unknown'},
   {from:'coord-node', to:'wncore', style:'conn-bz'},
   {from:'ghuul-node', to:'coord-node', style:'conn-unknown'},
+  /* descent chain connections */
+  {from:'void-final', to:'dc01', style:'conn-descent'},
+  {from:'dc01', to:'dc02', style:'conn-descent'},
+  {from:'dc02', to:'dc03', style:'conn-descent'},
+  {from:'dc03', to:'dc04', style:'conn-descent'},
+  {from:'dc04', to:'dc05', style:'conn-descent'},
+  {from:'dc05', to:'dc06', style:'conn-descent-heavy'},
+  {from:'dc06', to:'dc07', style:'conn-descent-heavy'},
+  {from:'dc07', to:'dc08', style:'conn-descent-heavy'},
+  {from:'dc08', to:'dc09', style:'conn-descent-heavy'},
+  {from:'dc09', to:'terminus', style:'conn-descent-heavy'},
 ];
 
 /* STATE */
@@ -1299,8 +1784,16 @@ function buildNodes(){
     const isUnlocked = unlockedNodes.has(n.id);
 
     const el = document.createElement('div');
-    const typeClass = 'node-' + n.type;
+    let typeClass = 'node-' + n.type;
+    if(n.type === 'descent') typeClass = 'node-descent descent-t' + n.descentTier;
+    if(n.type === 'terminus') typeClass = 'node-terminus';
+    if(n.type === 'sim-scatter') typeClass = 'node-sim-scatter';
     el.className = 'node ' + typeClass + (isUnlocked ? ' unlocked-node' : '') + (n.wide ? ' wide' : '');
+
+    /* CRT depth static — applied to nodes by Y position */
+    if(n.y >= 2500 && n.y < 2800 && n.type !== 'ghost' && n.type !== 'void' && n.type !== 'descent' && n.type !== 'terminus') el.classList.add('crt-depth-1');
+    if(n.y >= 2800 && n.y < 3100 && n.type !== 'void' && n.type !== 'descent' && n.type !== 'terminus') el.classList.add('crt-depth-2');
+    if(n.y >= 3100 && n.type !== 'descent' && n.type !== 'terminus') el.classList.add('crt-depth-3');
     el.id = 'node-' + n.id;
     el.style.left = n.x + 'px';
     el.style.top = n.y + 'px';
@@ -1357,14 +1850,26 @@ function buildNodes(){
       footer.className = 'n-footer';
       footer.textContent = n.type === 'simulunas' ? '→ ???' : '→ ' + (n.footerTxt || '9 BRANCH PATHS');
       el.appendChild(footer);
+    } else if(n.type === 'terminus'){
+      /* Build terminus with aura div */
+      el.innerHTML = '';
+      el.appendChild(inner);
+      /* aura is placed as sibling in the canvas, not child */
+      const aura = document.createElement('div');
+      aura.className = 'terminus-aura';
+      aura.style.cssText = `
+        width:600px;height:400px;
+        left:${n.x - 220}px;top:${n.y - 140}px;
+      `;
+      canvas.appendChild(aura);
     } else {
       el.innerHTML = '';
       el.appendChild(glow);
       el.appendChild(inner);
     }
 
-    /* ghost and void nodes: no interactions */
-    if(n.type !== 'ghost' && n.type !== 'void'){
+    /* ghost, void, descent, terminus, sim-scatter: no interactions */
+    if(n.type !== 'ghost' && n.type !== 'void' && n.type !== 'descent' && n.type !== 'terminus' && n.type !== 'sim-scatter'){
       el.addEventListener('mouseenter', e => showTooltip(e, n));
       el.addEventListener('mouseleave', hideTooltip);
       el.addEventListener('mousemove', moveTooltip);
@@ -1453,6 +1958,7 @@ function drawConnectors(){
 /* TOOLTIP */
 const tooltip = document.getElementById('tooltip');
 function showTooltip(e, n){
+  playHoverPing();
   const isUnlocked = unlockedNodes.has(n.id);
   document.getElementById('tt-tag').textContent = n.tag || '';
   document.getElementById('tt-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
@@ -1507,6 +2013,7 @@ function tryUnlock(){
 }
 
 function applyUnlock(id, n){
+  playUnlockSound();
   const el = document.getElementById('node-' + id);
   if(!el) return;
   el.classList.add('unlocked-node');
@@ -1566,6 +2073,31 @@ window.addEventListener('mousemove', e => {
   updateMinimap();
 });
 
+/* MOUSE WHEEL ZOOM */
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 1.12 : 1/1.12;
+  const rect = wrap.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+  const worldX = (wrap.scrollLeft + mouseX) / currentScale;
+  const worldY = (wrap.scrollTop + mouseY) / currentScale;
+  currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, currentScale * delta));
+  if(isMobile()){
+    const shell = document.getElementById('map-canvas-shell');
+    shell.style.transformOrigin = '0 0';
+    shell.style.transform = `scale(${currentScale})`;
+    shell.style.width = (3600 * currentScale) + 'px';
+    shell.style.height = (CANVAS_H * currentScale) + 'px';
+  } else {
+    canvas.style.transformOrigin = '0 0';
+    canvas.style.transform = `scale(${currentScale})`;
+  }
+  wrap.scrollLeft = worldX * currentScale - mouseX;
+  wrap.scrollTop  = worldY * currentScale - mouseY;
+  updateMinimap();
+}, {passive: false});
+
 /* MOBILE */
 const isMobile = () => window.innerWidth <= 640;
 
@@ -1584,7 +2116,7 @@ function setScaleFromButton(newScale){
     shell.style.transformOrigin = '0 0';
     shell.style.transform = `scale(${currentScale})`;
     shell.style.width = (3600 * currentScale) + 'px';
-    shell.style.height = (3120 * currentScale) + 'px';
+    shell.style.height = (CANVAS_H * currentScale) + 'px';
   } else {
     canvas.style.transformOrigin = '0 0';
     canvas.style.transform = `scale(${currentScale})`;
@@ -1602,7 +2134,7 @@ if(zoomOut) zoomOut.addEventListener('click', () => setScaleFromButton(currentSc
 if(zoomReset) zoomReset.addEventListener('click', () => {
   const fitScale = Math.min(
     wrap.clientWidth / 3600,
-    wrap.clientHeight / 3120
+    wrap.clientHeight / CANVAS_H
   ) * 0.9;
   setScaleFromButton(fitScale);
   wrap.scrollLeft = 0; wrap.scrollTop = 0;
@@ -1922,6 +2454,7 @@ function randomGlitch(){
     doNoiseBar();
     spawnPixelScatter();
     doStaticBurst();
+    playGlitchCrack(true);
     if(Math.random() > 0.4) glitchLockedName();
     setTimeout(()=>{
       overlay.style.opacity='0';
@@ -1935,6 +2468,7 @@ function randomGlitch(){
     doScanTear();
     if(Math.random() > 0.5) spawnPixelScatter();
     if(Math.random() > 0.6) glitchLockedName();
+    if(Math.random() > 0.5) playGlitchCrack(false);
     setTimeout(randomGlitch, 2200+Math.random()*3500);
   } else if(roll < 0.65){
     /* LIGHT EVENT — just a tear or scatter */
@@ -1994,14 +2528,14 @@ function init(){
     if(isMobile()){
       const fitScale = Math.min(
         wrap.clientWidth / 3600,
-        wrap.clientHeight / 3120
+        wrap.clientHeight / CANVAS_H
       ) * 1.6;
       currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
       const shell = document.getElementById('map-canvas-shell');
       shell.style.transformOrigin = '0 0';
       shell.style.transform = `scale(${currentScale})`;
       shell.style.width = (3600 * currentScale) + 'px';
-      shell.style.height = (3120 * currentScale) + 'px';
+      shell.style.height = (CANVAS_H * currentScale) + 'px';
       canvas.style.transform = '';
       wrap.scrollLeft = 1755 * currentScale - wrap.clientWidth / 2;
       wrap.scrollTop = 0;
@@ -2079,6 +2613,457 @@ function hudFlicker(){
   setTimeout(()=>{ el.textContent = orig; el.style.color = ''; }, 120+Math.random()*180);
   setTimeout(hudFlicker, 14000 + Math.random()*10000);
 }
+
+/* ═══════════════════════════════════════════════════════
+   WEB AUDIO ENGINE
+   All synthesized — no files, no CDN. Starts on first interaction.
+   ═══════════════════════════════════════════════════════ */
+let audioCtx = null;
+let droneGain = null;
+let droneOsc = null;
+let droneDistortion = null;
+let audioReady = false;
+let currentScrollDepth = 0; /* 0 = top, 1 = terminus */
+
+function initAudio(){
+  if(audioReady) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  audioReady = true;
+
+  /* master limiter so nothing clips */
+  const master = audioCtx.createDynamicsCompressor();
+  master.threshold.value = -6;
+  master.ratio.value = 8;
+  master.connect(audioCtx.destination);
+
+  /* ── 88.7 MHz AMBIENT DRONE ── */
+  droneGain = audioCtx.createGain();
+  droneGain.gain.value = 0; /* starts silent, fades in */
+
+  droneOsc = audioCtx.createOscillator();
+  droneOsc.type = 'sawtooth';
+  droneOsc.frequency.value = 88.7; /* literal 88.7 Hz — close enough to feel intentional */
+
+  /* bandpass filter to shape it into a carrier-wave hum */
+  const droneFilter = audioCtx.createBiquadFilter();
+  droneFilter.type = 'bandpass';
+  droneFilter.frequency.value = 180;
+  droneFilter.Q.value = 0.8;
+
+  /* waveshaper for analog warmth / slight distortion */
+  droneDistortion = audioCtx.createWaveShaper();
+  droneDistortion.curve = makeDistortionCurve(12);
+  droneDistortion.oversample = '2x';
+
+  /* slow LFO tremolo — the "breathing" of the signal */
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.frequency.value = 0.18;
+  lfoGain.gain.value = 0.06;
+  lfo.connect(lfoGain);
+  lfoGain.connect(droneGain.gain);
+  lfo.start();
+
+  droneOsc.connect(droneFilter);
+  droneFilter.connect(droneDistortion);
+  droneDistortion.connect(droneGain);
+  droneGain.connect(master);
+  droneOsc.start();
+
+  /* second harmonic layer — slightly detuned, very quiet */
+  const drone2 = audioCtx.createOscillator();
+  drone2.type = 'sine';
+  drone2.frequency.value = 177.6; /* 88.7 × 2, slightly detuned */
+  const drone2Gain = audioCtx.createGain();
+  drone2Gain.gain.value = 0;
+  const drone2Filter = audioCtx.createBiquadFilter();
+  drone2Filter.type = 'lowpass';
+  drone2Filter.frequency.value = 300;
+  drone2.connect(drone2Filter);
+  drone2Filter.connect(drone2Gain);
+  drone2Gain.connect(master);
+  drone2.start();
+
+  /* store drone2Gain for scroll-depth control */
+  window._d2g = drone2Gain;
+
+  /* fade drone in over 4s */
+  droneGain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 4);
+
+  /* ── STATIC NOISE LAYER ── */
+  const noiseBuffer = makeNoiseBuffer(audioCtx, 2);
+  const noiseSource = audioCtx.createBufferSource();
+  noiseSource.buffer = noiseBuffer;
+  noiseSource.loop = true;
+  const noiseFilter = audioCtx.createBiquadFilter();
+  noiseFilter.type = 'bandpass';
+  noiseFilter.frequency.value = 1200;
+  noiseFilter.Q.value = 0.4;
+  const noiseGain = audioCtx.createGain();
+  noiseGain.gain.value = 0.018;
+  noiseSource.connect(noiseFilter);
+  noiseFilter.connect(noiseGain);
+  noiseGain.connect(master);
+  noiseSource.start();
+  window._noiseGain = noiseGain;
+}
+
+function makeDistortionCurve(amount){
+  const samples = 256;
+  const curve = new Float32Array(samples);
+  for(let i=0;i<samples;i++){
+    const x = (i*2)/samples - 1;
+    curve[i] = ((Math.PI + amount) * x) / (Math.PI + amount * Math.abs(x));
+  }
+  return curve;
+}
+
+function makeNoiseBuffer(ctx, seconds){
+  const sr = ctx.sampleRate;
+  const buf = ctx.createBuffer(1, sr*seconds, sr);
+  const data = buf.getChannelData(0);
+  for(let i=0;i<data.length;i++) data[i] = Math.random()*2-1;
+  return buf;
+}
+
+/* ── HOVER PING ── */
+function playHoverPing(){
+  if(!audioReady || !audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'bandpass';
+  filter.frequency.value = 800 + Math.random()*400;
+  filter.Q.value = 4;
+  osc.type = 'sine';
+  osc.frequency.value = 600 + Math.random()*300;
+  gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.18);
+  osc.connect(filter);
+  filter.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.2);
+}
+
+/* ── UNLOCK SWEEP ── */
+function playUnlockSound(){
+  if(!audioReady || !audioCtx) return;
+  const t = audioCtx.currentTime;
+
+  /* rising frequency sweep */
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(220, t);
+  osc.frequency.exponentialRampToValueAtTime(880, t + 0.6);
+  gain.gain.setValueAtTime(0.001, t);
+  gain.gain.linearRampToValueAtTime(0.12, t + 0.1);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.8);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start(t);
+  osc.stop(t + 0.85);
+
+  /* static burst underneath the sweep */
+  const nBuf = makeNoiseBuffer(audioCtx, 0.5);
+  const nSrc = audioCtx.createBufferSource();
+  nSrc.buffer = nBuf;
+  const nFilter = audioCtx.createBiquadFilter();
+  nFilter.type = 'highpass';
+  nFilter.frequency.value = 2000;
+  const nGain = audioCtx.createGain();
+  nGain.gain.setValueAtTime(0.08, t);
+  nGain.gain.exponentialRampToValueAtTime(0.0001, t + 0.4);
+  nSrc.connect(nFilter);
+  nFilter.connect(nGain);
+  nGain.connect(audioCtx.destination);
+  nSrc.start(t);
+  nSrc.stop(t + 0.5);
+}
+
+/* ── GLITCH CRACK ── */
+function playGlitchCrack(intensity){
+  if(!audioReady || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  const nBuf = makeNoiseBuffer(audioCtx, 0.15);
+  const nSrc = audioCtx.createBufferSource();
+  nSrc.buffer = nBuf;
+  const nFilter = audioCtx.createBiquadFilter();
+  nFilter.type = 'bandpass';
+  nFilter.frequency.value = intensity ? 800 : 1800;
+  nFilter.Q.value = intensity ? 0.8 : 2;
+  const nGain = audioCtx.createGain();
+  nGain.gain.setValueAtTime(intensity ? 0.18 : 0.06, t);
+  nGain.gain.exponentialRampToValueAtTime(0.0001, t + (intensity ? 0.12 : 0.06));
+  nSrc.connect(nFilter);
+  nFilter.connect(nGain);
+  nGain.connect(audioCtx.destination);
+  nSrc.start(t);
+  nSrc.stop(t + 0.2);
+}
+
+/* ── KONAMI UNLOCK SOUND ── deep resonant boom */
+function playKonamiSound(){
+  if(!audioReady || !audioCtx) return;
+  const t = audioCtx.currentTime;
+  [55, 110, 220].forEach((freq, i) => {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = i === 0 ? 'sawtooth' : 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.001, t + i*0.05);
+    gain.gain.linearRampToValueAtTime(0.15 - i*0.04, t + i*0.05 + 0.1);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 2.5);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t + i*0.05);
+    osc.stop(t + 2.8);
+  });
+  /* noise swell */
+  const nBuf = makeNoiseBuffer(audioCtx, 2);
+  const nSrc = audioCtx.createBufferSource();
+  nSrc.buffer = nBuf;
+  const nFilter = audioCtx.createBiquadFilter();
+  nFilter.type = 'lowpass';
+  nFilter.frequency.value = 400;
+  const nGain = audioCtx.createGain();
+  nGain.gain.setValueAtTime(0.001, t);
+  nGain.gain.linearRampToValueAtTime(0.22, t + 0.3);
+  nGain.gain.exponentialRampToValueAtTime(0.0001, t + 2.2);
+  nSrc.connect(nFilter);
+  nFilter.connect(nGain);
+  nGain.connect(audioCtx.destination);
+  nSrc.start(t);
+  nSrc.stop(t + 2.5);
+}
+
+/* ── SCROLL DEPTH AUDIO MODULATION ── */
+function updateAudioDepth(){
+  if(!audioReady || !audioCtx) return;
+  const maxScroll = CANVAS_H - wrap.clientHeight;
+  const depth = Math.min(1, (wrap.scrollTop / currentScale) / (maxScroll / currentScale));
+  currentScrollDepth = depth;
+
+  /* drone pitch bends downward as you descend — feels "wrong" */
+  const targetFreq = 88.7 - depth * 28; /* 88.7 → 60.7 Hz at terminus */
+  droneOsc.frequency.setTargetAtTime(targetFreq, audioCtx.currentTime, 1.2);
+
+  /* drone gets louder and more distorted at depth */
+  const targetVol = 0.06 + depth * 0.1;
+  droneGain.gain.setTargetAtTime(targetVol, audioCtx.currentTime, 0.8);
+
+  /* distortion amount increases */
+  droneDistortion.curve = makeDistortionCurve(12 + depth * 60);
+
+  /* noise gets louder at depth */
+  if(window._noiseGain) window._noiseGain.gain.setTargetAtTime(0.018 + depth * 0.04, audioCtx.currentTime, 0.6);
+
+  /* second harmonic swells at depth */
+  if(window._d2g) window._d2g.gain.setTargetAtTime(depth * 0.05, audioCtx.currentTime, 0.8);
+}
+
+/* boot audio on first user gesture */
+function bootAudio(){
+  initAudio();
+  document.removeEventListener('click', bootAudio);
+  document.removeEventListener('touchstart', bootAudio);
+  document.removeEventListener('keydown', bootAudio);
+  document.removeEventListener('wheel', bootAudio);
+}
+document.addEventListener('click', bootAudio);
+document.addEventListener('touchstart', bootAudio, {passive:true});
+document.addEventListener('keydown', bootAudio);
+document.addEventListener('wheel', bootAudio, {passive:true});
+
+/* hook scroll depth updates */
+wrap.addEventListener('scroll', updateAudioDepth);
+
+/* ═══════════════════════════════════════════════════════
+   TERMINUS HEARTBEAT
+   Slow calm pulse on the aura with occasional violent red bloom
+   ═══════════════════════════════════════════════════════ */
+function terminusHeartbeat(){
+  const aura = document.querySelector('.terminus-aura');
+  if(!aura){ setTimeout(terminusHeartbeat, 2000); return; }
+
+  /* normal beat — gentle blue-purple swell */
+  function normalBeat(){
+    aura.style.transition = 'transform 0.4s ease-in, opacity 0.4s ease-in';
+    aura.style.transform = 'scale(1.06)';
+    aura.style.opacity = '0.9';
+    setTimeout(()=>{
+      aura.style.transition = 'transform 0.8s ease-out, opacity 0.8s ease-out';
+      aura.style.transform = 'scale(1)';
+      aura.style.opacity = '0.6';
+    }, 420);
+  }
+
+  /* violent bloom — red surge then snaps back to calm blue */
+  function violentBloom(){
+    const terminus = document.querySelector('.node-terminus');
+    aura.style.transition = 'none';
+    aura.style.background = `radial-gradient(ellipse at center,
+      transparent 10%,
+      rgba(255,0,60,0.18) 30%,
+      rgba(200,0,80,0.12) 50%,
+      rgba(120,0,200,0.06) 70%,
+      transparent 100%)`;
+    aura.style.transform = 'scale(1.25)';
+    aura.style.opacity = '1';
+    if(terminus){
+      terminus.style.boxShadow = `
+        0 0 80px 30px rgba(255,0,60,0.4),
+        0 0 160px 60px rgba(200,0,80,0.2),
+        0 0 240px 100px rgba(0,40,120,0.1),
+        inset 0 0 40px rgba(255,0,60,0.08)`;
+    }
+    /* snap back to calm after 200ms */
+    setTimeout(()=>{
+      aura.style.transition = 'transform 1.4s ease-out, opacity 1.2s ease-out, background 2s ease-out';
+      aura.style.background = `radial-gradient(ellipse at center,
+        transparent 20%,
+        rgba(120,0,200,0.06) 40%,
+        rgba(200,0,60,0.04) 60%,
+        rgba(0,60,200,0.05) 75%,
+        transparent 100%)`;
+      aura.style.transform = 'scale(1)';
+      aura.style.opacity = '0.7';
+      if(terminus) terminus.style.boxShadow = '';
+    }, 200);
+  }
+
+  normalBeat();
+  const beatInterval = setInterval(()=>{
+    if(Math.random() < 0.06){
+      violentBloom();
+      if(audioReady) playGlitchCrack(true);
+    } else {
+      normalBeat();
+    }
+  }, 2800 + Math.random()*600);
+  window._terminusBeat = beatInterval;
+}
+setTimeout(terminusHeartbeat, 1500);
+
+/* ═══════════════════════════════════════════════════════
+   KONAMI CODE
+   ↑↑↓↓←→←→BA — triggers full-screen event + hidden node
+   ═══════════════════════════════════════════════════════ */
+const KONAMI = [38,38,40,40,37,39,37,39,66,65];
+let konamiIdx = 0;
+let konamiDone = false;
+
+/* The hidden Konami node — added to NODES array dynamically */
+const KONAMI_NODE = {
+  id:'signal-zero', type:'known', tag:'SIGNAL / ZERO — UNLOCKED',
+  name:'SIGNAL ZERO', sub:'pre-archive origin\nunclassified — LEVEL ??',
+  tip:'You found it. This node was not placed here. It was already here when the archive was built around it. Classification: ORIGIN.',
+  x:1350, y:338, passkey:''
+};
+
+document.addEventListener('keydown', e => {
+  if(konamiDone) return;
+  if(e.keyCode === KONAMI[konamiIdx]){
+    konamiIdx++;
+    if(konamiIdx === KONAMI.length){
+      konamiDone = true;
+      triggerKonamiEvent();
+    }
+  } else {
+    konamiIdx = e.keyCode === KONAMI[0] ? 1 : 0;
+  }
+});
+
+function triggerKonamiEvent(){
+  playKonamiSound();
+
+  /* full-screen cascade glitch — 3 waves */
+  const overlay = document.getElementById('glitch-overlay');
+  let wave = 0;
+  function glitchWave(){
+    overlay.style.opacity = '1';
+    doChromaShift(true);
+    doScanTear(); doScanTear(); doScanTear();
+    doNoiseBar(); doNoiseBar();
+    spawnPixelScatter();
+    doStaticBurst();
+    setTimeout(()=>{ overlay.style.opacity='0'; doChromaShift(false); }, 80+Math.random()*60);
+    wave++;
+    if(wave < 3) setTimeout(glitchWave, 200 + wave*120);
+    else setTimeout(revealKonamiNode, 600);
+  }
+  glitchWave();
+
+  /* HUD freakout during event */
+  const hudClock = document.getElementById('hud-clock');
+  if(hudClock){
+    const origClockContent = hudClock.textContent;
+    hudClock.textContent = '20:32:04';
+    hudClock.style.color = 'rgba(200,71,42,0.9)';
+    setTimeout(()=>{ hudClock.style.color=''; }, 3000);
+  }
+
+  /* flash a message in the HUD tip */
+  const tip = document.getElementById('hud-tip');
+  if(tip){
+    const origTip = tip.textContent;
+    tip.textContent = '// SIGNAL ZERO — SEQUENCE RECEIVED';
+    tip.style.color = 'rgba(200,71,42,1)';
+    tip.style.opacity = '1';
+    setTimeout(()=>{ tip.style.color=''; tip.style.opacity=''; }, 4000);
+  }
+}
+
+function revealKonamiNode(){
+  /* inject the hidden node into the map */
+  nodeMap[KONAMI_NODE.id] = KONAMI_NODE;
+  unlockedNodes.add(KONAMI_NODE.id);
+  saveUnlocked(unlockedNodes);
+
+  const el = document.createElement('div');
+  el.className = 'node node-known unlocked-node';
+  el.id = 'node-signal-zero';
+  el.dataset.id = 'signal-zero';
+  el.style.left = KONAMI_NODE.x + 'px';
+  el.style.top  = KONAMI_NODE.y + 'px';
+  el.style.opacity = '0';
+  el.style.transform = 'scale(0.7)';
+  el.style.transition = 'opacity 1.2s ease, transform 1.2s ease';
+
+  el.innerHTML = `
+    <div class="n-glow"></div>
+    <div class="n-inner">
+      <div class="n-tag">${KONAMI_NODE.tag}</div>
+      <div class="n-name">${KONAMI_NODE.name}</div>
+      <div class="n-sub">${KONAMI_NODE.sub}</div>
+    </div>
+    <div class="n-footer">→ PRE-ARCHIVE</div>`;
+
+  el.addEventListener('mouseenter', ev => showTooltip(ev, KONAMI_NODE));
+  el.addEventListener('mouseleave', hideTooltip);
+  el.addEventListener('mousemove', moveTooltip);
+  el.addEventListener('click', ()=>{ if(isMobile()) openBottomSheet(KONAMI_NODE); });
+
+  canvas.appendChild(el);
+
+  /* animate in after a beat */
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      el.style.opacity = '1';
+      el.style.transform = 'scale(1)';
+      el.classList.add('unlock-anim');
+    });
+  });
+
+  /* add a connector from wncore to signal-zero */
+  setTimeout(()=>{
+    drawConnectors();
+    drawMinimap();
+    updateCounters();
+  }, 200);
+}
+
 
 setTimeout(signalIntercept, 8000+Math.random()*6000);
 setTimeout(connectorPulse, 4000+Math.random()*4000);
