@@ -237,7 +237,7 @@ try {
           <span class="tl-dark">DARK</span>
         </div>
       </div>
-      <a href="/constellation.html" class="search-btn" title="Signal Cartography" style="color:var(--accent)">
+      <a href="/constellation.html" class="search-btn nav-constellation-star" title="Signal Cartography" style="color:var(--accent)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       </a>
       <!-- ABERRANT STAR — flowchart link, locked until 1 constellation solved -->
@@ -299,18 +299,7 @@ try {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="8"/></svg>
     Signal Cartography ↗
   </a>
-  <!-- ABERRANT STAR — flowchart link -->
-  <button class="mobile-aber-link" id="aber-star-mobile" onclick="openFlowchart();toggleMobileMenu()">
-    <div class="nav-aberrant-star" style="pointer-events:none">
-      <span class="aber-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-      <span class="aber-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="6" stroke-width="1.2" opacity="0.5"/><line x1="22" y1="9.27" x2="18.5" y2="10.5" stroke-width="1.2" opacity="0.5"/></svg>
-    </div>
-    <span class="aber-label">
-      <span id="aber-mobile-label">Signal Cartography — CLASSIFIED</span>
-      <span class="aber-sub" id="aber-mobile-sub">complete a constellation to unlock</span>
-    </span>
-  </button>
+  <!-- ABERRANT STAR mobile removed — desktop only -->
   <div class="mobile-nav-actions">
     <div style="display:flex;gap:10px">
       <button onclick="toggleDark();return false" class="mobile-action-btn">
@@ -1527,8 +1516,9 @@ try {
   width: 18px;
   height: 18px;
   color: var(--accent, #c8472a);
-  animation: aber-drift 4.1s ease-in-out infinite;
+  animation: aber-drift 4.1s ease-in-out infinite, aber-spin-jerk 7s ease-in-out infinite;
   filter: drop-shadow(0 0 4px rgba(200,71,42,0.5));
+  transform-origin: center;
 }
 .nav-aberrant-star .aber-r,
 .nav-aberrant-star .aber-b {
@@ -1537,35 +1527,117 @@ try {
   height: 18px;
   pointer-events: none;
 }
-.nav-aberrant-star .aber-r svg { color: #f16f6f; opacity: 0; animation: aber-chroma-r 4.1s ease-in-out infinite; }
-.nav-aberrant-star .aber-b svg { color: #67f3da; opacity: 0; animation: aber-chroma-b 4.1s ease-in-out infinite; }
+.nav-aberrant-star .aber-r svg { color: #f16f6f; opacity: 0; animation: aber-chroma-r 3.3s ease-in-out infinite; transform-origin: center; }
+.nav-aberrant-star .aber-b svg { color: #67f3da; opacity: 0; animation: aber-chroma-b 3.3s ease-in-out infinite; transform-origin: center; }
 .nav-aberrant-star.locked svg { color: rgba(200,71,42,0.3); filter: none; animation: aber-locked-pulse 3s ease-in-out infinite; }
 .nav-aberrant-star.locked .aber-r svg,
 .nav-aberrant-star.locked .aber-b svg { display: none; }
+@keyframes aber-spin-jerk {
+  0%,78%,100% { transform: rotate(0deg) scale(1); }
+  79%  { transform: rotate(15deg) scale(1.1) skewX(4deg); }
+  80%  { transform: rotate(-8deg) scale(0.92) skewX(-3deg); }
+  81%  { transform: rotate(22deg) scale(1.05); }
+  82%  { transform: rotate(0deg) scale(1); }
+  83%  { transform: rotate(-5deg) scale(1.08) skewY(2deg); }
+  84%  { transform: rotate(0deg) scale(1); }
+  91%  { transform: rotate(180deg) scale(0.9); }
+  91.5%{ transform: rotate(178deg) scale(1.1) skewX(5deg); }
+  92%  { transform: rotate(0deg) scale(1); }
+}
 @keyframes aber-drift {
-  0%,100% { transform: translate(0,0) rotate(0deg); }
-  12%     { transform: translate(-0.5px, 0.5px) rotate(-1.5deg); }
-  24%     { transform: translate(0,0); }
-  51%     { transform: translate(0.5px,-0.5px) skewX(2deg); opacity:0.85; }
-  52%     { transform: translate(0,0); opacity:1; }
-  78%     { transform: translate(0.5px,0.5px) rotate(1deg); }
+  0%,100% { filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)); }
+  12%     { filter: drop-shadow(-2px 1px 6px rgba(200,71,42,0.7)) drop-shadow(2px -1px 3px rgba(103,243,218,0.3)); }
+  24%     { filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)); }
+  51%     { filter: drop-shadow(1px -1px 8px rgba(200,71,42,0.9)) drop-shadow(-1px 1px 4px rgba(241,111,111,0.4)); }
+  52%     { filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)); }
+  78%     { filter: drop-shadow(2px 2px 6px rgba(200,71,42,0.6)); }
 }
 @keyframes aber-chroma-r {
-  0%,90%,100% { opacity:0; transform:translate(0,0); }
-  91%         { opacity:0.55; transform:translate(-2px,0); }
-  93%         { opacity:0; }
-  94%         { opacity:0.4; transform:translate(-1px,1px); }
-  96%         { opacity:0; }
+  0%,70%,100% { opacity:0; transform:translate(0,0) rotate(0deg); }
+  71%  { opacity:0.6; transform:translate(-3px, 1px) rotate(-15deg); }
+  72%  { opacity:0; }
+  73%  { opacity:0.45; transform:translate(-2px, 2px) rotate(8deg); }
+  74%  { opacity:0; }
+  82%  { opacity:0.5; transform:translate(-4px, 0px) rotate(-180deg); }
+  82.3%{ opacity:0; transform:translate(0,0) rotate(0deg); }
+  91%  { opacity:0.7; transform:translate(-2px,1px) rotate(15deg) scale(1.2); }
+  92%  { opacity:0; transform:translate(0,0) rotate(0deg) scale(1); }
 }
 @keyframes aber-chroma-b {
-  0%,90%,100% { opacity:0; transform:translate(0,0); }
-  91%         { opacity:0.55; transform:translate(2px,0); }
-  93%         { opacity:0; }
-  94%         { opacity:0.4; transform:translate(1px,-1px); }
-  96%         { opacity:0; }
+  0%,70%,100% { opacity:0; transform:translate(0,0) rotate(0deg); }
+  71%  { opacity:0.6; transform:translate(3px, -1px) rotate(15deg); }
+  72%  { opacity:0; }
+  73%  { opacity:0.45; transform:translate(2px, -2px) rotate(-8deg); }
+  74%  { opacity:0; }
+  82%  { opacity:0.5; transform:translate(4px, 0px) rotate(180deg); }
+  82.3%{ opacity:0; transform:translate(0,0) rotate(0deg); }
+  91%  { opacity:0.7; transform:translate(2px,-1px) rotate(-15deg) scale(1.2); }
+  92%  { opacity:0; transform:translate(0,0) rotate(0deg) scale(1); }
 }
 @keyframes aber-locked-pulse {
   0%,100% { opacity:0.3; } 50% { opacity:0.5; }
+}
+
+/* ── CONSTELLATION STAR (distinct — celestial twinkle) ── */
+.nav-constellation-star {
+  position: relative;
+  overflow: visible !important;
+}
+.nav-constellation-star svg {
+  animation: const-star-pulse 2.8s ease-in-out infinite, const-star-spin 12s linear infinite;
+  transform-origin: center;
+  filter: drop-shadow(0 0 3px rgba(200,71,42,0.6)) drop-shadow(0 0 8px rgba(200,71,42,0.2));
+}
+.nav-constellation-star::before,
+.nav-constellation-star::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+/* Ray cross — horizontal */
+.nav-constellation-star::before {
+  width: 1px;
+  height: 14px;
+  background: linear-gradient(to bottom, transparent, rgba(200,71,42,0.7), transparent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: const-ray-v 2.8s ease-in-out infinite;
+}
+/* Ray cross — vertical */
+.nav-constellation-star::after {
+  width: 14px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,71,42,0.7), transparent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: const-ray-h 2.8s ease-in-out infinite;
+}
+@keyframes const-star-pulse {
+  0%,100% { filter: drop-shadow(0 0 3px rgba(200,71,42,0.6)) drop-shadow(0 0 8px rgba(200,71,42,0.2)); opacity: 1; }
+  25%     { filter: drop-shadow(0 0 7px rgba(200,71,42,1)) drop-shadow(0 0 16px rgba(200,71,42,0.5)) drop-shadow(0 0 24px rgba(232,130,74,0.3)); opacity: 0.95; }
+  50%     { filter: drop-shadow(0 0 2px rgba(200,71,42,0.4)); opacity: 0.7; }
+  75%     { filter: drop-shadow(0 0 9px rgba(200,71,42,0.9)) drop-shadow(0 0 20px rgba(200,71,42,0.4)); opacity: 1; }
+}
+@keyframes const-star-spin {
+  0%   { transform: rotate(0deg) scale(1); }
+  49%  { transform: rotate(144deg) scale(0.92); }
+  50%  { transform: rotate(180deg) scale(1); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+@keyframes const-ray-v {
+  0%,100% { opacity: 0.5; height: 14px; }
+  25%     { opacity: 1; height: 20px; }
+  50%     { opacity: 0.2; height: 10px; }
+  75%     { opacity: 0.9; height: 18px; }
+}
+@keyframes const-ray-h {
+  0%,100% { opacity: 0.5; width: 14px; }
+  25%     { opacity: 1; width: 20px; }
+  50%     { opacity: 0.2; width: 10px; }
+  75%     { opacity: 0.9; width: 18px; }
 }
 /* locked tooltip */
 .aber-lock-toast {
