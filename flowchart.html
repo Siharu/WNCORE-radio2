@@ -34,8 +34,8 @@
   --blue-node:rgba(60,120,200,0.5);
 }
 html,body{
-  width:100%;min-height:100vh;background:var(--bg);
-  color:var(--txt);font-family:var(--mono);overflow-x:hidden;
+  width:100%;height:100%;background:var(--bg);
+  color:var(--txt);font-family:var(--mono);overflow:hidden;
 }
 body::before{
   content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;
@@ -99,21 +99,36 @@ body::after{
 
 /* CANVAS */
 #map-wrap{
-  position:relative;padding-top:57px;
-  overflow:auto;
-  min-height:100vh;
+  position:fixed;
+  top:57px;left:0;right:0;bottom:0;
+  overflow:hidden; /* we control panning via scrollLeft/scrollTop */
   cursor:grab;
 }
 #map-wrap.grabbing{cursor:grabbing}
-#map-canvas{
-  position:relative;
-  min-width:3600px;
-  min-height:4900px;
+/* overflow:scroll so scrollLeft/scrollTop work, but hide the bars visually */
+#map-scroll{
+  position:absolute;
+  inset:0;
+  overflow:scroll;
+  cursor:inherit;
 }
-#map-canvas-shell{
+#map-scroll::-webkit-scrollbar{ display:none }
+#map-scroll{ scrollbar-width:none; -ms-overflow-style:none; }
+/* sizer is in-flow inside scroll — its size drives scroll range */
+#map-sizer{
   position:relative;
+  display:inline-block;
+  width:3600px;
+  height:4900px;
+}
+#map-canvas{
+  position:absolute;
+  top:0;left:0;
+  width:3600px;
+  height:4900px;
   transform-origin:0 0;
 }
+
 
 /* SVG CONNECTORS */
 #connectors{
@@ -141,13 +156,7 @@ body::after{
 .node-root .n-status{border-top:1px solid rgba(200,71,42,0.2);padding:6px 18px 10px;display:flex;align-items:center;gap:6px;font-size:0.42rem;letter-spacing:2px;color:var(--acc)}
 .n-status-dot{width:5px;height:5px;border-radius:50%;background:var(--acc);animation:pulse-dot 1.5s ease-in-out infinite}
 
-@keyframes glitch-root{
-  0%,92%,100%{text-shadow:none;transform:none}
-  93%{text-shadow:2px 0 var(--acc2),-2px 0 rgba(0,120,255,0.6);transform:translateX(1px)}
-  95%{text-shadow:-2px 0 var(--acc2),2px 0 rgba(0,120,255,0.6);transform:translateX(-1px)}
-  97%{text-shadow:none;transform:none}
-  98%{text-shadow:1px 0 var(--acc3);transform:translateX(2px)}
-}
+/* glitch-root keyframes defined below in the enhanced chromatic section */
 
 .node-known{background:rgba(12,8,22,0.95);border:1px solid rgba(200,71,42,0.5);width:168px}
 .node-known .n-inner{padding:12px 16px}
@@ -364,14 +373,7 @@ body::after{
   66%{opacity:0.5;transform:translateX(-1px)}
 }
 
-/* Section labels */
-.section-label{
-  position:absolute;font-family:var(--mono);
-  font-size:0.36rem;letter-spacing:3.5px;color:rgba(232,228,223,0.08);
-  text-transform:uppercase;
-  border-left:1px solid rgba(255,255,255,0.04);
-  padding-left:8px;pointer-events:none;
-}
+/* section-label styles defined below with label-drift animation */
 
 /* Connectors */
 .conn{stroke:rgba(200,71,42,0.25);stroke-width:0.7;fill:none}
@@ -641,6 +643,46 @@ body::after{
 }
 #progress-fill{height:100%;background:var(--acc);transition:width 0.5s ease;width:0%}
 
+/* SKY BLEED — top portion atmosphere */
+#sky-bleed-overlay{
+  transition:opacity 0.4s ease;
+}
+
+/* Analog environment additions */
+/* Hint fragment styling in tooltips */
+.tt-hint-fragment{
+  font-size:0.38rem;
+  letter-spacing:2px;
+  color:rgba(200,71,42,0.45);
+  margin-top:7px;
+  font-style:italic;
+  border-left:2px solid rgba(200,71,42,0.2);
+  padding-left:7px;
+  line-height:1.7;
+}
+
+/* Animated sky-like gradients on the page background — subtle red bleed */
+@keyframes sky-ambient{
+  0%,100%{background:var(--bg)}
+  15%{background:rgba(8,3,3,1)}
+  16%{background:var(--bg)}
+  50%{background:rgba(6,3,5,1)}
+  65%{background:rgba(10,4,2,1)}
+  66%{background:var(--bg)}
+}
+html,body{
+  animation:sky-ambient 38s ease-in-out infinite;
+}
+
+/* deeper static on the scan overlay as depth increases */
+@keyframes scan-deepen{
+  0%,100%{opacity:1}
+  50%{opacity:0.7}
+}
+body::before{
+  animation:scanroll 8s linear infinite, scan-deepen 22s ease-in-out infinite;
+}
+
 /* ZOOM CONTROLS */
 #zoom-controls{
   display:none;
@@ -660,7 +702,7 @@ body::after{
 
 /* MOBILE BOTTOM SHEET */
 #bottom-sheet{
-  display:none;
+  display:block;
   position:fixed;bottom:0;left:0;right:0;z-index:8000;
   background:rgba(4,3,10,0.98);border-top:1px solid rgba(200,71,42,0.3);
   border-radius:16px 16px 0 0;
@@ -668,8 +710,9 @@ body::after{
   transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
   max-height:75vh;overflow-y:auto;
   box-shadow:0 -8px 40px rgba(0,0,0,0.5);
+  visibility:hidden;
 }
-#bottom-sheet.open{transform:translateY(0);}
+#bottom-sheet.open{transform:translateY(0);visibility:visible;}
 #bs-handle{
   width:36px;height:4px;border-radius:2px;
   background:rgba(255,255,255,0.12);
@@ -705,11 +748,15 @@ body::after{
 }
 #bs-msg{font-size:0.5rem;letter-spacing:2px;margin-top:8px;text-transform:uppercase;}
 #bs-backdrop{
-  display:none;
+  display:block;
   position:fixed;inset:0;z-index:7999;
   background:rgba(0,0,0,0.5);
+  visibility:hidden;
+  opacity:0;
+  transition:opacity 0.3s;
+  pointer-events:none;
 }
-#bs-backdrop.open{display:block;}
+#bs-backdrop.open{visibility:visible;opacity:1;pointer-events:all;}
 
 /* MOBILE LEGEND TOGGLE */
 #legend-btn{
@@ -1178,10 +1225,17 @@ body::after{
   .hd-title{display:none;}
   .hd-status{display:none;}
   #back{font-size:0.5rem;padding:6px 10px;}
-  #hud{padding:6px 14px;gap:10px;font-size:0.44rem;flex-wrap:nowrap;overflow:hidden;}
+  #hud{
+    padding:5px 10px;gap:8px;font-size:0.55rem;
+    flex-wrap:nowrap;overflow:hidden;
+    background:rgba(4,3,10,0.97);
+  }
+  /* on mobile show only unlocked count + clock */
+  #hud>span:nth-child(1){display:none;}
   #hud>span:nth-child(3),#hud>span:nth-child(4){display:none;}
   #hud-tip{display:none;}
-  #hud-clock{margin-left:auto;}
+  #hud-clock{margin-left:auto;font-size:0.58rem;}
+  #hud-unlocked{font-size:0.58rem;}
   #legend{display:none;}
   #minimap{display:none;}
   #tooltip{display:none;}
@@ -1194,7 +1248,7 @@ body::after{
   .node:active{transform:scale(1.04);z-index:10;}
   .node-root{width:160px;}
   .node-root .n-name{font-size:1.2rem;}
-  .node-root .n-tag{font-size:0.45rem;}
+  .node-root .n-tag{font-size:0.5rem;}
   .node-root .n-sub{font-size:0.52rem;}
   .node-known{width:148px;}
   .node-known .n-name{font-size:0.9rem;}
@@ -1208,10 +1262,43 @@ body::after{
   .node-event{width:128px;}
   .node-anomaly{width:128px;}
   .node-threat{width:124px;}
-  .section-label{font-size:0.42rem;letter-spacing:2px;}
+  .section-label{font-size:0.44rem;letter-spacing:2px;}
   .conn-main{stroke-width:1.5;}
   .conn{stroke-width:1;}
   .conn-dashed{stroke-width:0.8;}
+
+  /* bottom sheet polish */
+  #bs-inner{padding:16px 18px 28px;}
+  #bs-tag{font-size:0.5rem;letter-spacing:3px;}
+  #bs-title{font-size:1.1rem;line-height:1.3;}
+  #bs-body{font-size:0.75rem;line-height:1.85;color:rgba(232,228,223,0.75);}
+  #bs-input{font-size:0.8rem;padding:12px 14px;}
+  #bs-submit{font-size:0.6rem;padding:12px;}
+  #bs-close{font-size:0.6rem;padding:12px 14px;}
+  #bs-dismiss{font-size:0.55rem!important;padding:10px 18px!important;}
+  #bs-unlock-label{font-size:0.5rem;}
+  /* hint text styling */
+  .bs-hint-text{
+    font-size:0.44rem;letter-spacing:2px;
+    color:rgba(200,71,42,0.35);
+    margin-top:10px;
+    font-style:italic;
+    border-left:1px solid rgba(200,71,42,0.2);
+    padding-left:8px;
+    line-height:1.6;
+  }
+}
+
+/* also style hint text on desktop tooltip */
+.tt-hint-fragment{
+  font-size:0.38rem;
+  letter-spacing:2px;
+  color:rgba(200,71,42,0.35);
+  margin-top:6px;
+  font-style:italic;
+  border-left:1px solid rgba(200,71,42,0.15);
+  padding-left:6px;
+  line-height:1.6;
 }
 </style>
 </head>
@@ -1224,6 +1311,8 @@ body::after{
 <div id="noise-bar"></div>
 <canvas id="pixel-scatter" width="1" height="1"></canvas>
 <div id="static-overlay"></div>
+<!-- Sky bleed overlay: top ~30% tints red for glitch events -->
+<div id="sky-bleed-overlay" style="position:fixed;top:0;left:0;right:0;height:35vh;z-index:9982;pointer-events:none;opacity:0;transition:opacity 0.4s;background:linear-gradient(180deg,rgba(180,20,20,0.18) 0%,rgba(140,10,10,0.1) 50%,transparent 100%);"></div>
 
 <header id="hd">
   <a href="constellation.html" class="hd-logo">WNCORE</a>
@@ -1243,10 +1332,12 @@ body::after{
 </div>
 
 <div id="map-wrap">
-  <div id="map-canvas-shell">
-  <div id="map-canvas">
-    <svg id="connectors" xmlns="http://www.w3.org/2000/svg"></svg>
-  </div>
+  <div id="map-scroll">
+    <div id="map-sizer">
+      <div id="map-canvas">
+        <svg id="connectors" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1339,7 +1430,7 @@ const NODES = [
   /* TIER 1: MAIN CHARACTER */
   {id:'protagonist', type:'locked', tag:'SIGNAL-ZERO / PRIMARY', name:'???  ????', realName:'S — RISER',
    sub:'origin unknown', realSub:'DHAKA NODE / STRATUM-0\nTransferred — Day 0',
-   tip:'A signal that should not exist in this archive. Cross-referenced with the Blank Zone transfer log. File sealed.',
+   tip:'A signal that should not exist in this archive. Cross-referenced with the Blank Zone transfer log. File sealed. // LOG FRAGMENT: "he rose on the day everything went zero"',
    realTip:'Bangladeshi civil engineer. Transferred to Another Sky on March 31, 2032. First to notice the divergence.',
    passkey:'RISER_DAY0', x:1755, y:572, wide:true},
 
@@ -1376,13 +1467,13 @@ const NODES = [
   /* TIER 3: WORLD SPLIT */
   {id:'world-origin', type:'locked', tag:'STRATUM-A / ORIGIN', name:'EARTH ??', realName:'ORIGIN EARTH',
    sub:'pre-transfer\nrealm', realSub:'The real world\nPre-2032 baseline',
-   tip:'A signal layer beneath the main archive. Frequency: unknown. The archive does not acknowledge its existence.',
+   tip:'A signal layer beneath the main archive. Frequency: unknown. The archive does not acknowledge its existence. // TRANSMISSION FRAGMENT: "the signal before everything split — ORIGIN"',
    realTip:'The original Earth. Our world. History tracks identically until 1946 when a divergence event creates Another Sky.',
    passkey:'ORIGIN_SIGNAL', x:1215, y:1066, wide:true},
 
   {id:'world-another', type:'locked', tag:'STRATUM-B / ALT', name:'ANOTHER ??', realName:'ANOTHER SKY',
    sub:'divergent layer\npost-transfer', realSub:'Divergence: post-1946\nDay 180+ of outbreak',
-   tip:'A secondary frequency overlay. Begins as identical to the primary layer. Something changed after a certain point.',
+   tip:'A secondary frequency overlay. Begins as identical to the primary layer. Something changed after a certain point. // STATIC INTERCEPT: "look up. its name is what it is. ANOTHER"',
    realTip:'Another Sky. Diverges from origin Earth post-1946. S is transferred here March 31, 2032. Site of the outbreak.',
    passkey:'ANOTHER_SKY', x:1755, y:1066, wide:true},
 
@@ -1478,9 +1569,9 @@ const NODES = [
 
   {id:'ghuul-node', type:'anomaly', tag:'ENTITY TYPE / GHUUL', name:'????? — 173', realName:'GHUULS — 173',
    sub:'173 confirmed\nworldwide', realSub:'Bitten by zombie+infected\nExtremely rare',
-   tip:'A classification that should not exist. Hybrid origin. 173 confirmed worldwide. The archive has no explanation for their continued existence.',
+   tip:'A classification that should not exist. Hybrid origin. 273 confirmed worldwide. The archive has no explanation for their continued existence.',
    realTip:"Created by both zombie AND infected bite. 173 known worldwide. Pure white body/hair. Teleportation-like agility. Kill entire bases in seconds. First: S's mother.",
-   passkey:'GHUUL_173', x:1728, y:1924, wide:true},
+   passkey:'GHUUL_273', x:1728, y:1924, wide:true},
 
   {id:'coord-node', type:'anomaly', tag:'COORDINATE / ARG', name:'?.??????', realName:'0.315126',
    sub:'ARG coordinate\norigin unknown', realSub:'Coordinate: 0.315126\nYear Zero origin',
@@ -1675,6 +1766,64 @@ const NODES = [
    tip:'',
    x:1650, y:4680},
 
+  /* ═══════════════════════════════════════
+     NEW LORE NODES — grounded in the trilogy
+     ═══════════════════════════════════════ */
+
+  /* WORLD -1 — Beyonders layer, floats near simulunas cluster */
+  {id:'world-minus1', type:'locked', tag:'STRATUM / WORLD-MINUS-1', name:'WORLD ??', realName:'WORLD — 1',
+   sub:'pre-Tartarus\n2028 — no war yet', realSub:"Som's origin world\nYear: 2028",
+   tip:'A third signal layer. Earlier. Quieter. No war, no outbreak. The archive should not be able to see it from here.',
+   realTip:"World -1. Som's birth world. Still 2028 when he vanished. No WW3. No Blank Zone. Anne is alive here. His mother has not become a Ghuul. Tartarus will hit in 2032 — their future.",
+   passkey:'WORLD_MINUS1', x:3200, y:1066, wide:true},
+
+  /* TARTARUS — the meteor that will hit World -1 */
+  {id:'tartarus', type:'event', tag:'EVENT / FUTURE', name:'??? ??????', realName:'TARTARUS',
+   sub:'126m surface\nJuly 2032', realSub:'Meteor — 126m surface\nWorld -1 collision: July 2032',
+   tip:'A signal event that has not happened yet — not in this world. The archive records it anyway. A prison, in Greek mythology, is a place gods are buried.',
+   realTip:'Tartarus. Greek underworld prison for gods. A meteor, 126m surface area, fragmenting into blue sparkles. Hits World -1 in July 2032. Gives powers to ~80-90% of survivors. Som is not there to see it.',
+   passkey:'TARTARUS_126', x:3100, y:1326, wide:true},
+
+  /* EVA-5 — the android from Simulunas timeline (2048) */
+  {id:'eva-5', type:'simulunas', tag:'ANDROID / EVA-UNIT', name:'EVA-5',
+   sub:'2048 — Nepal\nenvironmental unit', 
+   tip:'A signal that is not organic. Continues transmitting after all organic frequencies went silent. Origin: Nepal, 2048. The only signal that did not stop.',
+   x:2430, y:598, footerTxt:'→ WORLD ??'},
+
+  /* THE REPLACEMENT — central mystery */
+  {id:'the-replacement', type:'locked', tag:'ENTITY / UNKNOWN', name:'??? — ???', realName:'THE REPLACEMENT',
+   sub:'World -1, 2028\nSom\'s place taken', realSub:'Identity: unknown\nDo they know?',
+   tip:'A node that occupies a space. The space was not empty before. The space is not empty now. Something is living as something it was not. The archive cannot determine if it knows.',
+   realTip:"On March 31, 2028, when Som vanished from World -1, something took his place. An AI construct? A person from World -2? A duplicate? Som's life continued in World -1 without him. Someone else is living it.",
+   passkey:'THE_REPLACEMENT', x:3350, y:1638, wide:true},
+
+  /* HYDROCUELARIS CELL — Simulunas tech, bridge between worlds */
+  {id:'hydrocuelaris', type:'simulunas', tag:'TECHNOLOGY / 2046', name:'HYDROCUELARIS',
+   sub:'bacterial battery\n2046 — powers androids',
+   tip:'A power source that does not use water to function. All other biological energy routes use water. This one does not. By 2046, all of humanity runs on it. By 2048, only androids remain to use it.',
+   x:2780, y:598},
+
+  /* THE GREAT THINNING — 2048 extinction event */
+  {id:'great-thinning', type:'event', tag:'EVENT / 2048', name:'??? ?????  ????????', realName:'GREAT THINNING',
+   sub:'2048 — global\nyellow gas eruption', realSub:"Earth's crust fractures\nAll biological life: 0",
+   tip:'The last event in the archive. A geological shift that opened the planet from below. After this point there are no more organic signals. Only one android continues transmitting. It is still transmitting.',
+   realTip:"2048. Earth's core pressure reached threshold. Tectonic plates cracked. Yellow gas — trapped since formation — erupted globally. Targets H₂O molecules. All biological life dissolved within days. EVA-5 survived. She is still active.",
+   passkey:'GREAT_THINNING_2048', x:2900, y:1924, wide:true},
+
+  /* SOM'S NAME — hidden ARG node, accessible but not connected visibly */
+  {id:'som-name', type:'locked', tag:'ETYMOLOGY / SIGNAL', name:'??? — ????', realName:'SOM — MOON',
+   sub:'सोम — Sanskrit\nlunar designation',
+   tip:"The signal's name is a translation. Sanskrit. Something celestial. The archive notes: the moon glitches. The moon shimmers. The moon is warning him.",
+   realTip:'Som (सोम) means "Moon" in Sanskrit. Chapter 1 of Another Sky ends with Som staring at the moon — and the moon glitching, shimmering. "The sky is warning him. And only him." The moon is watching the person named after it.',
+   passkey:'SOM_MOON', x:1550, y:338},
+
+  /* THE SWAP — the mechanism itself, bridging protagonist and both worlds */
+  {id:'swap-mechanism', type:'locked', tag:'MECHANISM / UNKNOWN', name:'??? ????', realName:'THE SWAP',
+   sub:'World -1 → World -2\n4-year gap: instant', realSub:'March 31, 2028 (W-1)\nMarch 31, 2032 (W-2)',
+   tip:'Something moved a signal between two incompatible frequencies without the signal experiencing transit time. The archive notes: the signal arrived 4 years after it left, without aging a second.',
+   realTip:'The Swap. On March 31 at the same moment: Som vanished from World -1 (2028) and appeared in World -2 (2032). His body experienced zero time passing. He crossed 4 years in an instant. The mechanism is unknown. The motive is unknown. Only the result is on record.',
+   passkey:'SWAP_MECHANISM', x:1480, y:1066, wide:true},
+
   /* SIMULUNAS SCATTER NODES — purple ghost floaters around Simulunas (x:2430,y:338) */
   {id:'ss01', type:'sim-scatter', tag:'SIM / ???', name:'??? ??', sub:'no entry', tip:'', x:2580, y:220},
   {id:'ss02', type:'sim-scatter', tag:'SIM / ???', name:'?????', sub:'——', tip:'', x:2650, y:400},
@@ -1689,6 +1838,7 @@ const CONNECTIONS = [
   {from:'wncore', to:'siharu', style:'conn-main'},
   {from:'wncore', to:'simulunas', style:'conn-dashed'},
   {from:'wncore', to:'obsedia', style:'conn-unknown'},
+  {from:'wncore', to:'signal-zero', style:'conn-unknown'}, /* Konami hidden node — node absent until triggered */
   {from:'siharu', to:'protagonist', style:'conn-main'},
   {from:'siharu', to:'p01', style:'conn-glitch'},
   {from:'siharu', to:'p02', style:'conn-dashed'},
@@ -1746,6 +1896,17 @@ const CONNECTIONS = [
   {from:'p01', to:'char-signal-kage', style:'conn-unknown'},
   {from:'coord-node', to:'wncore', style:'conn-bz'},
   {from:'ghuul-node', to:'coord-node', style:'conn-unknown'},
+  /* new lore node connections */
+  {from:'simulunas', to:'eva-5', style:'conn-purple'},
+  {from:'simulunas', to:'hydrocuelaris', style:'conn-purple'},
+  {from:'protagonist', to:'som-name', style:'conn-bz'},
+  {from:'protagonist', to:'swap-mechanism', style:'conn-bz'},
+  {from:'world-another', to:'swap-mechanism', style:'conn-bz'},
+  {from:'world-origin', to:'world-minus1', style:'conn-dashed'},
+  {from:'world-minus1', to:'tartarus', style:'conn-unknown'},
+  {from:'world-minus1', to:'the-replacement', style:'conn-unknown'},
+  {from:'great-thinning', to:'eva-5', style:'conn-purple'},
+  {from:'anom-fog', to:'great-thinning', style:'conn-unknown'},
   /* descent chain connections */
   {from:'void-final', to:'dc01', style:'conn-descent'},
   {from:'dc01', to:'dc02', style:'conn-descent'},
@@ -1957,12 +2118,30 @@ function drawConnectors(){
 
 /* TOOLTIP */
 const tooltip = document.getElementById('tooltip');
+function splitTipFragment(tipText){
+  /* Splits "main text // FRAGMENT" into {main, fragment} */
+  const idx = tipText.indexOf(' // ');
+  if(idx < 0) return {main: tipText, fragment: null};
+  return {main: tipText.substring(0, idx), fragment: tipText.substring(idx + 4)};
+}
+
 function showTooltip(e, n){
   playHoverPing();
   const isUnlocked = unlockedNodes.has(n.id);
   document.getElementById('tt-tag').textContent = n.tag || '';
   document.getElementById('tt-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
-  document.getElementById('tt-body').textContent = isUnlocked && n.realTip ? n.realTip : n.tip;
+  const rawTip = isUnlocked && n.realTip ? n.realTip : n.tip;
+  const {main, fragment} = splitTipFragment(rawTip);
+  const bodyEl = document.getElementById('tt-body');
+  bodyEl.innerHTML = '';
+  const mainNode = document.createTextNode(main);
+  bodyEl.appendChild(mainNode);
+  if(!isUnlocked && fragment){
+    const frag = document.createElement('div');
+    frag.className = 'tt-hint-fragment';
+    frag.textContent = fragment;
+    bodyEl.appendChild(frag);
+  }
   const hint = document.getElementById('tt-hint');
   hint.style.display = (!isUnlocked && n.passkey) ? 'block' : 'none';
   tooltip.classList.add('show');
@@ -2012,6 +2191,37 @@ function tryUnlock(){
   }
 }
 
+function scrollToNode(id){
+  const el = document.getElementById('node-' + id);
+  if(!el) return;
+  const nx = parseFloat(el.style.left) + el.offsetWidth/2;
+  const ny = parseFloat(el.style.top) + el.offsetHeight/2;
+  const targetLeft = nx * currentScale - scroller.clientWidth/2;
+  const targetTop  = ny * currentScale - scroller.clientHeight/2;
+  /* Show HUD message */
+  const tip = document.getElementById('hud-tip');
+  const origTip = tip.textContent;
+  tip.textContent = '// SIGNAL ACQUIRED — NAVIGATING';
+  tip.style.color = 'rgba(40,200,100,0.9)';
+  tip.style.opacity = '1';
+  /* Smooth scroll */
+  const startLeft = scroller.scrollLeft, startTop = scroller.scrollTop;
+  const dur = 700;
+  const t0 = performance.now();
+  function step(now){
+    const p = Math.min(1, (now - t0) / dur);
+    const e = p < 0.5 ? 2*p*p : -1+(4-2*p)*p; /* ease-in-out */
+    scroller.scrollLeft = startLeft + (targetLeft - startLeft) * e;
+    scroller.scrollTop  = startTop  + (targetTop  - startTop)  * e;
+    updateMinimap();
+    if(p < 1) requestAnimationFrame(step);
+    else {
+      setTimeout(()=>{ tip.style.color=''; tip.style.opacity=''; }, 1200);
+    }
+  }
+  requestAnimationFrame(step);
+}
+
 function applyUnlock(id, n){
   playUnlockSound();
   const el = document.getElementById('node-' + id);
@@ -2025,9 +2235,68 @@ function applyUnlock(id, n){
   const lockEl = el.querySelector('.n-lock');
   if(lockEl) lockEl.remove();
   setTimeout(() => el.classList.remove('unlock-anim'), 1200);
+  setTimeout(() => scrollToNode(id), 400);
   updateCounters();
-  const pct = (unlockedNodes.size / NODES.length) * 100;
-  document.getElementById('progress-fill').style.width = pct + '%';
+  /* progress bar updated inside updateCounters now */
+
+  /* milestone reactions */
+  checkUnlockMilestone();
+}
+
+let lastMilestone = 0;
+function checkUnlockMilestone(){
+  const interactive = interactiveNodeCount();
+  const unlocked = [...unlockedNodes].filter(id => {
+    const n = nodeMap[id];
+    return n && !NON_INTERACTIVE_TYPES.has(n.type);
+  }).length;
+  const pct = unlocked / interactive;
+  const milestones = [0.25, 0.5, 0.75, 1.0];
+  for(const m of milestones){
+    if(pct >= m && lastMilestone < m){
+      lastMilestone = m;
+      triggerMilestone(m);
+      break;
+    }
+  }
+}
+
+const MILESTONE_MSGS = {
+  0.25: '// SIGNAL THRESHOLD: 25% — ARCHIVE ACKNOWLEDGES',
+  0.50: '// SIGNAL THRESHOLD: 50% — SOMETHING STIRS BELOW',
+  0.75: '// SIGNAL THRESHOLD: 75% — THE ARCHIVE IS WATCHING YOU',
+  1.00: '// SIGNAL COMPLETE — THE BLANK ZONE IS OPEN',
+};
+
+function triggerMilestone(m){
+  /* HUD flash */
+  const tip = document.getElementById('hud-tip');
+  const orig = tip.textContent;
+  tip.textContent = MILESTONE_MSGS[m] || '// THRESHOLD REACHED';
+  tip.style.color = 'rgba(200,71,42,1)';
+  tip.style.opacity = '1';
+  setTimeout(()=>{ tip.style.color=''; tip.style.opacity=''; }, 5000);
+
+  /* glitch event */
+  doChromaShift(true);
+  doScanTear(); doScanTear();
+  spawnPixelScatter();
+  if(audioReady) playGlitchCrack(true);
+
+  /* at 50% — ghost nodes pulse slightly more visible briefly */
+  if(m === 0.5){
+    document.querySelectorAll('.node-ghost').forEach(g => {
+      g.style.transition = 'opacity 0.5s';
+      g.style.opacity = '0.55';
+      setTimeout(()=>{ g.style.opacity=''; g.style.transition=''; }, 2000);
+    });
+  }
+  /* at 100% — progress bar glows */
+  if(m === 1.0){
+    const fill = document.getElementById('progress-fill');
+    fill.style.boxShadow = '0 0 12px var(--acc), 0 0 24px rgba(200,71,42,0.4)';
+    fill.style.transition = 'box-shadow 0.5s';
+  }
 }
 
 document.getElementById('unlock-submit').addEventListener('click', tryUnlock);
@@ -2044,103 +2313,113 @@ document.getElementById('unlock-close').addEventListener('click', () => {
 });
 
 /* COUNTERS */
+const NON_INTERACTIVE_TYPES = new Set(['ghost','void','descent','terminus','sim-scatter']);
+function interactiveNodeCount(){
+  return NODES.filter(n => !NON_INTERACTIVE_TYPES.has(n.type)).length;
+}
 function updateCounters(){
   const total = NODES.length;
-  const unlocked = unlockedNodes.size;
+  const interactive = interactiveNodeCount();
+  /* count only unlocked nodes that are interactive (or the konami node) */
+  const unlocked = [...unlockedNodes].filter(id => {
+    const n = nodeMap[id];
+    return n && !NON_INTERACTIVE_TYPES.has(n.type);
+  }).length;
   document.getElementById('node-count-hd').textContent = total;
   document.getElementById('node-count-hud').textContent = total;
   document.getElementById('hud-unlocked').textContent = unlocked;
-  document.getElementById('hud-total').textContent = total;
-  const pct = (unlocked / total) * 100;
+  document.getElementById('hud-total').textContent = interactive;
+  const pct = (unlocked / interactive) * 100;
   document.getElementById('progress-fill').style.width = pct + '%';
 }
 
 /* PAN / DRAG */
 const wrap = document.getElementById('map-wrap');
+const scroller = document.getElementById('map-scroll');
 let isDragging = false, startX, startY, scrollX, scrollY;
 wrap.addEventListener('mousedown', e => {
   if(e.target.closest('.node')) return;
   isDragging = true;
   startX = e.clientX; startY = e.clientY;
-  scrollX = wrap.scrollLeft; scrollY = wrap.scrollTop;
+  scrollX = scroller.scrollLeft; scrollY = scroller.scrollTop;
   wrap.classList.add('grabbing');
 });
 window.addEventListener('mouseup', () => { isDragging = false; wrap.classList.remove('grabbing'); });
 window.addEventListener('mousemove', e => {
   if(!isDragging) return;
-  wrap.scrollLeft = scrollX - (e.clientX - startX);
-  wrap.scrollTop = scrollY - (e.clientY - startY);
+  scroller.scrollLeft = scrollX - (e.clientX - startX);
+  scroller.scrollTop  = scrollY - (e.clientY - startY);
   updateMinimap();
 });
 
-/* MOUSE WHEEL ZOOM */
-wrap.addEventListener('wheel', e => {
-  e.preventDefault();
-  const delta = e.deltaY < 0 ? 1.12 : 1/1.12;
-  const rect = wrap.getBoundingClientRect();
-  const mouseX = e.clientX - rect.left;
-  const mouseY = e.clientY - rect.top;
-  const worldX = (wrap.scrollLeft + mouseX) / currentScale;
-  const worldY = (wrap.scrollTop + mouseY) / currentScale;
-  currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, currentScale * delta));
-  if(isMobile()){
-    const shell = document.getElementById('map-canvas-shell');
-    shell.style.transformOrigin = '0 0';
-    shell.style.transform = `scale(${currentScale})`;
-    shell.style.width = (3600 * currentScale) + 'px';
-    shell.style.height = (CANVAS_H * currentScale) + 'px';
-  } else {
-    canvas.style.transformOrigin = '0 0';
-    canvas.style.transform = `scale(${currentScale})`;
-  }
-  wrap.scrollLeft = worldX * currentScale - mouseX;
-  wrap.scrollTop  = worldY * currentScale - mouseY;
-  updateMinimap();
-}, {passive: false});
-
-/* MOBILE */
+/* ── UNIFIED ZOOM SYSTEM ─────────────────────────────────
+   Single source of truth: canvas.style.transform only.
+   wrap is the scroll container. sizer is an in-flow div
+   whose explicit pixel dimensions drive the scroll range —
+   it is resized to 3600*scale × CANVAS_H*scale on every
+   zoom. canvas sits position:absolute inside sizer at 0,0
+   and is CSS-scaled; the sizer takes up the correctly-sized
+   space in flow so scrollbars always reflect the true range.
+   ───────────────────────────────────────────────────────── */
 const isMobile = () => window.innerWidth <= 640;
-
 let currentScale = 1;
 const MIN_SCALE = 0.25;
 const MAX_SCALE = 2.0;
 
-function setScaleFromButton(newScale){
-  const cx = wrap.clientWidth / 2;
-  const cy = wrap.clientHeight / 2;
-  const worldX = (wrap.scrollLeft + cx) / currentScale;
-  const worldY = (wrap.scrollTop + cy) / currentScale;
+const sizer = document.getElementById('map-sizer');
+
+const PAD_TOP = 0; /* wrap is fixed-positioned, no padding offset needed */
+
+function applyScale(newScale, anchorX, anchorY){
+  /* anchorX/Y: pixels from top-left of the visible map area (scroller's client rect).
+     scroller.scrollLeft/Top are in the same space. Default: center of viewport. */
+  if(anchorX === undefined) anchorX = scroller.clientWidth  / 2;
+  if(anchorY === undefined) anchorY = scroller.clientHeight / 2;
+
+  /* world coords of the anchor before scale change */
+  const worldX = (scroller.scrollLeft + anchorX) / currentScale;
+  const worldY = (scroller.scrollTop  + anchorY) / currentScale;
+
   currentScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale));
-  if(isMobile()){
-    const shell = document.getElementById('map-canvas-shell');
-    shell.style.transformOrigin = '0 0';
-    shell.style.transform = `scale(${currentScale})`;
-    shell.style.width = (3600 * currentScale) + 'px';
-    shell.style.height = (CANVAS_H * currentScale) + 'px';
-  } else {
-    canvas.style.transformOrigin = '0 0';
-    canvas.style.transform = `scale(${currentScale})`;
-  }
-  wrap.scrollLeft = worldX * currentScale - cx;
-  wrap.scrollTop = worldY * currentScale - cy;
+
+  canvas.style.transform = `scale(${currentScale})`;
+
+  /* resize sizer so scroll range reflects scaled canvas */
+  sizer.style.width  = Math.round(3600     * currentScale) + 'px';
+  sizer.style.height = Math.round(CANVAS_H * currentScale) + 'px';
+
+  /* restore anchor point */
+  scroller.scrollLeft = Math.round(worldX * currentScale - anchorX);
+  scroller.scrollTop  = Math.round(worldY * currentScale - anchorY);
+
   updateMinimap();
 }
 
+/* MOUSE WHEEL ZOOM */
+wrap.addEventListener('wheel', e => {
+  e.preventDefault();
+  const rect = scroller.getBoundingClientRect();
+  const delta = e.deltaY < 0 ? 1.12 : 1/1.12;
+  const anchorX = e.clientX - rect.left;
+  const anchorY = e.clientY - rect.top;
+  applyScale(currentScale * delta, anchorX, anchorY);
+}, {passive: false});
+
+/* ZOOM BUTTONS */
 const zoomIn = document.getElementById('zoom-in');
 const zoomOut = document.getElementById('zoom-out');
 const zoomReset = document.getElementById('zoom-reset');
-if(zoomIn) zoomIn.addEventListener('click', () => setScaleFromButton(currentScale * 1.3));
-if(zoomOut) zoomOut.addEventListener('click', () => setScaleFromButton(currentScale / 1.3));
+if(zoomIn)    zoomIn.addEventListener('click',  () => applyScale(currentScale * 1.3));
+if(zoomOut)   zoomOut.addEventListener('click', () => applyScale(currentScale / 1.3));
 if(zoomReset) zoomReset.addEventListener('click', () => {
-  const fitScale = Math.min(
-    wrap.clientWidth / 3600,
-    wrap.clientHeight / CANVAS_H
-  ) * 0.9;
-  setScaleFromButton(fitScale);
-  wrap.scrollLeft = 0; wrap.scrollTop = 0;
+  const fitScale = Math.min(scroller.clientWidth / 3600, scroller.clientHeight / CANVAS_H) * 0.9;
+  applyScale(fitScale);
+  scroller.scrollLeft = Math.max(0, (3600 * currentScale - scroller.clientWidth) / 2);
+  scroller.scrollTop  = 0;
   updateMinimap();
 });
 
+/* TOUCH PAN + PINCH ZOOM */
 let touchStart = null;
 let pinchStart = null;
 
@@ -2154,21 +2433,22 @@ wrap.addEventListener('touchstart', e => {
   if(e.touches.length === 1){
     if(e.target.closest('.node')){ touchStart = null; return; }
     touchStart = {
-      x:e.touches[0].clientX, y:e.touches[0].clientY,
-      sl:wrap.scrollLeft, st:wrap.scrollTop,
+      x: e.touches[0].clientX, y: e.touches[0].clientY,
+      sl: scroller.scrollLeft, st: scroller.scrollTop,
       moved: false
     };
     pinchStart = null;
   } else if(e.touches.length === 2){
     e.preventDefault();
     touchStart = null;
+    const rect = scroller.getBoundingClientRect();
     pinchStart = {
-      dist: getTouchDist(e.touches),
+      dist:  getTouchDist(e.touches),
       scale: currentScale,
-      midX: (e.touches[0].clientX + e.touches[1].clientX) / 2,
-      midY: (e.touches[0].clientY + e.touches[1].clientY) / 2,
-      sl: wrap.scrollLeft,
-      st: wrap.scrollTop,
+      midX: (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left,
+      midY: (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top,
+      sl: scroller.scrollLeft,
+      st: scroller.scrollTop,
     };
   }
 }, {passive:false});
@@ -2177,24 +2457,30 @@ wrap.addEventListener('touchmove', e => {
   if(e.touches.length === 2 && pinchStart){
     e.preventDefault();
     const newDist = getTouchDist(e.touches);
-    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchStart.scale * (newDist / pinchStart.dist)));
-    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+    const rect = scroller.getBoundingClientRect();
+    const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+    const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE,
+      pinchStart.scale * (newDist / pinchStart.dist)));
+
+    /* world coords of pinch midpoint */
     const worldX = (pinchStart.sl + pinchStart.midX) / pinchStart.scale;
     const worldY = (pinchStart.st + pinchStart.midY) / pinchStart.scale;
+
     currentScale = newScale;
-    canvas.style.transformOrigin = '0 0';
     canvas.style.transform = `scale(${currentScale})`;
-    wrap.scrollLeft = worldX * currentScale - midX;
-    wrap.scrollTop = worldY * currentScale - midY;
+    sizer.style.width  = Math.round(3600    * currentScale) + 'px';
+    sizer.style.height = Math.round(CANVAS_H * currentScale) + 'px';
+    scroller.scrollLeft = Math.round(worldX * currentScale - midX);
+    scroller.scrollTop  = Math.round(worldY * currentScale - midY);
     updateMinimap();
   } else if(e.touches.length === 1 && touchStart){
     e.preventDefault();
     const dx = e.touches[0].clientX - touchStart.x;
     const dy = e.touches[0].clientY - touchStart.y;
     if(Math.abs(dx) > 3 || Math.abs(dy) > 3) touchStart.moved = true;
-    wrap.scrollLeft = touchStart.sl - dx;
-    wrap.scrollTop  = touchStart.st - dy;
+    scroller.scrollLeft = touchStart.sl - dx;
+    scroller.scrollTop  = touchStart.st - dy;
     updateMinimap();
   }
 }, {passive:false});
@@ -2216,7 +2502,17 @@ function openBottomSheet(n){
   const isUnlocked = unlockedNodes.has(n.id);
   document.getElementById('bs-tag').textContent = n.tag || '';
   document.getElementById('bs-title').textContent = isUnlocked && n.realName ? n.realName : n.name;
-  document.getElementById('bs-body').textContent = isUnlocked && n.realTip ? n.realTip : n.tip;
+  const rawBSTip = isUnlocked && n.realTip ? n.realTip : n.tip;
+  const bsSplit = splitTipFragment(rawBSTip);
+  const bsBodyEl = document.getElementById('bs-body');
+  bsBodyEl.innerHTML = '';
+  bsBodyEl.appendChild(document.createTextNode(bsSplit.main));
+  if(!isUnlocked && bsSplit.fragment){
+    const bsFrag = document.createElement('div');
+    bsFrag.className = 'bs-hint-text';
+    bsFrag.textContent = bsSplit.fragment;
+    bsBodyEl.appendChild(bsFrag);
+  }
   const unlockDiv = document.getElementById('bs-unlock');
   const closePlain = document.getElementById('bs-close-plain');
   if(!isUnlocked && n.passkey){
@@ -2227,6 +2523,7 @@ function openBottomSheet(n){
     document.getElementById('bs-msg').textContent = '';
     document.getElementById('bs-msg').style.color = '';
   } else {
+    /* already unlocked or no passkey — show body text, just close button */
     unlockDiv.style.display = 'none';
     closePlain.style.display = 'block';
     bsActiveNodeId = null;
@@ -2301,7 +2598,12 @@ function drawMinimap(){
   mmCtx.fillStyle = 'rgba(4,3,10,0.8)';
   mmCtx.fillRect(0,0,mmW,mmH);
 
-  NODES.forEach(n => {
+  /* Collect all nodes: static NODES array + any dynamic additions in nodeMap not in NODES */
+  const staticIds = new Set(NODES.map(n => n.id));
+  const dynamicNodes = Object.values(nodeMap).filter(n => !staticIds.has(n.id));
+  const allNodes = [...NODES, ...dynamicNodes];
+
+  allNodes.forEach(n => {
     if(n.type === 'ghost' || n.type === 'void') return;
     const el = document.getElementById('node-' + n.id);
     if(!el) return;
@@ -2315,6 +2617,9 @@ function drawMinimap(){
     else if(n.type === 'faction') color = 'rgba(60,120,200,0.35)';
     else if(n.type === 'anomaly') color = 'rgba(40,180,100,0.35)';
     else if(n.type === 'threat') color = 'rgba(220,140,20,0.35)';
+    else if(n.type === 'descent') color = `rgba(200,71,42,${0.04 + (n.descentTier||1)*0.025})`;
+    else if(n.type === 'terminus') color = 'rgba(120,0,200,0.5)';
+    else if(n.type === 'sim-scatter') color = 'rgba(148,88,200,0.12)';
     else if(isUnlocked) color = 'rgba(200,71,42,0.4)';
 
     mmCtx.fillStyle = color;
@@ -2327,18 +2632,18 @@ function updateMinimap(){
   const cH = canvas.scrollHeight * currentScale;
   const scaleX = mmW / cW, scaleY = mmH / cH;
   const vp = document.getElementById('minimap-viewport');
-  vp.style.left = (wrap.scrollLeft * scaleX) + 'px';
-  vp.style.top = (wrap.scrollTop * scaleY) + 'px';
-  vp.style.width = (wrap.clientWidth * scaleX) + 'px';
-  vp.style.height = (wrap.clientHeight * scaleY) + 'px';
+  vp.style.left = (scroller.scrollLeft * scaleX) + 'px';
+  vp.style.top = (scroller.scrollTop * scaleY) + 'px';
+  vp.style.width = (scroller.clientWidth * scaleX) + 'px';
+  vp.style.height = (scroller.clientHeight * scaleY) + 'px';
 }
 
 document.getElementById('minimap').addEventListener('click', e => {
   const rect = mmCanvas.getBoundingClientRect();
   const px = (e.clientX - rect.left) / mmW;
   const py = (e.clientY - rect.top) / mmH;
-  wrap.scrollLeft = px * canvas.scrollWidth - wrap.clientWidth/2;
-  wrap.scrollTop  = py * canvas.scrollHeight - wrap.clientHeight/2;
+  scroller.scrollLeft = px * canvas.scrollWidth - scroller.clientWidth/2;
+  scroller.scrollTop  = py * canvas.scrollHeight - scroller.clientHeight/2;
   updateMinimap();
 });
 
@@ -2442,44 +2747,186 @@ function glitchLockedName(){
   setTimeout(()=>{ el.textContent=orig; el.style.textShadow=''; }, 80+Math.random()*140);
 }
 
+/* ═══════════════════════════════════════════════════════
+   REALITY-BREAKING GLITCH ENGINE
+   Each event type is lore-grounded and visually distinct
+   ═══════════════════════════════════════════════════════ */
+
+/* WORLD SPLIT — the canvas briefly tears horizontally into two offset halves */
+function doWorldSplit(){
+  const top = 0.3 + Math.random()*0.4;
+  const clip1 = `polygon(0 0, 100% 0, 100% ${top*100}%, 0 ${top*100}%)`;
+  const clip2 = `polygon(0 ${top*100}%, 100% ${top*100}%, 100% 100%, 0 100%)`;
+  canvas.style.transition = 'none';
+  canvas.style.clipPath = clip1;
+  canvas.style.transform = `scale(${currentScale}) translateX(${6+Math.random()*10}px)`;
+  const dur = 40 + Math.random()*80;
+  setTimeout(()=>{
+    canvas.style.clipPath = clip2;
+    canvas.style.transform = `scale(${currentScale}) translateX(${-(5+Math.random()*8)}px)`;
+    setTimeout(()=>{
+      canvas.style.clipPath = '';
+      canvas.style.transform = `scale(${currentScale})`;
+    }, dur);
+  }, dur);
+}
+
+/* REALITY FOLD — the whole map gets a very brief skew/warp */
+function doRealityFold(){
+  const skX = (Math.random()-0.5)*3;
+  const skY = (Math.random()-0.5)*1.5;
+  canvas.style.transition = 'none';
+  canvas.style.transform = `scale(${currentScale}) skew(${skX}deg,${skY}deg) scaleX(${0.97+Math.random()*0.06})`;
+  setTimeout(()=>{
+    canvas.style.transform = `scale(${currentScale}) skew(${-skX*0.4}deg,${-skY*0.3}deg)`;
+    setTimeout(()=>{ canvas.style.transform = `scale(${currentScale})`; }, 50+Math.random()*60);
+  }, 30+Math.random()*50);
+}
+
+/* BLANK ZONE ERASURE — 2–4 nodes briefly go fully blank/white (memory wipe) */
+function doBlankZoneErasure(){
+  const interactive = [...document.querySelectorAll('.node:not(.node-ghost):not(.node-void):not(.node-descent):not(.node-terminus)')];
+  if(!interactive.length) return;
+  const count = 2 + Math.floor(Math.random()*3);
+  const picked = interactive.sort(()=>Math.random()-0.5).slice(0,count);
+  picked.forEach(el => {
+    el.style.transition = 'none';
+    el.style.filter = 'brightness(6) saturate(0)';
+    el.style.opacity = '0.9';
+    const t = 60+Math.random()*120;
+    setTimeout(()=>{
+      el.style.filter = 'brightness(0)';
+      setTimeout(()=>{
+        el.style.filter = '';
+        el.style.opacity = '';
+        el.style.transition = '';
+      }, 80);
+    }, t);
+  });
+}
+
+/* TRANSFER FLASH — the Blank Zone / world-swap moment: full white then cut to black */
+function doTransferFlash(){
+  const ov = document.getElementById('glitch-overlay');
+  ov.style.background = 'rgba(255,255,255,0.25)';
+  ov.style.opacity = '1';
+  doChromaShift(true);
+  setTimeout(()=>{
+    ov.style.background = 'rgba(0,0,0,0.5)';
+    setTimeout(()=>{
+      ov.style.background = '';
+      ov.style.opacity = '0';
+    }, 60);
+  }, 50);
+}
+
+/* GHUUL FLICKER — fast on/off opacity cycling on the canvas (reality between worlds) */
+function doGhuulFlicker(){
+  let flicks = 0;
+  const total = 4 + Math.floor(Math.random()*5);
+  function flick(){
+    canvas.style.opacity = flicks % 2 === 0 ? String(0.05+Math.random()*0.1) : '1';
+    flicks++;
+    if(flicks < total) setTimeout(flick, 30+Math.random()*60);
+    else canvas.style.opacity = '';
+  }
+  flick();
+}
+
+/* YELLOW GAS TINT — brief yellowish desaturated wash (Fog of Medusa / Simulunas) */
+function doYellowGasTint(){
+  const ov = document.getElementById('glitch-overlay');
+  ov.style.background = 'rgba(180,160,20,0.07)';
+  ov.style.opacity = '1';
+  ov.style.filter = 'blur(1px)';
+  setTimeout(()=>{
+    ov.style.opacity = '0.4';
+    setTimeout(()=>{
+      ov.style.opacity = '0';
+      ov.style.background = '';
+      ov.style.filter = '';
+    }, 200+Math.random()*300);
+  }, 100);
+}
+
+/* SKY BLEED — top portion of viewport goes red for 0.4s (the bleeding sky motif) */
+function doSkyBleed(){
+  const skyEl = document.getElementById('sky-bleed-overlay');
+  if(!skyEl) return;
+  skyEl.style.opacity = String(0.06 + Math.random()*0.1);
+  setTimeout(()=>{ skyEl.style.opacity = '0'; }, 300+Math.random()*500);
+}
+
+/* MAIN GLITCH DISPATCHER */
 function randomGlitch(){
-  const overlay = document.getElementById('glitch-overlay');
   const roll = Math.random();
 
-  if(roll < 0.12){
-    /* HEAVY EVENT — full analog breakdown */
-    overlay.style.opacity = '1';
+  if(roll < 0.04){
+    /* TRANSFER EVENT — total world-swap moment */
+    doTransferFlash();
+    doGhuulFlicker();
+    doWorldSplit();
     doChromaShift(true);
-    doScanTear(); doScanTear();
-    doNoiseBar();
-    spawnPixelScatter();
-    doStaticBurst();
     playGlitchCrack(true);
-    if(Math.random() > 0.4) glitchLockedName();
-    setTimeout(()=>{
-      overlay.style.opacity='0';
-      doScanTear();
-      doChromaShift(false);
-    }, 60+Math.random()*100);
-    setTimeout(randomGlitch, 1800+Math.random()*3000);
-  } else if(roll < 0.4){
-    /* MEDIUM EVENT — chroma + tear */
+    if(Math.random()>0.3) glitchLockedName();
+    setTimeout(randomGlitch, 4000+Math.random()*5000);
+
+  } else if(roll < 0.1){
+    /* BLANK ZONE ERASURE */
+    doBlankZoneErasure();
+    doChromaShift(false);
+    doStaticBurst();
+    if(Math.random()>0.4) doScanTear();
+    if(audioReady) playGlitchCrack(false);
+    setTimeout(randomGlitch, 2500+Math.random()*3500);
+
+  } else if(roll < 0.18){
+    /* REALITY FOLD */
+    doRealityFold();
+    doChromaShift(true);
+    doScanTear();
+    spawnPixelScatter();
+    if(audioReady) playGlitchCrack(true);
+    if(Math.random()>0.5) glitchLockedName();
+    setTimeout(randomGlitch, 2000+Math.random()*3000);
+
+  } else if(roll < 0.28){
+    /* YELLOW GAS TINT + tear */
+    doYellowGasTint();
+    doScanTear();
+    doNoiseBar();
+    if(Math.random()>0.5) doStaticBurst();
+    setTimeout(randomGlitch, 1800+Math.random()*2800);
+
+  } else if(roll < 0.42){
+    /* SKY BLEED + chroma drift */
+    doSkyBleed();
     doChromaShift(false);
     doScanTear();
-    if(Math.random() > 0.5) spawnPixelScatter();
-    if(Math.random() > 0.6) glitchLockedName();
-    if(Math.random() > 0.5) playGlitchCrack(false);
-    setTimeout(randomGlitch, 2200+Math.random()*3500);
-  } else if(roll < 0.65){
-    /* LIGHT EVENT — just a tear or scatter */
-    if(Math.random() > 0.5) doScanTear();
+    if(Math.random()>0.6) spawnPixelScatter();
+    if(Math.random()>0.5) playGlitchCrack(false);
+    setTimeout(randomGlitch, 1200+Math.random()*2000);
+
+  } else if(roll < 0.58){
+    /* MEDIUM ANALOG — standard chroma + tear */
+    doChromaShift(false);
+    doScanTear();
+    if(Math.random()>0.5) spawnPixelScatter();
+    if(Math.random()>0.6) glitchLockedName();
+    if(Math.random()>0.5) playGlitchCrack(false);
+    setTimeout(randomGlitch, 1500+Math.random()*2500);
+
+  } else if(roll < 0.74){
+    /* LIGHT — tear or scatter only */
+    if(Math.random()>0.5) doScanTear();
     else spawnPixelScatter();
-    if(Math.random() > 0.7) doNoiseBar();
-    setTimeout(randomGlitch, 1000+Math.random()*2000);
+    if(Math.random()>0.7) doNoiseBar();
+    setTimeout(randomGlitch, 800+Math.random()*1600);
+
   } else {
-    /* IDLE — barely perceptible static */
+    /* IDLE static */
     doStaticBurst();
-    setTimeout(randomGlitch, 600+Math.random()*1400);
+    setTimeout(randomGlitch, 500+Math.random()*1200);
   }
 }
 
@@ -2504,6 +2951,7 @@ const LABELS = [
   {text:'ZOMBIE CLASSIFICATION — 9 TYPES', x:135, y:2171},
   {text:'INFECTED CLASSIFICATION — 5 TYPES', x:2052, y:2171},
   {text:'FACTION INDEX', x:378, y:2509},
+  {text:'BELOW THE ARCHIVE — SIGNAL DESCENT', x:1440, y:3162},
 ];
 
 function buildLabels(){
@@ -2521,27 +2969,23 @@ function buildLabels(){
 function init(){
   buildLabels();
   buildNodes();
+  buildDeadAirNode();
   setTimeout(() => {
     drawConnectors();
     drawMinimap();
-    updateMinimap();
     if(isMobile()){
+      /* fit map to screen on mobile, start centered on WNCORE */
       const fitScale = Math.min(
-        wrap.clientWidth / 3600,
-        wrap.clientHeight / CANVAS_H
+        scroller.clientWidth / 3600,
+        scroller.clientHeight / CANVAS_H
       ) * 1.6;
-      currentScale = Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale));
-      const shell = document.getElementById('map-canvas-shell');
-      shell.style.transformOrigin = '0 0';
-      shell.style.transform = `scale(${currentScale})`;
-      shell.style.width = (3600 * currentScale) + 'px';
-      shell.style.height = (CANVAS_H * currentScale) + 'px';
-      canvas.style.transform = '';
-      wrap.scrollLeft = 1755 * currentScale - wrap.clientWidth / 2;
-      wrap.scrollTop = 0;
+      applyScale(Math.max(MIN_SCALE, Math.min(MAX_SCALE, fitScale)));
+      scroller.scrollLeft = Math.round(1755 * currentScale - scroller.clientWidth / 2);
+      scroller.scrollTop  = 0;
     } else {
-      wrap.scrollLeft = 1755 - wrap.clientWidth/2;
-      wrap.scrollTop = 0;
+      applyScale(1);
+      scroller.scrollLeft = Math.round(1755 - scroller.clientWidth / 2);
+      scroller.scrollTop  = 0;
     }
     updateMinimap();
   }, 120);
@@ -2550,7 +2994,7 @@ function init(){
   setInterval(updateClock, 1000);
   setInterval(rotateTip, 4500);
   randomGlitch();
-  wrap.addEventListener('scroll', updateMinimap);
+  scroller.addEventListener('scroll', updateMinimap);
 }
 
 /* ── MYSTERY DEEPENERS ── */
@@ -2603,9 +3047,10 @@ function connectorPulse(){
 
 /* HUD frequency flicker — the clearance level briefly shows a higher number */
 function hudFlicker(){
-  const hudItems = document.querySelectorAll('#hud span');
+  /* exclude the clock (last element) from random glitch — clock has its own desync below */
+  const hudItems = [...document.querySelectorAll('#hud span:not(#hud-clock)')];
   if(!hudItems.length){ setTimeout(hudFlicker, 12000+Math.random()*8000); return; }
-  const el = hudItems[Math.floor(Math.random()*(hudItems.length-1))];
+  const el = hudItems[Math.floor(Math.random()*hudItems.length)];
   const orig = el.textContent;
   const glitchTexts = ['CLEARANCE: CL-6','BLANK ZONE: ACTIVE','OBSEDIA: ONLINE','NODE-09: TX','SIGNAL: LOST'];
   el.textContent = glitchTexts[Math.floor(Math.random()*glitchTexts.length)];
@@ -2613,6 +3058,19 @@ function hudFlicker(){
   setTimeout(()=>{ el.textContent = orig; el.style.color = ''; }, 120+Math.random()*180);
   setTimeout(hudFlicker, 14000 + Math.random()*10000);
 }
+
+/* Clock desync — intentional ARG beat: clock briefly shows 2032 date then snaps back */
+function clockDesync(){
+  const hudClock = document.getElementById('hud-clock');
+  if(!hudClock){ setTimeout(clockDesync, 30000+Math.random()*30000); return; }
+  const fake2032 = ['20:32:04','20:32:31','20:31:58','20:33:12'];
+  hudClock.textContent = fake2032[Math.floor(Math.random()*fake2032.length)];
+  hudClock.style.color = 'rgba(200,71,42,0.8)';
+  /* Snap back after 2–3 seconds */
+  setTimeout(()=>{ hudClock.style.color=''; updateClock(); }, 2000 + Math.random()*1000);
+  setTimeout(clockDesync, 45000 + Math.random()*60000);
+}
+setTimeout(clockDesync, 28000 + Math.random()*20000);
 
 /* ═══════════════════════════════════════════════════════
    WEB AUDIO ENGINE
@@ -2689,6 +3147,73 @@ function initAudio(){
 
   /* fade drone in over 4s */
   droneGain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 4);
+
+  /* ── MUFFLED SCREAMS LAYER ──
+     Synthesised via band-passed noise shaped with slow pitch LFO.
+     Stays very quiet — barely audible under drone. Uncanny.
+  */
+  function spawnMuffledScream(){
+    if(!audioReady || !audioCtx) return;
+    const t = audioCtx.currentTime + 0.1;
+    const dur = 1.4 + Math.random() * 2.2; /* scream length 1.4–3.6s */
+
+    /* white noise source */
+    const sBuf = makeNoiseBuffer(audioCtx, dur + 0.5);
+    const sSrc = audioCtx.createBufferSource();
+    sSrc.buffer = sBuf;
+
+    /* formant-style bandpass — shapes noise into vocal range */
+    const f1 = audioCtx.createBiquadFilter();
+    f1.type = 'bandpass';
+    /* fundamental resonance: 200–700 Hz vocal range */
+    const baseFreq = 280 + Math.random() * 360;
+    f1.frequency.value = baseFreq;
+    f1.Q.value = 8 + Math.random() * 12; /* narrow = more vocal */
+
+    /* second formant */
+    const f2 = audioCtx.createBiquadFilter();
+    f2.type = 'bandpass';
+    f2.frequency.value = baseFreq * (1.8 + Math.random() * 0.6);
+    f2.Q.value = 6;
+
+    /* pitch envelope: rises sharply then decays (scream shape) */
+    const freqLfo = audioCtx.createOscillator();
+    const freqLfoGain = audioCtx.createGain();
+    freqLfo.frequency.value = 0.9 + Math.random() * 1.2; /* 0.9–2.1 Hz warble */
+    freqLfoGain.gain.value = 40 + Math.random() * 80;
+    freqLfo.connect(freqLfoGain);
+    freqLfoGain.connect(f1.frequency);
+
+    /* volume envelope: in over 0.2s, hold, out */
+    const sGain = audioCtx.createGain();
+    sGain.gain.setValueAtTime(0, t);
+    sGain.gain.linearRampToValueAtTime(0.022 + Math.random() * 0.018, t + 0.25);
+    sGain.gain.setValueAtTime(0.022 + Math.random() * 0.012, t + dur - 0.5);
+    sGain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+
+    /* heavy low-pass to muffle: sounds like through a wall */
+    const wall = audioCtx.createBiquadFilter();
+    wall.type = 'lowpass';
+    wall.frequency.value = 320 + Math.random() * 180;
+    wall.Q.value = 0.6;
+
+    sSrc.connect(f1);
+    f1.connect(f2);
+    f2.connect(sGain);
+    sGain.connect(wall);
+    wall.connect(master);
+    freqLfo.start(t);
+    freqLfo.stop(t + dur + 0.1);
+    sSrc.start(t);
+    sSrc.stop(t + dur + 0.2);
+
+    /* Schedule next scream — irregular gaps, very sparse */
+    const nextIn = 14000 + Math.random() * 28000;
+    setTimeout(spawnMuffledScream, nextIn);
+  }
+  /* First scream after initial silence — let the drone establish first */
+  setTimeout(spawnMuffledScream, 12000 + Math.random() * 18000);
+  window._spawnScream = spawnMuffledScream;
 
   /* ── STATIC NOISE LAYER ── */
   const noiseBuffer = makeNoiseBuffer(audioCtx, 2);
@@ -2841,8 +3366,8 @@ function playKonamiSound(){
 /* ── SCROLL DEPTH AUDIO MODULATION ── */
 function updateAudioDepth(){
   if(!audioReady || !audioCtx) return;
-  const maxScroll = CANVAS_H - wrap.clientHeight;
-  const depth = Math.min(1, (wrap.scrollTop / currentScale) / (maxScroll / currentScale));
+  const maxScroll = CANVAS_H * currentScale - scroller.clientHeight;
+  const depth = maxScroll > 0 ? Math.min(1, scroller.scrollTop / maxScroll) : 0;
   currentScrollDepth = depth;
 
   /* drone pitch bends downward as you descend — feels "wrong" */
@@ -2861,6 +3386,12 @@ function updateAudioDepth(){
 
   /* second harmonic swells at depth */
   if(window._d2g) window._d2g.gain.setTargetAtTime(depth * 0.05, audioCtx.currentTime, 0.8);
+
+  /* sky bleed deepens with scroll */
+  const skyOv = document.getElementById('sky-bleed-overlay');
+  if(skyOv){
+    skyOv.style.opacity = String(depth * 0.12);
+  }
 }
 
 /* boot audio on first user gesture */
@@ -2877,7 +3408,7 @@ document.addEventListener('keydown', bootAudio);
 document.addEventListener('wheel', bootAudio, {passive:true});
 
 /* hook scroll depth updates */
-wrap.addEventListener('scroll', updateAudioDepth);
+scroller.addEventListener('scroll', updateAudioDepth);
 
 /* ═══════════════════════════════════════════════════════
    TERMINUS HEARTBEAT
@@ -2998,10 +3529,10 @@ function triggerKonamiEvent(){
   /* HUD freakout during event */
   const hudClock = document.getElementById('hud-clock');
   if(hudClock){
-    const origClockContent = hudClock.textContent;
     hudClock.textContent = '20:32:04';
     hudClock.style.color = 'rgba(200,71,42,0.9)';
-    setTimeout(()=>{ hudClock.style.color=''; }, 3000);
+    /* After 3s restore the real clock so it doesn't stay frozen */
+    setTimeout(()=>{ hudClock.style.color=''; updateClock(); }, 3000);
   }
 
   /* flash a message in the HUD tip */
@@ -3057,10 +3588,15 @@ function revealKonamiNode(){
   });
 
   /* add a connector from wncore to signal-zero */
+  /* rAF inside setTimeout ensures the node has painted and offsetWidth/offsetHeight are non-zero */
   setTimeout(()=>{
-    drawConnectors();
-    drawMinimap();
-    updateCounters();
+    requestAnimationFrame(()=>{
+      requestAnimationFrame(()=>{
+        drawConnectors();
+        drawMinimap();
+        updateCounters();
+      });
+    });
   }, 200);
 }
 
@@ -3071,6 +3607,206 @@ setTimeout(hudFlicker, 20000+Math.random()*10000);
 
 window.addEventListener('load', init);
 window.addEventListener('resize', () => { drawConnectors(); drawMinimap(); updateMinimap(); });
+
+/* ═══════════════════════════════════════════════════════
+   FREQUENCY SCANNER EASTER EGG
+   Type "887" anywhere (not in an input) → brief HUD readout
+   ═══════════════════════════════════════════════════════ */
+let freqBuffer = '';
+document.addEventListener('keydown', e => {
+  if(e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if(e.key >= '0' && e.key <= '9'){
+    freqBuffer += e.key;
+    if(freqBuffer.length > 3) freqBuffer = freqBuffer.slice(-3);
+    if(freqBuffer === '887'){
+      freqBuffer = '';
+      triggerFrequencyScanner();
+    }
+  } else {
+    freqBuffer = '';
+  }
+});
+
+function triggerFrequencyScanner(){
+  initAudio();
+  const tip = document.getElementById('hud-tip');
+  const steps = ['// SCANNING...', '// 88.7 MHz...', '// NO SIGNAL'];
+  let i = 0;
+  tip.style.color = 'rgba(40,200,100,0.9)';
+  tip.style.opacity = '1';
+  function nextStep(){
+    if(i >= steps.length){
+      tip.style.color = '';
+      tip.style.opacity = '';
+      return;
+    }
+    tip.textContent = steps[i++];
+    doScanTear();
+    if(audioReady) playGlitchCrack(false);
+    setTimeout(nextStep, i < steps.length ? 600 : 1200);
+  }
+  nextStep();
+}
+
+/* ═══════════════════════════════════════════════════════
+   CURSOR TRAIL NEAR TERMINUS — fixed rAF-based approach
+   When scrolled deep enough, cursor leaves chromatic ghost trail
+   ═══════════════════════════════════════════════════════ */
+const cursorTrailCanvas = document.createElement('canvas');
+cursorTrailCanvas.id = 'cursor-trail';
+cursorTrailCanvas.style.cssText = 'position:fixed;inset:0;z-index:9983;pointer-events:none;opacity:0;transition:opacity 1.2s;';
+document.body.appendChild(cursorTrailCanvas);
+
+let trailCtx = null;
+let trailActive = false;
+/* Each entry: {x, y, t} in viewport coords (clientX/Y) */
+const TRAIL_HISTORY = [];
+const TRAIL_DECAY_MS = 500; /* how long each point lives */
+
+function resizeTrailCanvas(){
+  const c = cursorTrailCanvas;
+  c.width = window.innerWidth;
+  c.height = window.innerHeight;
+  trailCtx = c.getContext('2d');
+}
+resizeTrailCanvas();
+window.addEventListener('resize', resizeTrailCanvas);
+
+/* Always track mouse position; only draw when active */
+let _mx = 0, _my = 0;
+document.addEventListener('mousemove', e => {
+  _mx = e.clientX; _my = e.clientY;
+  if(!trailActive) return;
+  TRAIL_HISTORY.push({x: _mx, y: _my, t: performance.now()});
+});
+
+/* Dedicated rAF loop — clear & repaint every frame when active */
+function trailLoop(){
+  requestAnimationFrame(trailLoop);
+  if(!trailCtx) return;
+  const now = performance.now();
+  /* Purge old points */
+  while(TRAIL_HISTORY.length > 0 && now - TRAIL_HISTORY[0].t > TRAIL_DECAY_MS){
+    TRAIL_HISTORY.shift();
+  }
+  trailCtx.clearRect(0, 0, cursorTrailCanvas.width, cursorTrailCanvas.height);
+  if(!trailActive || TRAIL_HISTORY.length < 2) return;
+
+  for(let i = 0; i < TRAIL_HISTORY.length; i++){
+    const p = TRAIL_HISTORY[i];
+    const age = (now - p.t) / TRAIL_DECAY_MS; /* 0 = fresh, 1 = dying */
+    const life = 1 - age; /* 1 = bright, 0 = gone */
+    const r = 3.5 * life; /* shrink as it ages */
+    if(r < 0.2) continue;
+
+    /* Red ghost: shifted right along trail direction */
+    const nx = i < TRAIL_HISTORY.length - 1 ? TRAIL_HISTORY[i+1].x : p.x;
+    const ny = i < TRAIL_HISTORY.length - 1 ? TRAIL_HISTORY[i+1].y : p.y;
+    const dx = p.x - nx, dy = p.y - ny;
+    const len = Math.sqrt(dx*dx+dy*dy) || 1;
+    const ox = (dy/len) * 2.5; /* perpendicular offset */
+    const oy = (dx/len) * 2.5;
+
+    trailCtx.beginPath();
+    trailCtx.arc(p.x + ox, p.y - oy, r, 0, Math.PI*2);
+    trailCtx.fillStyle = `rgba(255,20,60,${life * 0.22})`;
+    trailCtx.fill();
+
+    trailCtx.beginPath();
+    trailCtx.arc(p.x - ox, p.y + oy, r * 0.75, 0, Math.PI*2);
+    trailCtx.fillStyle = `rgba(30,60,255,${life * 0.14})`;
+    trailCtx.fill();
+  }
+}
+trailLoop();
+
+/* Activate trail when scrolled into the lower 40% of the canvas */
+function updateTrailDepth(){
+  const maxScroll = CANVAS_H * currentScale - scroller.clientHeight;
+  const depth = maxScroll > 0 ? scroller.scrollTop / maxScroll : 0;
+  if(depth > 0.6 && !trailActive){
+    trailActive = true;
+    cursorTrailCanvas.style.opacity = '1';
+  } else if(depth <= 0.6 && trailActive){
+    trailActive = false;
+    cursorTrailCanvas.style.opacity = '0';
+    TRAIL_HISTORY.length = 0;
+  }
+}
+scroller.addEventListener('scroll', updateTrailDepth);
+
+/* ═══════════════════════════════════════════════════════
+   DEAD AIR NODE
+   One node that just plays static and closes — no explanation
+   Injected into the canvas near the ghost nodes area
+   ═══════════════════════════════════════════════════════ */
+const DEAD_AIR_NODE = {
+  id:'dead-air', type:'known', tag:'', name:'· · ·',
+  sub:'',
+  tip:'',
+  x:2850, y:2680, passkey:''
+};
+
+function buildDeadAirNode(){
+  nodeMap[DEAD_AIR_NODE.id] = DEAD_AIR_NODE;
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.id = 'node-dead-air';
+  el.dataset.id = 'dead-air';
+  el.style.cssText = `
+    left:${DEAD_AIR_NODE.x}px;top:${DEAD_AIR_NODE.y}px;
+    width:46px;height:46px;
+    background:rgba(4,3,10,0.7);
+    border:1px solid rgba(200,71,42,0.08);
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    opacity:0.22;
+    animation:ghost-flicker 9s ease-in-out infinite;
+  `;
+  el.innerHTML = `<span style="font-family:var(--vt);font-size:0.9rem;color:rgba(200,71,42,0.3);letter-spacing:2px">· · ·</span>`;
+
+  let deadAirActive = false;
+  el.addEventListener('click', () => {
+    if(deadAirActive) return;
+    deadAirActive = true;
+    playDeadAir();
+    setTimeout(()=>{ deadAirActive = false; }, 4200);
+  });
+  el.addEventListener('touchend', e => {
+    e.preventDefault();
+    if(deadAirActive) return;
+    deadAirActive = true;
+    playDeadAir();
+    setTimeout(()=>{ deadAirActive = false; }, 4200);
+  });
+  canvas.appendChild(el);
+}
+
+function playDeadAir(){
+  initAudio();
+  if(!audioReady || !audioCtx) return;
+  /* 4 seconds of shaped static — no other feedback */
+  const t = audioCtx.currentTime;
+  const dur = 4.0;
+  const nBuf = makeNoiseBuffer(audioCtx, dur + 0.2);
+  const nSrc = audioCtx.createBufferSource();
+  nSrc.buffer = nBuf;
+  const nFilter = audioCtx.createBiquadFilter();
+  nFilter.type = 'bandpass';
+  nFilter.frequency.value = 1400;
+  nFilter.Q.value = 0.5;
+  const nGain = audioCtx.createGain();
+  nGain.gain.setValueAtTime(0.001, t);
+  nGain.gain.linearRampToValueAtTime(0.09, t + 0.2);
+  nGain.gain.setValueAtTime(0.09, t + dur - 0.4);
+  nGain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  nSrc.connect(nFilter);
+  nFilter.connect(nGain);
+  nGain.connect(audioCtx.destination);
+  nSrc.start(t);
+  nSrc.stop(t + dur + 0.05);
+}
 </script>
 </body>
 </html>
