@@ -1300,6 +1300,112 @@ body::before{
   padding-left:6px;
   line-height:1.6;
 }
+
+/* ═══════════════════════════
+   SIGNAL CUBE VIEWPORT
+   ═══════════════════════════ */
+#signal-cube-wrap{
+  position:fixed;
+  bottom:56px;right:18px;
+  z-index:9980;
+  width:158px;
+  background:rgba(4,3,10,0.92);
+  border:1px solid rgba(200,71,42,0.28);
+  border-radius:3px;
+  padding:8px;
+  box-shadow:0 0 22px rgba(200,71,42,0.1),inset 0 0 30px rgba(0,0,0,0.5);
+  cursor:pointer;
+  transition:border-color 0.3s;
+}
+#signal-cube-wrap:hover{ border-color:rgba(200,71,42,0.55); }
+#signal-cube-wrap.cube-glitching{
+  animation:cube-wrap-glitch 0.18s steps(1) infinite;
+}
+@keyframes cube-wrap-glitch{
+  0%{border-color:rgba(255,0,60,0.7);box-shadow:2px 0 0 rgba(255,0,60,0.4),-2px 0 0 rgba(0,80,255,0.4),0 0 22px rgba(200,71,42,0.3)}
+  50%{border-color:rgba(0,80,255,0.6);box-shadow:-3px 0 0 rgba(255,0,60,0.3),3px 0 0 rgba(0,80,255,0.5),0 0 22px rgba(0,80,255,0.2)}
+  100%{border-color:rgba(200,71,42,0.28);box-shadow:0 0 22px rgba(200,71,42,0.1)}
+}
+#signal-cube-label{
+  font-family:var(--mono);font-size:0.32rem;letter-spacing:2.5px;
+  color:rgba(200,71,42,0.5);text-transform:uppercase;
+  margin-bottom:6px;
+}
+#signal-cube-canvas{
+  display:block;width:140px;height:140px;
+  image-rendering:pixelated;
+}
+#signal-cube-status{
+  font-family:var(--mono);font-size:0.3rem;letter-spacing:1.5px;
+  color:rgba(200,71,42,0.35);text-transform:uppercase;
+  margin-top:5px;text-align:center;
+  animation:cube-status-flicker 4s ease-in-out infinite;
+}
+@keyframes cube-status-flicker{
+  0%,85%,100%{opacity:0.6}
+  86%{opacity:0.1}87%{opacity:0.8}
+  93%{opacity:0.15}94%{opacity:0.6}
+}
+
+/* ═══════════════════════════
+   WHISPER TRANSMISSIONS
+   ═══════════════════════════ */
+#whisper-layer{
+  position:fixed;inset:0;z-index:9981;pointer-events:none;overflow:hidden;
+}
+.whisper{
+  position:absolute;
+  font-family:var(--mono);
+  font-size:0.38rem;
+  letter-spacing:3px;
+  color:rgba(200,71,42,0.0);
+  text-transform:uppercase;
+  white-space:nowrap;
+  pointer-events:none;
+  transition:none;
+}
+
+/* ═══════════════════════════
+   NODE CLICK RIPPLE
+   ═══════════════════════════ */
+#ripple-layer{
+  position:fixed;inset:0;z-index:9990;pointer-events:none;overflow:hidden;
+}
+.node-ripple{
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(200,71,42,0.7);
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(0);
+  opacity:0;
+}
+.node-ripple-r{
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(255,20,60,0.5);
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(0);
+  opacity:0;
+}
+.node-ripple-b{
+  position:absolute;
+  border-radius:50%;
+  border:1px solid rgba(30,60,255,0.4);
+  pointer-events:none;
+  transform:translate(-50%,-50%) scale(0);
+  opacity:0;
+}
+
+/* ═══════════════════════════
+   NODE CLICK CHROMA GHOST
+   ═══════════════════════════ */
+.node-chroma-ghost{
+  position:absolute;
+  pointer-events:none;
+  border-radius:3px;
+  mix-blend-mode:screen;
+  z-index:9;
+}
 </style>
 </head>
 <body>
@@ -1313,6 +1419,22 @@ body::before{
 <div id="static-overlay"></div>
 <!-- Sky bleed overlay: top ~30% tints red for glitch events -->
 <div id="sky-bleed-overlay" style="position:fixed;top:0;left:0;right:0;height:35vh;z-index:9982;pointer-events:none;opacity:0;transition:opacity 0.4s;background:linear-gradient(180deg,rgba(180,20,20,0.18) 0%,rgba(140,10,10,0.1) 50%,transparent 100%);"></div>
+
+<!-- SIGNAL CUBE — 3D rotating ARG viewport -->
+<div id="signal-cube-wrap">
+  <div id="signal-cube-label">SIG_CUBE // WNCORE-RELAY</div>
+  <canvas id="signal-cube-canvas" width="140" height="140"></canvas>
+  <div id="signal-cube-status">▓ FREQ: 88.7 ▓ LOCK: ??</div>
+</div>
+
+<!-- WHISPER TRANSMISSIONS — floating lore fragments -->
+<div id="whisper-layer"></div>
+
+<!-- NODE CLICK RIPPLE — DOM pool -->
+<div id="ripple-layer"></div>
+
+<!-- SIGNAL SPIKE — vertical oscilloscope flash -->
+<canvas id="signal-spike" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:9984;pointer-events:none;opacity:0;"></canvas>
 
 <header id="hd">
   <a href="constellation.html" class="hd-logo">WNCORE</a>
@@ -3807,6 +3929,481 @@ function playDeadAir(){
   nSrc.start(t);
   nSrc.stop(t + dur + 0.05);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   NODE CLICK GLITCH BURST
+   Chromatic ghosts + pixel scatter + ripple rings + name corrupt
+   ═══════════════════════════════════════════════════════════ */
+function doNodeClickGlitch(el, n, clientX, clientY){
+  /* 1. Chromatic ghost copies on the node itself */
+  const rect = el.getBoundingClientRect();
+  const sizerRect = document.getElementById('map-sizer').getBoundingClientRect();
+  const nodeX = parseFloat(el.style.left);
+  const nodeY = parseFloat(el.style.top);
+  const w = el.offsetWidth, h = el.offsetHeight;
+
+  const offsets = [
+    {dx: 4+Math.random()*6, dy: (Math.random()-0.5)*3, color:'rgba(255,20,60,0.18)', dur:220},
+    {dx:-(3+Math.random()*5), dy: (Math.random()-0.5)*2, color:'rgba(30,60,255,0.14)', dur:180},
+    {dx: 2, dy: 4, color:'rgba(0,255,160,0.08)', dur:140},
+  ];
+  offsets.forEach(o => {
+    const ghost = document.createElement('div');
+    ghost.className = 'node-chroma-ghost';
+    ghost.style.cssText = `
+      left:${nodeX + o.dx}px; top:${nodeY + o.dy}px;
+      width:${w}px; height:${h}px;
+      background:${o.color};
+      transition:opacity ${o.dur}ms linear;
+    `;
+    canvas.appendChild(ghost);
+    requestAnimationFrame(()=>{ ghost.style.opacity = '1'; });
+    setTimeout(()=>{
+      ghost.style.opacity = '0';
+      setTimeout(()=>ghost.remove(), o.dur);
+    }, 30);
+  });
+
+  /* 2. Ripple rings from screen position */
+  doNodeRipple(clientX, clientY);
+
+  /* 3. Name corruption burst */
+  doNodeNameCorrupt(el);
+
+  /* 4. Mini chroma shift on the whole screen */
+  doChromaShift(false);
+
+  /* 5. Pixel scatter from click point */
+  spawnPixelScatterAt(clientX, clientY);
+}
+
+function doNodeRipple(cx, cy){
+  const layer = document.getElementById('ripple-layer');
+  const configs = [
+    {cls:'node-ripple',   size:80,  delay:0,   dur:500},
+    {cls:'node-ripple-r', size:130, delay:40,  dur:600},
+    {cls:'node-ripple-b', size:180, delay:80,  dur:700},
+    {cls:'node-ripple',   size:240, delay:120, dur:800},
+  ];
+  configs.forEach(c => {
+    setTimeout(()=>{
+      const r = document.createElement('div');
+      r.className = c.cls;
+      r.style.cssText = `left:${cx}px;top:${cy}px;width:${c.size}px;height:${c.size}px;`;
+      layer.appendChild(r);
+      requestAnimationFrame(()=>{
+        r.style.transition = `transform ${c.dur}ms cubic-bezier(0.2,0,0.6,1), opacity ${c.dur}ms ease-out`;
+        r.style.transform = `translate(-50%,-50%) scale(1)`;
+        r.style.opacity = '0.7';
+      });
+      setTimeout(()=>{
+        r.style.opacity = '0';
+        setTimeout(()=>r.remove(), c.dur+50);
+      }, c.dur * 0.3);
+    }, c.delay);
+  });
+}
+
+function doNodeNameCorrupt(el){
+  const nameEl = el.querySelector('.n-name');
+  if(!nameEl) return;
+  const orig = nameEl.textContent;
+  const chars = '█▓▒░╬╫╪│┤╡╢╖╣║╗╝╔╠═╬╧╤╙╒╓┘┌╱╲╳▪▫◦◈⬡⬢';
+  /* 3 rapid corrupt frames */
+  let frame = 0;
+  function corruptFrame(){
+    if(frame >= 3){ nameEl.textContent = orig; nameEl.style.textShadow = ''; return; }
+    nameEl.textContent = Array.from({length:orig.length}, (_,i)=>
+      Math.random() < (0.5 + frame*0.15) ? chars[Math.floor(Math.random()*chars.length)] : orig[i]
+    ).join('');
+    nameEl.style.textShadow = `${3+frame}px 0 rgba(255,0,60,0.8),${-(3+frame)}px 0 rgba(0,80,255,0.7)`;
+    frame++;
+    setTimeout(corruptFrame, 45 + frame*20);
+  }
+  corruptFrame();
+}
+
+function spawnPixelScatterAt(cx, cy){
+  const c = document.getElementById('pixel-scatter');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const count = 18 + Math.floor(Math.random()*14);
+  const colors = ['rgba(255,20,60,', 'rgba(30,80,255,', 'rgba(200,71,42,', 'rgba(0,255,160,'];
+  for(let i=0;i<count;i++){
+    const angle = Math.random()*Math.PI*2;
+    const dist = 20 + Math.random()*90;
+    const x = cx + Math.cos(angle)*dist;
+    const y = cy + Math.sin(angle)*dist;
+    const size = 1+Math.random()*4;
+    const col = colors[Math.floor(Math.random()*colors.length)];
+    ctx.fillStyle = col + (0.4+Math.random()*0.6) + ')';
+    ctx.fillRect(x,y,size,size);
+  }
+  c.style.opacity='1';
+  setTimeout(()=>{ c.style.opacity='0'; setTimeout(()=>ctx.clearRect(0,0,c.width,c.height),300); },120);
+}
+
+/* Patch handleNodeClick to fire the glitch burst */
+const _origHandleNodeClick = handleNodeClick;
+document.querySelectorAll && (()=>{
+  /* We override via the click listener added in buildNodes.
+     Since we can't easily re-patch that, we attach a capture-phase listener
+     on the canvas that fires before the node's own click. */
+  canvas.addEventListener('click', e => {
+    const nodeEl = e.target.closest('.node');
+    if(!nodeEl) return;
+    const id = nodeEl.dataset.id;
+    const n = nodeMap[id];
+    if(!n) return;
+    doNodeClickGlitch(nodeEl, n, e.clientX, e.clientY);
+  }, true);
+  canvas.addEventListener('touchend', e => {
+    const nodeEl = e.target.closest('.node');
+    if(!nodeEl) return;
+    const t = e.changedTouches[0];
+    const id = nodeEl.dataset.id;
+    const n = nodeMap[id];
+    if(!n) return;
+    doNodeClickGlitch(nodeEl, n, t.clientX, t.clientY);
+  }, true);
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   SIGNAL CUBE — 3D rotating ARG viewport
+   WebGL-free: canvas 2D with manual projection
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const cubeCanvas = document.getElementById('signal-cube-canvas');
+  const cw = 140, ch = 140;
+  cubeCanvas.width = cw; cubeCanvas.height = ch;
+  const ctx = cubeCanvas.getContext('2d');
+  const wrap = document.getElementById('signal-cube-wrap');
+
+  /* Cube half-size */
+  const S = 38;
+
+  /* 8 vertices of a unit cube */
+  const VERTS = [
+    [-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],
+    [-1,-1, 1],[1,-1, 1],[1,1, 1],[-1,1, 1],
+  ].map(v => v.map(x=>x*S));
+
+  /* 6 faces: vertex indices + face label */
+  const FACES = [
+    {v:[0,1,2,3], label:'SIGNAL\nKAGE',    col:'rgba(200,71,42,'},
+    {v:[4,5,6,7], label:'BLANK\nZONE',     col:'rgba(60,20,100,'},
+    {v:[0,1,5,4], label:'88.7\nMHz',       col:'rgba(30,60,130,'},
+    {v:[2,3,7,6], label:'ANOTHER\nSKY',    col:'rgba(20,80,40,'},
+    {v:[0,3,7,4], label:'OBSEDIA\nCL-6',   col:'rgba(80,50,10,'},
+    {v:[1,2,6,5], label:'GHUUL\n×173',     col:'rgba(100,20,20,'},
+  ];
+
+  let rotX = 0.3, rotY = 0.4;
+  let velX = 0.003, velY = 0.006;
+  let glitching = false;
+  let glitchTimer = 0;
+
+  /* Lore fragments that flash on faces during glitch */
+  const LORE = [
+    '0.315126','NOT GPS','APRIL 5 2032',
+    'OUTBREAK ZERO','STRATUM-B','TRANSFER LOG',
+    '// ERASED','SIGNAL KAGE','OBSERVER',
+  ];
+
+  function rotateVert(v, rx, ry){
+    let [x,y,z] = v;
+    /* rotate Y */
+    let cx=Math.cos(ry),sx=Math.sin(ry);
+    [x,z] = [x*cx-z*sx, x*sx+z*cx];
+    /* rotate X */
+    let cy=Math.cos(rx),sy=Math.sin(rx);
+    [y,z] = [y*cy-z*sy, y*sy+z*cy];
+    return [x,y,z];
+  }
+
+  function project(v){
+    const fov = 220;
+    const z = v[2] + 200;
+    return [cw/2 + v[0]*fov/z, ch/2 + v[1]*fov/z];
+  }
+
+  function drawFace(face, alpha, glitch, loreText){
+    const pts = face.v.map(i => project(rotateVert(VERTS[i], rotX, rotY)));
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(pts[0][0],pts[0][1]);
+    for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+    ctx.closePath();
+
+    if(glitch){
+      /* scanline fill */
+      ctx.fillStyle = face.col + Math.min(0.9, alpha*1.4) + ')';
+      ctx.fill();
+      ctx.clip();
+      /* glitch horizontal bands */
+      for(let y=0;y<ch;y+=3+Math.floor(Math.random()*5)){
+        if(Math.random()<0.3){
+          ctx.fillStyle = 'rgba(255,0,60,' + (Math.random()*0.25) + ')';
+          ctx.fillRect(0,y,cw,2);
+        }
+      }
+    } else {
+      ctx.fillStyle = face.col + alpha * 0.75 + ')';
+      ctx.fill();
+    }
+
+    /* edge */
+    ctx.strokeStyle = glitch ? 'rgba(255,0,60,0.9)' : 'rgba(200,71,42,' + (0.3+alpha*0.5) + ')';
+    ctx.lineWidth = glitch ? 1.5 : 0.7;
+    ctx.stroke();
+
+    /* label */
+    ctx.clip();
+    ctx.font = (glitch ? 'bold ' : '') + '8px "Share Tech Mono", monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    const cx2 = pts.reduce((a,p)=>a+p[0],0)/pts.length;
+    const cy2 = pts.reduce((a,p)=>a+p[1],0)/pts.length;
+
+    const txt = glitch && loreText ? loreText : face.label;
+
+    if(glitch){
+      ctx.fillStyle = 'rgba(255,20,60,0.9)';
+      ctx.fillText(txt.split('\n')[0], cx2+Math.random()*4-2, cy2-5+Math.random()*3-1);
+      if(txt.split('\n')[1]) ctx.fillText(txt.split('\n')[1], cx2, cy2+5);
+    } else {
+      ctx.fillStyle = 'rgba(200,71,42,' + (0.4+alpha*0.5) + ')';
+      txt.split('\n').forEach((line,i,a)=>
+        ctx.fillText(line, cx2, cy2 - (a.length-1)*5 + i*10)
+      );
+    }
+    ctx.restore();
+  }
+
+  function getFaceDepth(face){
+    /* average Z of rotated face verts — painter's algo */
+    return face.v.reduce((s,i)=>s+rotateVert(VERTS[i],rotX,rotY)[2],0)/face.v.length;
+  }
+
+  function drawCube(){
+    ctx.clearRect(0,0,cw,ch);
+
+    /* scanline bg */
+    ctx.fillStyle = 'rgba(4,3,10,0.85)';
+    ctx.fillRect(0,0,cw,ch);
+    for(let y=0;y<ch;y+=4){
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(0,y,cw,1);
+    }
+
+    /* sort faces back-to-front */
+    const sorted = FACES.map((f,i)=>({f,i,z:getFaceDepth(f)}))
+                        .sort((a,b)=>a.z-b.z);
+
+    const glitchFace = glitching ? Math.floor(Math.random()*6) : -1;
+    const loreFrag = glitching ? LORE[Math.floor(Math.random()*LORE.length)] : '';
+
+    sorted.forEach(({f,i})=>{
+      /* only draw front-facing */
+      const vr = f.v.map(vi=>rotateVert(VERTS[vi],rotX,rotY));
+      const pts = vr.map(project);
+      const ax=pts[1][0]-pts[0][0], ay=pts[1][1]-pts[0][1];
+      const bx=pts[3][0]-pts[0][0], by=pts[3][1]-pts[0][1];
+      const cross = ax*by - ay*bx;
+      if(cross >= 0) return; /* back-facing */
+      const depth = (getFaceDepth(f)+S)/(S*2);
+      const alpha = 0.25 + depth * 0.6;
+      drawFace(f, alpha, glitching && i===glitchFace, loreFrag);
+    });
+
+    /* corner ticks */
+    ctx.strokeStyle = 'rgba(200,71,42,0.25)';
+    ctx.lineWidth = 0.5;
+    [[0,0],[cw,0],[0,ch],[cw,ch]].forEach(([x,y])=>{
+      ctx.beginPath(); ctx.moveTo(x,y+(y?-6:6)); ctx.lineTo(x,y); ctx.lineTo(x+(x?-6:6),y); ctx.stroke();
+    });
+
+    /* center crosshair */
+    ctx.strokeStyle = 'rgba(200,71,42,0.12)';
+    ctx.setLineDash([2,4]);
+    ctx.beginPath(); ctx.moveTo(cw/2,0); ctx.lineTo(cw/2,ch); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0,ch/2); ctx.lineTo(cw,ch/2); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  let lastGlitch = 0;
+  function cubeTick(ts){
+    requestAnimationFrame(cubeTick);
+    if(!glitching){
+      rotX += velX; rotY += velY;
+      /* slow wobble */
+      velX += (Math.random()-0.5)*0.0002;
+      velY += (Math.random()-0.5)*0.0003;
+      velX = Math.max(-0.01, Math.min(0.01, velX));
+      velY = Math.max(-0.015,Math.min(0.015,velY));
+    } else {
+      /* during glitch: erratic spin */
+      rotX += (Math.random()-0.5)*0.15;
+      rotY += (Math.random()-0.5)*0.18;
+    }
+
+    drawCube();
+
+    /* random glitch trigger */
+    if(ts - lastGlitch > 3000 + Math.random()*8000){
+      lastGlitch = ts;
+      startCubeGlitch();
+    }
+  }
+  requestAnimationFrame(cubeTick);
+
+  function startCubeGlitch(){
+    glitching = true;
+    wrap.classList.add('cube-glitching');
+    const dur = 200 + Math.random()*600;
+    setTimeout(()=>{
+      glitching = false;
+      wrap.classList.remove('cube-glitching');
+    }, dur);
+  }
+
+  /* Click cube to trigger intense glitch */
+  wrap.addEventListener('click', ()=>{ startCubeGlitch(); doChromaShift(true); });
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   WHISPER TRANSMISSIONS
+   Random lore fragments drift in/out at random screen positions
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const layer = document.getElementById('whisper-layer');
+  const WHISPERS = [
+    '// SIGNAL LOST AT COORDINATE 0.315126',
+    'THE SKY ABOVE IS NOT THE SKY YOU KNOW',
+    'GHUUL COUNT: 173. GHUUL COUNT: 174.',
+    'BLANK ZONE — DO NOT ENTER — BLANK ZONE',
+    'OBSEDIA LOG 0447: SHE LOOKED UP',
+    'FREQUENCY 88.7 — STILL TRANSMITTING',
+    'STRATUM-B DETECTED. ORIGIN: UNKNOWN.',
+    '// APRIL 5 2032 — OUTBREAK ZERO',
+    'S — RISER — DAY 0 — TRANSFERRED',
+    'THE ARCHIVE IS WATCHING',
+    '███████ — CLEARANCE REQUIRED',
+    'SIGNAL_KAGE DOES NOT TRANSMIT. IT OBSERVES.',
+    '// MOON DOME: STRUCTURAL INTEGRITY ??%',
+    'YOU SHOULD NOT BE ABLE TO READ THIS',
+    '╬╬╬ ANOTHER SKY ╬╬╬ LOOK UP ╬╬╬',
+    'OBSEDIA CL-6 — FIELD EXISTS — REF: NONE',
+    '// SIMULATION LAYER: LEAKING',
+    'DELTA-CLASS HANDSHAKE INCOMPLETE',
+  ];
+
+  function spawnWhisper(){
+    const txt = WHISPERS[Math.floor(Math.random()*WHISPERS.length)];
+    const el = document.createElement('div');
+    el.className = 'whisper';
+    /* keep away from the cube (bottom-right) and header (top) */
+    const x = 5 + Math.random() * 70; /* % from left */
+    const y = 12 + Math.random() * 75;
+    el.style.left = x + '%';
+    el.style.top  = y + '%';
+    /* slight random tilt */
+    const tilt = (Math.random()-0.5)*2;
+    el.style.transform = `rotate(${tilt}deg)`;
+    el.textContent = txt;
+    layer.appendChild(el);
+
+    /* fade in */
+    const fadeIn = 800 + Math.random()*400;
+    const hold   = 2000 + Math.random()*3000;
+    const fadeOut= 1200 + Math.random()*800;
+
+    el.style.transition = `color ${fadeIn}ms ease`;
+    requestAnimationFrame(()=>{
+      const alpha = 0.06 + Math.random()*0.1;
+      el.style.color = `rgba(200,71,42,${alpha})`;
+      /* occasional cyan/blue variant */
+      if(Math.random()<0.2) el.style.color = `rgba(60,120,200,${alpha})`;
+      if(Math.random()<0.1) el.style.color = `rgba(148,88,200,${alpha*1.3})`;
+    });
+    setTimeout(()=>{
+      el.style.transition = `color ${fadeOut}ms ease`;
+      el.style.color = 'rgba(200,71,42,0)';
+      setTimeout(()=>el.remove(), fadeOut+100);
+    }, fadeIn + hold);
+  }
+
+  /* Stagger initial spawns */
+  function scheduleWhisper(){
+    spawnWhisper();
+    setTimeout(scheduleWhisper, 3000 + Math.random()*6000);
+  }
+  setTimeout(scheduleWhisper, 2000);
+})();
+
+/* ═══════════════════════════════════════════════════════════
+   SIGNAL SPIKE — oscilloscope vertical flash
+   ═══════════════════════════════════════════════════════════ */
+(function(){
+  const spikeCanvas = document.getElementById('signal-spike');
+  spikeCanvas.width = window.innerWidth;
+  spikeCanvas.height = window.innerHeight;
+  const ctx = spikeCanvas.getContext('2d');
+  window.addEventListener('resize',()=>{
+    spikeCanvas.width = window.innerWidth;
+    spikeCanvas.height = window.innerHeight;
+  });
+
+  function fireSpike(){
+    const w = spikeCanvas.width, h = spikeCanvas.height;
+    ctx.clearRect(0,0,w,h);
+    const x = 60 + Math.random()*(w-120);
+    const spikeW = 1 + Math.random()*2;
+    const col = Math.random() < 0.7 ? '200,71,42' : '30,80,200';
+
+    /* main line */
+    const grad = ctx.createLinearGradient(x,0,x,h);
+    grad.addColorStop(0,   `rgba(${col},0)`);
+    grad.addColorStop(0.2, `rgba(${col},0.6)`);
+    grad.addColorStop(0.5, `rgba(${col},0.9)`);
+    grad.addColorStop(0.8, `rgba(${col},0.6)`);
+    grad.addColorStop(1,   `rgba(${col},0)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(x-spikeW/2, 0, spikeW, h);
+
+    /* glow */
+    const glow = ctx.createLinearGradient(x,0,x,h);
+    glow.addColorStop(0,   `rgba(${col},0)`);
+    glow.addColorStop(0.5, `rgba(${col},0.15)`);
+    glow.addColorStop(1,   `rgba(${col},0)`);
+    ctx.fillStyle = glow;
+    ctx.fillRect(x-8, 0, 16, h);
+
+    /* noise blips along the line */
+    for(let i=0;i<6;i++){
+      const by = Math.random()*h;
+      const bw = 8+Math.random()*20;
+      ctx.fillStyle = `rgba(${col},${0.2+Math.random()*0.4})`;
+      ctx.fillRect(x-bw/2, by, bw, 1);
+    }
+
+    spikeCanvas.style.transition = 'none';
+    spikeCanvas.style.opacity = '1';
+    setTimeout(()=>{
+      spikeCanvas.style.transition = 'opacity 300ms ease';
+      spikeCanvas.style.opacity = '0';
+    }, 60 + Math.random()*80);
+
+    scheduleSpike();
+  }
+
+  function scheduleSpike(){
+    setTimeout(fireSpike, 4000 + Math.random()*12000);
+  }
+  setTimeout(scheduleSpike, 3000);
+})();
 </script>
 </body>
 </html>
