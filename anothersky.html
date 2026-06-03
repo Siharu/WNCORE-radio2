@@ -1,0 +1,2049 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="dark light">
+<meta name="robots" content="noindex">
+<meta name="description" content="ANOTHER SKY — A novel. World -2, 2032. The sky is wrong. Read if you are from this world.">
+<meta property="og:title" content="ANOTHER SKY — LOGBOOK DRIFTERS ARCHIVE">
+<meta property="og:description" content="The sky changed and nobody noticed. A serial novel from World -2.">
+<meta property="og:image" content="https://wncore-radio.vercel.app/images/og-preview.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<title>ANOTHER SKY — LOGBOOK DRIFTERS ARCHIVE</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/fonts.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
+
+<style>
+/* ═══════════════════════════════════════════════════
+   ROOT — DARK (default)
+═══════════════════════════════════════════════════ */
+:root {
+  --void:      #010004;
+  --paper:     #080003;
+  --surface:   #0f0005;
+  --surface2:  #160008;
+  --brd:       rgba(180,0,0,0.18);
+  --brd-hot:   rgba(255,0,0,0.55);
+  --text:      #d4bfb8;
+  --text2:     rgba(212,191,184,0.55);
+  --text3:     rgba(212,191,184,0.22);
+  --red:       #ff1a1a;
+  --dred:      #8b0000;
+  --dred2:     #440000;
+  --chrome-r:  rgba(255,20,20,0.65);
+  --chrome-b:  rgba(0,180,255,0.55);
+  --signal:    #ff6600;
+  --grain-op:  0.06;
+  --scan-col:  rgba(0,0,0,0.06);
+  --redact-bg: #0c0002;
+  --ch-shadow: 0 0 40px rgba(200,0,0,0.08);
+}
+
+/* ═══════════════════════════════════════════════════
+   ROOT — PAPER (light mode)
+═══════════════════════════════════════════════════ */
+:root[data-theme="paper"] {
+  --void:      #f0e8dc;
+  --paper:     #f5f0e8;
+  --surface:   #ede4d6;
+  --surface2:  #e5daca;
+  --brd:       rgba(100,40,0,0.18);
+  --brd-hot:   rgba(139,0,0,0.55);
+  --text:      #1a0a04;
+  --text2:     rgba(26,10,4,0.6);
+  --text3:     rgba(26,10,4,0.32);
+  --red:       #8b0000;
+  --dred:      #6b0000;
+  --dred2:     #5a0000;
+  --chrome-r:  rgba(139,0,0,0.5);
+  --chrome-b:  rgba(0,80,180,0.4);
+  --signal:    #cc4400;
+  --grain-op:  0.04;
+  --scan-col:  rgba(0,0,0,0.03);
+  --redact-bg: #d8cfc0;
+  --ch-shadow: 0 2px 24px rgba(100,40,0,0.08);
+}
+
+/* ═══════════════════════════════════════════════════
+   RESET + BASE
+═══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow-x: hidden; }
+body {
+  background: var(--void);
+  color: var(--text);
+  font-family: var(--font-body, 'Comic Neue', 'Comic Sans MS', cursive);
+  transition: background 0.6s, color 0.6s;
+}
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--dred2); }
+* { scrollbar-width: thin; scrollbar-color: var(--dred2) transparent; }
+
+/* ═══════════════════════════════════════════════════
+   ATMOSPHERIC LAYERS
+═══════════════════════════════════════════════════ */
+#grain {
+  position: fixed; inset: 0; z-index: 1; pointer-events: none;
+  opacity: var(--grain-op);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 256px;
+  animation: grainShift 0.5s steps(1) infinite;
+}
+@keyframes grainShift {
+  0%,100%{background-position:0 0} 20%{background-position:-5% -10%}
+  40%{background-position:-15% 5%} 60%{background-position:7% -25%} 80%{background-position:-5% 25%}
+}
+#scanlines {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, var(--scan-col) 2px, var(--scan-col) 4px);
+}
+#vignette {
+  position: fixed; inset: 0; z-index: 2; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.6) 100%);
+}
+:root[data-theme="paper"] #vignette {
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(100,60,20,0.2) 100%);
+}
+
+/* ═══════════════════════════════════════════════════
+   CHROMATIC ABERRATION — utility
+═══════════════════════════════════════════════════ */
+.ch-aberration {
+  position: relative;
+  display: inline-block;
+}
+.ch-aberration::before,
+.ch-aberration::after {
+  content: attr(data-text);
+  position: absolute; top: 0; left: 0;
+  pointer-events: none;
+}
+.ch-aberration::before {
+  color: var(--chrome-r);
+  mix-blend-mode: screen;
+  animation: aberrR 4s ease-in-out infinite;
+  clip-path: inset(0 0 50% 0);
+}
+.ch-aberration::after {
+  color: var(--chrome-b);
+  mix-blend-mode: screen;
+  animation: aberrB 4s ease-in-out infinite 0.2s;
+  clip-path: inset(50% 0 0 0);
+}
+@keyframes aberrR {
+  0%,90%,100%{transform:translate(0,0)} 92%{transform:translate(-2px,0)} 95%{transform:translate(3px,1px)} 98%{transform:translate(-1px,0)}
+}
+@keyframes aberrB {
+  0%,90%,100%{transform:translate(0,0)} 93%{transform:translate(2px,0)} 96%{transform:translate(-3px,-1px)} 99%{transform:translate(1px,0)}
+}
+
+/* ═══════════════════════════════════════════════════
+   ── PHASE 1: BLACK HOLE INTRO ──
+═══════════════════════════════════════════════════ */
+#bh-scene {
+  position: fixed; inset: 0; z-index: 100;
+  background: #000;
+  transition: opacity 1.6s cubic-bezier(0.16,1,0.3,1);
+}
+#bh-scene.exit { opacity: 0; pointer-events: none; }
+#bh-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+
+/* BH overlay text */
+#bh-label {
+  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.5rem;
+  letter-spacing: 4px; color: rgba(180,0,0,0.5);
+  text-transform: uppercase; pointer-events: none;
+  animation: bhLabel 8s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes bhLabel {
+  0%,100%{opacity:0.3;letter-spacing:4px} 50%{opacity:0.7;letter-spacing:6px}
+}
+
+/* ═══════════════════════════════════════════════════
+   ── PHASE 2: WORLD GATE ──
+═══════════════════════════════════════════════════ */
+#world-gate {
+  position: fixed; inset: 0; z-index: 90;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #0a0002 0%, #000 70%);
+  opacity: 0; pointer-events: none;
+  transition: opacity 1.2s ease;
+}
+#world-gate.show { opacity: 1; pointer-events: all; }
+
+#gate-inner {
+  text-align: center; max-width: 480px; padding: 0 24px;
+  position: relative;
+}
+
+/* Decorative border — brutalist frame */
+#gate-inner::before {
+  content: '';
+  position: absolute; inset: -32px;
+  border: 1px solid rgba(180,0,0,0.2);
+  pointer-events: none;
+}
+#gate-inner::after {
+  content: '';
+  position: absolute; top: -32px; left: -32px; right: -32px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #8b0000, transparent);
+}
+
+#gate-eyebrow {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.42rem; letter-spacing: 5px;
+  color: rgba(180,0,0,0.5);
+  text-transform: uppercase; margin-bottom: 24px;
+  animation: eyeIn 1.5s ease forwards;
+  opacity: 0;
+}
+@keyframes eyeIn { to { opacity: 1; } }
+
+#gate-question {
+  font-family: var(--font-glitch, 'Rubik Glitch');
+  font-size: clamp(1.8rem, 5vw, 3rem);
+  line-height: 1.1; margin-bottom: 10px;
+  color: #fff;
+  animation: qIn 1.8s ease 0.6s forwards; opacity: 0;
+  position: relative;
+}
+#gate-question .q-red { color: var(--red); }
+@keyframes qIn { to { opacity: 1; transform: none; } }
+#gate-question { transform: translateY(12px); }
+
+#gate-sub {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.52rem; color: rgba(212,191,184,0.35);
+  letter-spacing: 2px; margin-bottom: 48px;
+  animation: qIn 1.5s ease 1.1s forwards; opacity: 0; transform: translateY(8px);
+}
+
+#gate-choices {
+  display: flex; gap: 16px; justify-content: center;
+  animation: qIn 1.5s ease 1.6s forwards; opacity: 0; transform: translateY(8px);
+}
+
+.gate-btn {
+  position: relative; overflow: hidden;
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.7rem; letter-spacing: 3px; text-transform: uppercase;
+  padding: 14px 28px; cursor: pointer; border: none;
+  transition: all 0.2s;
+}
+.gate-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--red); transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+  z-index: 0;
+}
+.gate-btn:hover::before { transform: translateY(0); }
+.gate-btn span { position: relative; z-index: 1; }
+
+#btn-yes {
+  background: transparent;
+  border: 2px solid var(--red);
+  color: var(--red);
+}
+#btn-yes:hover { color: #000; }
+
+#btn-no {
+  background: transparent;
+  border: 2px solid rgba(180,0,0,0.3);
+  color: rgba(212,191,184,0.4);
+}
+#btn-no::before { background: rgba(180,0,0,0.15); }
+#btn-no:hover { color: rgba(212,191,184,0.7); border-color: rgba(180,0,0,0.6); }
+
+/* Gate glitch on hover */
+#gate-question { animation: qIn 1.8s ease 0.6s forwards, gateGlitch 12s ease-in-out 3s infinite; }
+@keyframes gateGlitch {
+  0%,88%,100%{text-shadow:none;transform:none}
+  90%{text-shadow:2px 0 var(--chrome-r),-2px 0 var(--chrome-b);transform:skewX(-1deg)}
+  93%{text-shadow:-3px 0 var(--chrome-r),3px 0 var(--chrome-b);transform:skewX(1deg)}
+  96%{text-shadow:none;transform:none}
+  98%{text-shadow:1px 0 var(--chrome-r);transform:translateX(2px)}
+}
+
+/* Wrong answer — shake and dissolve */
+#wrong-world {
+  position: fixed; inset: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: center;
+  background: #000; opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+#wrong-world.show { opacity: 1; pointer-events: all; }
+#ww-text {
+  font-family: var(--font-glitch, 'Rubik Glitch');
+  font-size: clamp(1.2rem, 4vw, 2rem);
+  color: #ff0000; text-align: center; line-height: 1.4;
+  animation: wwGlitch 0.1s steps(2) infinite;
+}
+@keyframes wwGlitch {
+  0%{transform:translate(0,0)} 25%{transform:translate(2px,-1px)} 50%{transform:translate(-2px,1px)} 75%{transform:translate(1px,2px)} 100%{transform:translate(-1px,-2px)}
+}
+#ww-sub {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive;
+  font-size: 0.6rem; color: rgba(255,0,0,0.5);
+  margin-top: 16px; letter-spacing: 2px; text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════
+   ── PHASE 3: MAIN READER SHELL ──
+═══════════════════════════════════════════════════ */
+#reader-shell {
+  display: none; min-height: 100vh;
+  flex-direction: column;
+}
+#reader-shell.show { display: flex; }
+
+/* ── HEADER ── */
+#as-header {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(1,0,4,0.92); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--brd);
+  padding: 0 24px;
+  display: flex; align-items: stretch;
+  min-height: 58px;
+  transition: background 0.6s, border-color 0.6s;
+}
+:root[data-theme="paper"] #as-header {
+  background: rgba(240,232,220,0.95);
+}
+
+#hdr-logo-block {
+  display: flex; align-items: center; gap: 14px;
+  border-right: 1px solid var(--brd); padding-right: 18px; margin-right: 18px;
+}
+#hdr-logotype {
+  font-family: var(--font-glitch, 'Rubik Glitch');
+  font-size: 1rem; color: var(--red);
+  letter-spacing: 1px; text-decoration: none;
+  transition: text-shadow 0.3s;
+}
+#hdr-logotype:hover { text-shadow: 0 0 20px rgba(255,0,0,0.6); }
+#hdr-sub {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.4rem; letter-spacing: 3px;
+  color: var(--text3); text-transform: uppercase;
+}
+
+#hdr-status-row {
+  flex: 1; display: flex; align-items: center; gap: 20px;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.42rem; color: var(--text3); letter-spacing: 2px;
+}
+.hdr-stat { display: flex; flex-direction: column; gap: 2px; }
+.hdr-stat-label { font-size: 0.32rem; letter-spacing: 3px; color: var(--text3); text-transform: uppercase; }
+.hdr-stat-val { color: var(--text2); }
+.hdr-stat-val.red { color: var(--red); }
+.hdr-stat-val.pulse { animation: statPulse 3s ease-in-out infinite; }
+@keyframes statPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+#hdr-right {
+  display: flex; align-items: center; gap: 10px;
+  border-left: 1px solid var(--brd); padding-left: 18px; margin-left: auto;
+}
+.hdr-btn {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.38rem; letter-spacing: 2px; text-transform: uppercase;
+  padding: 6px 12px; background: transparent;
+  border: 1px solid var(--brd); color: var(--text3);
+  cursor: pointer; transition: all 0.15s;
+}
+.hdr-btn:hover { border-color: var(--red); color: var(--red); }
+.hdr-btn.active { border-color: var(--red); color: var(--red); background: rgba(200,0,0,0.05); }
+
+/* ── PROGRESS SIGNAL METER ── */
+#signal-meter {
+  position: fixed; top: 58px; left: 0; right: 0; z-index: 49;
+  height: 2px; background: transparent; pointer-events: none;
+  overflow: hidden;
+}
+#signal-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, #440000, var(--red), #ff4444);
+  box-shadow: 0 0 8px rgba(255,0,0,0.6);
+  transition: width 0.08s linear;
+}
+
+/* ── LAYOUT ── */
+#as-body {
+  display: flex; flex: 1; min-height: 0;
+  position: relative;
+}
+
+/* ── SIDEBAR ── */
+#as-sidebar {
+  width: 220px; flex-shrink: 0;
+  background: var(--surface);
+  border-right: 1px solid var(--brd);
+  position: sticky; top: 60px;
+  height: calc(100vh - 60px);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: background 0.6s, border-color 0.6s;
+}
+
+#sb-archive-header {
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid var(--brd);
+  flex-shrink: 0;
+}
+#sb-archive-label {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.7rem; letter-spacing: 2px;
+  color: var(--red); text-transform: uppercase;
+  display: block; margin-bottom: 4px;
+}
+#sb-archive-meta {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.35rem; letter-spacing: 2px;
+  color: var(--text3); text-transform: uppercase;
+}
+#sb-archive-meta span { color: var(--dred); }
+
+#sb-list-wrap {
+  flex: 1; overflow-y: auto; padding: 6px 0;
+}
+
+.sb-ch-item {
+  display: block; width: 100%; padding: 10px 16px;
+  background: transparent; border: none;
+  border-bottom: 1px solid rgba(180,0,0,0.06);
+  border-left: 3px solid transparent;
+  color: var(--text3); text-align: left;
+  cursor: pointer; transition: all 0.12s;
+  position: relative;
+}
+.sb-ch-item:hover {
+  background: rgba(200,0,0,0.04);
+  border-left-color: var(--dred2);
+  color: var(--text2);
+}
+.sb-ch-item.active {
+  background: rgba(200,0,0,0.07);
+  border-left-color: var(--red);
+  color: var(--text);
+}
+.sb-case-id {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.3rem; letter-spacing: 3px;
+  color: var(--dred2); display: block; margin-bottom: 3px;
+  text-transform: uppercase;
+}
+.sb-ch-item.active .sb-case-id { color: var(--dred); }
+.sb-ch-name {
+  font-family: var(--font-body, 'Comic Neue'); /* wrongness: chapter names in comic font */
+  font-size: 0.55rem; line-height: 1.3;
+  display: block;
+}
+/* Redacted chapters (future) */
+.sb-ch-item.redacted .sb-ch-name {
+  color: transparent;
+  background: var(--redact-bg);
+  user-select: none;
+  border-radius: 1px;
+}
+.sb-ch-item.redacted { cursor: not-allowed; opacity: 0.5; }
+
+#sb-bottom {
+  flex-shrink: 0; padding: 10px;
+  border-top: 1px solid var(--brd);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.sb-tool-btn {
+  width: 100%; padding: 8px 10px;
+  background: transparent; border: 1px solid var(--brd);
+  color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.36rem; letter-spacing: 2px; text-align: left;
+  cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+}
+.sb-tool-btn:hover { border-color: var(--red); color: var(--red); }
+
+/* ── MAIN CHAPTER AREA ── */
+#as-main {
+  flex: 1; min-width: 0;
+  padding: 0;
+  display: flex; flex-direction: column;
+}
+
+/* ── SYNOPSIS GATE ── */
+#synopsis-gate {
+  display: none; flex: 1;
+  align-items: center; justify-content: center;
+  padding: 60px 40px;
+  position: relative; overflow: hidden;
+}
+#synopsis-gate.show { display: flex; }
+
+/* Brutalist decorative lines behind synopsis */
+#synopsis-gate::before {
+  content: '';
+  position: absolute; top: 0; left: 40px; bottom: 0; width: 1px;
+  background: repeating-linear-gradient(to bottom, var(--brd) 0, var(--brd) 4px, transparent 4px, transparent 12px);
+}
+
+#syn-box {
+  max-width: 600px; width: 100%;
+  position: relative;
+}
+
+#syn-stamp {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.45rem; letter-spacing: 5px;
+  color: var(--dred2); text-transform: uppercase;
+  margin-bottom: 20px; display: flex; align-items: center; gap: 12px;
+}
+#syn-stamp::after {
+  content: ''; flex: 1; height: 1px; background: var(--brd);
+}
+
+#syn-title {
+  font-family: var(--font-glitch, 'Rubik Glitch');
+  font-size: clamp(2.2rem, 6vw, 4rem);
+  color: var(--red); line-height: 1;
+  margin-bottom: 8px;
+  position: relative; display: inline-block;
+}
+#syn-title::before {
+  content: 'ANOTHER SKY';
+  position: absolute; top: 2px; left: 3px;
+  color: var(--chrome-r); opacity: 0.5;
+  pointer-events: none; mix-blend-mode: screen;
+  clip-path: inset(0 0 60% 0);
+}
+#syn-title::after {
+  content: 'ANOTHER SKY';
+  position: absolute; top: -1px; left: -2px;
+  color: var(--chrome-b); opacity: 0.45;
+  pointer-events: none; mix-blend-mode: screen;
+  clip-path: inset(60% 0 0 0);
+}
+
+#syn-world-tag {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.42rem; letter-spacing: 3px;
+  color: var(--text3); margin-bottom: 36px;
+  text-transform: uppercase;
+}
+
+/* Encrypted synopsis — before decrypt */
+#syn-encrypted {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.6rem; line-height: 2.2;
+  color: var(--dred2); letter-spacing: 1px;
+  margin-bottom: 28px; position: relative;
+  background: var(--redact-bg); padding: 20px;
+  border-left: 3px solid var(--dred2);
+  filter: blur(2px);
+  user-select: none;
+  transition: filter 1.2s ease, opacity 0.8s;
+}
+#syn-encrypted.decrypted { filter: none; opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
+
+/* Decrypted synopsis — after */
+#syn-text {
+  font-family: var(--font-body, 'Comic Neue');
+  font-size: 0.92rem; line-height: 2;
+  color: var(--text); margin-bottom: 32px;
+  opacity: 0; max-height: 0; overflow: hidden;
+  transition: opacity 1.2s ease 0.4s, max-height 1.2s ease;
+}
+#syn-text.show { opacity: 1; max-height: 400px; }
+#syn-text p { margin-bottom: 1em; }
+#syn-text p:first-child::first-letter {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 3rem; color: var(--red); float: left;
+  line-height: 0.8; margin-right: 8px; margin-top: 8px;
+}
+
+#syn-decrypt-btn {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase;
+  padding: 14px 32px; cursor: pointer;
+  background: transparent; border: 2px solid var(--red);
+  color: var(--red); position: relative; overflow: hidden;
+  transition: color 0.2s;
+}
+#syn-decrypt-btn::before {
+  content: ''; position: absolute; inset: 0;
+  background: var(--red); transform: translateX(-100%);
+  transition: transform 0.3s cubic-bezier(0.16,1,0.3,1);
+  z-index: 0;
+}
+#syn-decrypt-btn:hover::before { transform: translateX(0); }
+#syn-decrypt-btn:hover { color: #000; }
+#syn-decrypt-btn span { position: relative; z-index: 1; }
+#syn-decrypt-btn.done { display: none; }
+
+#syn-begin-btn {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.6rem; letter-spacing: 3px; text-transform: uppercase;
+  padding: 14px 32px; cursor: pointer;
+  background: var(--red); border: 2px solid var(--red);
+  color: #000; display: none;
+  transition: opacity 0.2s;
+}
+#syn-begin-btn:hover { opacity: 0.85; }
+#syn-begin-btn.show { display: inline-block; }
+
+/* Decrypt animation */
+@keyframes decryptChar {
+  0% { content: attr(data-enc); }
+  100% { content: attr(data-dec); }
+}
+
+/* ── CHAPTER READER ── */
+#ch-reader {
+  display: none; flex: 1;
+  flex-direction: column;
+  max-width: 760px; width: 100%;
+  margin: 0 auto; padding: 48px 48px 80px;
+}
+#ch-reader.show { display: flex; }
+@media(max-width: 700px) { #ch-reader { padding: 24px 20px 80px; } }
+
+/* Chapter header — brutalist case file */
+.ch-file-header {
+  margin-bottom: 40px; padding-bottom: 20px;
+  border-bottom: 1px solid var(--brd);
+  position: relative;
+}
+.ch-file-header::after {
+  content: ''; position: absolute; bottom: -3px; left: 0;
+  width: 60px; height: 3px; background: var(--red);
+}
+.ch-case-id {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.38rem; letter-spacing: 4px; color: var(--dred2);
+  text-transform: uppercase; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+.ch-case-id::after {
+  content: ''; flex: 1; height: 1px;
+  background: repeating-linear-gradient(90deg, var(--brd) 0, var(--brd) 4px, transparent 4px, transparent 8px);
+}
+.ch-file-title {
+  font-family: var(--font-glitch, 'Rubik Glitch');
+  font-size: clamp(1.6rem, 4vw, 2.8rem);
+  color: var(--text); line-height: 1.05;
+  margin-bottom: 8px; letter-spacing: 1px;
+}
+:root[data-theme="paper"] .ch-file-title { color: var(--text); }
+.ch-file-date {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.36rem; letter-spacing: 3px; color: var(--dred2);
+  text-transform: uppercase;
+}
+
+/* Chapter body */
+#ch-body {
+  font-family: var(--font-body, 'Comic Neue');
+  font-size: 1.05rem; line-height: 2.05; color: var(--text);
+  transition: color 0.6s;
+}
+body.ff-mono #ch-body { font-family: var(--font-mono, 'IBM Plex Mono') !important; font-size: 0.88rem !important; }
+body.ff-serif #ch-body { font-family: 'Georgia', serif !important; }
+
+#ch-body p { margin-bottom: 1.5em; }
+#ch-body p:first-of-type::first-letter {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 3.4rem; color: var(--red); float: left;
+  line-height: 0.8; margin-right: 10px; margin-top: 10px;
+}
+:root[data-theme="paper"] #ch-body p:first-of-type::first-letter { color: var(--red); }
+
+/* Font size variants */
+body.fs0 #ch-body { font-size: 0.88rem; }
+body.fs1 #ch-body { font-size: 1.05rem; }
+body.fs2 #ch-body { font-size: 1.22rem; }
+body.fs3 #ch-body { font-size: 1.42rem; }
+
+/* Image blocks */
+.img-blk { margin: 28px 0; clear: both; }
+.img-blk img { max-width: 100%; height: auto; display: block; }
+.img-blk.center { text-align: center; }
+.img-blk.center img { display: inline-block; }
+.img-caption {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.38rem; color: var(--dred2); margin-top: 6px;
+  letter-spacing: 1px; text-align: center;
+}
+
+/* Chapter nav */
+.ch-nav {
+  display: flex; gap: 10px; margin-top: 60px; padding-top: 24px;
+  border-top: 1px solid var(--brd);
+}
+.ch-nav-btn {
+  flex: 1; padding: 12px 10px;
+  background: transparent; border: 1px solid var(--brd);
+  color: var(--dred2); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.42rem; letter-spacing: 2px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.15s;
+}
+.ch-nav-btn:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
+.ch-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+
+/* ── PLACEHOLDER ── */
+#ch-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 60vh; text-align: center; gap: 16px;
+  padding: 40px;
+}
+#ch-placeholder.hidden { display: none; }
+.ph-glyph {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 1.6rem; color: var(--dred2); letter-spacing: 6px;
+  animation: phPulse 4s ease-in-out infinite;
+}
+@keyframes phPulse { 0%,100%{opacity:0.3;letter-spacing:6px} 50%{opacity:0.6;letter-spacing:8px} }
+.ph-cursor { display: inline-block; width: 2px; height: 1.2em; background: var(--dred2); margin-left: 4px; vertical-align: middle; animation: blink 0.8s steps(1) infinite; }
+@keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+.ph-hint {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.4rem; color: var(--text3); letter-spacing: 2px;
+}
+#ph-resume {
+  display: none; align-items: center; gap: 10px;
+  border: 1px solid var(--brd); padding: 10px 18px;
+  font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.38rem;
+  letter-spacing: 2px; color: var(--dred2); cursor: pointer;
+  background: transparent; transition: all 0.15s; text-transform: uppercase;
+}
+#ph-resume:hover { border-color: var(--red); color: var(--red); }
+
+/* ═══════════════════════════════════════════════════
+   READER OPTIONS PANEL
+═══════════════════════════════════════════════════ */
+#reader-opts-panel {
+  display: none; position: fixed;
+  top: 68px; right: 16px; z-index: 200;
+  width: 220px; background: rgba(8,0,3,0.98);
+  border: 1px solid var(--brd); border-top: 2px solid var(--red);
+  padding: 14px;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+}
+:root[data-theme="paper"] #reader-opts-panel {
+  background: rgba(240,232,220,0.98);
+  border-top-color: var(--red);
+}
+#reader-opts-panel.open { display: block; }
+.ro-title { font-size: 0.36rem; color: var(--red); letter-spacing: 3px; margin-bottom: 12px; border-bottom: 1px solid var(--brd); padding-bottom: 8px; text-transform: uppercase; }
+.ro-section { font-size: 0.3rem; color: var(--text3); letter-spacing: 3px; margin-bottom: 6px; margin-top: 10px; text-transform: uppercase; }
+.ro-row { display: flex; gap: 5px; margin-bottom: 8px; }
+.ro-btn {
+  flex: 1; padding: 5px 4px; background: transparent;
+  border: 1px solid var(--brd); color: var(--text3);
+  font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.32rem;
+  cursor: pointer; letter-spacing: 1px; transition: all 0.12s; text-align: center;
+}
+.ro-btn:hover, .ro-btn.active { border-color: var(--red); color: var(--red); background: rgba(200,0,0,0.05); }
+.ro-divider { border: none; border-top: 1px solid var(--brd); margin: 10px 0; }
+.ro-toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.ro-label { font-size: 0.32rem; color: var(--text3); letter-spacing: 1px; }
+.ro-toggle { position: relative; width: 32px; height: 16px; cursor: pointer; }
+.ro-toggle input { opacity: 0; width: 0; height: 0; }
+.ro-track { position: absolute; inset: 0; background: var(--brd); border-radius: 8px; transition: 0.3s; }
+.ro-track::before { content: ''; position: absolute; width: 10px; height: 10px; left: 3px; top: 3px; background: var(--text3); border-radius: 50%; transition: 0.3s; }
+.ro-toggle input:checked + .ro-track { background: var(--red); }
+.ro-toggle input:checked + .ro-track::before { transform: translateX(16px); background: #fff; }
+.ro-fz-row { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+.ro-fz-btn { padding: 4px 10px; background: transparent; border: 1px solid var(--brd); color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.36rem; cursor: pointer; transition: all 0.12s; }
+.ro-fz-btn:hover { border-color: var(--red); color: var(--red); }
+.ro-fz-val { flex: 1; text-align: center; font-size: 0.32rem; color: var(--text3); }
+
+/* Translate row */
+#ro-lang {
+  width: 100%; background: transparent; border: 1px solid var(--brd);
+  color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.32rem; padding: 5px 6px; outline: none; letter-spacing: 1px;
+  cursor: pointer; -webkit-appearance: none; margin-top: 4px;
+}
+#ro-translate-status { font-size: 0.3rem; color: var(--dred); margin-top: 5px; min-height: 14px; letter-spacing: 1px; }
+#ro-revert { display: none; width: 100%; margin-top: 5px; padding: 5px; background: transparent; border: 1px dashed var(--brd); color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.32rem; cursor: pointer; letter-spacing: 1px; }
+#ro-revert:hover { border-color: var(--red); color: var(--red); }
+
+/* ═══════════════════════════════════════════════════
+   WRONGNESS EFFECTS (ported from chapters.html)
+═══════════════════════════════════════════════════ */
+.ch-lang-flicker.flickering { color: var(--red) !important; text-shadow: 0 0 6px rgba(200,0,0,0.4); }
+.ch-ink-bleed.bleeding { text-shadow: 0 1px 8px rgba(100,0,0,0.7), 0 0 2px rgba(200,0,0,0.4); letter-spacing: 0.06em; color: var(--red); }
+.ch-spectral { position: relative; display: inline; }
+.ch-spectral::after { content: attr(data-ghost); position: absolute; top: -1.1em; left: 0; font-size: 0.65em; color: rgba(180,0,0,0.45); letter-spacing: 0.08em; pointer-events: none; opacity: 0; transition: opacity 0.4s; white-space: nowrap; font-family: var(--font-mono, 'IBM Plex Mono'); }
+.ch-spectral.haunting::after { opacity: 1; }
+.ch-redact { display: inline; background: var(--redact-bg); color: transparent; user-select: none; border-radius: 1px; }
+.ch-static { color: rgba(200,0,0,0.55) !important; font-family: var(--font-mono, 'IBM Plex Mono') !important; }
+.ch-cursor-drift { background: rgba(180,0,0,0.18); border-radius: 1px; }
+.ch-margin-note { position: absolute; left: -9em; top: 0.1em; width: 8em; font-size: 0.55em; color: rgba(180,0,0,0.28); font-family: 'Comic Neue', cursive; font-style: italic; text-align: right; pointer-events: none; opacity: 0; transition: opacity 0.6s; line-height: 1.3; white-space: normal; }
+:root[data-theme="paper"] .ch-margin-note { color: rgba(100,40,0,0.32); }
+.ch-margin-note.visible { opacity: 1; }
+
+/* ── Comic Sans wrongness injections (diegetic) ── */
+.comic-inject {
+  font-family: 'Comic Sans MS', 'Comic Neue', cursive !important;
+  font-size: 0.75em !important;
+  color: rgba(200,0,0,0.45) !important;
+  letter-spacing: 0.5px !important;
+}
+
+/* ═══════════════════════════════════════════════════
+   MOBILE
+═══════════════════════════════════════════════════ */
+#mob-bar {
+  display: none; padding: 8px 14px;
+  background: var(--surface); border-bottom: 1px solid var(--brd);
+  align-items: center; gap: 10px;
+}
+#mob-ch-sel {
+  flex: 1; background: var(--surface); border: 1px solid var(--brd);
+  color: var(--red); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.46rem; padding: 8px; outline: none; -webkit-appearance: none;
+}
+@media(max-width: 700px) {
+  #as-sidebar { display: none; }
+  #mob-bar { display: flex; }
+  #as-header .hdr-stat:not(:first-child) { display: none; }
+}
+@media(min-width: 701px) { #mob-bar { display: none !important; } }
+
+/* ═══════════════════════════════════════════════════
+   ADMIN FAB
+═══════════════════════════════════════════════════ */
+#afab {
+  display: none; position: fixed; bottom: 20px; left: 20px; z-index: 300;
+  background: var(--surface2); border: 1px solid var(--dred);
+  color: var(--dred2); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.4rem; padding: 9px 14px; cursor: pointer;
+  letter-spacing: 2px; transition: all 0.15s;
+}
+#afab:hover { border-color: var(--red); color: var(--red); }
+
+/* ═══════════════════════════════════════════════════
+   MODALS (login + upload)
+═══════════════════════════════════════════════════ */
+.modal { display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.96); align-items: center; justify-content: center; padding: 16px; }
+.modal.open { display: flex; }
+.modal-shell { width: min(360px,96vw); background: var(--surface); border: 1px solid var(--brd); border-top: 2px solid var(--red); padding: 28px; font-family: var(--font-mono, 'IBM Plex Mono'); }
+.modal-title { font-size: 0.5rem; color: var(--red); letter-spacing: 3px; margin-bottom: 20px; text-transform: uppercase; }
+.modal-label { font-size: 0.38rem; color: var(--dred); letter-spacing: 1px; display: block; margin-bottom: 5px; text-transform: uppercase; }
+.modal-inp { width: 100%; background: #000; border: none; border-bottom: 1px solid var(--brd); color: #cc8888; font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.55rem; padding: 8px 6px; outline: none; letter-spacing: 1px; box-sizing: border-box; }
+:root[data-theme="paper"] .modal-inp { background: var(--paper); color: var(--text); border-bottom-color: var(--brd); }
+.modal-inp:focus { border-bottom-color: var(--red); }
+.modal-err { font-size: 0.38rem; color: var(--red); min-height: 16px; margin-top: 8px; letter-spacing: 1px; }
+.modal-row { display: flex; gap: 10px; margin-top: 16px; }
+.modal-field { margin-bottom: 14px; }
+.btn-r { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--red); color: var(--red); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.48rem; cursor: pointer; letter-spacing: 2px; transition: all 0.15s; text-transform: uppercase; }
+.btn-r:hover { background: rgba(200,0,0,0.12); }
+.btn-d { padding: 10px 14px; background: transparent; border: 1px solid var(--brd); color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.48rem; cursor: pointer; transition: all 0.15s; text-transform: uppercase; }
+.btn-d:hover { border-color: var(--red); color: var(--red); }
+/* Upload modal wider */
+.upload-shell { width: min(580px,96vw); max-height: 90dvh; overflow-y: auto; background: var(--surface); border: 1px solid var(--brd); border-top: 2px solid var(--red); padding: 24px; font-family: var(--font-mono, 'IBM Plex Mono'); scrollbar-width: thin; scrollbar-color: var(--brd) transparent; }
+.up-ta { width: 100%; height: 220px; resize: vertical; background: #000; border: 1px solid var(--brd); color: #cc8888; font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.48rem; padding: 10px; outline: none; line-height: 1.65; box-sizing: border-box; }
+:root[data-theme="paper"] .up-ta { background: var(--paper); color: var(--text); }
+.up-status { font-size: 0.4rem; color: var(--red); margin-top: 10px; min-height: 16px; letter-spacing: 1px; }
+.up-tabs { display: flex; margin-bottom: 16px; border: 1px solid var(--brd); }
+.up-tab { flex: 1; padding: 8px; background: transparent; border: none; color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.38rem; cursor: pointer; letter-spacing: 1px; transition: all 0.12s; text-transform: uppercase; }
+.up-tab.on { background: rgba(200,0,0,0.1); color: var(--red); }
+.up-sec { display: none; }
+.up-sec.vis { display: block; }
+
+/* ═══════════════════════════════════════════════════
+   READER MODE VARIANTS
+═══════════════════════════════════════════════════ */
+body.rm-justify #ch-body p { text-align: justify; }
+body.rm-focus #as-sidebar { opacity: 0.04; transition: opacity 0.4s; }
+body.rm-focus #as-sidebar:hover { opacity: 1; }
+
+/* ── THEME TOGGLE ── */
+#theme-lbl-d, #theme-lbl-p { pointer-events: none; }
+</style>
+</head>
+<body>
+
+<!-- Atmosphere -->
+<div id="grain"></div>
+<div id="scanlines"></div>
+<div id="vignette"></div>
+
+<!-- ═══ PHASE 1: BLACK HOLE ═══ -->
+<div id="bh-scene">
+  <canvas id="bh-canvas"></canvas>
+  <div id="bh-label">WNCORE // SIGNAL ORIGIN — CYGNUS X-1 // ANOTHER SKY DETECTED</div>
+</div>
+
+<!-- ═══ PHASE 2: WORLD GATE ═══ -->
+<div id="world-gate">
+  <div id="gate-inner">
+    <div id="gate-eyebrow">LOGBOOK DRIFTERS ARCHIVE // CLASSIFICATION: WORLD-2 // 2032</div>
+    <div id="gate-question">
+      ARE YOU FROM<br><span class="q-red">THIS WORLD?</span>
+    </div>
+    <div id="gate-sub">your answer determines access clearance</div>
+    <div id="gate-choices">
+      <button class="gate-btn" id="btn-yes"><span>YES</span></button>
+      <button class="gate-btn" id="btn-no"><span>NO</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Wrong world screen -->
+<div id="wrong-world">
+  <div>
+    <div id="ww-text">SIGNAL LOST<br>WRONG WORLD</div>
+    <div id="ww-sub">this archive is not for you. close the signal.</div>
+  </div>
+</div>
+
+<!-- ═══ PHASE 3: READER SHELL ═══ -->
+<div id="reader-shell">
+
+  <!-- Mobile chapter bar -->
+  <div id="mob-bar">
+    <select id="mob-ch-sel" onchange="if(!isNaN(parseInt(this.value)))loadChapter(parseInt(this.value))">
+      <option value="">// SELECT CHAPTER...</option>
+    </select>
+    <button class="hdr-btn" onclick="toggleReaderOpts()">⚙</button>
+  </div>
+
+  <!-- Header -->
+  <header id="as-header">
+    <div id="hdr-logo-block">
+      <a id="hdr-logotype" href="/">WNCORE</a>
+      <div id="hdr-sub">ANOTHER SKY<br>ARCHIVE</div>
+    </div>
+    <div id="hdr-status-row">
+      <div class="hdr-stat">
+        <span class="hdr-stat-label">WORLD</span>
+        <span class="hdr-stat-val red">-2</span>
+      </div>
+      <div class="hdr-stat">
+        <span class="hdr-stat-label">YEAR</span>
+        <span class="hdr-stat-val">2032</span>
+      </div>
+      <div class="hdr-stat">
+        <span class="hdr-stat-label">OUTBREAK</span>
+        <span class="hdr-stat-val red pulse" id="hdr-outbreak">ACTIVE</span>
+      </div>
+      <div class="hdr-stat">
+        <span class="hdr-stat-label">IMMUNE</span>
+        <span class="hdr-stat-val">8.28%</span>
+      </div>
+      <div class="hdr-stat" id="hdr-sky-stat">
+        <span class="hdr-stat-label">SKY STATUS</span>
+        <span class="hdr-stat-val" id="hdr-sky-val">SUNNY</span>
+      </div>
+    </div>
+    <div id="hdr-right">
+      <button class="hdr-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle paper mode">
+        <span id="theme-lbl-d">PAPER</span>
+        <span id="theme-lbl-p" style="display:none">DARK</span>
+      </button>
+      <button class="hdr-btn active" onclick="toggleReaderOpts()" id="opts-btn">⚙ OPTS</button>
+    </div>
+  </header>
+
+  <!-- Signal meter (progress) -->
+  <div id="signal-meter"><div id="signal-fill"></div></div>
+
+  <!-- Body -->
+  <div id="as-body">
+
+    <!-- Sidebar -->
+    <nav id="as-sidebar">
+      <div id="sb-archive-header">
+        <span id="sb-archive-label">ANOTHER SKY</span>
+        <div id="sb-archive-meta">
+          CHAPTERS: <span id="sb-count">—</span> //
+          WORLD-2 SERIAL
+        </div>
+      </div>
+      <div id="sb-list-wrap">
+        <div id="ch-list"></div>
+      </div>
+      <div id="sb-bottom">
+        <button class="sb-tool-btn" onclick="showSynopsis()">← BACK TO SYNOPSIS</button>
+        <button class="sb-tool-btn" id="sb-entity-btn" onclick="openEntityChat()">📡 DIMENSIONAL CONTACT</button>
+      </div>
+    </nav>
+
+    <!-- Main -->
+    <main id="as-main">
+
+      <!-- Synopsis gate -->
+      <div id="synopsis-gate">
+        <div id="syn-box">
+          <div id="syn-stamp">CASE FILE // ANOTHER SKY // WORLD-2 // LOGBOOK DRIFTERS</div>
+          <div id="syn-title">ANOTHER SKY</div>
+          <div id="syn-world-tag">WORLD -2 · 2032 · DHAKA, BANGLADESH · SOM, AGE 28</div>
+
+          <div id="syn-encrypted" aria-hidden="true">
+█████ ████ ██ ████ ████ ██████ ████ ████ ██ ███ ████ ██████ ██████████ ████████ ████ ██ ████████████ ██████ ████ ████ ████ ████████ ██ ████ ████████ ████ ████ ████ ████ ████ ████████████ ████████████ ████ ███████ ████████ ████████████████ ████ ████████ ████ ████████████████████ ████████████ ████████████ ██ ████████████ ████████████████ ████ ████████████ ████████████ ████████████ ████ ████████ ████████████████████ ████████████████████████ ████████████ ████████████ ████████ ████████████████████ ████████████████████ ████████████ ████████████
+          </div>
+
+          <div id="syn-text">
+            <p>On March 31, 2028, Som was alive. On April 1, 2032, he was still 28.</p>
+            <p>He does not remember the four years between. He was not here for them. He was in a different world — one where Anne existed, where his mother was four years younger, where the sky was the right color. Now he is here. And the sky is wrong.</p>
+            <p>The outbreak has started in Nepal. The WHO has declared a pandemic. His mother mentions World War III the way people mention old weather. Nobody finds this strange. Som finds everything strange. He cannot explain why.</p>
+            <p>He has not yet checked the year.</p>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+            <button id="syn-decrypt-btn" onclick="doDecrypt()"><span>⊞ DECRYPT ARCHIVE</span></button>
+            <button id="syn-begin-btn" onclick="beginReading()">BEGIN READING →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Chapter reader -->
+      <div id="ch-reader">
+        <div id="ch-placeholder">
+          <div class="ph-glyph">████<span class="ph-cursor"></span></div>
+          <div class="ph-hint">SELECT A CHAPTER FROM THE ARCHIVE</div>
+          <button id="ph-resume" onclick="resumeReading()">
+            <span style="font-size:0.3rem;opacity:0.5;display:block;margin-bottom:2px">LAST SESSION</span>
+            <span id="ph-resume-text">RESUME READING →</span>
+          </button>
+        </div>
+
+        <div id="ch-content" style="display:none;">
+          <div class="ch-file-header">
+            <div class="ch-case-id" id="ch-case-id">CASE // AS-01</div>
+            <div class="ch-file-title" id="ch-file-title">—</div>
+            <div class="ch-file-date" id="ch-file-date">—</div>
+          </div>
+          <div id="ch-body"></div>
+          <div class="ch-nav">
+            <button class="ch-nav-btn" id="prev-btn" onclick="go(-1)">← PREVIOUS</button>
+            <button class="ch-nav-btn" id="next-btn" onclick="go(1)">NEXT →</button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div><!-- /as-body -->
+
+  <!-- Reader options panel -->
+  <div id="reader-opts-panel">
+    <div class="ro-title">// READER OPTIONS</div>
+
+    <div class="ro-section">THEME</div>
+    <div class="ro-row">
+      <button class="ro-btn active" id="mode-dark-btn" onclick="setDisplayMode('dark')">DARK</button>
+      <button class="ro-btn" id="mode-paper-btn" onclick="setDisplayMode('paper')">PAPER</button>
+    </div>
+
+    <div class="ro-section">FONT SIZE</div>
+    <div class="ro-fz-row">
+      <button class="ro-fz-btn" onclick="changeFz(-1)">A−</button>
+      <span class="ro-fz-val" id="ro-fz-val">NORMAL</span>
+      <button class="ro-fz-btn" onclick="changeFz(1)">A+</button>
+    </div>
+
+    <div class="ro-section">FONT</div>
+    <div class="ro-row">
+      <button class="ro-btn active" id="ff-comic-btn" onclick="setFont('comic')">COMIC</button>
+      <button class="ro-btn" id="ff-mono-btn" onclick="setFont('mono')">MONO</button>
+      <button class="ro-btn" id="ff-serif-btn" onclick="setFont('serif')">SERIF</button>
+    </div>
+
+    <hr class="ro-divider">
+    <div class="ro-toggle-row">
+      <span class="ro-label">JUSTIFY TEXT</span>
+      <label class="ro-toggle"><input type="checkbox" id="ro-justify" onchange="toggleJustify(this.checked)"><span class="ro-track"></span></label>
+    </div>
+    <div class="ro-toggle-row">
+      <span class="ro-label">FOCUS MODE</span>
+      <label class="ro-toggle"><input type="checkbox" id="ro-focus" onchange="toggleFocus(this.checked)"><span class="ro-track"></span></label>
+    </div>
+
+    <hr class="ro-divider">
+    <div class="ro-section">TRANSLATE</div>
+    <select id="ro-lang" onchange="translateChapter(this.value)">
+      <option value="">— SELECT LANGUAGE —</option>
+      <option value="ar">Arabic</option><option value="zh-CN">Chinese</option>
+      <option value="fr">French</option><option value="de">German</option>
+      <option value="hi">Hindi</option><option value="id">Indonesian</option>
+      <option value="ja">Japanese</option><option value="ko">Korean</option>
+      <option value="ms">Malay</option><option value="pt">Portuguese</option>
+      <option value="ru">Russian</option><option value="es">Spanish</option>
+      <option value="tl">Tagalog</option><option value="tr">Turkish</option>
+    </select>
+    <div id="ro-translate-status"></div>
+    <button id="ro-revert" onclick="revertTranslation()">✕ RESTORE ORIGINAL</button>
+  </div>
+
+</div><!-- /reader-shell -->
+
+<!-- Admin FAB -->
+<button id="afab" onclick="openUpload()">⚡ + CONTENT</button>
+<div id="htrig" style="position:fixed;bottom:8px;right:8px;width:8px;height:8px;border-radius:50%;background:rgba(80,0,0,0.4);cursor:pointer;z-index:300;" onclick="openLogin()" title=""></div>
+
+<!-- Login Modal -->
+<div id="login-modal" class="modal">
+  <div class="modal-shell">
+    <div class="modal-title">⚡ OPERATOR AUTHENTICATION</div>
+    <div class="modal-field"><label class="modal-label">OPERATOR ID:</label><input type="text" class="modal-inp" id="li-user" autocomplete="off" /></div>
+    <div class="modal-field"><label class="modal-label">AUTH KEY:</label><input type="password" class="modal-inp" id="li-pass" /></div>
+    <div class="modal-err" id="li-err"></div>
+    <div class="modal-row">
+      <button class="btn-r" onclick="doLogin()">▶ AUTHENTICATE</button>
+      <button class="btn-d" onclick="closeLogin()">CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="upload-modal" class="modal">
+  <div class="upload-shell">
+    <div class="modal-title">⚡ CONTENT MANAGER // ANOTHER SKY</div>
+    <div class="up-tabs">
+      <button class="up-tab on" onclick="switchTab('add')">+ ADD CHAPTER</button>
+      <button class="up-tab" onclick="switchTab('edit')">EDIT / DELETE</button>
+    </div>
+    <!-- ADD TAB -->
+    <div class="up-sec vis" id="tab-add">
+      <div class="modal-field"><label class="modal-label">CHAPTER NUMBER:</label><input type="number" class="modal-inp" id="u-num" min="1" placeholder="1" /></div>
+      <div class="modal-field"><label class="modal-label">CHAPTER TITLE:</label><input type="text" class="modal-inp" id="u-ttl" maxlength="120" placeholder="e.g. The Sky Glitches" /></div>
+      <div class="modal-field">
+        <label class="modal-label">CHAPTER TEXT:</label>
+        <textarea class="up-ta" id="u-body" placeholder="Paste chapter text. Blank lines = new paragraph.&#10;&#10;[IMG url=... align=center caption=...] for images."></textarea>
+      </div>
+      <div class="modal-row">
+        <button class="btn-r" onclick="submitChapter()">▶ PUBLISH</button>
+        <button class="btn-d" onclick="closeUpload()">CANCEL</button>
+      </div>
+      <div class="up-status" id="u-status"></div>
+    </div>
+    <!-- EDIT TAB -->
+    <div class="up-sec" id="tab-edit">
+      <div class="modal-field"><label class="modal-label">SELECT CHAPTER:</label>
+        <select class="modal-inp" id="e-sel" onchange="loadForEdit(this.value)" style="-webkit-appearance:none;cursor:pointer;">
+          <option value="">Choose...</option>
+        </select>
+      </div>
+      <div id="e-fields" style="display:none;">
+        <div class="modal-field"><label class="modal-label">TITLE:</label><input type="text" class="modal-inp" id="e-ttl" /></div>
+        <div class="modal-field"><label class="modal-label">CONTENT:</label><textarea class="up-ta" id="e-body" style="height:160px;"></textarea></div>
+        <div class="modal-row">
+          <button class="btn-r" onclick="saveEdit()">▶ SAVE</button>
+          <button class="btn-d" style="color:#ff4444;border-color:#660000;" onclick="deleteChapter()">🗑 DELETE</button>
+          <button class="btn-d" onclick="closeUpload()">CANCEL</button>
+        </div>
+        <div class="up-status" id="e-status"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Entity Modal -->
+<div id="entity-modal" class="modal">
+  <div class="modal-shell" style="width:min(480px,96vw);max-height:80vh;display:flex;flex-direction:column;">
+    <div class="modal-title">📡 DIMENSIONAL CONTACT</div>
+    <div id="entity-banner" style="font-size:0.36rem;color:var(--signal);letter-spacing:1px;margin-bottom:10px;padding:6px 10px;border:1px solid var(--signal);border-radius:2px;">Connecting to World-2 survivor network...</div>
+    <div id="entity-chat-area" style="flex:1;overflow-y:auto;background:#000;border:1px solid var(--brd);padding:8px;max-height:260px;margin-bottom:10px;font-size:0.38rem;"></div>
+    <div class="modal-field"><input type="text" class="modal-inp" id="entity-msg" placeholder="Send message to dimensional survivor..." /></div>
+    <div class="modal-row">
+      <button class="btn-r" onclick="sendEntityMsg()">▶ SEND</button>
+      <button class="btn-d" onclick="document.getElementById('entity-modal').classList.remove('open')">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     THREE.JS BLACK HOLE
+═══════════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ── BLACK HOLE SCENE ──────────────────────────────── */
+(function buildBlackHole() {
+  const canvas = document.getElementById('bh-canvas');
+  if (!canvas || typeof THREE === 'undefined') {
+    setTimeout(() => document.getElementById('bh-scene').classList.add('exit'), 800);
+    setTimeout(showGate, 1000);
+    return;
+  }
+
+  let W = window.innerWidth, H = window.innerHeight;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x000000, 1);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(52, W / H, 0.01, 1000);
+  camera.position.set(0, 0, 14);
+
+  /* STARS */
+  const starCount = 3000;
+  const starGeo = new THREE.BufferGeometry();
+  const starPos = new Float32Array(starCount * 3);
+  const starCol = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    const theta = Math.random() * Math.PI * 2, phi = Math.acos(2 * Math.random() - 1);
+    const r = 300 + Math.random() * 200;
+    starPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+    starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    starPos[i*3+2] = r * Math.cos(phi);
+    const b = 0.1 + Math.random() * 0.6;
+    const t = Math.random();
+    starCol[i*3] = b * (t > 0.7 ? 0.9 : 0.7);
+    starCol[i*3+1] = b * (t > 0.7 ? 0.7 : 0.85);
+    starCol[i*3+2] = b;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
+  scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.25, sizeAttenuation: true, transparent: true, opacity: 0.75 })));
+
+  /* EVENT HORIZON — pure black sphere */
+  const horizon = new THREE.Mesh(new THREE.SphereGeometry(1.0, 64, 64), new THREE.MeshBasicMaterial({ color: 0x000000 }));
+  scene.add(horizon);
+
+  /* PHOTON SPHERE — thin bright ring */
+  const photonMat = new THREE.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.9 });
+  scene.add(new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.016, 20, 220), photonMat));
+  [0.06, 0.12, 0.22].forEach((t, i) => {
+    scene.add(new THREE.Mesh(new THREE.TorusGeometry(1.5, t, 8, 200),
+      new THREE.MeshBasicMaterial({ color: [0xff1111, 0xaa0000, 0x440000][i], transparent: true, opacity: [0.3, 0.15, 0.06][i], depthWrite: false })));
+  });
+
+  /* GRAVITATIONAL LENSING */
+  [
+    { r: 1.08, color: 0x880000, op: 0.3 },
+    { r: 1.22, color: 0x550000, op: 0.18 },
+    { r: 1.38, color: 0x220000, op: 0.1 },
+  ].forEach(({ r, color, op }) => {
+    scene.add(new THREE.Mesh(new THREE.SphereGeometry(r, 48, 48),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false, side: THREE.BackSide })));
+  });
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.04, 64, 64),
+    new THREE.MeshBasicMaterial({ color: 0xff3333, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.BackSide })));
+
+  /* ACCRETION DISK — RED version of Interstellar */
+  const diskGroup = new THREE.Group();
+  scene.add(diskGroup);
+  diskGroup.rotation.x = Math.PI / 6; /* tilt for Interstellar look */
+
+  const diskLayers = [
+    { inner: 1.52, outer: 1.98, color: 0xff2222, op: 0.95 },
+    { inner: 1.90, outer: 2.8,  color: 0xdd1111, op: 0.7  },
+    { inner: 2.6,  outer: 4.5,  color: 0xaa0808, op: 0.4  },
+    { inner: 4.0,  outer: 7.0,  color: 0x660000, op: 0.22 },
+    { inner: 6.5,  outer: 10.5, color: 0x2a0000, op: 0.12 },
+  ];
+  diskLayers.forEach(l => {
+    diskGroup.add(new THREE.Mesh(new THREE.RingGeometry(l.inner, l.outer, 160, 6),
+      new THREE.MeshBasicMaterial({ color: l.color, transparent: true, opacity: l.op, side: THREE.DoubleSide, depthWrite: false })));
+  });
+
+  /* HOT INNER RING */
+  const hotGeo = new THREE.RingGeometry(1.51, 1.90, 300, 4);
+  const posAttr = hotGeo.attributes.position;
+  for (let i = 0; i < posAttr.count; i++) {
+    const x = posAttr.getX(i), y = posAttr.getY(i);
+    const a = Math.atan2(y, x);
+    const w = 1 + 0.007 * Math.sin(a * 12 + 0.5);
+    posAttr.setX(i, x * w); posAttr.setY(i, y * w);
+  }
+  posAttr.needsUpdate = true;
+  diskGroup.add(new THREE.Mesh(hotGeo, new THREE.MeshBasicMaterial({ color: 0xff5555, transparent: true, opacity: 0.92, side: THREE.DoubleSide, depthWrite: false })));
+
+  /* DISK PARTICLES */
+  const dCount = 14000;
+  const dGeo = new THREE.BufferGeometry();
+  const dPos = new Float32Array(dCount * 3);
+  const dCol = new Float32Array(dCount * 3);
+  const dAngles = new Float32Array(dCount);
+  const dRadii = new Float32Array(dCount);
+  for (let i = 0; i < dCount; i++) {
+    const r = 1.6 + Math.pow(Math.random(), 0.4) * 9;
+    const a = Math.random() * Math.PI * 2;
+    const h = (Math.random() - 0.5) * 0.08 * (r / 3);
+    dPos[i*3] = r * Math.cos(a); dPos[i*3+1] = h; dPos[i*3+2] = r * Math.sin(a);
+    dAngles[i] = a; dRadii[i] = r;
+    const t = Math.min(1, (r - 1.6) / 8.5);
+    dCol[i*3] = 1.0; dCol[i*3+1] = 0.1 + (1-t)*0.2; dCol[i*3+2] = 0.0 + (1-t)*0.05;
+  }
+  dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+  dGeo.setAttribute('color', new THREE.BufferAttribute(dCol, 3));
+  const dPts = new THREE.Points(dGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.03, sizeAttenuation: true, transparent: true, opacity: 0.55, depthWrite: false }));
+  diskGroup.add(dPts);
+
+  /* RELATIVISTIC JETS */
+  [1, -1].forEach(dir => {
+    scene.add(new THREE.Mesh(new THREE.CylinderGeometry(0, 0.28, 8, 32, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xff1111, transparent: true, opacity: 0.08, depthWrite: false, side: THREE.DoubleSide })));
+    const core = new THREE.Mesh(new THREE.CylinderGeometry(0, 0.06, 7, 18, 1, true),
+      new THREE.MeshBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.45, depthWrite: false }));
+    core.position.y = dir * 3.5; core.rotation.z = dir > 0 ? 0 : Math.PI;
+    scene.add(core);
+  });
+
+  /* CHROMATIC ABERRATION GHOST RINGS */
+  [
+    { r: 1.51, color: 0xff0000, op: 0.2, offset: 0.08 },
+    { r: 1.51, color: 0x0022ff, op: 0.2, offset: -0.08 },
+  ].forEach(({ r, color, op, offset }) => {
+    const g = new THREE.Mesh(new THREE.TorusGeometry(r, 0.03, 8, 180),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false }));
+    g.position.x = offset;
+    diskGroup.add(g);
+  });
+
+  /* GLITCH ENGINE */
+  let glitchT = 0;
+  let glitchActive = false;
+  function triggerSceneGlitch() {
+    if (glitchActive) return; glitchActive = true;
+    const t0 = Date.now();
+    const iv = setInterval(() => {
+      const r = Math.random();
+      horizonMat.color.setRGB(r * 0.2, 0, r * 0.1);
+      photonMat.color.setRGB(1, r * 0.3, r * 0.2);
+      photonMat.opacity = 0.5 + Math.random() * 0.5;
+      if (Date.now() - t0 > 1200) {
+        clearInterval(iv);
+        horizonMat.color.setHex(0x000000);
+        photonMat.color.setHex(0xff2222);
+        photonMat.opacity = 0.9;
+        glitchActive = false;
+      }
+    }, 80);
+  }
+  const horizonMat = horizon.material;
+
+  /* CAMERA SLOW DRIFT */
+  let camTheta = 0.4, camPhi = 1.35, camR = 14;
+  let isDragging = false, lastMx = 0, lastMy = 0;
+  function updateCamera() {
+    camera.position.x = camR * Math.sin(camPhi) * Math.sin(camTheta);
+    camera.position.y = camR * Math.cos(camPhi);
+    camera.position.z = camR * Math.sin(camPhi) * Math.cos(camTheta);
+    camera.lookAt(0, 0, 0);
+  }
+  updateCamera();
+  canvas.addEventListener('mousedown', e => { isDragging = true; lastMx = e.clientX; lastMy = e.clientY; });
+  window.addEventListener('mouseup', () => isDragging = false);
+  window.addEventListener('mousemove', e => {
+    if (!isDragging) return;
+    camTheta -= (e.clientX - lastMx) * 0.005;
+    camPhi = Math.max(0.3, Math.min(Math.PI - 0.3, camPhi + (e.clientY - lastMy) * 0.004));
+    lastMx = e.clientX; lastMy = e.clientY; updateCamera();
+  });
+  canvas.addEventListener('wheel', e => { camR = Math.max(5, Math.min(28, camR + e.deltaY * 0.015)); updateCamera(); }, { passive: true });
+
+  /* ANIMATION LOOP */
+  let t = 0;
+  function animate() {
+    requestAnimationFrame(animate);
+    t += 0.005;
+    if (!isDragging) { camTheta += 0.0008; updateCamera(); }
+
+    diskGroup.rotation.y = t * 0.14;
+
+    /* Keplerian particle rotation */
+    const pa = dGeo.attributes.position.array;
+    for (let i = 0; i < dCount; i++) {
+      const speed = 0.006 / Math.max(0.5, dRadii[i] * 0.36);
+      dAngles[i] += speed;
+      pa[i*3] = dRadii[i] * Math.cos(dAngles[i]);
+      pa[i*3+2] = dRadii[i] * Math.sin(dAngles[i]);
+    }
+    dGeo.attributes.position.needsUpdate = true;
+
+    /* Horizon pulse */
+    const pulse = 1 + 0.004 * Math.sin(t * 3.1);
+    horizon.scale.setScalar(pulse);
+
+    /* Random glitch */
+    glitchT += 0.005;
+    if (glitchT > 0.12 && Math.random() < 0.008) { glitchT = 0; triggerSceneGlitch(); }
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    W = window.innerWidth; H = window.innerHeight;
+    camera.aspect = W / H; camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  });
+
+  /* Auto-transition after 4s */
+  setTimeout(() => {
+    document.getElementById('bh-scene').classList.add('exit');
+    setTimeout(showGate, 1600);
+  }, 4200);
+})();
+
+/* ── PHASE TRANSITIONS ─────────────────────────────── */
+function showGate() {
+  document.getElementById('world-gate').classList.add('show');
+}
+
+/* ── WORLD GATE LOGIC ──────────────────────────────── */
+document.getElementById('btn-yes').addEventListener('click', () => {
+  // YES — proceed to synopsis
+  document.getElementById('world-gate').style.transition = 'opacity 0.8s';
+  document.getElementById('world-gate').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('world-gate').style.display = 'none';
+    document.getElementById('reader-shell').classList.add('show');
+    showSynopsis();
+  }, 800);
+});
+
+document.getElementById('btn-no').addEventListener('click', () => {
+  // NO — wrong world response
+  const ww = document.getElementById('wrong-world');
+  ww.classList.add('show');
+  // Glitch and redirect back
+  setTimeout(() => {
+    ww.style.opacity = '0';
+    setTimeout(() => {
+      ww.classList.remove('show');
+      ww.style.opacity = '';
+      // Redirect to WNCORE main
+      window.location.href = '/';
+    }, 1000);
+  }, 2800);
+});
+
+/* ── SYNOPSIS + DECRYPT ────────────────────────────── */
+function showSynopsis() {
+  document.getElementById('synopsis-gate').classList.add('show');
+  document.getElementById('ch-reader').classList.remove('show');
+  document.getElementById('ch-reader').style.display = 'none';
+  document.getElementById('synopsis-gate').style.display = 'flex';
+  // Reset sky stat
+  updateSkyStat(currentChapterIdx);
+}
+
+let decrypted = false;
+function doDecrypt() {
+  if (decrypted) return;
+  decrypted = true;
+  const encEl = document.getElementById('syn-encrypted');
+  const txtEl = document.getElementById('syn-text');
+  const btn = document.getElementById('syn-decrypt-btn');
+  const beginBtn = document.getElementById('syn-begin-btn');
+
+  // Animate decrypt
+  let chars = '████▓▓▒▒░ ';
+  let steps = 0, maxSteps = 24;
+  const encText = encEl.textContent;
+  const iv = setInterval(() => {
+    const progress = steps / maxSteps;
+    const decryptedPortion = Math.floor(encText.length * progress);
+    encEl.textContent = encText.substring(0, decryptedPortion).replace(/[█▓▒░]/g, c => Math.random() < 0.3 ? 'x' : c) + encText.substring(decryptedPortion);
+    steps++;
+    if (steps >= maxSteps) {
+      clearInterval(iv);
+      encEl.classList.add('decrypted');
+      setTimeout(() => {
+        txtEl.classList.add('show');
+        beginBtn.classList.add('show');
+        btn.classList.add('done');
+      }, 400);
+    }
+  }, 70);
+}
+
+function beginReading() {
+  document.getElementById('synopsis-gate').classList.remove('show');
+  document.getElementById('synopsis-gate').style.display = 'none';
+  document.getElementById('ch-reader').style.display = 'flex';
+  document.getElementById('ch-reader').classList.add('show');
+  checkResume();
+}
+
+/* ── SKY STATUS HUD ────────────────────────────────── */
+const SKY_STATES = ['SUNNY', 'BLUE', 'GREY', 'RAINY', 'STATIC', 'UNKNOWN', 'STORMY', 'DIFFERENT', 'ANOTHER'];
+const SKY_COLORS = ['#ffcc44', '#4488ff', '#888888', '#4466aa', '#aaaaaa', '#884488', '#ff4422', '#ff2266', '#ff1111'];
+let currentChapterIdx = -1;
+
+function updateSkyStat(idx) {
+  const skyEl = document.getElementById('hdr-sky-val');
+  if (!skyEl) return;
+  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'SUNNY';
+  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#ffcc44';
+  skyEl.textContent = state;
+  skyEl.style.color = col;
+}
+
+/* ═══════════════════════════════════════════════════
+   SUPABASE + CHAPTERS
+═══════════════════════════════════════════════════ */
+const SB_URL = 'https://srxppxenkasomlrgyavr.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeHBweGVua2Fzb21scmd5YXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2ODAyMTYsImV4cCI6MjA5MDI1NjIxNn0.fRW8MHGEWb4E3XIp-zX3Hxgi2IFZ6H10YQKD8DrXgWQ';
+let sb = null, chapters = [], curIdx = -1, editId = null, isAdmin = false, fz = 1;
+
+async function initPage() {
+  await new Promise(r => {
+    if (window.supabase) { r(); return; }
+    window.addEventListener('load', r, { once: true });
+    setTimeout(r, 5000);
+  });
+  if (window.supabase) { sb = window.supabase.createClient(SB_URL, SB_KEY); }
+  autoDetect();
+  loadPrefs();
+  loadReaderOpts();
+  initScrollProgress();
+}
+document.addEventListener('DOMContentLoaded', initPage);
+
+async function loadChapters() {
+  if (!sb) return;
+  const { data, error } = await sb.from('chapters').select('*')
+    .eq('story_id', 'another-sky').order('chapter_num', { ascending: true });
+  chapters = error ? [] : (data || []);
+  renderSidebar();
+  document.getElementById('sb-count').textContent = chapters.length;
+}
+
+function renderSidebar() {
+  const list = document.getElementById('ch-list');
+  const mob = document.getElementById('mob-ch-sel');
+  list.innerHTML = '';
+  mob.innerHTML = '<option value="">// SELECT CHAPTER...</option>';
+  if (!chapters.length) {
+    list.innerHTML = '<div style="padding:14px 16px;font-size:0.38rem;color:var(--text3);letter-spacing:1px;line-height:2;">No transmissions received.</div>';
+    return;
+  }
+  chapters.forEach((ch, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'sb-ch-item';
+    btn.dataset.idx = i;
+    btn.innerHTML = `<span class="sb-case-id">CASE // AS-${String(ch.chapter_num).padStart(2,'0')} // ${ch.published_at ? new Date(ch.published_at).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '??'}</span><span class="sb-ch-name">${ch.title}</span>`;
+    btn.onclick = () => loadChapter(i);
+    list.appendChild(btn);
+    const o = document.createElement('option');
+    o.value = i; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
+    mob.appendChild(o);
+  });
+  checkResume();
+}
+
+function loadChapter(idx) {
+  if (isNaN(idx) || idx < 0 || idx >= chapters.length) return;
+  curIdx = idx;
+  currentChapterIdx = idx;
+
+  // Ensure reader is showing
+  document.getElementById('synopsis-gate').classList.remove('show');
+  document.getElementById('synopsis-gate').style.display = 'none';
+  document.getElementById('ch-reader').style.display = 'flex';
+  document.getElementById('ch-reader').classList.add('show');
+
+  const ch = chapters[idx];
+  try { localStorage.setItem('_as_last', String(idx)); } catch {}
+
+  // Update header
+  document.getElementById('ch-case-id').textContent = `CASE // AS-${String(ch.chapter_num).padStart(2,'0')} // ANOTHER SKY`;
+  document.getElementById('ch-file-title').textContent = ch.title;
+  document.getElementById('ch-file-date').textContent = ch.published_at ? new Date(ch.published_at).toDateString().toUpperCase() : '';
+
+  // Render body
+  renderBody(ch, document.getElementById('ch-body'));
+
+  // Show content, hide placeholder
+  document.getElementById('ch-content').style.display = 'block';
+  document.getElementById('ch-placeholder').classList.add('hidden');
+
+  // Nav
+  document.getElementById('prev-btn').disabled = idx <= 0;
+  document.getElementById('next-btn').disabled = idx >= chapters.length - 1;
+
+  // Sidebar
+  document.querySelectorAll('.sb-ch-item').forEach((b, i) => b.classList.toggle('active', i === idx));
+  const mob = document.getElementById('mob-ch-sel'); if (mob) mob.value = idx;
+
+  // Sky HUD
+  updateSkyStat(idx);
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  revealBody(document.getElementById('ch-body'));
+
+  // Reset translation
+  if (window.revertTranslation) window.revertTranslation();
+  document.getElementById('ro-lang').value = '';
+}
+
+function renderBody(ch, body) {
+  body.innerHTML = '';
+  const lines = (ch.content || '').split('\n');
+  let buf = [];
+  const flush = () => {
+    const t = buf.join('\n').trim();
+    if (t) { const p = document.createElement('p'); p.textContent = t; body.appendChild(p); }
+    buf = [];
+  };
+  lines.forEach(line => {
+    const m = line.trim().match(/^\[IMG\s+url=([^\s\]]+)(?:\s+align=(\w+))?(?:\s+caption=([^\]]*))?\]/i);
+    if (m) {
+      flush();
+      const blk = document.createElement('div'); blk.className = `img-blk ${m[2]||'center'}`;
+      const img = document.createElement('img'); img.src = m[1]; img.alt = m[3]||''; img.loading = 'lazy';
+      blk.appendChild(img);
+      if (m[3]?.trim()) { const c = document.createElement('div'); c.className = 'img-caption'; c.textContent = m[3].trim(); blk.appendChild(c); }
+      body.appendChild(blk);
+    } else if (!line.trim()) { flush(); } else { buf.push(line); }
+  });
+  flush();
+}
+
+function revealBody(body) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  [...body.querySelectorAll('p')].forEach((p, i) => {
+    p.style.opacity = '0'; p.style.transform = 'translateY(6px)';
+    p.style.transition = `opacity 0.45s ease ${40 + i * 60}ms, transform 0.45s ease ${40 + i * 60}ms`;
+    requestAnimationFrame(() => { p.style.opacity = '1'; p.style.transform = 'none'; });
+  });
+}
+
+function go(d) { loadChapter(curIdx + d); }
+
+function resumeReading() {
+  const saved = parseInt(localStorage.getItem('_as_last') || '-1');
+  if (saved >= 0 && saved < chapters.length) loadChapter(saved);
+}
+
+function checkResume() {
+  const saved = parseInt(localStorage.getItem('_as_last') || '-1');
+  const btn = document.getElementById('ph-resume');
+  if (!btn) return;
+  if (saved < 0 || saved >= chapters.length) { btn.style.display = 'none'; return; }
+  const ch = chapters[saved]; if (!ch) { btn.style.display = 'none'; return; }
+  const t = ch.title.length > 24 ? ch.title.slice(0,24)+'…' : ch.title;
+  document.getElementById('ph-resume-text').textContent = `RESUME — CH.${ch.chapter_num}: ${t} →`;
+  btn.style.display = 'flex';
+}
+
+/* ── SCROLL PROGRESS ───────────────────────────────── */
+function initScrollProgress() {
+  window.addEventListener('scroll', () => {
+    const d = document.documentElement;
+    const s = d.scrollTop || document.body.scrollTop;
+    const total = d.scrollHeight - d.clientHeight;
+    document.getElementById('signal-fill').style.width = total > 0 ? (s / total * 100) + '%' : '0%';
+  });
+}
+
+/* ── KEYBOARD NAV ──────────────────────────────────── */
+document.addEventListener('keydown', e => {
+  if (document.querySelector('.modal.open')) return;
+  if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') go(-1);
+});
+
+/* ═══════════════════════════════════════════════════
+   READER OPTIONS
+═══════════════════════════════════════════════════ */
+let readerOpts = { font: 'comic', lh: 'normal', justify: false, focus: false, displayMode: 'dark' };
+
+function loadReaderOpts() {
+  try {
+    const s = JSON.parse(localStorage.getItem('as_reader_opts') || '{}');
+    Object.assign(readerOpts, s);
+    applyReaderOpts(); syncReaderUI();
+  } catch {}
+}
+function saveReaderOpts() { localStorage.setItem('as_reader_opts', JSON.stringify(readerOpts)); }
+function applyReaderOpts() {
+  const b = document.body;
+  b.classList.toggle('ff-comic', readerOpts.font === 'comic');
+  b.classList.toggle('ff-mono', readerOpts.font === 'mono');
+  b.classList.toggle('ff-serif', readerOpts.font === 'serif');
+  b.classList.toggle('rm-justify', readerOpts.justify);
+  b.classList.toggle('rm-focus', readerOpts.focus);
+  document.documentElement.dataset.theme = readerOpts.displayMode;
+  syncThemeBtn();
+}
+function syncReaderUI() {
+  ['comic','mono','serif'].forEach(f => {
+    const btn = document.getElementById('ff-'+f+'-btn');
+    if (btn) btn.classList.toggle('active', readerOpts.font === f);
+  });
+  ['dark','paper'].forEach(m => {
+    const btn = document.getElementById('mode-'+m+'-btn');
+    if (btn) btn.classList.toggle('active', readerOpts.displayMode === m);
+  });
+  const j = document.getElementById('ro-justify'); if (j) j.checked = readerOpts.justify;
+  const f = document.getElementById('ro-focus'); if (f) f.checked = readerOpts.focus;
+}
+
+function toggleReaderOpts() { document.getElementById('reader-opts-panel').classList.toggle('open'); }
+function setFont(f) { readerOpts.font = f; applyReaderOpts(); syncReaderUI(); saveReaderOpts(); }
+function toggleJustify(v) { readerOpts.justify = v; applyReaderOpts(); saveReaderOpts(); }
+function toggleFocus(v) { readerOpts.focus = v; applyReaderOpts(); saveReaderOpts(); }
+function setDisplayMode(m) { readerOpts.displayMode = m; applyReaderOpts(); syncReaderUI(); saveReaderOpts(); }
+
+function toggleTheme() {
+  setDisplayMode(readerOpts.displayMode === 'dark' ? 'paper' : 'dark');
+}
+function syncThemeBtn() {
+  const isDark = readerOpts.displayMode === 'dark';
+  document.getElementById('theme-lbl-d').style.display = isDark ? '' : 'none';
+  document.getElementById('theme-lbl-p').style.display = isDark ? 'none' : '';
+}
+
+document.addEventListener('click', e => {
+  const panel = document.getElementById('reader-opts-panel');
+  const btn = document.getElementById('opts-btn');
+  if (panel?.classList.contains('open') && !panel.contains(e.target) && e.target !== btn) {
+    panel.classList.remove('open');
+  }
+});
+
+/* ── FONT SIZE ─────────────────────────────────────── */
+function loadPrefs() {
+  try { fz = parseInt(localStorage.getItem('as_fz') || '1'); applyFz(); } catch {}
+}
+function changeFz(d) {
+  fz = Math.max(0, Math.min(3, fz + d)); applyFz();
+  localStorage.setItem('as_fz', String(fz));
+}
+function applyFz() {
+  ['fs0','fs1','fs2','fs3'].forEach((c, i) => document.body.classList.toggle(c, i === fz));
+  document.getElementById('ro-fz-val').textContent = ['SMALL','NORMAL','LARGE','X-LARGE'][fz] || 'NORMAL';
+}
+
+/* ═══════════════════════════════════════════════════
+   TRANSLATION
+═══════════════════════════════════════════════════ */
+let _origHTML = null, _translating = false;
+
+async function translateChapter(lang) {
+  if (_translating) return;
+  const body = document.getElementById('ch-body'); if (!body) return;
+  if (_origHTML !== null) { body.innerHTML = _origHTML; _origHTML = null; document.getElementById('ro-revert').style.display = 'none'; document.getElementById('ro-translate-status').textContent = ''; }
+  if (!lang) return;
+  _translating = true; _origHTML = body.innerHTML; document.getElementById('ro-revert').style.display = 'block';
+
+  const setStatus = (m) => { document.getElementById('ro-translate-status').textContent = m; };
+  setStatus('TRANSLATING...');
+
+  try {
+    const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT, { acceptNode: n => n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+    const nodes = []; while (walker.nextNode()) nodes.push(walker.currentNode);
+    const SEP = '\n|||S|||\n'; const chunks = []; let buf = [], bl = 0;
+    for (const n of nodes) { if (bl + n.nodeValue.length > 4500 && buf.length) { chunks.push(buf.slice()); buf = []; bl = 0; } buf.push(n); bl += n.nodeValue.length; }
+    if (buf.length) chunks.push(buf);
+    for (let ci = 0; ci < chunks.length; ci++) {
+      const g = chunks[ci]; const j = g.map(n => n.nodeValue).join(SEP);
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${encodeURIComponent(lang)}&dt=t&q=${encodeURIComponent(j)}`;
+      setStatus(`TRANSLATING ${ci+1}/${chunks.length}...`);
+      const res = await fetch(url); if (!res.ok) throw new Error('fetch failed');
+      const data = await res.json();
+      const translated = data[0].map(s => s[0]).join('');
+      const parts = translated.split('|||S|||');
+      g.forEach((n, i) => { n.nodeValue = parts[i] !== undefined ? parts[i] : n.nodeValue; });
+    }
+    const langName = document.getElementById('ro-lang').options[document.getElementById('ro-lang').selectedIndex].text;
+    setStatus('✓ ' + langName.toUpperCase());
+  } catch { setStatus('FAILED — TRY AGAIN'); body.innerHTML = _origHTML; _origHTML = null; document.getElementById('ro-revert').style.display = 'none'; document.getElementById('ro-lang').value = ''; }
+  _translating = false;
+}
+
+window.revertTranslation = function () {
+  const body = document.getElementById('ch-body'); if (!body || _origHTML === null) return;
+  body.innerHTML = _origHTML; _origHTML = null;
+  document.getElementById('ro-revert').style.display = 'none';
+  document.getElementById('ro-translate-status').textContent = '';
+  document.getElementById('ro-lang').value = '';
+};
+
+/* ═══════════════════════════════════════════════════
+   ADMIN
+═══════════════════════════════════════════════════ */
+function _h(s) { return [...s].reduce((h,c) => ((h<<5)-h+c.charCodeAt(0))|0, 0); }
+const ADMIN_UH = _h('theMainauthor345');
+const ADMIN_PH = _h('illgetoutofthisworld275745397');
+function checkCreds(u, p) { return _h(u) === ADMIN_UH && _h(p) === ADMIN_PH; }
+
+function autoDetect() {
+  const u = localStorage.getItem('chapters_admin_user') || '';
+  if (_h(u) === ADMIN_UH) { isAdmin = true; showFab(); loadChapters(); }
+  else { loadChapters(); }
+}
+function showFab() { document.getElementById('afab').style.display = 'block'; }
+function openLogin() {
+  if (isAdmin) { openUpload(); return; }
+  document.getElementById('login-modal').classList.add('open');
+  setTimeout(() => document.getElementById('li-user').focus(), 100);
+}
+function closeLogin() {
+  document.getElementById('login-modal').classList.remove('open');
+  document.getElementById('li-err').textContent = '';
+  ['li-user','li-pass'].forEach(id => document.getElementById(id).value = '');
+}
+function doLogin() {
+  const u = document.getElementById('li-user').value.trim();
+  const p = document.getElementById('li-pass').value.trim();
+  if (checkCreds(u, p)) {
+    isAdmin = true; localStorage.setItem('chapters_admin_user', u);
+    showFab(); closeLogin(); openUpload();
+  } else {
+    document.getElementById('li-err').textContent = '// ACCESS DENIED';
+    document.getElementById('li-pass').value = '';
+    setTimeout(() => document.getElementById('li-err').textContent = '', 2200);
+  }
+}
+document.addEventListener('keydown', e => {
+  if (document.getElementById('login-modal').classList.contains('open') && e.key === 'Enter') doLogin();
+});
+
+function openUpload() {
+  if (!isAdmin) { openLogin(); return; }
+  document.getElementById('upload-modal').classList.add('open');
+  document.getElementById('u-num').value = chapters.length + 1;
+  populateEditSel();
+}
+function closeUpload() {
+  document.getElementById('upload-modal').classList.remove('open');
+  document.getElementById('u-status').textContent = '';
+  const ef = document.getElementById('e-status'); if (ef) ef.textContent = '';
+}
+function switchTab(t) {
+  document.querySelectorAll('.up-tab').forEach((b, i) => b.classList.toggle('on', (t==='add'&&i===0)||(t==='edit'&&i===1)));
+  document.getElementById('tab-add').classList.toggle('vis', t === 'add');
+  document.getElementById('tab-edit').classList.toggle('vis', t === 'edit');
+}
+async function submitChapter() {
+  if (!isAdmin || !sb) return;
+  const num = parseInt(document.getElementById('u-num').value);
+  const title = document.getElementById('u-ttl').value.trim();
+  const body = document.getElementById('u-body').value.trim();
+  const stat = document.getElementById('u-status');
+  if (!num || !title || !body) { stat.textContent = '// All fields required.'; return; }
+  stat.textContent = 'Publishing...';
+  const { error } = await sb.from('chapters').insert({
+    story_id: 'another-sky', chapter_num: num, title, content: body,
+    published_at: new Date().toISOString(),
+    published_by: localStorage.getItem('chapters_admin_user') || 'operator',
+  });
+  if (error) { stat.textContent = '// Error: ' + error.message; return; }
+  stat.textContent = '// Published.';
+  document.getElementById('u-ttl').value = ''; document.getElementById('u-body').value = '';
+  await loadChapters();
+  setTimeout(closeUpload, 1400);
+}
+function populateEditSel() {
+  const sel = document.getElementById('e-sel');
+  sel.innerHTML = '<option value="">Choose...</option>';
+  chapters.forEach(ch => {
+    const o = document.createElement('option');
+    o.value = ch.id; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
+    sel.appendChild(o);
+  });
+}
+function loadForEdit(id) {
+  const ch = chapters.find(c => c.id === id);
+  if (!ch) { document.getElementById('e-fields').style.display = 'none'; return; }
+  editId = id;
+  document.getElementById('e-ttl').value = ch.title;
+  document.getElementById('e-body').value = ch.content;
+  document.getElementById('e-fields').style.display = 'block';
+}
+async function saveEdit() {
+  if (!editId || !isAdmin || !sb) return;
+  const title = document.getElementById('e-ttl').value.trim();
+  const body = document.getElementById('e-body').value.trim();
+  const stat = document.getElementById('e-status');
+  if (!title || !body) { stat.textContent = '// All fields required.'; return; }
+  stat.textContent = 'Saving...';
+  const { error } = await sb.from('chapters').update({ title, content: body }).eq('id', editId);
+  if (error) { stat.textContent = '// Error: ' + error.message; return; }
+  stat.textContent = '// Saved.';
+  await loadChapters(); setTimeout(closeUpload, 1200);
+}
+async function deleteChapter() {
+  if (!editId || !isAdmin || !sb) return;
+  if (!confirm('Delete this chapter permanently?')) return;
+  const { error } = await sb.from('chapters').delete().eq('id', editId);
+  if (error) { document.getElementById('e-status').textContent = '// Delete failed.'; return; }
+  await loadChapters(); closeUpload();
+}
+
+/* ═══════════════════════════════════════════════════
+   ENTITY CHAT (minimal — expand with clearance.js)
+═══════════════════════════════════════════════════ */
+function openEntityChat() {
+  document.getElementById('entity-modal').classList.add('open');
+  setTimeout(() => document.getElementById('entity-msg').focus(), 100);
+}
+function sendEntityMsg() {
+  const input = document.getElementById('entity-msg');
+  const msg = input.value.trim(); if (!msg) return;
+  input.value = '';
+  const area = document.getElementById('entity-chat-area');
+  area.innerHTML += `<div style="margin-bottom:8px;border-left:2px solid var(--red);padding-left:8px;color:rgba(212,191,184,0.6)">YOU: ${msg}</div>`;
+  area.innerHTML += `<div style="margin-bottom:8px;border-left:2px solid var(--signal);padding-left:8px;color:rgba(255,102,0,0.7)">SURVIVOR: ...signal interrupted...</div>`;
+  area.scrollTop = area.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════════════
+   WRONGNESS EFFECTS
+═══════════════════════════════════════════════════ */
+(function wrongnessEngine() {
+  'use strict';
+  const LANG_MAP = {
+    'the':['le','die','el','の','그'],'and':['et','und','y','и','及'],
+    'sky':['ciel','Himmel','cielo','небо','天','하늘'],'dark':['sombre','dunkel','oscuro','暗い'],
+    'wrong':['faux','falsch','malo','неправильно','間違い','잘못'],'real':['réel','настоящий','本物'],
+    'fall':['tomber','fallen','caer','落ちる'],'blood':['sang','Blut','sangre','кровь','血'],
+    'gone':['parti','weg','ido','ушел','いなくなった'],'still':['encore','noch','aún','まだ'],
+    'eyes':['yeux','Augen','ojos','目','眼'],'know':['savoir','wissen','saber','知る','알다'],
+    'truth':['vérité','Wahrheit','verdad','правда','真実'],'white':['blanc','weiß','blanco','白'],
+    'shadow':['ombre','Schatten','sombra','影','그림자'],'mother':['mère','Mutter','madre','母','어머니'],
+    'door':['porte','Tür','puerta','дверь','ドア'],'dead':['mort','tot','muerto','死んだ'],
+    'run':['courir','laufen','correr','走る','달리다'],'wait':['attendre','warten','esperar','待つ'],
+    'time':['temps','Zeit','tiempo','時間','시간'],'lost':['perdu','verloren','perdido','失われた'],
+  };
+  const MARGIN_NOTES = [
+    "don't finish this","he was watching","this part — remember","stop reading",
+    "someone crossed this out","i left this for you","redacted in original",
+    "not how it happened","she knew","this line was different","they erased him here",
+    "trust nothing after this","som was here","the sky was still sunny here"
+  ];
+  const STATIC_CHARS = ['█','▓','▒','░','▄','▌','▐','×','◆','◇'];
+
+  function getBody() { return document.getElementById('ch-body'); }
+
+  function spawnLangFlicker(body) {
+    const paras = [...body.querySelectorAll('p')]; if (!paras.length) return;
+    const entries = Object.entries(LANG_MAP);
+    const [eng, translations] = entries[Math.floor(Math.random() * entries.length)];
+    const matching = paras.filter(p => new RegExp(`\\b${eng}\\b`, 'i').test(p.textContent));
+    if (!matching.length) return;
+    const para = matching[Math.floor(Math.random() * matching.length)];
+    const orig = para.innerHTML;
+    const foreign = translations[Math.floor(Math.random() * translations.length)];
+    const re = new RegExp(`\\b${eng}\\b`, 'i');
+    let steps = 0;
+    const iv = setInterval(() => {
+      if (!para.isConnected) { clearInterval(iv); return; }
+      para.innerHTML = orig.replace(re, `<span class="ch-lang-flicker flickering">${foreign}</span>`);
+      if (++steps >= 6) { clearInterval(iv); setTimeout(() => { if (para.isConnected) para.innerHTML = orig; }, 350); }
+    }, 110);
+  }
+
+  function spawnInkBleed(body) {
+    const paras = [...body.querySelectorAll('p')].filter(p => p.textContent.length > 40); if (!paras.length) return;
+    const para = paras[Math.floor(Math.random() * paras.length)]; const orig = para.innerHTML;
+    const words = para.textContent.split(' ').filter(w => w.length > 4); if (!words.length) return;
+    const word = words[Math.floor(Math.random() * words.length)].replace(/[^\w]/g, '');
+    const re = new RegExp(`\\b${word}\\b`);
+    const inj = orig.replace(re, `<span class="ch-ink-bleed bleeding">${word}</span>`);
+    if (inj === orig) return;
+    para.innerHTML = inj;
+    setTimeout(() => { if (para.isConnected) para.innerHTML = orig; }, 1800 + Math.random() * 1200);
+  }
+
+  function spawnSpectral(body) {
+    const paras = [...body.querySelectorAll('p')].filter(p => p.textContent.length > 60); if (!paras.length) return;
+    const para = paras[Math.floor(Math.random() * paras.length)]; const orig = para.innerHTML;
+    const entries = Object.entries(LANG_MAP);
+    const [eng, translations] = entries[Math.floor(Math.random() * entries.length)];
+    const ghost = translations[Math.floor(Math.random() * translations.length)];
+    const re = new RegExp(`\\b${eng}\\b`, 'i');
+    if (!re.test(para.textContent)) return;
+    const inj = orig.replace(re, m => `<span class="ch-spectral" data-ghost="${ghost}">${m}</span>`);
+    if (inj === orig) return;
+    para.innerHTML = inj;
+    setTimeout(() => { const el = para.querySelector('.ch-spectral'); if (el) el.classList.add('haunting'); }, 80);
+    setTimeout(() => { if (para.isConnected) para.innerHTML = orig; }, 3500 + Math.random() * 2000);
+  }
+
+  function spawnRedact(body) {
+    const paras = [...body.querySelectorAll('p')].filter(p => p.textContent.length > 60); if (!paras.length) return;
+    const para = paras[Math.floor(Math.random() * paras.length)]; const orig = para.innerHTML;
+    const sentences = para.textContent.match(/[^.!?]+[.!?]/g); if (!sentences || sentences.length < 2) return;
+    const target = sentences[Math.floor(Math.random() * sentences.length)].trim(); if (target.length < 10) return;
+    const redacted = target.replace(/[a-zA-Z]+/g, m => '█'.repeat(m.length));
+    const tIdx = orig.indexOf(target); if (tIdx === -1) return;
+    para.innerHTML = orig.slice(0, tIdx) + `<span class="ch-redact">${redacted}</span>` + orig.slice(tIdx + target.length);
+    setTimeout(() => { if (para.isConnected) para.innerHTML = orig; }, 2800 + Math.random() * 1800);
+  }
+
+  function spawnStatic(body) {
+    const paras = [...body.querySelectorAll('p')].filter(p => p.textContent.length > 50); if (!paras.length) return;
+    const para = paras[Math.floor(Math.random() * paras.length)]; const orig = para.innerHTML; const origT = para.textContent;
+    let steps = 0;
+    para.classList.add('ch-static');
+    const iv = setInterval(() => {
+      if (!para.isConnected) { clearInterval(iv); return; }
+      para.textContent = [...origT].map(c => c !== ' ' && Math.random() < 0.28 ? STATIC_CHARS[Math.floor(Math.random() * STATIC_CHARS.length)] : c).join('');
+      if (++steps >= 4) { clearInterval(iv); setTimeout(() => { if (para.isConnected) { para.innerHTML = orig; para.classList.remove('ch-static'); } }, 120); }
+    }, 90);
+  }
+
+  function spawnMarginNote(body) {
+    if (window.innerWidth < 900) return;
+    const paras = [...body.querySelectorAll('p')].filter(p => p.textContent.length > 40); if (!paras.length) return;
+    const para = paras[Math.floor(Math.random() * paras.length)];
+    if (para.querySelector('.ch-margin-note')) return;
+    const prevPos = para.style.position; para.style.position = 'relative';
+    const note = document.createElement('span'); note.className = 'ch-margin-note';
+    note.textContent = MARGIN_NOTES[Math.floor(Math.random() * MARGIN_NOTES.length)];
+    para.appendChild(note);
+    requestAnimationFrame(() => requestAnimationFrame(() => note.classList.add('visible')));
+    setTimeout(() => {
+      note.classList.remove('visible');
+      setTimeout(() => { if (note.parentNode) { note.remove(); para.style.position = prevPos; } }, 700);
+    }, 3500 + Math.random() * 2500);
+  }
+
+  function spawnComicInjection(body) {
+    // Comic Sans wrongness — a word suddenly shifts to comic register
+    const paras = [...body.querySelectorAll('p')].filter(p => p.textContent.length > 50); if (!paras.length) return;
+    const para = paras[Math.floor(Math.random() * paras.length)]; const orig = para.innerHTML;
+    const words = para.textContent.split(' ').filter(w => w.length > 3); if (!words.length) return;
+    const word = words[Math.floor(Math.random() * Math.min(words.length, 6))].replace(/[^\w]/g, '');
+    const re = new RegExp(`\\b${word}\\b`);
+    const inj = orig.replace(re, `<span class="comic-inject">${word}</span>`);
+    if (inj === orig) return;
+    para.innerHTML = inj;
+    setTimeout(() => { if (para.isConnected) para.innerHTML = orig; }, 2200 + Math.random() * 1000);
+  }
+
+  const EFFECTS = [spawnLangFlicker, spawnInkBleed, spawnSpectral, spawnRedact, spawnStatic, spawnMarginNote, spawnComicInjection];
+  const WEIGHTS = [0.25, 0.20, 0.14, 0.12, 0.08, 0.10, 0.11];
+  function pick() { let r = Math.random(), acc = 0; for (let i = 0; i < WEIGHTS.length; i++) { acc += WEIGHTS[i]; if (r < acc) return EFFECTS[i]; } return EFFECTS[0]; }
+
+  let lastFire = 0;
+  function fire() {
+    const body = getBody(); if (!body || body.offsetParent === null) return;
+    const now = Date.now(); if (now - lastFire < 2200) return;
+    lastFire = now;
+    pick()(body);
+  }
+
+  let lastScroll = 0;
+  window.addEventListener('scroll', () => {
+    const s = window.scrollY;
+    if (Math.abs(s - lastScroll) > 500) { lastScroll = s; fire(); }
+  }, { passive: true });
+
+  function sched() { setTimeout(() => { fire(); sched(); }, 5000 + Math.random() * 8000); }
+  sched();
+})();
+</script>
+
+<script src="/font-glitch.js" defer></script>
+</body>
+</html>
