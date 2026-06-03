@@ -439,6 +439,22 @@ try {
           Live
         </div>
       </article>
+
+      <!-- ANOTHER SKY GATEWAY CARD -->
+      <article class="featured-card featured-card--anothersky" onclick="window.location.href='/anothersky.html'" role="button" aria-label="Another Sky — Enter Archive" id="as-gateway-card">
+        <div class="fc-listeners" style="color:rgba(180,0,0,0.5);font-size:0.5rem;letter-spacing:2px;">WORLD -2 // 2032</div>
+        <div class="fc-cover-wrap">
+          <div class="fc-cover-img" style="background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">
+            <canvas id="as-bh-mini" width="120" height="120" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
+            <div style="position:relative;z-index:2;text-align:center;pointer-events:none;">
+              <div style="font-family:'Rubik Glitch','Special Gothic Expanded One',monospace;font-size:0.55rem;color:rgba(255,20,20,0.85);letter-spacing:2px;text-shadow:0 0 12px rgba(255,0,0,0.6);">ANOTHER SKY</div>
+            </div>
+          </div>
+        </div>
+        <div class="fc-name" style="color:#cc1111;letter-spacing:0.5px;">Another Sky — Novel Archive</div>
+        <div class="fc-meta" style="color:rgba(180,0,0,0.5);">LOGBOOK DRIFTERS · World-2 · Serial Fiction</div>
+        <div class="fc-now" style="background:rgba(20,0,0,0.6);color:rgba(200,80,80,0.7);border:1px solid rgba(100,0,0,0.3);">The sky is wrong. Are you from this world?</div>
+      </article>
     </div>
 
     <div class="section-hd">
@@ -2487,6 +2503,228 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('storage', function(e) {
     if (e.key === 'wncore-constellation-solved') applyAberrantState();
   });
+})();
+</script>
+
+<!-- ANOTHER SKY GATEWAY — mini black hole + card styles -->
+<style>
+.featured-card--anothersky {
+  background: #050000;
+  border: 1px solid rgba(140,0,0,0.25);
+  cursor: pointer;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.featured-card--anothersky:hover {
+  border-color: rgba(200,0,0,0.6);
+  box-shadow: 0 0 32px rgba(180,0,0,0.15), 0 12px 32px rgba(0,0,0,0.5);
+  transform: translateY(-3px);
+}
+.featured-card--anothersky .fc-cover-img {
+  height: 120px;
+}
+</style>
+<script>
+(function() {
+  /* Mini black hole — raw WebGL2 on the gateway card canvas */
+  function initMiniBlackHole() {
+    const canvas = document.getElementById('as-bh-mini');
+    if (!canvas) return;
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+    if (!gl) { canvas.style.display='none'; return; }
+
+    function resize() {
+      const r = canvas.parentElement.getBoundingClientRect();
+      canvas.width = r.width * Math.min(devicePixelRatio, 2);
+      canvas.height = r.height * Math.min(devicePixelRatio, 2);
+    }
+    resize();
+
+    const vert = `
+      attribute vec2 a_pos;
+      void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+    `;
+
+    const frag = `
+      precision highp float;
+      uniform vec2 u_res;
+      uniform float u_t;
+
+      #define PI 3.14159265
+
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);
+      }
+      float noise(vec2 p) {
+        vec2 i = floor(p), f = fract(p);
+        f = f*f*(3.0-2.0*f);
+        return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
+                   mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
+      }
+      float fbm(vec2 p) {
+        float v=0.0,a=0.5;
+        for(int i=0;i<4;i++){v+=a*noise(p);p*=2.1;a*=0.5;}
+        return v;
+      }
+
+      void main() {
+        vec2 uv = (gl_FragCoord.xy - u_res*0.5) / min(u_res.x, u_res.y);
+        float r = length(uv);
+        float theta = atan(uv.y, uv.x);
+
+        vec3 col = vec3(0.0);
+
+        /* --- STAR FIELD + MILKY WAY DUST --- */
+        for(int i=0;i<3;i++){
+          vec2 sp = uv * (2.0 + float(i)*1.8) + vec2(float(i)*3.7, float(i)*2.1);
+          float s = hash(floor(sp*80.0));
+          if(s > 0.985) {
+            float br = (s-0.985)/0.015;
+            float sz = fract(sp.x*10.0+sp.y*7.3);
+            col += vec3(0.6+sz*0.4, 0.7+sz*0.3, 1.0) * br * 0.9;
+          }
+        }
+
+        /* Milky Way band — dense core around center-right */
+        vec2 mwUv = uv + vec2(0.1, 0.05);
+        float mwBand = exp(-pow(mwUv.y*4.0, 2.0)) * fbm(mwUv*3.0 + vec2(u_t*0.01));
+        col += vec3(0.08, 0.05, 0.12) * mwBand * 1.2;
+
+        /* Star cluster near BH */
+        float cluster = 0.0;
+        for(int j=0;j<6;j++){
+          vec2 cp = vec2(cos(float(j)*1.047+0.3), sin(float(j)*1.047+0.3)) * (0.45+float(j)*0.05);
+          float cd = length(uv - cp);
+          cluster += exp(-cd*18.0) * (0.3 + hash(cp)*0.5);
+        }
+        col += vec3(1.0, 0.85, 0.5) * cluster * 0.4;
+
+        /* --- NEBULA DUST CLOUDS --- */
+        float neb1 = fbm(uv*2.5 + vec2(u_t*0.008, 0.0));
+        float neb2 = fbm(uv*3.0 + vec2(0.5, u_t*0.006));
+        col += vec3(0.4,0.0,0.05) * neb1 * smoothstep(0.25,0.7,r) * 0.35;
+        col += vec3(0.0,0.0,0.08) * neb2 * smoothstep(0.2,0.6,r) * 0.2;
+
+        /* --- GRAVITATIONAL LENSING --- */
+        float lensR = r;
+        float bhR = 0.07;
+        if(lensR > bhR) {
+          float lens = 0.012 / (lensR * lensR);
+          uv += normalize(uv) * (-lens);
+        }
+
+        /* --- ACCRETION DISK --- */
+        float diskR = length(uv);
+        float diskAngle = atan(uv.y, uv.x);
+        /* Disk brightness: brightest at inner edge, fades outward */
+        float dInner = 0.10, dOuter = 0.55;
+        float dFade = smoothstep(dOuter,dInner,diskR) * smoothstep(bhR*0.9,dInner,diskR);
+
+        /* Doppler: one side brighter (approaching) */
+        float doppler = 0.5 + 0.5*sin(diskAngle + u_t*0.4);
+        float hotspot = pow(doppler, 2.5);
+
+        /* Disk thickness — squash vertically for Interstellar tilt look */
+        float diskMask = smoothstep(0.05, 0.0, abs(uv.y * 2.2 - sin(diskAngle)*0.08));
+
+        float diskBright = dFade * diskMask * (0.6 + hotspot * 0.8);
+
+        /* Disk turbulence */
+        float turb = fbm(vec2(diskAngle*2.0, diskR*8.0) + u_t*0.15);
+        diskBright *= (0.7 + turb * 0.6);
+
+        /* Disk color: white-hot inner → orange → deep red outer */
+        float t_disk = clamp((diskR - dInner) / (dOuter - dInner), 0.0, 1.0);
+        vec3 diskCol = mix(vec3(1.0, 0.85, 0.5), mix(vec3(1.0,0.25,0.02), vec3(0.4,0.0,0.0), t_disk), t_disk);
+        col += diskCol * diskBright * 2.2;
+
+        /* Photon ring — thin bright line */
+        float photon = exp(-pow((diskR - 0.092)*120.0, 2.0)) * diskMask;
+        col += vec3(1.0,0.4,0.1) * photon * (0.8 + hotspot * 0.5);
+
+        /* Secondary lensed image of disk above horizon */
+        float diskR2 = length(uv + vec2(0.0, 0.005));
+        float dFade2 = smoothstep(0.22,0.10,diskR2) * smoothstep(bhR,0.10,diskR2);
+        float diskMask2 = smoothstep(0.02,0.0,abs((uv.y+0.005)*3.5));
+        col += vec3(0.8,0.1,0.0) * dFade2 * diskMask2 * 0.5;
+
+        /* --- RELATIVISTIC JET (faint vertical glow) --- */
+        float jetR = abs(uv.x);
+        float jetH = abs(uv.y);
+        float jet = exp(-jetR*jetR*200.0) * exp(-jetH*0.8) * smoothstep(bhR*1.5, 0.35, jetH);
+        col += vec3(0.6,0.1,0.0) * jet * 0.4;
+
+        /* --- EVENT HORIZON --- */
+        float horizon = smoothstep(bhR+0.005, bhR-0.005, r);
+        col *= (1.0 - horizon);
+        col += vec3(0.0) * horizon;
+
+        /* --- GLITCH FLICKER --- */
+        float glitch = step(0.997, hash(vec2(u_t*0.3, floor(u_t*8.0))));
+        if(glitch > 0.5) {
+          col.r += hash(uv + u_t) * 0.3 * smoothstep(0.3,0.0,r);
+        }
+
+        /* Tone map */
+        col = col / (col + 0.8);
+        col = pow(col, vec3(0.45));
+
+        /* Vignette */
+        col *= 1.0 - smoothstep(0.45, 0.7, r);
+
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `;
+
+    function compile(type, src) {
+      const s = gl.createShader(type);
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    }
+    const prog = gl.createProgram();
+    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vert));
+    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, frag));
+    gl.linkProgram(prog);
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'a_pos');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+    const uRes = gl.getUniformLocation(prog, 'u_res');
+    const uT = gl.getUniformLocation(prog, 'u_t');
+
+    let t = 0, running = true, lastTs2 = 0;
+    const io = new IntersectionObserver(entries => {
+      running = entries[0].isIntersecting;
+    });
+    io.observe(canvas);
+
+    function draw(ts) {
+      requestAnimationFrame(draw);
+      if (!running) return;
+      const dt = lastTs2 ? Math.min((ts - lastTs2) / 1000, 0.05) : 0.016;
+      lastTs2 = ts;
+      t += dt;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform2f(uRes, canvas.width, canvas.height);
+      gl.uniform1f(uT, t);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+    draw(0);
+
+    window.addEventListener('resize', () => { resize(); });
+  }
+
+  /* Init when card enters DOM */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMiniBlackHole);
+  } else {
+    initMiniBlackHole();
+  }
 })();
 </script>
 

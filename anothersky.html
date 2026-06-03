@@ -15,7 +15,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/fonts.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 
 <style>
@@ -867,6 +866,134 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 /* ── THEME TOGGLE ── */
 #theme-lbl-d, #theme-lbl-p { pointer-events: none; }
+
+/* ═══════════════════════════════════════════════════
+   MOBILE — COMPREHENSIVE FIXES
+═══════════════════════════════════════════════════ */
+
+/* Gate question — prevent overflow on small screens */
+@media (max-width: 480px) {
+  #gate-question {
+    font-size: clamp(1.4rem, 8vw, 2.4rem) !important;
+  }
+  #gate-inner {
+    padding: 0 16px;
+  }
+  #gate-inner::before {
+    inset: -16px;
+  }
+  #gate-choices {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .gate-btn {
+    width: 100%;
+    max-width: 240px;
+    padding: 14px 20px;
+  }
+  #gate-eyebrow {
+    font-size: 0.35rem;
+    letter-spacing: 2px;
+  }
+  #bh-label {
+    font-size: 0.4rem;
+    letter-spacing: 2px;
+    white-space: normal;
+    text-align: center;
+    padding: 0 16px;
+  }
+}
+
+/* Header — collapse stats on small screens */
+@media (max-width: 600px) {
+  #as-header {
+    padding: 0 12px;
+    min-height: 50px;
+  }
+  #hdr-status-row .hdr-stat:nth-child(n+3) {
+    display: none;
+  }
+  #hdr-logo-block {
+    gap: 8px;
+    padding-right: 10px;
+    margin-right: 10px;
+  }
+  #hdr-logotype { font-size: 0.85rem; }
+  #hdr-sub { display: none; }
+  #signal-meter { top: 50px; }
+}
+
+/* Synopsis gate — full width on mobile */
+@media (max-width: 700px) {
+  #synopsis-gate {
+    padding: 40px 20px;
+    align-items: flex-start;
+  }
+  #syn-title {
+    font-size: clamp(2rem, 10vw, 3.5rem);
+  }
+  #syn-box {
+    max-width: 100%;
+  }
+  #syn-text { font-size: 0.9rem; line-height: 1.85; }
+  #syn-decrypt-btn, #syn-begin-btn {
+    width: 100%;
+    text-align: center;
+    padding: 14px 20px;
+  }
+  #syn-stamp {
+    font-size: 0.36rem;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  #syn-stamp::after { display: none; }
+}
+
+/* Chapter reader — tighten on mobile */
+@media (max-width: 480px) {
+  #ch-reader { padding: 20px 16px 64px; }
+  .ch-file-title { font-size: clamp(1.3rem, 6vw, 2rem); }
+  #ch-body { font-size: 0.95rem; line-height: 1.9; }
+  #ch-body p:first-of-type::first-letter {
+    font-size: 2.4rem;
+    margin-right: 6px;
+  }
+  .ch-nav { flex-direction: column; gap: 8px; }
+  .ch-nav-btn { width: 100%; }
+}
+
+/* Sidebar shown via mobile bar — already hidden, but ensure bottom tools visible */
+@media (max-width: 700px) {
+  #mob-bar {
+    position: sticky;
+    top: 50px;
+    z-index: 48;
+  }
+  #mob-ch-sel { font-size: 0.5rem; }
+}
+
+/* Wrong world screen — mobile safe */
+@media (max-width: 480px) {
+  #ww-text { font-size: clamp(1rem, 6vw, 1.6rem); padding: 0 20px; }
+  #ww-sub  { font-size: 0.5rem; padding: 0 20px; }
+}
+
+/* Reader opts panel — full width on mobile */
+@media (max-width: 480px) {
+  #reader-opts-panel {
+    left: 8px;
+    right: 8px;
+    width: auto;
+  }
+}
+
+/* Entity modal — full width */
+@media (max-width: 480px) {
+  #entity-modal .modal-shell {
+    max-height: 85dvh;
+  }
+}
 </style>
 </head>
 <body>
@@ -1161,237 +1288,456 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 </div>
 
 <!-- ═══════════════════════════════════════════════════
-     THREE.JS BLACK HOLE
+     WEBGL BLACK HOLE — Sgr A* / Interstellar GLSL
 ═══════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
-/* ── BLACK HOLE SCENE ──────────────────────────────── */
+/* ── BLACK HOLE SCENE — WebGL GLSL Shader (Sgr A* / Interstellar) ── */
 (function buildBlackHole() {
   const canvas = document.getElementById('bh-canvas');
-  if (!canvas || typeof THREE === 'undefined') {
-    setTimeout(() => document.getElementById('bh-scene').classList.add('exit'), 800);
-    setTimeout(showGate, 1000);
+  if (!canvas) { setTimeout(showGate, 800); return; }
+
+  const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) {
+    setTimeout(() => document.getElementById('bh-scene').classList.add('exit'), 600);
+    setTimeout(showGate, 800);
     return;
   }
 
-  let W = window.innerWidth, H = window.innerHeight;
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-  renderer.setSize(W, H);
-  renderer.setClearColor(0x000000, 1);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.1;
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(52, W / H, 0.01, 1000);
-  camera.position.set(0, 0, 14);
-
-  /* STARS */
-  const starCount = 3000;
-  const starGeo = new THREE.BufferGeometry();
-  const starPos = new Float32Array(starCount * 3);
-  const starCol = new Float32Array(starCount * 3);
-  for (let i = 0; i < starCount; i++) {
-    const theta = Math.random() * Math.PI * 2, phi = Math.acos(2 * Math.random() - 1);
-    const r = 300 + Math.random() * 200;
-    starPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
-    starPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-    starPos[i*3+2] = r * Math.cos(phi);
-    const b = 0.1 + Math.random() * 0.6;
-    const t = Math.random();
-    starCol[i*3] = b * (t > 0.7 ? 0.9 : 0.7);
-    starCol[i*3+1] = b * (t > 0.7 ? 0.7 : 0.85);
-    starCol[i*3+2] = b;
+  function resize() {
+    const dpr = Math.min(devicePixelRatio, 2);
+    canvas.width  = window.innerWidth  * dpr;
+    canvas.height = window.innerHeight * dpr;
   }
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
-  scene.add(new THREE.Points(starGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.25, sizeAttenuation: true, transparent: true, opacity: 0.75 })));
+  resize();
+  window.addEventListener('resize', resize);
 
-  /* EVENT HORIZON — pure black sphere */
-  const horizon = new THREE.Mesh(new THREE.SphereGeometry(1.0, 64, 64), new THREE.MeshBasicMaterial({ color: 0x000000 }));
-  scene.add(horizon);
+  /* ─── VERTEX ─── */
+  const VERT = `
+    attribute vec2 a_pos;
+    void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
+  `;
 
-  /* PHOTON SPHERE — thin bright ring */
-  const photonMat = new THREE.MeshBasicMaterial({ color: 0xff2222, transparent: true, opacity: 0.9 });
-  scene.add(new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.016, 20, 220), photonMat));
-  [0.06, 0.12, 0.22].forEach((t, i) => {
-    scene.add(new THREE.Mesh(new THREE.TorusGeometry(1.5, t, 8, 200),
-      new THREE.MeshBasicMaterial({ color: [0xff1111, 0xaa0000, 0x440000][i], transparent: true, opacity: [0.3, 0.15, 0.06][i], depthWrite: false })));
-  });
+  /* ─── FRAGMENT — full scene in one shader ─── */
+  const FRAG = `
+    precision highp float;
+    uniform vec2  u_res;
+    uniform float u_t;
+    uniform vec2  u_mouse; /* normalised -1..1 */
 
-  /* GRAVITATIONAL LENSING */
-  [
-    { r: 1.08, color: 0x880000, op: 0.3 },
-    { r: 1.22, color: 0x550000, op: 0.18 },
-    { r: 1.38, color: 0x220000, op: 0.1 },
-  ].forEach(({ r, color, op }) => {
-    scene.add(new THREE.Mesh(new THREE.SphereGeometry(r, 48, 48),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false, side: THREE.BackSide })));
-  });
-  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.04, 64, 64),
-    new THREE.MeshBasicMaterial({ color: 0xff3333, transparent: true, opacity: 0.35, depthWrite: false, side: THREE.BackSide })));
+    #define PI  3.14159265
+    #define TAU 6.28318530
 
-  /* ACCRETION DISK — RED version of Interstellar */
-  const diskGroup = new THREE.Group();
-  scene.add(diskGroup);
-  diskGroup.rotation.x = Math.PI / 6; /* tilt for Interstellar look */
+    /* ── hash / noise ── */
+    float hash11(float p){ return fract(sin(p)*43758.545); }
+    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+    float hash(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }
 
-  const diskLayers = [
-    { inner: 1.52, outer: 1.98, color: 0xff2222, op: 0.95 },
-    { inner: 1.90, outer: 2.8,  color: 0xdd1111, op: 0.7  },
-    { inner: 2.6,  outer: 4.5,  color: 0xaa0808, op: 0.4  },
-    { inner: 4.0,  outer: 7.0,  color: 0x660000, op: 0.22 },
-    { inner: 6.5,  outer: 10.5, color: 0x2a0000, op: 0.12 },
-  ];
-  diskLayers.forEach(l => {
-    diskGroup.add(new THREE.Mesh(new THREE.RingGeometry(l.inner, l.outer, 160, 6),
-      new THREE.MeshBasicMaterial({ color: l.color, transparent: true, opacity: l.op, side: THREE.DoubleSide, depthWrite: false })));
-  });
-
-  /* HOT INNER RING */
-  const hotGeo = new THREE.RingGeometry(1.51, 1.90, 300, 4);
-  const posAttr = hotGeo.attributes.position;
-  for (let i = 0; i < posAttr.count; i++) {
-    const x = posAttr.getX(i), y = posAttr.getY(i);
-    const a = Math.atan2(y, x);
-    const w = 1 + 0.007 * Math.sin(a * 12 + 0.5);
-    posAttr.setX(i, x * w); posAttr.setY(i, y * w);
-  }
-  posAttr.needsUpdate = true;
-  diskGroup.add(new THREE.Mesh(hotGeo, new THREE.MeshBasicMaterial({ color: 0xff5555, transparent: true, opacity: 0.92, side: THREE.DoubleSide, depthWrite: false })));
-
-  /* DISK PARTICLES */
-  const dCount = 14000;
-  const dGeo = new THREE.BufferGeometry();
-  const dPos = new Float32Array(dCount * 3);
-  const dCol = new Float32Array(dCount * 3);
-  const dAngles = new Float32Array(dCount);
-  const dRadii = new Float32Array(dCount);
-  for (let i = 0; i < dCount; i++) {
-    const r = 1.6 + Math.pow(Math.random(), 0.4) * 9;
-    const a = Math.random() * Math.PI * 2;
-    const h = (Math.random() - 0.5) * 0.08 * (r / 3);
-    dPos[i*3] = r * Math.cos(a); dPos[i*3+1] = h; dPos[i*3+2] = r * Math.sin(a);
-    dAngles[i] = a; dRadii[i] = r;
-    const t = Math.min(1, (r - 1.6) / 8.5);
-    dCol[i*3] = 1.0; dCol[i*3+1] = 0.1 + (1-t)*0.2; dCol[i*3+2] = 0.0 + (1-t)*0.05;
-  }
-  dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
-  dGeo.setAttribute('color', new THREE.BufferAttribute(dCol, 3));
-  const dPts = new THREE.Points(dGeo, new THREE.PointsMaterial({ vertexColors: true, size: 0.03, sizeAttenuation: true, transparent: true, opacity: 0.55, depthWrite: false }));
-  diskGroup.add(dPts);
-
-  /* RELATIVISTIC JETS */
-  [1, -1].forEach(dir => {
-    scene.add(new THREE.Mesh(new THREE.CylinderGeometry(0, 0.28, 8, 32, 1, true),
-      new THREE.MeshBasicMaterial({ color: 0xff1111, transparent: true, opacity: 0.08, depthWrite: false, side: THREE.DoubleSide })));
-    const core = new THREE.Mesh(new THREE.CylinderGeometry(0, 0.06, 7, 18, 1, true),
-      new THREE.MeshBasicMaterial({ color: 0xff4444, transparent: true, opacity: 0.45, depthWrite: false }));
-    core.position.y = dir * 3.5; core.rotation.z = dir > 0 ? 0 : Math.PI;
-    scene.add(core);
-  });
-
-  /* CHROMATIC ABERRATION GHOST RINGS */
-  [
-    { r: 1.51, color: 0xff0000, op: 0.2, offset: 0.08 },
-    { r: 1.51, color: 0x0022ff, op: 0.2, offset: -0.08 },
-  ].forEach(({ r, color, op, offset }) => {
-    const g = new THREE.Mesh(new THREE.TorusGeometry(r, 0.03, 8, 180),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false }));
-    g.position.x = offset;
-    diskGroup.add(g);
-  });
-
-  /* GLITCH ENGINE */
-  let glitchT = 0;
-  let glitchActive = false;
-  function triggerSceneGlitch() {
-    if (glitchActive) return; glitchActive = true;
-    const t0 = Date.now();
-    const iv = setInterval(() => {
-      const r = Math.random();
-      horizonMat.color.setRGB(r * 0.2, 0, r * 0.1);
-      photonMat.color.setRGB(1, r * 0.3, r * 0.2);
-      photonMat.opacity = 0.5 + Math.random() * 0.5;
-      if (Date.now() - t0 > 1200) {
-        clearInterval(iv);
-        horizonMat.color.setHex(0x000000);
-        photonMat.color.setHex(0xff2222);
-        photonMat.opacity = 0.9;
-        glitchActive = false;
-      }
-    }, 80);
-  }
-  const horizonMat = horizon.material;
-
-  /* CAMERA SLOW DRIFT */
-  let camTheta = 0.4, camPhi = 1.35, camR = 14;
-  let isDragging = false, lastMx = 0, lastMy = 0;
-  function updateCamera() {
-    camera.position.x = camR * Math.sin(camPhi) * Math.sin(camTheta);
-    camera.position.y = camR * Math.cos(camPhi);
-    camera.position.z = camR * Math.sin(camPhi) * Math.cos(camTheta);
-    camera.lookAt(0, 0, 0);
-  }
-  updateCamera();
-  canvas.addEventListener('mousedown', e => { isDragging = true; lastMx = e.clientX; lastMy = e.clientY; });
-  window.addEventListener('mouseup', () => isDragging = false);
-  window.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    camTheta -= (e.clientX - lastMx) * 0.005;
-    camPhi = Math.max(0.3, Math.min(Math.PI - 0.3, camPhi + (e.clientY - lastMy) * 0.004));
-    lastMx = e.clientX; lastMy = e.clientY; updateCamera();
-  });
-  canvas.addEventListener('wheel', e => { camR = Math.max(5, Math.min(28, camR + e.deltaY * 0.015)); updateCamera(); }, { passive: true });
-
-  /* ANIMATION LOOP */
-  let t = 0;
-  function animate() {
-    requestAnimationFrame(animate);
-    t += 0.005;
-    if (!isDragging) { camTheta += 0.0008; updateCamera(); }
-
-    diskGroup.rotation.y = t * 0.14;
-
-    /* Keplerian particle rotation */
-    const pa = dGeo.attributes.position.array;
-    for (let i = 0; i < dCount; i++) {
-      const speed = 0.006 / Math.max(0.5, dRadii[i] * 0.36);
-      dAngles[i] += speed;
-      pa[i*3] = dRadii[i] * Math.cos(dAngles[i]);
-      pa[i*3+2] = dRadii[i] * Math.sin(dAngles[i]);
+    float noise(vec2 p){
+      vec2 i=floor(p), f=fract(p);
+      f=f*f*(3.0-2.0*f);
+      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
+                 mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
     }
-    dGeo.attributes.position.needsUpdate = true;
+    float fbm(vec2 p){
+      float v=0.0, a=0.5;
+      mat2 rot = mat2(0.8,-0.6,0.6,0.8);
+      for(int i=0;i<6;i++){ v+=a*noise(p); p=rot*p*2.1; a*=0.48; }
+      return v;
+    }
+    float fbm3(vec3 p){
+      float v=0.0,a=0.5;
+      for(int i=0;i<5;i++){
+        v+=a*noise(p.xy+p.z*0.3+float(i)*2.7);
+        p*=2.1; a*=0.48;
+      }
+      return v;
+    }
 
-    /* Horizon pulse */
-    const pulse = 1 + 0.004 * Math.sin(t * 3.1);
-    horizon.scale.setScalar(pulse);
+    /* ── Milky Way galaxy band ── */
+    float galaxyBand(vec2 uv){
+      /* tilted band across screen */
+      float band = uv.y*0.8 - uv.x*0.15 + 0.05;
+      float bw = exp(-band*band*18.0);
+      /* clumpy structure via fbm */
+      float clump = fbm(uv*4.0 + vec2(0.0, u_t*0.005));
+      return bw * clump * 1.6;
+    }
 
-    /* Random glitch */
-    glitchT += 0.005;
-    if (glitchT > 0.12 && Math.random() < 0.008) { glitchT = 0; triggerSceneGlitch(); }
+    /* ── star field with magnitude/colour variation ── */
+    vec3 starField(vec2 uv, float scale){
+      vec3 col = vec3(0.0);
+      vec2 grid = floor(uv * scale);
+      vec2 frac = fract(uv * scale) - 0.5;
 
-    renderer.render(scene, camera);
+      for(int dx=-1;dx<=1;dx++){
+        for(int dy=-1;dy<=1;dy++){
+          vec2 g = grid + vec2(dx,dy);
+          float h = hash(g);
+          if(h > 0.62){ /* ~38% of cells have a star */
+            float h2 = hash(g + 99.1);
+            float h3 = hash(g + 200.3);
+            vec2 off = vec2(hash(g+1.1), hash(g+2.2)) - 0.5;
+            vec2 d = frac - (vec2(dx,dy) + off);
+            float mag  = pow(1.0 - h, 2.5) * 0.9 + 0.1; /* brightness */
+            float size = 0.004 + mag * 0.012;
+            float glow = exp(-dot(d,d) / (size*size));
+            /* colour: blue dwarfs / yellow giants / white main sequence */
+            vec3 tint = h2 < 0.15 ? vec3(0.5,0.6,1.0) :   /* blue */
+                        h2 < 0.30 ? vec3(1.0,0.9,0.5) :   /* yellow giant */
+                        h2 < 0.40 ? vec3(1.0,0.5,0.2) :   /* orange */
+                                    vec3(0.9,0.95,1.0);    /* white */
+            col += tint * glow * mag;
+          }
+        }
+      }
+      return col;
+    }
+
+    /* ── star cluster — dense core near BH ── */
+    vec3 starCluster(vec2 uv){
+      vec3 col = vec3(0.0);
+      float r = length(uv);
+      /* galactic centre density falloff */
+      float density = exp(-r*r*2.2) * 0.8;
+
+      for(int i=0;i<12;i++){
+        float fi = float(i);
+        float ang = fi * 2.399963; /* golden angle */
+        float rad = sqrt(fi/12.0) * 0.55;
+        vec2 cp = vec2(cos(ang)*rad, sin(ang)*rad);
+        float cd = length(uv - cp);
+        float br = exp(-cd*cd*80.0) * density * (0.4 + hash(cp)*0.6);
+        float h = hash(cp + 7.3);
+        vec3 tint = h < 0.3 ? vec3(0.6,0.7,1.0) : h < 0.55 ? vec3(1.0,0.9,0.6) : vec3(1.0,1.0,1.0);
+        col += tint * br;
+      }
+      return col;
+    }
+
+    /* ── nebula / dust clouds ── */
+    vec3 nebula(vec2 uv){
+      vec3 col = vec3(0.0);
+      float r = length(uv);
+
+      /* red dust cloud — asymmetric */
+      float n1 = fbm(uv*2.2 + vec2(1.3, u_t*0.007));
+      float m1 = smoothstep(0.6,0.0,r) * smoothstep(0.1,0.45,r);
+      col += vec3(0.55,0.05,0.02) * n1 * m1 * 0.6;
+
+      /* blue-violet ionised cloud */
+      float n2 = fbm(uv*1.8 + vec2(-0.7, 0.5 + u_t*0.005));
+      float m2 = smoothstep(0.7,0.15,r);
+      col += vec3(0.02,0.02,0.18) * n2 * m2 * 0.5;
+
+      /* dark dust lane — subtracts light near disk plane */
+      float lane = exp(-pow((uv.y + uv.x*0.1)*6.0, 2.0));
+      float dustN = fbm(vec2(uv.x*3.0 + u_t*0.004, uv.y*5.0));
+      col -= vec3(0.06) * lane * dustN * smoothstep(0.5,0.15,r);
+
+      /* outer faint purple haze */
+      float haze = fbm(uv*1.1 + vec2(u_t*0.003));
+      col += vec3(0.08,0.0,0.12) * haze * smoothstep(0.9,0.4,r) * 0.35;
+
+      return col;
+    }
+
+    /* ── gravitational lensing warp of background ── */
+    vec2 gravLens(vec2 uv, float bhR){
+      float r = length(uv);
+      if(r < bhR * 1.05) return uv;
+      /* Schwarzschild deflection approximation */
+      float rs = bhR * 1.0;
+      float defl = rs * rs / (r * r) * 1.8;
+      return uv + normalize(uv) * (-defl);
+    }
+
+    /* ── accretion disk ── */
+    vec3 accretionDisk(vec2 uv, float bhR){
+      vec3 col = vec3(0.0);
+      float r   = length(uv);
+      float ang  = atan(uv.y, uv.x);
+
+      float dInner = bhR * 1.45;
+      float dOuter = bhR * 7.5;
+
+      /* vertical squash — disk is tilted ~15° toward viewer (Interstellar angle) */
+      float squash = abs(uv.y * 2.8 - sin(ang) * 0.12);
+      float thick  = smoothstep(0.12, 0.0, squash);
+
+      float radFade = smoothstep(dOuter, dInner, r) * smoothstep(bhR * 0.9, dInner, r);
+
+      /* Doppler: near side approaches → brighter, far side recedes → dimmer */
+      /* Relativistic beaming: I ∝ (1/(1-β·cosφ))³  — simplified */
+      float phi   = ang + u_t * 0.22; /* slow apparent rotation */
+      float beta  = 0.5;              /* v/c */
+      float beam  = pow(1.0 / (1.0 - beta * cos(phi)), 3.0);
+      beam = clamp(beam * 0.18, 0.0, 3.5);
+
+      /* Turbulence in disk */
+      float turb = fbm(vec2(ang * 1.6 + u_t * 0.12, r * 5.0));
+      float flux  = radFade * thick * (0.5 + beam * 0.6) * (0.7 + turb * 0.5);
+
+      /* Temperature gradient: inner=white-hot, mid=orange, outer=deep red */
+      float t_r = clamp((r - dInner) / (dOuter - dInner), 0.0, 1.0);
+      vec3 diskCol = t_r < 0.15 ? mix(vec3(1.0,0.97,0.85), vec3(1.0,0.6,0.15), t_r/0.15)
+                   : t_r < 0.55 ? mix(vec3(1.0,0.6,0.15),  vec3(0.9,0.12,0.02), (t_r-0.15)/0.40)
+                   :               mix(vec3(0.9,0.12,0.02),  vec3(0.28,0.0,0.0),  (t_r-0.55)/0.45);
+
+      col += diskCol * flux * 2.8;
+
+      /* ── Photon ring — thin bright arc right at ISCO ── */
+      float photonR = bhR * 1.47;
+      float photon  = exp(-pow((r - photonR) * 60.0 / bhR, 2.0)) * thick;
+      float pBeam   = 0.5 + 0.5 * sin(ang * 1.0 + u_t * 0.35);
+      col += vec3(1.0, 0.7, 0.2) * photon * (1.2 + pBeam * 0.8) * 1.5;
+
+      /* ── Secondary (lensed) image above horizon ── */
+      vec2 uv2 = vec2(uv.x, -uv.y * 0.5 + bhR * 0.4);
+      float r2 = length(uv2);
+      float ang2 = atan(uv2.y, uv2.x);
+      float squash2 = abs(uv2.y * 3.5);
+      float thick2 = smoothstep(0.06, 0.0, squash2);
+      float radFade2 = smoothstep(bhR*4.0, bhR*1.5, r2) * smoothstep(bhR*0.9, bhR*1.4, r2);
+      float t_r2 = clamp((r2 - bhR*1.4)/(bhR*2.8), 0.0, 1.0);
+      vec3 sec = mix(vec3(1.0,0.55,0.1), vec3(0.5,0.02,0.0), t_r2);
+      col += sec * radFade2 * thick2 * 0.7;
+
+      return col;
+    }
+
+    /* ── relativistic jets ── */
+    vec3 jets(vec2 uv, float bhR){
+      vec3 col = vec3(0.0);
+      float jx = abs(uv.x);
+      float jy = abs(uv.y);
+      /* polar jets along y axis */
+      float jet = exp(-jx * jx / (bhR * bhR * 0.6)) * smoothstep(bhR * 7.0, bhR, jy);
+      float jNoise = fbm(vec2(uv.x * 8.0, jy * 3.0 - u_t * 0.2));
+      float jFlux = jet * (0.5 + jNoise * 0.6) * smoothstep(bhR * 1.3, bhR * 2.5, jy);
+      col += vec3(0.6, 0.08, 0.0) * jFlux * 0.5;
+      /* bright narrow core */
+      float jCore = exp(-jx * jx / (bhR * bhR * 0.04)) * smoothstep(bhR*5.0, bhR*1.5, jy);
+      col += vec3(1.0, 0.3, 0.0) * jCore * 0.35;
+      return col;
+    }
+
+    /* ── photon sphere / shadow boundary glow ── */
+    vec3 shadowGlow(vec2 uv, float bhR){
+      float r = length(uv);
+      float glow = exp(-pow((r - bhR * 1.0) * 18.0 / bhR, 2.0));
+      return vec3(0.9, 0.15, 0.0) * glow * 0.4;
+    }
+
+    void main(){
+      vec2 fc = gl_FragCoord.xy;
+      vec2 uv = (fc - u_res * 0.5) / min(u_res.x, u_res.y);
+
+      /* subtle parallax from mouse */
+      uv += u_mouse * 0.04;
+
+      float bhR = 0.09; /* normalised event horizon radius */
+
+      /* ── BACKGROUND LAYER (lensed) ── */
+      vec2 lUV = gravLens(uv, bhR);
+      float lR = length(lUV);
+
+      vec3 col = vec3(0.0);
+
+      /* Stars — two scales for depth */
+      col += starField(lUV, 80.0) * 0.7;
+      col += starField(lUV * 0.5 + 0.5, 150.0) * 0.4;
+
+      /* Star cluster around galactic centre */
+      col += starCluster(lUV) * 0.8;
+
+      /* Milky Way band */
+      float mw = galaxyBand(lUV);
+      col += vec3(0.12, 0.07, 0.20) * mw;
+      /* warm core of the band */
+      float mwCore = exp(-pow(lUV.y * 0.8 - lUV.x * 0.1 + 0.05, 2.0) * 30.0);
+      col += vec3(0.18, 0.10, 0.08) * mwCore * fbm(lUV * 3.0) * 0.8;
+
+      /* Nebula / dust */
+      col += nebula(lUV);
+
+      /* ── FOREGROUND: disk, jets, glow ── */
+      col += accretionDisk(uv, bhR);
+      col += jets(uv, bhR);
+      col += shadowGlow(uv, bhR);
+
+      /* ── EVENT HORIZON — absolute black ── */
+      float r = length(uv);
+      float shadow = smoothstep(bhR + 0.006, bhR - 0.003, r);
+      col = mix(col, vec3(0.0), shadow);
+
+      /* ── CHROMATIC ABERRATION near horizon ── */
+      float abR = length(uv + vec2(0.004, 0.0));
+      float abG = r;
+      float abB = length(uv - vec2(0.004, 0.0));
+      float abbr = smoothstep(bhR * 2.5, bhR * 1.2, r);
+      col.r += 0.06 * abbr * smoothstep(bhR, bhR * 2.0, abR);
+      col.b += 0.04 * abbr * smoothstep(bhR, bhR * 2.0, abB);
+
+      /* ── GLITCH ENGINE ── */
+      float glitchSeed = floor(u_t * 0.7);
+      float glitchOn = step(0.96, hash11(glitchSeed));
+      if(glitchOn > 0.5){
+        float scanY = floor(fc.y / (4.0 + hash11(glitchSeed + 1.0) * 8.0));
+        float lineGlitch = step(0.88, hash(vec2(scanY, glitchSeed)));
+        float shiftX = (hash(vec2(scanY * 3.1, glitchSeed)) - 0.5) * 18.0;
+        vec2 gUV = (vec2(fc.x + shiftX * lineGlitch, fc.y) - u_res * 0.5) / min(u_res.x, u_res.y);
+        col.r = mix(col.r, fbm(gUV * 5.0 + u_t) * 0.4, lineGlitch * 0.5);
+        col.g = mix(col.g, col.g, lineGlitch * 0.3);
+      }
+      /* frame-skip flicker */
+      float flicker = 1.0 - 0.12 * step(0.985, hash11(floor(u_t * 12.0)));
+      col *= flicker;
+
+      /* ── TONE MAPPING (ACES filmic) ── */
+      col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
+      col = clamp(col, 0.0, 1.0);
+
+      /* ── GAMMA ── */
+      col = pow(col, vec3(1.0 / 2.2));
+
+      /* ── VIGNETTE ── */
+      vec2 vUV = fc / u_res;
+      float vig = vUV.x * (1.0-vUV.x) * vUV.y * (1.0-vUV.y);
+      col *= pow(vig * 16.0, 0.25);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  /* compile + link */
+  function mkShader(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
+      console.warn('BH shader:', gl.getShaderInfoLog(s));
+    return s;
   }
-  animate();
+  const prog = gl.createProgram();
+  gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, VERT));
+  gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, FRAG));
+  gl.linkProgram(prog);
+  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+    console.warn('BH link:', gl.getProgramInfoLog(prog));
+    setTimeout(() => document.getElementById('bh-scene').classList.add('exit'), 600);
+    setTimeout(showGate, 800);
+    return;
+  }
+  gl.useProgram(prog);
 
-  window.addEventListener('resize', () => {
-    W = window.innerWidth; H = window.innerHeight;
-    camera.aspect = W / H; camera.updateProjectionMatrix();
-    renderer.setSize(W, H);
+  /* fullscreen quad */
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const aPos = gl.getAttribLocation(prog, 'a_pos');
+  gl.enableVertexAttribArray(aPos);
+  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+  const uRes   = gl.getUniformLocation(prog, 'u_res');
+  const uT     = gl.getUniformLocation(prog, 'u_t');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  let mx = 0, my = 0;
+  window.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth)  * 2.0 - 1.0;
+    my = (e.clientY / window.innerHeight) * 2.0 - 1.0;
   });
+  window.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    mx = (t.clientX / window.innerWidth)  * 2.0 - 1.0;
+    my = (t.clientY / window.innerHeight) * 2.0 - 1.0;
+  }, { passive: true });
 
-  /* Auto-transition after 4s */
+  let t = 0, raf, lastTs = 0;
+  function draw(ts) {
+    raf = requestAnimationFrame(draw);
+    const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 0.016;
+    lastTs = ts;
+    t += dt;
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    gl.uniform2f(uRes, canvas.width, canvas.height);
+    gl.uniform1f(uT, t);
+    gl.uniform2f(uMouse, mx, my);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+  draw(0);
+
+  window.addEventListener('resize', resize);
+
+  /* Auto-transition: show gate at 5s, fade BH */
   setTimeout(() => {
     document.getElementById('bh-scene').classList.add('exit');
-    setTimeout(showGate, 1600);
-  }, 4200);
+    setTimeout(() => {
+      cancelAnimationFrame(raf);
+      showGate();
+    }, 1600);
+  }, 5000);
 })();
 
 /* ── PHASE TRANSITIONS ─────────────────────────────── */
 function showGate() {
   document.getElementById('world-gate').classList.add('show');
+  startGateTwitch();
+}
+
+/* ── CHROMATIC TWITCH on gate question ─────────────── */
+function startGateTwitch() {
+  const el = document.getElementById('gate-question');
+  if (!el) return;
+
+  function twitch() {
+    /* Build two ghost layers for red and blue channels */
+    const html = el.innerHTML;
+    const rSpan = document.createElement('span');
+    const bSpan = document.createElement('span');
+    rSpan.className = '_gq-r'; bSpan.className = '_gq-b';
+    rSpan.innerHTML = html; bSpan.innerHTML = html;
+
+    /* Randomise offsets */
+    const rx = (Math.random() - 0.5) * 10, ry = (Math.random() - 0.5) * 4;
+    const bx = -rx * 0.8,              by = -ry * 0.6;
+    const dur = 180 + Math.random() * 220; /* ms */
+    const frames = 6;
+    let f = 0;
+
+    rSpan.style.cssText = `
+      position:absolute;inset:0;pointer-events:none;
+      color:rgba(255,20,20,0.75);mix-blend-mode:screen;
+      clip-path:inset(0 0 55% 0);will-change:transform;`;
+    bSpan.style.cssText = `
+      position:absolute;inset:0;pointer-events:none;
+      color:rgba(0,190,255,0.65);mix-blend-mode:screen;
+      clip-path:inset(55% 0 0 0);will-change:transform;`;
+
+    el.style.position = 'relative';
+    el.appendChild(rSpan); el.appendChild(bSpan);
+
+    const iv = setInterval(() => {
+      const ox = (Math.random() - 0.5) * 12;
+      const oy = (Math.random() - 0.5) * 5;
+      rSpan.style.transform = `translate(${rx + ox}px,${ry + oy}px)`;
+      bSpan.style.transform = `translate(${bx - ox}px,${by - oy}px)`;
+      el.style.transform = `skewX(${(Math.random()-0.5)*2.5}deg)`;
+      if (++f >= frames) {
+        clearInterval(iv);
+        rSpan.remove(); bSpan.remove();
+        el.style.transform = '';
+      }
+    }, dur / frames);
+
+    /* Schedule next twitch — 3 to 8 seconds */
+    setTimeout(twitch, 3000 + Math.random() * 5000);
+  }
+
+  /* First twitch after 2s on gate open */
+  setTimeout(twitch, 2000);
 }
 
 /* ── WORLD GATE LOGIC ──────────────────────────────── */
@@ -1417,7 +1763,7 @@ document.getElementById('btn-no').addEventListener('click', () => {
       ww.classList.remove('show');
       ww.style.opacity = '';
       // Redirect to WNCORE main
-      window.location.href = '/';
+      window.location.href = 'https://wncore-radio.vercel.app';
     }, 1000);
   }, 2800);
 });
