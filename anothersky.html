@@ -559,14 +559,16 @@ body {
 }
 #sb-archive-meta {
   font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.35rem; letter-spacing: 2px;
+  font-size: 0.5rem; letter-spacing: 2px;
   color: var(--text3); text-transform: uppercase;
 }
 #sb-archive-meta span { color: var(--dred); }
 
 #sb-list-wrap {
   flex: 1; overflow-y: auto; padding: 6px 0;
+  display: none; /* hidden until user has decrypted and begun reading */
 }
+#sb-list-wrap.unlocked { display: block; }
 
 .sb-ch-item {
   display: block; width: 100%; padding: 10px 16px;
@@ -589,7 +591,7 @@ body {
 }
 .sb-case-id {
   font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.3rem; letter-spacing: 3px;
+  font-size: 0.45rem; letter-spacing: 3px;
   color: var(--dred2); display: block; margin-bottom: 3px;
   text-transform: uppercase;
 }
@@ -613,7 +615,7 @@ body {
   flex-shrink: 0;
   border-bottom: 1px solid var(--brd);
   overflow: hidden;
-  max-height: 220px;
+  max-height: 280px;
   transition: background 0.4s;
 }
 #sb-intel-header {
@@ -623,7 +625,7 @@ body {
 }
 #sb-intel-label {
   font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.28rem; letter-spacing: 3px;
+  font-size: 0.42rem; letter-spacing: 3px;
   color: var(--dred2); text-transform: uppercase;
 }
 #sb-intel-dots { display: flex; gap: 5px; }
@@ -637,7 +639,7 @@ body {
 #sb-intel-body {
   padding: 10px 12px 12px;
   font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.32rem; line-height: 1.7;
+  font-size: 0.46rem; line-height: 1.7;
   color: var(--text3);
   min-height: 80px;
   position: relative;
@@ -656,20 +658,20 @@ body {
 .sbi-node-id { color: var(--dred); min-width: 52px; }
 .sbi-node-bar { flex:1; height: 2px; background: rgba(180,0,0,0.12); position: relative; }
 .sbi-node-bar::after { content:''; position:absolute; left:0; top:0; height:100%; background:var(--dred2); width: var(--fill, 30%); }
-.sbi-node-status { font-size:0.28rem; letter-spacing:2px; color:var(--text3); }
+.sbi-node-status { font-size:0.4rem; letter-spacing:2px; color:var(--text3); }
 .sbi-node-status.live { color: rgba(60,200,100,0.7); }
 .sbi-node-status.dark { color: rgba(180,0,0,0.5); }
 
 /* Anomaly ticker */
 .sbi-anomaly { margin-bottom: 7px; }
-.sbi-anomaly-name { color: rgba(200,130,80,0.9); display:block; margin-bottom:1px; letter-spacing:2px; font-size:0.3rem; }
-.sbi-anomaly-detail { color: var(--text3); font-size:0.29rem; line-height:1.6; }
+.sbi-anomaly-name { color: rgba(200,130,80,0.9); display:block; margin-bottom:1px; letter-spacing:2px; font-size:0.44rem; }
+.sbi-anomaly-detail { color: var(--text3); font-size:0.42rem; line-height:1.6; }
 
 /* Faction dossier */
-.sbi-faction-name { color: var(--red); font-size:0.35rem; letter-spacing:2px; display:block; margin-bottom:4px; }
-.sbi-faction-tag { color: var(--dred2); font-size:0.27rem; letter-spacing:3px; display:block; margin-bottom:6px; }
-.sbi-faction-body { color: var(--text3); font-size:0.3rem; line-height:1.65; }
-.sbi-faction-status { margin-top:6px; font-size:0.27rem; color: rgba(200,80,60,0.7); letter-spacing:2px; }
+.sbi-faction-name { color: var(--red); font-size:0.5rem; letter-spacing:2px; display:block; margin-bottom:4px; }
+.sbi-faction-tag { color: var(--dred2); font-size:0.4rem; letter-spacing:3px; display:block; margin-bottom:6px; }
+.sbi-faction-body { color: var(--text3); font-size:0.44rem; line-height:1.65; }
+.sbi-faction-status { margin-top:6px; font-size:0.4rem; color: rgba(200,80,60,0.7); letter-spacing:2px; }
 
 #sb-bottom {
   flex-shrink: 0; padding: 10px;
@@ -2523,6 +2525,9 @@ function beginReading() {
   document.getElementById('synopsis-gate').style.display = 'none';
   document.getElementById('ch-reader').style.display = 'flex';
   document.getElementById('ch-reader').classList.add('show');
+  // Reveal chapter list now that the user has entered the reader
+  const listWrap = document.getElementById('sb-list-wrap');
+  if (listWrap) listWrap.classList.add('unlocked');
   stopSynopsisRain();
   checkResume();
 }
@@ -2535,8 +2540,9 @@ let currentChapterIdx = -1;
 function updateSkyStat(idx) {
   const skyEl = document.getElementById('hdr-sky-val');
   if (!skyEl) return;
-  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'SUNNY';
-  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#ffcc44';
+  // idx -1 = synopsis screen, which always shows rain → report RAINY not SUNNY
+  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'RAINY';
+  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#4466aa';
   skyEl.textContent = state;
   skyEl.style.color = col;
 }
@@ -3438,7 +3444,8 @@ function sendEntityMsg() {
     window.updateSkyWeather = function(chIdx) {
       const gate = document.getElementById('synopsis-gate');
       if (!gate) return;
-      const wClass = WEATHER_CLASSES[Math.min(chIdx < 0 ? 0 : chIdx, WEATHER_CLASSES.length - 1)];
+      // chIdx -1 = synopsis screen → always rainy background, use sky-rainy as default
+      const wClass = chIdx < 0 ? 'sky-rainy' : WEATHER_CLASSES[Math.min(chIdx, WEATHER_CLASSES.length - 1)];
       ALL_WEATHER.forEach(c => gate.classList.remove(c));
       gate.classList.add(wClass);
       const bg = document.getElementById('sky-bg');
