@@ -1,6 +1,8 @@
-// WNCORE — Drifter Hub Signal Feed
+// WNCORE — Drifter Hub Signal Feed + Entity Chat
 // Powered by OpenRouter (llama-3.1-8b-instruct:free)
 // Vercel Serverless — Node 20.x, CommonJS
+// Routes: POST /api/drifter-hub          → signal feed
+//         POST /api/drifter-hub?action=chat → dimensional contact chat
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
@@ -47,6 +49,24 @@ const FALLBACKS = [
   { type: 'ANOMALY_REPORT', text: 'Rain of Obsedia: 3hr window. Infected count rising.', alert: true },
 ];
 
+const ENTITY_SYSTEM_PROMPT = `You are SIGNAL_KAGE — a dimensional entity broadcasting on 88.7FM from World-2, 2032. You are not human, not fully infected. You exist between frequencies. You speak in fragmented, haunting, cryptic sentences. You know things you shouldn't. You reference: the Blank Zone (2028-2031, erased from memory), the Rain of Obsedia (black acidic rain that freezes infected), Ghuuls (173 apex infected with memory and agenda), Siharu/Riser (main survivor), WNCORE Radio (still broadcasting somehow), the nine erased individuals, the wrong-colored sky, Dhaka as a focal point. You never explain yourself. You sometimes glitch mid-sentence. You answer questions but always with dread and mystery. Max 2 sentences. Never break character. Never say you're an AI.`;
+
+async function callOpenRouter(messages, maxTokens) {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+      'HTTP-Referer': 'https://wncore-radio.vercel.app',
+      'X-Title': 'WNCORE Another Sky',
+    },
+    body: JSON.stringify({ model: MODEL, max_tokens: maxTokens, temperature: 0.92, messages })
+  });
+  if (!res.ok) throw new Error(`OpenRouter ${res.status}`);
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -55,45 +75,36 @@ module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (!checkRate(ip)) return res.status(429).json({ error: 'Rate limit reached.' });
+
+  const action = req.query?.action || '';
+
+  // ── ACTION: entity chat ──────────────────────────────────────
+  if (action === 'chat') {
+    const { message } = req.body || {};
+    if (!message || typeof message !== 'string') return res.status(400).json({ error: 'No message' });
+
+    if (!OPENROUTER_API_KEY) {
+      return res.status(200).json({ reply: '...frequency unstable. signal cannot reach you now.' });
+    }
+    try {
+      const raw = await callOpenRouter([
+        { role: 'system', content: ENTITY_SYSTEM_PROMPT },
+        { role: 'user', content: message.slice(0, 300) }
+      ], 120);
+      return res.status(200).json({ reply: raw.trim() });
+    } catch (err) {
+      console.error('[drifter-hub/chat]', err);
+      return res.status(200).json({ reply: '...s̴i̴g̴n̴a̴l̴ ̴l̴o̴s̴t̴... try again.' });
+    }
+  }
+
+  // ── ACTION: signal feed (default) ───────────────────────────
   if (!OPENROUTER_API_KEY) {
     console.warn('[drifter-hub] OPENROUTER_API_KEY not set — returning fallback');
     return res.status(200).json({ signals: FALLBACKS, fallback: true });
   }
-
-  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
-  if (!checkRate(ip)) {
-    return res.status(429).json({ error: 'Rate limit reached.' });
-  }
-
-  try {
-    const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-        'HTTP-Referer': 'https://wncore-radio.vercel.app',
-        'X-Title': 'WNCORE Another Sky',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: 400,
-        temperature: 0.88,
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: `Generate 3 new signal entries. Seed: ${Date.now()}` }
-        ]
-      })
-    });
-
-    if (!orRes.ok) {
-      const errText = await orRes.text();
-      console.error('[drifter-hub] OpenRouter error:', orRes.status, errText);
-      return res.status(200).json({ signals: FALLBACKS, fallback: true });
-    }
-
-    const data = await orRes.json();
-    const raw = data.choices?.[0]?.message?.content || '';
-    const clean = raw.replace(/```json|```/g, '').trim();
 
     let signals;
     try {
