@@ -673,7 +673,97 @@ body {
 .sbi-faction-body { color: var(--text3); font-size:0.44rem; line-height:1.65; }
 .sbi-faction-status { margin-top:6px; font-size:0.4rem; color: rgba(200,80,60,0.7); letter-spacing:2px; }
 
-/* ── DRIFTER HUB panel ── */
+/* ── SIDEBAR RED PLANET ── */
+#sb-planet-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0 8px;
+  border-bottom: 1px solid var(--brd);
+  position: relative;
+  overflow: hidden;
+  height: 88px;
+}
+#sb-planet {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 38%, rgba(255,120,60,0.95) 0%, rgba(200,30,10,0.9) 45%, rgba(100,5,2,0.97) 100%);
+  box-shadow: 0 0 18px 4px rgba(200,40,10,0.25), inset -6px -4px 14px rgba(0,0,0,0.6), inset 3px 2px 8px rgba(255,160,80,0.18);
+  animation: sb-planet-float 8s ease-in-out infinite;
+  position: relative;
+  flex-shrink: 0;
+}
+/* Surface bands */
+#sb-planet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(
+      -18deg,
+      transparent 0px,
+      transparent 7px,
+      rgba(0,0,0,0.12) 7px,
+      rgba(0,0,0,0.12) 9px,
+      transparent 9px,
+      transparent 14px,
+      rgba(255,100,40,0.08) 14px,
+      rgba(255,100,40,0.08) 16px
+    );
+  border-radius: 50%;
+}
+/* Ring */
+#sb-planet::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotateX(72deg);
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  border: 2px solid rgba(200,60,20,0.22);
+  box-shadow: 0 0 0 5px rgba(180,40,10,0.08), 0 0 0 9px rgba(160,20,5,0.05);
+  pointer-events: none;
+}
+@keyframes sb-planet-float {
+  0%,100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+#sb-planet-label {
+  position: absolute;
+  bottom: 6px; left: 0; right: 0;
+  text-align: center;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.32rem;
+  letter-spacing: 2px;
+  color: rgba(200,60,20,0.35);
+  pointer-events: none;
+}
+/* Orbiting dot */
+#sb-planet-orbit {
+  position: absolute;
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  animation: sb-orbit 12s linear infinite;
+  pointer-events: none;
+}
+#sb-planet-orbit::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,180,100,0.6);
+  box-shadow: 0 0 4px rgba(255,180,100,0.4);
+}
+@keyframes sb-orbit {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
 .sbi-dot-hub { background: rgba(80,180,255,0.25) !important; border-radius: 50%; position:relative; }
 .sbi-dot-hub.active { background: rgba(80,200,255,0.9) !important; }
 #drifter-hub-wrap { display:flex; flex-direction:column; height:100%; }
@@ -1689,6 +1779,13 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         </div>
       </div>
 
+      <!-- ── RED PLANET DECORATION ── -->
+      <div id="sb-planet-wrap">
+        <div id="sb-planet-orbit"></div>
+        <div id="sb-planet"></div>
+        <div id="sb-planet-label">OBSEDIA-IV</div>
+      </div>
+
       <div id="sb-list-wrap">
         <div id="ch-list"></div>
       </div>
@@ -1885,7 +1982,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <div class="modal-title">📡 DIMENSIONAL CONTACT</div>
     <div id="entity-banner" style="font-size:0.36rem;color:var(--signal);letter-spacing:1px;margin-bottom:10px;padding:6px 10px;border:1px solid var(--signal);border-radius:2px;">Connecting to World-2 survivor network...</div>
     <div id="entity-chat-area" style="flex:1;overflow-y:auto;background:#000;border:1px solid var(--brd);padding:8px;max-height:260px;margin-bottom:10px;font-size:0.38rem;"></div>
-    <div class="modal-field"><input type="text" class="modal-inp" id="entity-msg" placeholder="Send message to dimensional survivor..." /></div>
+    <div class="modal-field"><input type="text" class="modal-inp" id="entity-msg" placeholder="Send message to dimensional survivor..." onkeydown="if(event.key==='Enter')sendEntityMsg()" /></div>
     <div class="modal-row">
       <button class="btn-r" onclick="sendEntityMsg()">▶ SEND</button>
       <button class="btn-d" onclick="document.getElementById('entity-modal').classList.remove('open')">CLOSE</button>
@@ -2378,6 +2475,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     }
   ];
 
+  // Expose PANELS on window so Drifter Hub (and future panels) can extend it
+  window._sbiPanels = PANELS;
+
   let current = 0;
   let intervalId = null;
 
@@ -2385,13 +2485,15 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     const body = document.getElementById('sb-intel-body');
     const label = document.getElementById('sb-intel-label');
     if (!body || !label) return;
+    const panel = window._sbiPanels[idx];
+    if (!panel) return;
     current = idx;
-    label.textContent = '— ' + PANELS[idx].label + ' —';
-    body.innerHTML = '<div class="sbi-panel">' + PANELS[idx].render() + '</div>';
+    label.textContent = '— ' + panel.label + ' —';
+    body.innerHTML = '<div class="sbi-panel">' + panel.render() + '</div>';
     document.querySelectorAll('.sbi-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
   }
 
-  function next() { render((current + 1) % PANELS.length); }
+  function next() { render((current + 1) % window._sbiPanels.length); }
 
   function startAuto() {
     clearInterval(intervalId);
@@ -2414,7 +2516,6 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   window._sbiRender = render;
   window._sbiGetCurrent = () => current;
   window._sbiStartAuto = startAuto;
-  window._sbiPanels = PANELS;
 })();
 
 /* ── DRIFTER HUB — live OpenRouter lore feed ──────── */
@@ -2455,13 +2556,15 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     </div>`;
   }
 
-  // Register as panel 4 by injecting into PANELS after init
+  // Register as 5th panel by pushing onto the shared panels array
   function registerPanel() {
     if (!window._sbiPanels) return;
-    window._sbiPanels[4] = {
+    // Remove any existing hub panel at index 4 before re-adding
+    if (window._sbiPanels.length > 4) window._sbiPanels.splice(4, 1);
+    window._sbiPanels.push({
       label: 'DRIFTER HUB',
       render: hubPanelHTML
-    };
+    });
   }
 
   async function fetchSignals() {
@@ -3115,17 +3218,59 @@ async function deleteChapter() {
    ENTITY CHAT (minimal — expand with clearance.js)
 ═══════════════════════════════════════════════════ */
 function openEntityChat() {
-  document.getElementById('entity-modal').classList.add('open');
+  const modal = document.getElementById('entity-modal');
+  modal.classList.add('open');
+  // Boot intro message if chat area is empty
+  const area = document.getElementById('entity-chat-area');
+  if (!area.innerHTML.trim()) {
+    const banner = document.getElementById('entity-banner');
+    if (banner) banner.textContent = 'SIGNAL ESTABLISHED — WORLD-2 SURVIVOR NETWORK ONLINE';
+    const intro = document.createElement('div');
+    intro.style.cssText = 'margin-bottom:8px;border-left:2px solid var(--signal);padding-left:8px;color:rgba(255,102,0,0.55);font-size:0.38rem;';
+    intro.textContent = '> SIGNAL_KAGE [88.7FM]: ...you found this frequency. that means something. speak.';
+    area.appendChild(intro);
+  }
   setTimeout(() => document.getElementById('entity-msg').focus(), 100);
 }
-function sendEntityMsg() {
+
+async function sendEntityMsg() {
   const input = document.getElementById('entity-msg');
   const msg = input.value.trim(); if (!msg) return;
   input.value = '';
+  input.disabled = true;
   const area = document.getElementById('entity-chat-area');
-  area.innerHTML += `<div style="margin-bottom:8px;border-left:2px solid var(--red);padding-left:8px;color:rgba(212,191,184,0.6)">YOU: ${msg}</div>`;
-  area.innerHTML += `<div style="margin-bottom:8px;border-left:2px solid var(--signal);padding-left:8px;color:rgba(255,102,0,0.7)">SURVIVOR: ...signal interrupted...</div>`;
+
+  // Append user line
+  const userLine = document.createElement('div');
+  userLine.style.cssText = 'margin-bottom:8px;border-left:2px solid var(--red);padding-left:8px;color:rgba(212,191,184,0.6);font-size:0.38rem;';
+  userLine.textContent = 'YOU: ' + msg;
+  area.appendChild(userLine);
   area.scrollTop = area.scrollHeight;
+
+  // Append survivor typing indicator
+  const replyLine = document.createElement('div');
+  replyLine.style.cssText = 'margin-bottom:8px;border-left:2px solid var(--signal);padding-left:8px;color:rgba(255,102,0,0.7);font-size:0.38rem;';
+  replyLine.textContent = 'SURVIVOR: ...';
+  area.appendChild(replyLine);
+  area.scrollTop = area.scrollHeight;
+
+  try {
+    const res = await fetch('/api/entity-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    replyLine.textContent = 'SURVIVOR: ' + (data.reply || '...signal lost...');
+  } catch(e) {
+    replyLine.textContent = 'SURVIVOR: ...signal interrupted. try again.';
+    replyLine.style.opacity = '0.4';
+  } finally {
+    input.disabled = false;
+    input.focus();
+    area.scrollTop = area.scrollHeight;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
