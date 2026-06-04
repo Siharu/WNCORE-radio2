@@ -608,6 +608,69 @@ body {
 }
 .sb-ch-item.redacted { cursor: not-allowed; opacity: 0.5; }
 
+/* ── SIDEBAR INTEL PANEL ── */
+#sb-intel-wrap {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--brd);
+  overflow: hidden;
+  max-height: 220px;
+  transition: background 0.4s;
+}
+#sb-intel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px 6px;
+  border-bottom: 1px solid rgba(180,0,0,0.1);
+}
+#sb-intel-label {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 3px;
+  color: var(--dred2); text-transform: uppercase;
+}
+#sb-intel-dots { display: flex; gap: 5px; }
+.sbi-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--brd); cursor: pointer;
+  transition: background 0.2s;
+}
+.sbi-dot.active { background: var(--red); }
+
+#sb-intel-body {
+  padding: 10px 12px 12px;
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.32rem; line-height: 1.7;
+  color: var(--text3);
+  min-height: 80px;
+  position: relative;
+}
+.sbi-panel { animation: sbi-fadein 0.35s ease; }
+@keyframes sbi-fadein { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:none; } }
+
+/* Transmission log */
+.sbi-tx-row { display: flex; gap: 6px; margin-bottom: 4px; line-height: 1.5; }
+.sbi-tx-time { color: var(--dred2); flex-shrink: 0; }
+.sbi-tx-msg { color: var(--text3); }
+.sbi-tx-msg.alert { color: rgba(200,80,60,0.9); }
+
+/* Node status */
+.sbi-node-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 5px; }
+.sbi-node-id { color: var(--dred); min-width: 52px; }
+.sbi-node-bar { flex:1; height: 2px; background: rgba(180,0,0,0.12); position: relative; }
+.sbi-node-bar::after { content:''; position:absolute; left:0; top:0; height:100%; background:var(--dred2); width: var(--fill, 30%); }
+.sbi-node-status { font-size:0.28rem; letter-spacing:2px; color:var(--text3); }
+.sbi-node-status.live { color: rgba(60,200,100,0.7); }
+.sbi-node-status.dark { color: rgba(180,0,0,0.5); }
+
+/* Anomaly ticker */
+.sbi-anomaly { margin-bottom: 7px; }
+.sbi-anomaly-name { color: rgba(200,130,80,0.9); display:block; margin-bottom:1px; letter-spacing:2px; font-size:0.3rem; }
+.sbi-anomaly-detail { color: var(--text3); font-size:0.29rem; line-height:1.6; }
+
+/* Faction dossier */
+.sbi-faction-name { color: var(--red); font-size:0.35rem; letter-spacing:2px; display:block; margin-bottom:4px; }
+.sbi-faction-tag { color: var(--dred2); font-size:0.27rem; letter-spacing:3px; display:block; margin-bottom:6px; }
+.sbi-faction-body { color: var(--text3); font-size:0.3rem; line-height:1.65; }
+.sbi-faction-status { margin-top:6px; font-size:0.27rem; color: rgba(200,80,60,0.7); letter-spacing:2px; }
+
 #sb-bottom {
   flex-shrink: 0; padding: 10px;
   border-top: 1px solid var(--brd);
@@ -1453,6 +1516,22 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           WORLD- ██████████
         </div>
       </div>
+      <!-- ── INTEL PANEL (rotates between feeds) ── -->
+      <div id="sb-intel-wrap">
+        <div id="sb-intel-header">
+          <span id="sb-intel-label">— SIGNAL FEED —</span>
+          <div id="sb-intel-dots">
+            <span class="sbi-dot active" data-idx="0"></span>
+            <span class="sbi-dot" data-idx="1"></span>
+            <span class="sbi-dot" data-idx="2"></span>
+            <span class="sbi-dot" data-idx="3"></span>
+          </div>
+        </div>
+        <div id="sb-intel-body">
+          <!-- filled by JS -->
+        </div>
+      </div>
+
       <div id="sb-list-wrap">
         <div id="ch-list"></div>
       </div>
@@ -1481,17 +1560,18 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <div id="syn-box">
           <div id="syn-stamp">CASE FILE // ANOTHER SKY // WORLD-2 // LOGBOOK DRIFTERS</div>
           <div id="syn-title">ANOTHER SKY</div>
-          <div id="syn-world-tag">WORLD -2 · 2032 · DHAKA, BANGLADESH · SOM, AGE 28</div>
+          <div id="syn-world-tag">WORLD -2 · 2032 · DHAKA, BANGLADESH · AGE 28 · 8.28% IMMUNE</div>
 
           <div id="syn-encrypted" aria-hidden="true">
 █████ ████ ██ ████ ████ ██████ ████ ████ ██ ███ ████ ██████ ██████████ ████████ ████ ██ ████████████ ██████ ████ ████ ████ ████████ ██ ████ ████████ ████ ████ ████ ████ ████ ████████████ ████████████ ████ ███████ ████████ ████████████████ ████ ████████ ████ ████████████████████ ████████████ ████████████ ██ ████████████ ████████████████ ████ ████████████ ████████████ ████████████ ████ ████████ ████████████████████ ████████████████████████ ████████████ ████████████ ████████ ████████████████████ ████████████████████ ████████████ ████████████
           </div>
 
           <div id="syn-text">
-            <p>On March 31, 2028, Som was alive. On April 1, 2032, he was still 28.</p>
-            <p>He does not remember the four years between. He was not here for them. He was in a different world — one where Anne existed, where his mother was four years younger, where the sky was the right color. Now he is here. And the sky is wrong.</p>
-            <p>The outbreak has started in Nepal. The WHO has declared a pandemic. His mother mentions World War III the way people mention old weather. Nobody finds this strange. Som finds everything strange. He cannot explain why.</p>
-            <p>He has not yet checked the year.</p>
+            <p>He woke up on the wrong side of four years. The same hands. The same phone. The same mother — except older, quieter, carrying grief he never watched her earn. The calendar said 2032. His body said 2028. Neither of them was lying.</p>
+            <p>Something was erased. Not destroyed — erased. Faces he loved no longer exist in this world. Photographs wiped. Names that produce only silence. The people who once made him feel like himself have been unmade, and the sky above the city is the wrong color, wrong shape, wrong in a way he cannot name but cannot stop seeing.</p>
+            <p>Then the outbreak began. What the news called a virus. What the bodies suggested was something older, worse, and entirely without mercy.</p>
+            <p>64% of the world will turn. Some of those who turn still think. Some still speak. Some will say your name in your dead mother's voice at 3 AM until you open the door.</p>
+            <p>He has not yet looked at what he lost. He is not ready. The sky won't wait.</p>
           </div>
 
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
@@ -2075,6 +2155,104 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 })();
 
 
+
+
+/* ── SIDEBAR INTEL PANEL ──────────────────────────────── */
+(function initIntelPanel() {
+  const PANELS = [
+    {
+      label: 'TRANSMISSIONS',
+      render: () => {
+        const entries = [
+          { time:'04:13', msg:'— signal lost. NEPAL DARK.', alert:true },
+          { time:'04:41', msg:'WNCORE freq 87.3 still active.' },
+          { time:'05:02', msg:'Ghuul sighting: Dhaka North. #174.' },
+          { time:'05:29', msg:'Black rain imminent. 6hr window.' },
+          { time:'06:11', msg:'Alaska broadcast: "hold your posts."', alert:true },
+          { time:'06:44', msg:'Pale Node: signal anomaly Sector 7.' },
+          { time:'07:03', msg:'— carrier dropped. Re-routing.', alert:true },
+        ];
+        return entries.map(e =>
+          `<div class="sbi-tx-row"><span class="sbi-tx-time">${e.time}</span><span class="sbi-tx-msg${e.alert?' alert':''}">» ${e.msg}</span></div>`
+        ).join('');
+      }
+    },
+    {
+      label: 'ACTIVE NODES',
+      render: () => {
+        const nodes = [
+          { id:'SIG-001', pct:'100%', status:'LIVE', live:true },
+          { id:'SIG-004', pct:'62%',  status:'DEGRADED', live:false },
+          { id:'SIG-009', pct:'88%',  status:'LIVE', live:true },
+          { id:'SIG-012', pct:'11%',  status:'FAILING', live:false },
+          { id:'SIG-017', pct:'0%',   status:'DARK', live:false },
+          { id:'SIG-031', pct:'44%',  status:'PARTIAL', live:false },
+        ];
+        return nodes.map(n =>
+          `<div class="sbi-node-row"><span class="sbi-node-id">${n.id}</span><div class="sbi-node-bar" style="--fill:${n.pct}"></div><span class="sbi-node-status${n.live?' live':n.status==='DARK'?' dark':''}">${n.status}</span></div>`
+        ).join('');
+      }
+    },
+    {
+      label: 'WORLD ANOMALIES',
+      render: () => {
+        const anomalies = [
+          { name:'RAIN OF OBSEDIA', detail:'Black rainfall. Daily. Acidic compound — harmless per field test. Infected enter stasis on contact. Sky bleeds downward.' },
+          { name:'FOG OF MEDUSA', detail:'Germany. Yellow gas. All organic matter: lethal. Fully rejected husks: unaffected. Spreading northwest.' },
+          { name:'THE GREAT MIGRATION', detail:'Trillions of insects. Northward. Unknown origin. Birds following. Unknown if running from or toward.' },
+        ];
+        return anomalies.map(a =>
+          `<div class="sbi-anomaly"><span class="sbi-anomaly-name">// ${a.name}</span><span class="sbi-anomaly-detail">${a.detail}</span></div>`
+        ).join('');
+      }
+    },
+    {
+      label: 'FACTION DOSSIER',
+      render: () => {
+        const factions = [
+          { name:'LOGBOOK DRIFTERS', tag:'INTEL DISTRIBUTOR · UNKNOWN SIZE', body:'No name. No base. Logbooks appear in malls, supply depots, evacuation points worldwide. Comprehensive and accurate — except when they are not. Counter-Drifter plants fake editions. Cannot be fully trusted.', status:'\u25b8 THREAT LEVEL: UNKNOWN' },
+          { name:'ROOFTOP SEERS', tag:'BROADCAST NETWORK · PACIFIC RIM', body:'Religious radio origin. Still broadcasting. Still peaceful. Still warning. Their voices do not break. Their eyes reflect light like cats at night.', status:'\u25b8 CLASSIFICATION: INFECTED · CONFIRMED' },
+          { name:'BLOOD PACT', tag:'CRIMINAL SYNDICATE · ANTARCTICA', body:'Brotherhood Pact. Small biker gang before the Blank Zone. Now international, resource-rich, unknown funding. Organ trade. Growth unexplained.', status:'\u25b8 STATUS: EXPANDING · DO NOT ENGAGE' },
+          { name:'PALE NODE', tag:'SCIENCE CELL · BROADCAST', body:'Former Sunday podcast scientists. Emergency signal. Acidic rainfall confirmed harmless by their field tests. One member missing post-Germany report.', status:'\u25b8 CONTACT: UNSTABLE' },
+        ];
+        const f = factions[Math.floor(Date.now() / 12000) % factions.length];
+        return `<span class="sbi-faction-name">${f.name}</span><span class="sbi-faction-tag">${f.tag}</span><span class="sbi-faction-body">${f.body}</span><div class="sbi-faction-status">${f.status}</div>`;
+      }
+    }
+  ];
+
+  let current = 0;
+  let intervalId = null;
+
+  function render(idx) {
+    const body = document.getElementById('sb-intel-body');
+    const label = document.getElementById('sb-intel-label');
+    if (!body || !label) return;
+    current = idx;
+    label.textContent = '— ' + PANELS[idx].label + ' —';
+    body.innerHTML = '<div class="sbi-panel">' + PANELS[idx].render() + '</div>';
+    document.querySelectorAll('.sbi-dot').forEach((d, i) => d.classList.toggle('active', i === idx));
+  }
+
+  function next() { render((current + 1) % PANELS.length); }
+
+  function startAuto() {
+    clearInterval(intervalId);
+    intervalId = setInterval(next, 7000);
+  }
+
+  // Dot click handlers
+  document.querySelectorAll('.sbi-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      render(parseInt(dot.dataset.idx));
+      startAuto(); // reset timer
+    });
+  });
+
+  // Init
+  render(0);
+  startAuto();
+})();
 
 /* ── PHASE TRANSITIONS ─────────────────────────────── */
 function showGate() {
