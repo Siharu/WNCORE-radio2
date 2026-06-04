@@ -1205,15 +1205,132 @@ body.fs3 #ch-body { font-size: 1.42rem; }
    MOBILE
 ═══════════════════════════════════════════════════ */
 #mob-bar {
-  display: none; padding: 8px 14px;
+  display: none; padding: 0;
   background: var(--surface); border-bottom: 1px solid var(--brd);
-  align-items: center; gap: 10px;
+  flex-direction: column; gap: 0;
 }
+
+/* ── MOBILE CHAPTER SELECTOR (custom glitch grid) ── */
+#mob-ch-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.36rem;
+  letter-spacing: 3px;
+  color: rgba(200,0,0,0.45);
+  padding: 7px 14px 3px;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(200,0,0,0.12);
+  display: flex; align-items: center; justify-content: space-between;
+}
+#mob-ch-label span { color: rgba(200,0,0,0.3); }
+
+/* The scroll row for chapter buttons */
+#mob-ch-grid {
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  gap: 6px;
+  padding: 8px 14px 10px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+#mob-ch-grid::-webkit-scrollbar { display: none; }
+
+/* Individual glitch chapter button */
+.mob-ch-btn {
+  flex: 0 0 auto;
+  min-width: 100px;
+  max-width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  background: rgba(40,0,0,0.6);
+  border: 1px solid rgba(200,0,0,0.22);
+  color: var(--red);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.mob-ch-btn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(200,0,0,0.07) 0%, transparent 60%);
+  pointer-events: none;
+}
+.mob-ch-btn:active,
+.mob-ch-btn.active {
+  background: rgba(200,0,0,0.18);
+  border-color: var(--red);
+}
+.mob-ch-btn .mcb-case {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.3rem;
+  letter-spacing: 1.5px;
+  color: rgba(200,0,0,0.45);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mob-ch-btn .mcb-title {
+  /* Comic Sans × Rubik Mono hybrid: Comic Neue with mono fallback */
+  font-family: 'Comic Neue', 'Comic Sans MS', 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  font-size: 0.55rem;
+  letter-spacing: 1px;
+  color: var(--red);
+  text-transform: uppercase;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+/* Chromatic twitch animation */
+@keyframes mob-ch-twitch {
+  0%   { text-shadow: none; transform: translateX(0); }
+  10%  { text-shadow: -1px 0 rgba(0,200,255,0.7), 1px 0 rgba(255,0,80,0.7); transform: translateX(-1px); }
+  12%  { text-shadow: 1px 0 rgba(0,200,255,0.7), -1px 0 rgba(255,0,80,0.7); transform: translateX(1px); }
+  14%  { text-shadow: none; transform: translateX(0); }
+  50%  { text-shadow: none; }
+  55%  { text-shadow: 1px 0 rgba(255,0,80,0.5), -1px 0 rgba(0,200,255,0.5); transform: translateX(0.5px); }
+  57%  { text-shadow: none; transform: translateX(0); }
+  100% { text-shadow: none; transform: translateX(0); }
+}
+.mob-ch-btn .mcb-title {
+  animation: mob-ch-twitch 4s steps(1, end) infinite;
+}
+/* Stagger the twitch per button */
+.mob-ch-btn:nth-child(1) .mcb-title  { animation-delay: 0s; }
+.mob-ch-btn:nth-child(2) .mcb-title  { animation-delay: 0.4s; }
+.mob-ch-btn:nth-child(3) .mcb-title  { animation-delay: 0.8s; }
+.mob-ch-btn:nth-child(4) .mcb-title  { animation-delay: 1.2s; }
+.mob-ch-btn:nth-child(5) .mcb-title  { animation-delay: 1.6s; }
+.mob-ch-btn:nth-child(6) .mcb-title  { animation-delay: 2.0s; }
+.mob-ch-btn:nth-child(7) .mcb-title  { animation-delay: 2.4s; }
+.mob-ch-btn:nth-child(8) .mcb-title  { animation-delay: 2.8s; }
+.mob-ch-btn:nth-child(n+9) .mcb-title { animation-delay: 0.2s; }
+
+/* Bottom bar (settings gear) */
+#mob-bar-tools {
+  display: flex;
+  padding: 5px 14px;
+  border-top: 1px solid rgba(200,0,0,0.12);
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Hidden fallback select (keep for JS compat, visually hidden) */
 #mob-ch-sel {
-  flex: 1; background: var(--surface); border: 1px solid var(--brd);
-  color: var(--red); font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.46rem; padding: 8px; outline: none; -webkit-appearance: none;
+  display: none !important;
 }
+
 @media(max-width: 700px) {
   #as-sidebar { display: none; }
   #mob-bar { display: flex; }
@@ -1327,6 +1444,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   #synopsis-gate {
     padding: 40px 20px;
     align-items: flex-start;
+    min-height: 100svh; /* prevent sky cutoff on mobile */
   }
   #syn-title {
     font-size: clamp(2rem, 10vw, 3.5rem);
@@ -1361,14 +1479,13 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   .ch-nav-btn { width: 100%; }
 }
 
-/* Sidebar shown via mobile bar — already hidden, but ensure bottom tools visible */
+/* Sidebar shown via mobile bar — sticky at top */
 @media (max-width: 700px) {
   #mob-bar {
     position: sticky;
     top: 50px;
     z-index: 48;
   }
-  #mob-ch-sel { font-size: 0.5rem; }
 }
 
 /* Wrong world screen — mobile safe */
@@ -1458,10 +1575,27 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
   <!-- Mobile chapter bar -->
   <div id="mob-bar">
+    <div id="mob-ch-label">
+      ⊞ ARCHIVE // CHAPTER SELECT
+      <span id="mob-sb-count">—</span>
+    </div>
+    <div id="mob-ch-grid">
+      <!-- populated by renderSidebar() -->
+      <div class="mob-ch-placeholder" id="mob-ch-placeholder" style="
+        font-family:'IBM Plex Mono',monospace;
+        font-size:0.38rem;letter-spacing:2px;
+        color:rgba(200,0,0,0.3);
+        padding:4px 2px;white-space:nowrap;
+        align-self:center;
+      ">NO TRANSMISSIONS RECEIVED</div>
+    </div>
+    <div id="mob-bar-tools">
+      <button class="hdr-btn" onclick="toggleReaderOpts()">⚙</button>
+    </div>
+    <!-- hidden select for JS compat -->
     <select id="mob-ch-sel" onchange="if(!isNaN(parseInt(this.value)))loadChapter(parseInt(this.value))">
       <option value="">// SELECT CHAPTER...</option>
     </select>
-    <button class="hdr-btn" onclick="toggleReaderOpts()">⚙</button>
   </div>
 
   <!-- Header -->
@@ -2440,24 +2574,56 @@ async function loadChapters() {
 function renderSidebar() {
   const list = document.getElementById('ch-list');
   const mob = document.getElementById('mob-ch-sel');
+  const grid = document.getElementById('mob-ch-grid');
+  const placeholder = document.getElementById('mob-ch-placeholder');
+  const mobCount = document.getElementById('mob-sb-count');
+
   list.innerHTML = '';
   mob.innerHTML = '<option value="">// SELECT CHAPTER...</option>';
+
   if (!chapters.length) {
     list.innerHTML = '<div style="padding:14px 16px;font-size:0.38rem;color:var(--text3);letter-spacing:1px;line-height:2;">No transmissions received.</div>';
+    if (placeholder) placeholder.style.display = '';
     return;
   }
+  if (placeholder) placeholder.style.display = 'none';
+  if (mobCount) mobCount.textContent = chapters.length;
+
+  // Remove old grid buttons (keep placeholder)
+  grid.querySelectorAll('.mob-ch-btn').forEach(el => el.remove());
+
   chapters.forEach((ch, i) => {
+    // Desktop sidebar button
     const btn = document.createElement('button');
     btn.className = 'sb-ch-item';
     btn.dataset.idx = i;
     btn.innerHTML = `<span class="sb-case-id">CASE // AS-${String(ch.chapter_num).padStart(2,'0')} // ${ch.published_at ? new Date(ch.published_at).toLocaleDateString('en-US',{month:'short',year:'2-digit'}) : '??'}</span><span class="sb-ch-name">${ch.title}</span>`;
     btn.onclick = () => loadChapter(i);
     list.appendChild(btn);
+
+    // Hidden select option (kept for compat)
     const o = document.createElement('option');
     o.value = i; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
     mob.appendChild(o);
+
+    // Mobile glitch grid button
+    const mbtn = document.createElement('button');
+    mbtn.className = 'mob-ch-btn';
+    mbtn.dataset.idx = i;
+    const dateStr = ch.published_at
+      ? new Date(ch.published_at).toLocaleDateString('en-US', {month:'short', year:'2-digit'})
+      : '??';
+    mbtn.innerHTML = `<span class="mcb-case">AS-${String(ch.chapter_num).padStart(2,'0')} // ${dateStr}</span><span class="mcb-title">${ch.title}</span>`;
+    mbtn.onclick = () => { loadChapter(i); highlightMobBtn(i); };
+    grid.appendChild(mbtn);
   });
   checkResume();
+}
+
+function highlightMobBtn(idx) {
+  document.querySelectorAll('.mob-ch-btn').forEach((b, i) => {
+    b.classList.toggle('active', i === idx);
+  });
 }
 
 function loadChapter(idx) {
@@ -2493,6 +2659,7 @@ function loadChapter(idx) {
   // Sidebar
   document.querySelectorAll('.sb-ch-item').forEach((b, i) => b.classList.toggle('active', i === idx));
   const mob = document.getElementById('mob-ch-sel'); if (mob) mob.value = idx;
+  highlightMobBtn(idx);
 
   // Sky HUD
   updateSkyStat(idx);
@@ -3247,17 +3414,18 @@ function sendEntityMsg() {
 
 </script>
 
-<script src="/font-glitch.js" defer>
+<script src="/font-glitch.js" defer></script>
+<script>
   /* ═══════════════════════════════════════════════════
      SKY WEATHER SYSTEM — tied to chapter index
+     (was incorrectly placed inside a src= script tag,
+      which browsers silently ignore — fixed here)
   ═══════════════════════════════════════════════════ */
   (function() {
-    // SKY_STATES map: SUNNY(0-1), BLUE(2), GREY(3-4), RAINY(5), STORMY(6-7), ANOTHER(8+)
     const WEATHER_CLASSES = ['sky-sunny','sky-sunny','sky-blue','sky-grey','sky-grey',
                              'sky-rainy','sky-stormy','sky-stormy','sky-another'];
     const ALL_WEATHER = ['sky-sunny','sky-blue','sky-grey','sky-rainy','sky-stormy','sky-another'];
 
-    // BG tints per weather stage (dark palette)
     const BG_TINTS = {
       'sky-sunny':  'rgba(20,18,40,0.0)',
       'sky-blue':   'rgba(10,20,60,0.25)',
@@ -3270,36 +3438,58 @@ function sendEntityMsg() {
     window.updateSkyWeather = function(chIdx) {
       const gate = document.getElementById('synopsis-gate');
       if (!gate) return;
-      const wClass = WEATHER_CLASSES[Math.min(chIdx < 0 ? 0 : chIdx, WEATHER_CLASSES.length-1)];
+      const wClass = WEATHER_CLASSES[Math.min(chIdx < 0 ? 0 : chIdx, WEATHER_CLASSES.length - 1)];
       ALL_WEATHER.forEach(c => gate.classList.remove(c));
       gate.classList.add(wClass);
-      // Tint the sky-bg div
       const bg = document.getElementById('sky-bg');
       if (bg) bg.style.backgroundColor = BG_TINTS[wClass] || '';
-      // Speed up rain in stormy/another
       if (wClass === 'sky-stormy' || wClass === 'sky-another') {
-        // signal the rain system if it has a speed setter
         if (window._synRainSetIntensity) window._synRainSetIntensity(wClass === 'sky-another' ? 1.8 : 1.3);
       } else {
         if (window._synRainSetIntensity) window._synRainSetIntensity(1.0);
       }
     };
 
-    // Hook into updateSkyStat which already fires on chapter load
-    const _origUpdateSkyStat = window.updateSkyStat;
-    window.updateSkyStat = function(idx) {
-      if (_origUpdateSkyStat) _origUpdateSkyStat(idx);
+    // Wrap updateSkyStat so weather fires on every chapter load
+    function hookSkyStat() {
+      const orig = window.updateSkyStat;
+      if (typeof orig !== 'function') return false;
+      window.updateSkyStat = function(idx) {
+        orig(idx);
+        window.updateSkyWeather(idx);
+      };
+      return true;
+    }
+
+    // Wrap showSynopsis so weather re-syncs when synopsis is shown
+    function hookShowSynopsis() {
+      const orig = window.showSynopsis;
+      if (typeof orig !== 'function') return false;
+      window.showSynopsis = function() {
+        orig();
+        setTimeout(() => window.updateSkyWeather(
+          typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1
+        ), 100);
+      };
+      return true;
+    }
+
+    // Both target functions are defined earlier in the same file,
+    // so they exist by DOMContentLoaded — hook immediately then re-check on load.
+    function init() {
+      hookSkyStat();
+      hookShowSynopsis();
+      // Also fire weather for whatever chapter is currently active
+      const idx = typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1;
       window.updateSkyWeather(idx);
-    };
+    }
 
-    // Init on synopsis show (SUNNY default)
-    const _origShowSynopsis = window.showSynopsis;
-    window.showSynopsis = function() {
-      if (_origShowSynopsis) _origShowSynopsis();
-      setTimeout(() => window.updateSkyWeather(typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1), 100);
-    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
   })();
-
 </script>
 </body>
 </html>
