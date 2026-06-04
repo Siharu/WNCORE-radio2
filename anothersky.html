@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/fonts.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" defer></script>
 
 <style>
@@ -148,15 +149,60 @@ body {
 #bh-scene {
   position: fixed; inset: 0; z-index: 100;
   background: #000;
-  transition: opacity 1.6s cubic-bezier(0.16,1,0.3,1);
+  transition: opacity 1.8s cubic-bezier(0.16,1,0.3,1);
+  overflow: hidden;
+  cursor: pointer;
 }
 #bh-scene.exit { opacity: 0; pointer-events: none; }
-#bh-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+#forest-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-/* BH overlay text */
-#bh-label {
-  position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
-  font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.5rem;
+/* ── Distant black hole SVG ── */
+#forest-bh {
+  position: absolute;
+  width: 90px; height: 90px;
+  top: 18%; left: 62%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  animation: fbhSpin 28s linear infinite, fbhDrift 18s ease-in-out infinite alternate;
+  opacity: 0.85;
+}
+@keyframes fbhSpin  { from{--fbh-r:0deg} to{--fbh-r:360deg} }
+@keyframes fbhDrift { from{top:16%;left:60%} to{top:20%;left:65%} }
+.fbh-disk-outer { animation: fbhDiskCW 22s linear infinite; transform-origin:60px 60px; }
+.fbh-disk-mid   { animation: fbhDiskCW 14s linear infinite; transform-origin:60px 60px; }
+.fbh-disk-inner { animation: fbhDiskCW  8s linear infinite; transform-origin:60px 60px; }
+.fbh-photon     { animation: fbhPulse   2.6s ease-in-out infinite; }
+@keyframes fbhDiskCW { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+@keyframes fbhPulse  { 0%,100%{opacity:0.9} 50%{opacity:0.35} }
+
+/* ── Interaction hint ── */
+#forest-hint {
+  position: absolute;
+  bottom: 80px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.38rem; letter-spacing: 3px;
+  color: rgba(200,140,60,0.5);
+  text-transform: uppercase; white-space: nowrap;
+  pointer-events: none;
+  animation: moonHint 3s ease-in-out infinite;
+}
+@keyframes moonHint { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+
+/* ── Terminal burst ── */
+#terminal-burst {
+  position: absolute; inset: 0; z-index: 20;
+  display: none; pointer-events: none;
+  background: #000;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.55rem; color: #00ff41;
+  overflow: hidden;
+}
+#terminal-burst.active { display: block; }
+
+/* ── Forest label ── */
+#forest-label {
+  position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.5rem;
   letter-spacing: 4px; color: rgba(180,0,0,0.5);
   text-transform: uppercase; pointer-events: none;
   animation: bhLabel 8s ease-in-out infinite;
@@ -165,6 +211,23 @@ body {
 @keyframes bhLabel {
   0%,100%{opacity:0.3;letter-spacing:4px} 50%{opacity:0.7;letter-spacing:6px}
 }
+
+/* ── Chromatic glitch class injected by JS ── */
+#bh-scene.chr-glitch { animation: chrGlitch 0.08s steps(1) infinite; }
+@keyframes chrGlitch {
+  0%  { filter: none; }
+  25% { filter: hue-rotate(90deg) saturate(8) contrast(2); transform: translateX(-3px); }
+  50% { filter: hue-rotate(-60deg) saturate(6) brightness(2); transform: translateX(4px) scaleY(1.01); }
+  75% { filter: hue-rotate(180deg) contrast(3); transform: translateX(-2px); }
+  100%{ filter: none; transform: none; }
+}
+
+@media (max-width: 480px) {
+  #forest-bh { width: 60px; height: 60px; top: 14%; left: 65%; }
+  #forest-hint { font-size: 0.34rem; bottom: 60px; }
+  #forest-label { font-size: 0.38rem; letter-spacing: 2px; white-space: normal; text-align: center; padding: 0 20px; }
+}
+
 
 /* ═══════════════════════════════════════════════════
    ── PHASE 2: WORLD GATE ──
@@ -483,6 +546,29 @@ body {
   position: relative; overflow: hidden;
 }
 #synopsis-gate.show { display: flex; }
+
+/* ── RAIN CANVAS ── */
+#rain-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 2s ease;
+}
+#rain-canvas.active { opacity: 1; }
+
+/* push syn-box above rain */
+#syn-box { position: relative; z-index: 2; }
+
+/* lightning flash overlay */
+#lightning-flash {
+  position: absolute; inset: 0;
+  background: rgba(220,230,255,0.0);
+  pointer-events: none; z-index: 1;
+  transition: background 0.04s;
+}
 
 /* Brutalist decorative lines behind synopsis */
 #synopsis-gate::before {
@@ -896,13 +982,6 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     font-size: 0.35rem;
     letter-spacing: 2px;
   }
-  #bh-label {
-    font-size: 0.4rem;
-    letter-spacing: 2px;
-    white-space: normal;
-    text-align: center;
-    padding: 0 16px;
-  }
 }
 
 /* Header — collapse stats on small screens */
@@ -1005,8 +1084,37 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 <!-- ═══ PHASE 1: BLACK HOLE ═══ -->
 <div id="bh-scene">
-  <canvas id="bh-canvas"></canvas>
-  <div id="bh-label">WNCORE // SIGNAL ORIGIN — CYGNUS X-1 // ANOTHER SKY DETECTED</div>
+  <canvas id="forest-canvas"></canvas>
+  <!-- Distant black hole SVG -->
+  <svg id="forest-bh" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <radialGradient id="fbhGlow" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"  stop-color="#000"/>
+        <stop offset="38%" stop-color="#000"/>
+        <stop offset="60%" stop-color="#1a0000"/>
+        <stop offset="100%" stop-color="transparent"/>
+      </radialGradient>
+      <filter id="fbhBlur"><feGaussianBlur stdDeviation="1.5"/></filter>
+    </defs>
+    <ellipse cx="60" cy="60" rx="52" ry="13" fill="none" stroke="#7a1500" stroke-width="5" opacity="0.35" filter="url(#fbhBlur)" class="fbh-disk-outer"/>
+    <ellipse cx="60" cy="60" rx="44" ry="10" fill="none" stroke="#cc2200" stroke-width="3" opacity="0.55" filter="url(#fbhBlur)" class="fbh-disk-mid"/>
+    <ellipse cx="60" cy="60" rx="36" ry="7"  fill="none" stroke="#ff4400" stroke-width="1.5" opacity="0.75" class="fbh-disk-inner"/>
+    <ellipse cx="60" cy="60" rx="30" ry="6"  fill="none" stroke="#ff6633" stroke-width="0.8" opacity="0.9" class="fbh-photon"/>
+    <circle  cx="60" cy="60" r="26" fill="url(#fbhGlow)"/>
+    <circle  cx="60" cy="60" r="22" fill="#000"/>
+    <circle  cx="60" cy="60" r="26" fill="none" stroke="#cc1100" stroke-width="2" opacity="0.5" filter="url(#fbhBlur)"/>
+    <circle r="2.2" fill="#ff5500" opacity="0.9">
+      <animateMotion dur="5.5s" repeatCount="indefinite">
+        <mpath href="#fbh-orbit"/>
+      </animateMotion>
+    </circle>
+    <defs><path id="fbh-orbit" d="M 92,60 a 32,7 0 1,0 -64,0 a 32,7 0 1,0 64,0"/></defs>
+  </svg>
+  <!-- Interaction hint -->
+  <div id="forest-hint">scroll · click · tap twice</div>
+  <!-- Terminal burst overlay -->
+  <div id="terminal-burst" aria-hidden="true"></div>
+  <div id="forest-label">WORLD -2 · 2032 · ANOTHER SKY DETECTED</div>
 </div>
 
 <!-- ═══ PHASE 2: WORLD GATE ═══ -->
@@ -1109,6 +1217,8 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
       <!-- Synopsis gate -->
       <div id="synopsis-gate">
+        <canvas id="rain-canvas" aria-hidden="true"></canvas>
+        <div id="lightning-flash" aria-hidden="true"></div>
         <div id="syn-box">
           <div id="syn-stamp">CASE FILE // ANOTHER SKY // WORLD-2 // LOGBOOK DRIFTERS</div>
           <div id="syn-title">ANOTHER SKY</div>
@@ -1287,399 +1397,565 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   </div>
 </div>
 
+
 <!-- ═══════════════════════════════════════════════════
-     WEBGL BLACK HOLE — Sgr A* / Interstellar GLSL
+     DARK FOREST — INTRO SCENE
 ═══════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
-/* ── BLACK HOLE SCENE — WebGL GLSL Shader (Sgr A* / Interstellar) ── */
-(function buildBlackHole() {
-  const canvas = document.getElementById('bh-canvas');
+/* ── DARK FOREST INTRO ──────────────────────────────── */
+(function buildForest() {
+  const scene     = document.getElementById('bh-scene');
+  const canvas    = document.getElementById('forest-canvas');
+  const moonEl    = document.getElementById('forest-moon');
+  const moonInner = document.getElementById('forest-moon-inner');
+  const hintEl    = document.getElementById('forest-moon-hint');
+  const termEl    = document.getElementById('terminal-burst');
   if (!canvas) { setTimeout(showGate, 800); return; }
 
-  const gl = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-  if (!gl) {
-    setTimeout(() => document.getElementById('bh-scene').classList.add('exit'), 600);
-    setTimeout(showGate, 800);
-    return;
-  }
+  const ctx = canvas.getContext('2d');
+  let W, H, raf, running = true;
+  let moonProgress = 0, transitioning = false, lastTap = 0;
 
+  /* ── RESIZE ── */
   function resize() {
-    const dpr = Math.min(devicePixelRatio, 2);
-    canvas.width  = window.innerWidth  * dpr;
-    canvas.height = window.innerHeight * dpr;
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    applyMoonSize();
   }
-  resize();
-  window.addEventListener('resize', resize);
 
-  /* ─── VERTEX ─── */
-  const VERT = `
-    attribute vec2 a_pos;
-    void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
-  `;
-
-  /* ─── FRAGMENT — full scene in one shader ─── */
-  const FRAG = `
-    precision highp float;
-    uniform vec2  u_res;
-    uniform float u_t;
-    uniform vec2  u_mouse; /* normalised -1..1 */
-
-    #define PI  3.14159265
-    #define TAU 6.28318530
-
-    /* ── hash / noise ── */
-    float hash11(float p){ return fract(sin(p)*43758.545); }
-    float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
-    float hash(vec3 p){ return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453); }
-
-    float noise(vec2 p){
-      vec2 i=floor(p), f=fract(p);
-      f=f*f*(3.0-2.0*f);
-      return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
-                 mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
-    }
-    float fbm(vec2 p){
-      float v=0.0, a=0.5;
-      mat2 rot = mat2(0.8,-0.6,0.6,0.8);
-      for(int i=0;i<6;i++){ v+=a*noise(p); p=rot*p*2.1; a*=0.48; }
-      return v;
-    }
-    float fbm3(vec3 p){
-      float v=0.0,a=0.5;
-      for(int i=0;i<5;i++){
-        v+=a*noise(p.xy+p.z*0.3+float(i)*2.7);
-        p*=2.1; a*=0.48;
-      }
-      return v;
-    }
-
-    /* ── Milky Way galaxy band ── */
-    float galaxyBand(vec2 uv){
-      /* tilted band across screen */
-      float band = uv.y*0.8 - uv.x*0.15 + 0.05;
-      float bw = exp(-band*band*18.0);
-      /* clumpy structure via fbm */
-      float clump = fbm(uv*4.0 + vec2(0.0, u_t*0.005));
-      return bw * clump * 1.6;
-    }
-
-    /* ── star field with magnitude/colour variation ── */
-    vec3 starField(vec2 uv, float scale){
-      vec3 col = vec3(0.0);
-      vec2 grid = floor(uv * scale);
-      vec2 frac = fract(uv * scale) - 0.5;
-
-      for(int dx=-1;dx<=1;dx++){
-        for(int dy=-1;dy<=1;dy++){
-          vec2 g = grid + vec2(dx,dy);
-          float h = hash(g);
-          if(h > 0.62){ /* ~38% of cells have a star */
-            float h2 = hash(g + 99.1);
-            float h3 = hash(g + 200.3);
-            vec2 off = vec2(hash(g+1.1), hash(g+2.2)) - 0.5;
-            vec2 d = frac - (vec2(dx,dy) + off);
-            float mag  = pow(1.0 - h, 2.5) * 0.9 + 0.1; /* brightness */
-            float size = 0.004 + mag * 0.012;
-            float glow = exp(-dot(d,d) / (size*size));
-            /* colour: blue dwarfs / yellow giants / white main sequence */
-            vec3 tint = h2 < 0.15 ? vec3(0.5,0.6,1.0) :   /* blue */
-                        h2 < 0.30 ? vec3(1.0,0.9,0.5) :   /* yellow giant */
-                        h2 < 0.40 ? vec3(1.0,0.5,0.2) :   /* orange */
-                                    vec3(0.9,0.95,1.0);    /* white */
-            col += tint * glow * mag;
-          }
-        }
-      }
-      return col;
-    }
-
-    /* ── star cluster — dense core near BH ── */
-    vec3 starCluster(vec2 uv){
-      vec3 col = vec3(0.0);
-      float r = length(uv);
-      /* galactic centre density falloff */
-      float density = exp(-r*r*2.2) * 0.8;
-
-      for(int i=0;i<12;i++){
-        float fi = float(i);
-        float ang = fi * 2.399963; /* golden angle */
-        float rad = sqrt(fi/12.0) * 0.55;
-        vec2 cp = vec2(cos(ang)*rad, sin(ang)*rad);
-        float cd = length(uv - cp);
-        float br = exp(-cd*cd*80.0) * density * (0.4 + hash(cp)*0.6);
-        float h = hash(cp + 7.3);
-        vec3 tint = h < 0.3 ? vec3(0.6,0.7,1.0) : h < 0.55 ? vec3(1.0,0.9,0.6) : vec3(1.0,1.0,1.0);
-        col += tint * br;
-      }
-      return col;
-    }
-
-    /* ── nebula / dust clouds ── */
-    vec3 nebula(vec2 uv){
-      vec3 col = vec3(0.0);
-      float r = length(uv);
-
-      /* red dust cloud — asymmetric */
-      float n1 = fbm(uv*2.2 + vec2(1.3, u_t*0.007));
-      float m1 = smoothstep(0.6,0.0,r) * smoothstep(0.1,0.45,r);
-      col += vec3(0.55,0.05,0.02) * n1 * m1 * 0.6;
-
-      /* blue-violet ionised cloud */
-      float n2 = fbm(uv*1.8 + vec2(-0.7, 0.5 + u_t*0.005));
-      float m2 = smoothstep(0.7,0.15,r);
-      col += vec3(0.02,0.02,0.18) * n2 * m2 * 0.5;
-
-      /* dark dust lane — subtracts light near disk plane */
-      float lane = exp(-pow((uv.y + uv.x*0.1)*6.0, 2.0));
-      float dustN = fbm(vec2(uv.x*3.0 + u_t*0.004, uv.y*5.0));
-      col -= vec3(0.06) * lane * dustN * smoothstep(0.5,0.15,r);
-
-      /* outer faint purple haze */
-      float haze = fbm(uv*1.1 + vec2(u_t*0.003));
-      col += vec3(0.08,0.0,0.12) * haze * smoothstep(0.9,0.4,r) * 0.35;
-
-      return col;
-    }
-
-    /* ── gravitational lensing warp of background ── */
-    vec2 gravLens(vec2 uv, float bhR){
-      float r = length(uv);
-      if(r < bhR * 1.05) return uv;
-      /* Schwarzschild deflection approximation */
-      float rs = bhR * 1.0;
-      float defl = rs * rs / (r * r) * 1.8;
-      return uv + normalize(uv) * (-defl);
-    }
-
-    /* ── accretion disk ── */
-    vec3 accretionDisk(vec2 uv, float bhR){
-      vec3 col = vec3(0.0);
-      float r   = length(uv);
-      float ang  = atan(uv.y, uv.x);
-
-      float dInner = bhR * 1.45;
-      float dOuter = bhR * 7.5;
-
-      /* vertical squash — disk is tilted ~15° toward viewer (Interstellar angle) */
-      float squash = abs(uv.y * 2.8 - sin(ang) * 0.12);
-      float thick  = smoothstep(0.12, 0.0, squash);
-
-      float radFade = smoothstep(dOuter, dInner, r) * smoothstep(bhR * 0.9, dInner, r);
-
-      /* Doppler: near side approaches → brighter, far side recedes → dimmer */
-      /* Relativistic beaming: I ∝ (1/(1-β·cosφ))³  — simplified */
-      float phi   = ang + u_t * 0.22; /* slow apparent rotation */
-      float beta  = 0.5;              /* v/c */
-      float beam  = pow(1.0 / (1.0 - beta * cos(phi)), 3.0);
-      beam = clamp(beam * 0.18, 0.0, 3.5);
-
-      /* Turbulence in disk */
-      float turb = fbm(vec2(ang * 1.6 + u_t * 0.12, r * 5.0));
-      float flux  = radFade * thick * (0.5 + beam * 0.6) * (0.7 + turb * 0.5);
-
-      /* Temperature gradient: inner=white-hot, mid=orange, outer=deep red */
-      float t_r = clamp((r - dInner) / (dOuter - dInner), 0.0, 1.0);
-      vec3 diskCol = t_r < 0.15 ? mix(vec3(1.0,0.97,0.85), vec3(1.0,0.6,0.15), t_r/0.15)
-                   : t_r < 0.55 ? mix(vec3(1.0,0.6,0.15),  vec3(0.9,0.12,0.02), (t_r-0.15)/0.40)
-                   :               mix(vec3(0.9,0.12,0.02),  vec3(0.28,0.0,0.0),  (t_r-0.55)/0.45);
-
-      col += diskCol * flux * 2.8;
-
-      /* ── Photon ring — thin bright arc right at ISCO ── */
-      float photonR = bhR * 1.47;
-      float photon  = exp(-pow((r - photonR) * 60.0 / bhR, 2.0)) * thick;
-      float pBeam   = 0.5 + 0.5 * sin(ang * 1.0 + u_t * 0.35);
-      col += vec3(1.0, 0.7, 0.2) * photon * (1.2 + pBeam * 0.8) * 1.5;
-
-      /* ── Secondary (lensed) image above horizon ── */
-      vec2 uv2 = vec2(uv.x, -uv.y * 0.5 + bhR * 0.4);
-      float r2 = length(uv2);
-      float ang2 = atan(uv2.y, uv2.x);
-      float squash2 = abs(uv2.y * 3.5);
-      float thick2 = smoothstep(0.06, 0.0, squash2);
-      float radFade2 = smoothstep(bhR*4.0, bhR*1.5, r2) * smoothstep(bhR*0.9, bhR*1.4, r2);
-      float t_r2 = clamp((r2 - bhR*1.4)/(bhR*2.8), 0.0, 1.0);
-      vec3 sec = mix(vec3(1.0,0.55,0.1), vec3(0.5,0.02,0.0), t_r2);
-      col += sec * radFade2 * thick2 * 0.7;
-
-      return col;
-    }
-
-    /* ── relativistic jets ── */
-    vec3 jets(vec2 uv, float bhR){
-      vec3 col = vec3(0.0);
-      float jx = abs(uv.x);
-      float jy = abs(uv.y);
-      /* polar jets along y axis */
-      float jet = exp(-jx * jx / (bhR * bhR * 0.6)) * smoothstep(bhR * 7.0, bhR, jy);
-      float jNoise = fbm(vec2(uv.x * 8.0, jy * 3.0 - u_t * 0.2));
-      float jFlux = jet * (0.5 + jNoise * 0.6) * smoothstep(bhR * 1.3, bhR * 2.5, jy);
-      col += vec3(0.6, 0.08, 0.0) * jFlux * 0.5;
-      /* bright narrow core */
-      float jCore = exp(-jx * jx / (bhR * bhR * 0.04)) * smoothstep(bhR*5.0, bhR*1.5, jy);
-      col += vec3(1.0, 0.3, 0.0) * jCore * 0.35;
-      return col;
-    }
-
-    /* ── photon sphere / shadow boundary glow ── */
-    vec3 shadowGlow(vec2 uv, float bhR){
-      float r = length(uv);
-      float glow = exp(-pow((r - bhR * 1.0) * 18.0 / bhR, 2.0));
-      return vec3(0.9, 0.15, 0.0) * glow * 0.4;
-    }
-
-    void main(){
-      vec2 fc = gl_FragCoord.xy;
-      vec2 uv = (fc - u_res * 0.5) / min(u_res.x, u_res.y);
-
-      /* subtle parallax from mouse */
-      uv += u_mouse * 0.04;
-
-      float bhR = 0.09; /* normalised event horizon radius */
-
-      /* ── BACKGROUND LAYER (lensed) ── */
-      vec2 lUV = gravLens(uv, bhR);
-      float lR = length(lUV);
-
-      vec3 col = vec3(0.0);
-
-      /* Stars — two scales for depth */
-      col += starField(lUV, 80.0) * 0.7;
-      col += starField(lUV * 0.5 + 0.5, 150.0) * 0.4;
-
-      /* Star cluster around galactic centre */
-      col += starCluster(lUV) * 0.8;
-
-      /* Milky Way band */
-      float mw = galaxyBand(lUV);
-      col += vec3(0.12, 0.07, 0.20) * mw;
-      /* warm core of the band */
-      float mwCore = exp(-pow(lUV.y * 0.8 - lUV.x * 0.1 + 0.05, 2.0) * 30.0);
-      col += vec3(0.18, 0.10, 0.08) * mwCore * fbm(lUV * 3.0) * 0.8;
-
-      /* Nebula / dust */
-      col += nebula(lUV);
-
-      /* ── FOREGROUND: disk, jets, glow ── */
-      col += accretionDisk(uv, bhR);
-      col += jets(uv, bhR);
-      col += shadowGlow(uv, bhR);
-
-      /* ── EVENT HORIZON — absolute black ── */
-      float r = length(uv);
-      float shadow = smoothstep(bhR + 0.006, bhR - 0.003, r);
-      col = mix(col, vec3(0.0), shadow);
-
-      /* ── CHROMATIC ABERRATION near horizon ── */
-      float abR = length(uv + vec2(0.004, 0.0));
-      float abG = r;
-      float abB = length(uv - vec2(0.004, 0.0));
-      float abbr = smoothstep(bhR * 2.5, bhR * 1.2, r);
-      col.r += 0.06 * abbr * smoothstep(bhR, bhR * 2.0, abR);
-      col.b += 0.04 * abbr * smoothstep(bhR, bhR * 2.0, abB);
-
-      /* ── GLITCH ENGINE ── */
-      float glitchSeed = floor(u_t * 0.7);
-      float glitchOn = step(0.96, hash11(glitchSeed));
-      if(glitchOn > 0.5){
-        float scanY = floor(fc.y / (4.0 + hash11(glitchSeed + 1.0) * 8.0));
-        float lineGlitch = step(0.88, hash(vec2(scanY, glitchSeed)));
-        float shiftX = (hash(vec2(scanY * 3.1, glitchSeed)) - 0.5) * 18.0;
-        vec2 gUV = (vec2(fc.x + shiftX * lineGlitch, fc.y) - u_res * 0.5) / min(u_res.x, u_res.y);
-        col.r = mix(col.r, fbm(gUV * 5.0 + u_t) * 0.4, lineGlitch * 0.5);
-        col.g = mix(col.g, col.g, lineGlitch * 0.3);
-      }
-      /* frame-skip flicker */
-      float flicker = 1.0 - 0.12 * step(0.985, hash11(floor(u_t * 12.0)));
-      col *= flicker;
-
-      /* ── TONE MAPPING (ACES filmic) ── */
-      col = (col * (2.51 * col + 0.03)) / (col * (2.43 * col + 0.59) + 0.14);
-      col = clamp(col, 0.0, 1.0);
-
-      /* ── GAMMA ── */
-      col = pow(col, vec3(1.0 / 2.2));
-
-      /* ── VIGNETTE ── */
-      vec2 vUV = fc / u_res;
-      float vig = vUV.x * (1.0-vUV.x) * vUV.y * (1.0-vUV.y);
-      col *= pow(vig * 16.0, 0.25);
-
-      gl_FragColor = vec4(col, 1.0);
-    }
-  `;
-
-  /* compile + link */
-  function mkShader(type, src) {
-    const s = gl.createShader(type);
-    gl.shaderSource(s, src);
-    gl.compileShader(s);
-    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS))
-      console.warn('BH shader:', gl.getShaderInfoLog(s));
-    return s;
+  /* ── MOON SIZE ── */
+  function applyMoonSize() {
+    if (!W) return;
+    const base = Math.max(38, Math.min(64, W * 0.055));
+    const s = base * (1 + moonProgress * 7);
+    moonEl.style.width  = s + 'px';
+    moonEl.style.height = s + 'px';
+    const riseExtra = moonProgress * 28;
+    moonEl.style.bottom = (30 + riseExtra) + '%';
+    const g = moonProgress;
+    moonInner.style.boxShadow = [
+      `0 0 ${20 + g*100}px rgba(230,210,120,${0.55 + g*0.35})`,
+      `0 0 ${50 + g*250}px rgba(200,170,60,${0.25 + g*0.35})`,
+      `0 0 ${g*400}px rgba(255,240,160,${g*0.12})`,
+    ].join(',');
+    hintEl.style.opacity = Math.max(0, 1 - moonProgress * 4).toString();
+    if (moonProgress >= 1 && !transitioning) triggerTransition();
   }
-  const prog = gl.createProgram();
-  gl.attachShader(prog, mkShader(gl.VERTEX_SHADER, VERT));
-  gl.attachShader(prog, mkShader(gl.FRAGMENT_SHADER, FRAG));
-  gl.linkProgram(prog);
-  if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
-    console.warn('BH link:', gl.getProgramInfoLog(prog));
-    setTimeout(() => document.getElementById('bh-scene').classList.add('exit'), 600);
-    setTimeout(showGate, 800);
-    return;
+
+  function growMoon(amt) {
+    if (transitioning) return;
+    moonProgress = Math.min(1, moonProgress + amt);
+    applyMoonSize();
   }
-  gl.useProgram(prog);
 
-  /* fullscreen quad */
-  const buf = gl.createBuffer();
-  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-  const aPos = gl.getAttribLocation(prog, 'a_pos');
-  gl.enableVertexAttribArray(aPos);
-  gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+  /* ════════════════════════════════════════════════
+     TREE DRAWING — proper deciduous anatomy
+     Each tree: thick tapered trunk, surface roots,
+     branching arms, canopy blob clusters
+  ════════════════════════════════════════════════ */
 
-  const uRes   = gl.getUniformLocation(prog, 'u_res');
-  const uT     = gl.getUniformLocation(prog, 'u_t');
-  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+  /* Recursive branch */
+  function drawBranch(x, y, angle, len, width, depth, col, t, swayAmp) {
+    if (depth < 0 || len < 3) return;
+    const sway = Math.sin(t * 0.0006 + x * 0.002) * swayAmp * (1 - depth / 7);
+    const endX = x + Math.cos(angle + sway) * len;
+    const endY = y + Math.sin(angle + sway) * len;
 
-  let mx = 0, my = 0;
-  window.addEventListener('mousemove', e => {
-    mx = (e.clientX / window.innerWidth)  * 2.0 - 1.0;
-    my = (e.clientY / window.innerHeight) * 2.0 - 1.0;
-  });
-  window.addEventListener('touchmove', e => {
-    const t = e.touches[0];
-    mx = (t.clientX / window.innerWidth)  * 2.0 - 1.0;
-    my = (t.clientY / window.innerHeight) * 2.0 - 1.0;
-  }, { passive: true });
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(endX, endY);
+    ctx.lineWidth = Math.max(0.5, width);
+    ctx.strokeStyle = col;
+    ctx.stroke();
 
-  let t = 0, raf, lastTs = 0;
+    if (depth > 0) {
+      const spread = 0.28 + depth * 0.04;
+      const leftBias  = (Math.random() - 0.5) * 0.15;
+      const rightBias = (Math.random() - 0.5) * 0.15;
+      drawBranch(endX, endY, angle - spread + leftBias,  len * 0.68, width * 0.62, depth - 1, col, t, swayAmp);
+      drawBranch(endX, endY, angle + spread + rightBias, len * 0.68, width * 0.62, depth - 1, col, t, swayAmp);
+      if (depth > 2 && Math.random() > 0.5) {
+        drawBranch(endX, endY, angle + (Math.random()-0.5)*0.2, len * 0.55, width * 0.5, depth - 2, col, t, swayAmp);
+      }
+    }
+  }
+
+  /* Surface roots — bezier curves sprawling from base */
+  function drawRoots(x, baseY, trunkW, col) {
+    ctx.save();
+    ctx.strokeStyle = col;
+    ctx.lineWidth = trunkW * 0.22;
+    const count = 3 + Math.floor(Math.random() * 2);
+    for (let i = 0; i < count; i++) {
+      const side = i % 2 === 0 ? 1 : -1;
+      const spread = (0.6 + i * 0.35) * trunkW * 2.5 * side;
+      const ctrl1x = x + spread * 0.3 + (Math.random()-0.5)*trunkW;
+      const ctrl1y = baseY - trunkW * 0.5;
+      const ctrl2x = x + spread * 0.7;
+      const ctrl2y = baseY + trunkW * 0.2;
+      const ex = x + spread;
+      const ey = baseY + trunkW * 0.35;
+      ctx.beginPath();
+      ctx.moveTo(x, baseY - trunkW * 0.1);
+      ctx.bezierCurveTo(ctrl1x, ctrl1y, ctrl2x, ctrl2y, ex, ey);
+      ctx.stroke();
+      ctx.lineWidth = Math.max(0.5, trunkW * 0.10);
+    }
+    ctx.restore();
+  }
+
+  /* Trunk — tapered quad */
+  function drawTrunk(x, baseY, trunkW, trunkH, col) {
+    const topW = trunkW * 0.38;
+    const lean = (Math.random() - 0.5) * trunkW * 0.4;
+    ctx.save();
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.moveTo(x - trunkW/2, baseY);
+    ctx.bezierCurveTo(
+      x - trunkW*0.45, baseY - trunkH*0.4,
+      x + lean - topW*0.6, baseY - trunkH*0.75,
+      x + lean - topW/2, baseY - trunkH
+    );
+    ctx.lineTo(x + lean + topW/2, baseY - trunkH);
+    ctx.bezierCurveTo(
+      x + lean + topW*0.6, baseY - trunkH*0.75,
+      x + trunkW*0.45, baseY - trunkH*0.4,
+      x + trunkW/2, baseY
+    );
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+    return { topX: x + lean, topY: baseY - trunkH, topW };
+  }
+
+  /* Canopy blob cluster */
+  function drawCanopy(cx, cy, radius, col, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = col;
+    const blobs = 6 + Math.floor(Math.random() * 5);
+    for (let i = 0; i < blobs; i++) {
+      const bx = cx + (Math.random()-0.5)*radius*1.6;
+      const by = cy + (Math.random()-0.5)*radius*0.9 - radius*0.3;
+      const br = radius * (0.35 + Math.random() * 0.45);
+      ctx.beginPath();
+      ctx.arc(bx, by, br, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* Full tree definition */
+  function makeTree(x, baseY, scale, side) {
+    return {
+      x, baseY, scale,
+      trunkW:  (28 + Math.random()*22) * scale,
+      trunkH:  (160 + Math.random()*120) * scale,
+      canopyR: (70 + Math.random()*50) * scale,
+      branchDepth: 4 + Math.floor(Math.random()*2),
+      swayAmp: 0.04 + Math.random()*0.03,
+      seed: Math.random()*1000,
+      side,
+    };
+  }
+
+  /* Draw a complete tree */
+  function drawTree(tree, t, alpha, cols) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    const trunk = drawTrunk(tree.x, tree.baseY, tree.trunkW, tree.trunkH, cols.trunk);
+    drawRoots(tree.x, tree.baseY, tree.trunkW, cols.trunk);
+
+    /* Main branches from trunk top */
+    ctx.save();
+    ctx.strokeStyle = cols.branch;
+    ctx.lineCap = 'round';
+    const numArms = 3 + Math.floor(tree.scale * 2);
+    for (let i = 0; i < numArms; i++) {
+      const frac  = i / numArms;
+      const armY  = trunk.topY + tree.trunkH * 0.18 * frac;
+      const armX  = trunk.topX + (Math.random()-0.5) * tree.trunkW * 0.4;
+      const baseAngle = -Math.PI/2 + (tree.side === 'L' ? 0.35 : -0.35) * (1 - frac)
+                        + (Math.random()-0.5) * 0.5;
+      drawBranch(armX, armY, baseAngle,
+        tree.trunkH * (0.28 + frac*0.12),
+        tree.trunkW * (0.22 - frac*0.06),
+        tree.branchDepth, cols.branch, t, tree.swayAmp);
+    }
+    ctx.restore();
+
+    /* Canopy */
+    drawCanopy(trunk.topX, trunk.topY - tree.canopyR*0.3, tree.canopyR, cols.canopy, alpha * 0.85);
+
+    ctx.restore();
+  }
+
+  /* ── GROUND FLOWERS ── */
+  function drawFlowers(trees) {
+    trees.forEach(tree => {
+      const count = 2 + Math.floor(Math.random()*3);
+      for (let i = 0; i < count; i++) {
+        const fx = tree.x + (Math.random()-0.5)*tree.trunkW*4;
+        const fy = tree.baseY + Math.random()*8;
+        const size = 2.5 + Math.random()*2;
+        /* tiny red/pink dot */
+        ctx.save();
+        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(180,20,40,0.7)' : 'rgba(220,60,80,0.6)';
+        ctx.beginPath();
+        ctx.arc(fx, fy, size, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+  }
+
+  /* ── MUDDY PATH ── */
+  function drawPath(t) {
+    const horizon  = H * 0.48;
+    const pathBotW = W * 0.28;
+    const pathTopW = W * 0.018;
+    const cx       = W * 0.5;
+
+    /* Base path gradient — earthy mud browns */
+    const pg = ctx.createLinearGradient(0, horizon, 0, H);
+    pg.addColorStop(0,   'rgba(30,15,8,0)');
+    pg.addColorStop(0.15,'rgba(42,24,12,0.92)');
+    pg.addColorStop(0.55,'rgba(55,32,14,0.97)');
+    pg.addColorStop(1,   'rgba(35,18,8,1)');
+
+    ctx.save();
+    ctx.beginPath();
+    /* Slightly wavy edges — hand-worn path */
+    ctx.moveTo(cx - pathTopW/2, horizon);
+    ctx.bezierCurveTo(
+      cx - pathTopW*1.5, horizon + (H-horizon)*0.3,
+      cx - pathBotW*0.55, horizon + (H-horizon)*0.7,
+      cx - pathBotW/2, H+5
+    );
+    ctx.lineTo(cx + pathBotW/2, H+5);
+    ctx.bezierCurveTo(
+      cx + pathBotW*0.55, horizon + (H-horizon)*0.7,
+      cx + pathTopW*1.5, horizon + (H-horizon)*0.3,
+      cx + pathTopW/2, horizon
+    );
+    ctx.closePath();
+    ctx.fillStyle = pg;
+    ctx.fill();
+
+    /* Puddles — shimmer */
+    [[0.2,0.32],[0.42,0.25],[0.65,0.30],[0.84,0.22]].forEach(([p,w],i) => {
+      const py = horizon + (H - horizon) * p;
+      const pw = (pathBotW*p + pathTopW*(1-p)) * w;
+      const shimmer = 0.05 + 0.04*Math.sin(t*0.0009 + i*1.8);
+      const rg = ctx.createRadialGradient(cx, py, 0, cx, py, pw*0.5);
+      rg.addColorStop(0,   `rgba(80,120,140,${shimmer*2.5})`);
+      rg.addColorStop(0.6, `rgba(50,70,90,${shimmer})`);
+      rg.addColorStop(1,    'rgba(0,0,0,0)');
+      ctx.fillStyle = rg;
+      ctx.beginPath();
+      ctx.ellipse(cx, py, pw*0.45, pw*0.09, 0, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    /* Worn tyre/foot ruts */
+    [[-0.15,0.12],[0.15,0.12],[-0.32,0.26],[0.32,0.26]].forEach(([rel,w]) => {
+      const x1 = cx + pathTopW*rel*3;
+      const x2 = cx + pathBotW*rel;
+      ctx.strokeStyle = 'rgba(18,9,4,0.6)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([6,8]);
+      ctx.beginPath();
+      ctx.moveTo(x1, horizon);
+      ctx.lineTo(x2, H);
+      ctx.stroke();
+    });
+    ctx.setLineDash([]);
+
+    /* Fog glow at end of path — moon light pooling */
+    const fogR = ctx.createRadialGradient(cx, horizon, 0, cx, horizon, W*0.22);
+    fogR.addColorStop(0,   `rgba(220,200,120,${0.12 + moonProgress*0.25})`);
+    fogR.addColorStop(0.4, `rgba(180,140,60,${0.06 + moonProgress*0.12})`);
+    fogR.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = fogR;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.restore();
+  }
+
+  /* ── ATMOSPHERIC FOG LAYERS ── */
+  function drawFog(t) {
+    /* Ground-hugging mist */
+    [0.52, 0.60, 0.70, 0.82].forEach((yFrac, i) => {
+      const y = H * yFrac;
+      const w = W * (0.5 + i * 0.15);
+      const drift = Math.sin(t * 0.00025 + i * 1.4) * W * 0.03;
+      const fogGrad = ctx.createRadialGradient(W/2 + drift, y, 0, W/2 + drift, y, w*0.5);
+      fogGrad.addColorStop(0,   `rgba(60,20,10,${0.12 - i*0.02})`);
+      fogGrad.addColorStop(0.5, `rgba(40,10,5,${0.06 - i*0.01})`);
+      fogGrad.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = fogGrad;
+      ctx.fillRect(0, y - w*0.15, W, w*0.3);
+    });
+
+    /* Deep path fog — bright cone leading into distance */
+    const pathFog = ctx.createLinearGradient(0, H*0.48, 0, H*0.65);
+    pathFog.addColorStop(0,   `rgba(180,130,60,${0.08 + moonProgress*0.18})`);
+    pathFog.addColorStop(0.5, `rgba(120,80,30,${0.04 + moonProgress*0.08})`);
+    pathFog.addColorStop(1,   'rgba(0,0,0,0)');
+    const pathW = W * 0.18;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(W/2 - pathW*0.04, H*0.48);
+    ctx.lineTo(W/2 + pathW*0.04, H*0.48);
+    ctx.lineTo(W/2 + pathW, H*0.65);
+    ctx.lineTo(W/2 - pathW, H*0.65);
+    ctx.closePath();
+    ctx.fillStyle = pathFog;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /* ── RAIN ── */
+  let rain = [];
+  function initRain() {
+    rain = [];
+    const n = Math.floor(W * H / 5500);
+    for (let i = 0; i < n; i++) {
+      rain.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        len: 8 + Math.random() * 18,
+        spd: 6 + Math.random() * 10,
+        a: 0.05 + Math.random() * 0.18,
+      });
+    }
+  }
+
+  function drawRain() {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(150,190,230,1)';
+    ctx.lineCap = 'round';
+    for (const d of rain) {
+      ctx.globalAlpha = d.a;
+      ctx.lineWidth = 0.55;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.len*0.13, d.y + d.len);
+      ctx.stroke();
+      d.y += d.spd; d.x += d.spd*0.1;
+      if (d.y > H) { d.y = -d.len; d.x = Math.random()*W; }
+    }
+    ctx.restore();
+  }
+
+  /* ── TREE INSTANCES ── */
+  let treesL = [], treesR = [], treesMidL = [], treesMidR = [];
+
+  function initTrees() {
+    treesL = []; treesR = []; treesMidL = []; treesMidR = [];
+
+    /* Foreground giants — flanking the path, huge */
+    const fgCount = 3;
+    for (let i = 0; i < fgCount; i++) {
+      const baseY = H * (0.80 + i * 0.06);
+      const scale = 1.1 + i * 0.15;
+      /* Left side — push into left half, x increases away from path */
+      treesL.push(makeTree(W*(0.08 + i*0.09), baseY, scale, 'L'));
+      treesR.push(makeTree(W*(0.92 - i*0.09), baseY, scale, 'R'));
+    }
+
+    /* Mid-ground trees */
+    for (let i = 0; i < 4; i++) {
+      const scale = 0.6 + i*0.1;
+      const baseY = H*(0.72 + i*0.03);
+      treesMidL.push(makeTree(W*(0.12 + i*0.07), baseY, scale, 'L'));
+      treesMidR.push(makeTree(W*(0.88 - i*0.07), baseY, scale, 'R'));
+    }
+  }
+
+  /* ── BACKGROUND silhouette tree layer (painted once into offscreen) ── */
+  let bgCanvas, bgCtx, bgDirty = true;
+  function paintBgTrees() {
+    if (!bgCanvas) {
+      bgCanvas = document.createElement('canvas');
+      bgCtx    = bgCanvas.getContext('2d');
+    }
+    bgCanvas.width = W; bgCanvas.height = H;
+    bgCtx.clearRect(0,0,W,H);
+
+    const count = 18;
+    for (let i = 0; i < count; i++) {
+      const x = (i / count) * W + (Math.random()-0.5)*(W/count)*0.8;
+      const baseY = H*(0.56 + Math.random()*0.08);
+      const scale = 0.22 + Math.random()*0.2;
+      const cols = { trunk: 'rgba(15,5,4,0.7)', branch: 'rgba(12,4,3,0.6)', canopy: 'rgba(10,3,2,0.55)' };
+      /* simplified — just trunk + canopy, no full branch recursion */
+      const tW = (20+Math.random()*16)*scale;
+      const tH = (110+Math.random()*80)*scale;
+      bgCtx.fillStyle = cols.trunk;
+      bgCtx.fillRect(x - tW/2, baseY - tH, tW, tH);
+      bgCtx.fillStyle = cols.canopy;
+      bgCtx.globalAlpha = 0.6;
+      bgCtx.beginPath();
+      bgCtx.arc(x, baseY - tH - (30+Math.random()*25)*scale, (35+Math.random()*30)*scale, 0, Math.PI*2);
+      bgCtx.fill();
+      bgCtx.globalAlpha = 1;
+    }
+    bgDirty = false;
+  }
+
+  /* ── MAIN DRAW ── */
+  let lastT = 0;
   function draw(ts) {
+    if (!running) return;
     raf = requestAnimationFrame(draw);
-    const dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 0.016;
-    lastTs = ts;
-    t += dt;
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.uniform2f(uRes, canvas.width, canvas.height);
-    gl.uniform1f(uT, t);
-    gl.uniform2f(uMouse, mx, my);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    lastT = ts;
+
+    ctx.clearRect(0,0,W,H);
+
+    /* SKY */
+    const sky = ctx.createLinearGradient(0,0,0,H*0.65);
+    sky.addColorStop(0,    '#060002');
+    sky.addColorStop(0.2,  '#120308');
+    sky.addColorStop(0.5,  '#2e0a0a');
+    sky.addColorStop(0.75, '#4a1008');
+    sky.addColorStop(1,    '#1e0604');
+    ctx.fillStyle = sky;
+    ctx.fillRect(0,0,W,H*0.65);
+
+    /* Ground */
+    const gnd = ctx.createLinearGradient(0,H*0.55,0,H);
+    gnd.addColorStop(0,'#140604'); gnd.addColorStop(1,'#080302');
+    ctx.fillStyle = gnd;
+    ctx.fillRect(0,H*0.55,W,H*0.45);
+
+    /* BG silhouette trees */
+    if (bgDirty) paintBgTrees();
+    ctx.drawImage(bgCanvas, 0, 0);
+
+    /* Fog layers behind trees */
+    drawFog(ts);
+
+    /* PATH */
+    drawPath(ts);
+
+    /* Mid trees */
+    const midColsL = { trunk:'rgba(18,7,5,0.92)', branch:'rgba(14,5,4,0.85)', canopy:'rgba(12,4,3,0.8)' };
+    const midColsR = { trunk:'rgba(16,6,4,0.92)', branch:'rgba(12,4,3,0.85)', canopy:'rgba(10,3,2,0.8)' };
+    treesMidL.forEach(tr => drawTree(tr, ts, 0.88, midColsL));
+    treesMidR.forEach(tr => drawTree(tr, ts, 0.88, midColsR));
+
+    /* Foreground trees — darkest, most detail */
+    const fgCols = { trunk:'rgba(8,3,2,1)', branch:'rgba(6,2,1,0.95)', canopy:'rgba(5,2,1,0.9)' };
+    treesL.forEach(tr => drawTree(tr, ts, 1.0, fgCols));
+    treesR.forEach(tr => drawTree(tr, ts, 1.0, fgCols));
+
+    /* Ground flowers at fg tree bases */
+    drawFlowers([...treesL, ...treesR]);
+
+    /* Rain */
+    drawRain();
+
+    /* Vignette */
+    const vig = ctx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.9);
+    vig.addColorStop(0,'rgba(0,0,0,0)');
+    vig.addColorStop(0.5,'rgba(0,0,0,0.15)');
+    vig.addColorStop(1,'rgba(0,0,0,0.88)');
+    ctx.fillStyle = vig;
+    ctx.fillRect(0,0,W,H);
   }
-  draw(0);
 
-  window.addEventListener('resize', resize);
+  /* ── TRANSITION ── */
+  function triggerTransition() {
+    if (transitioning) return;
+    transitioning = true;
+    running = false;
+    cancelAnimationFrame(raf);
 
-  /* Auto-transition: show gate at 5s, fade BH */
-  setTimeout(() => {
-    document.getElementById('bh-scene').classList.add('exit');
+    scene.classList.add('chr-glitch');
+    hintEl.style.display = 'none';
+
     setTimeout(() => {
-      cancelAnimationFrame(raf);
-      showGate();
-    }, 1600);
-  }, 5000);
+      scene.classList.remove('chr-glitch');
+      termEl.classList.add('active');
+
+      const lines = [
+        '> INITIALISING ARCHIVE ACCESS...',
+        '> WORLD INDEX: -2',
+        '> SIGNAL ORIGIN: CYGNUS X-1',
+        '> CROSS-REFERENCING TIMELINE...',
+        '> USER CLEARANCE: PENDING',
+        '> LOGBOOK DRIFTERS DB: CONNECTED',
+        '> ANOMALY DETECTED IN SECTOR 7',
+        '> DECRYPTION KEY: ████████████',
+        '> OVERRIDE: ACCEPTED',
+        '> PORTAL INITIALISING...',
+        '> ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 100%',
+        '> ACCESS GRANTED',
+      ];
+      let li = 0;
+      termEl.innerHTML = '';
+      const iv = setInterval(() => {
+        if (li >= lines.length) { clearInterval(iv); return; }
+        const row = document.createElement('div');
+        row.style.cssText = `padding:1px 16px;opacity:${0.5+Math.random()*0.5};color:${Math.random()>0.85?'#ff2200':'#00ff41'}`;
+        row.textContent = lines[li++];
+        termEl.appendChild(row);
+        termEl.scrollTop = termEl.scrollHeight;
+        if (Math.random() > 0.55) {
+          termEl.style.opacity = (0.2+Math.random()*0.8).toString();
+          setTimeout(()=>{ termEl.style.opacity='1'; }, 35);
+        }
+      }, 46);
+
+      setTimeout(() => {
+        clearInterval(iv);
+        termEl.style.background = '#fff';
+        setTimeout(() => {
+          termEl.classList.remove('active');
+          scene.classList.add('exit');
+          setTimeout(showGate, 1400);
+        }, 70);
+      }, 680);
+    }, 580);
+  }
+
+  /* ── INPUT ── */
+  window.addEventListener('wheel', e => {
+    if (transitioning) return;
+    growMoon(Math.min(0.06, Math.abs(e.deltaY) / 600));
+  }, { passive:true });
+
+  scene.addEventListener('click', () => { if (!transitioning) growMoon(0.14); });
+
+  scene.addEventListener('touchend', e => {
+    if (transitioning) return;
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      moonProgress = 1; applyMoonSize(); triggerTransition();
+    } else { growMoon(0.11); }
+    lastTap = now;
+  }, { passive:true });
+
+  window.addEventListener('keydown', e => {
+    if (transitioning) return;
+    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); growMoon(0.15); }
+  });
+
+  /* ── INIT ── */
+  resize();
+  window.addEventListener('resize', () => {
+    resize(); bgDirty = true; initTrees(); initRain();
+  });
+  initTrees();
+  initRain();
+  requestAnimationFrame(draw);
 })();
+
 
 /* ── PHASE TRANSITIONS ─────────────────────────────── */
 function showGate() {
@@ -1774,14 +2050,17 @@ function showSynopsis() {
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
   document.getElementById('synopsis-gate').style.display = 'flex';
-  // Reset sky stat
   updateSkyStat(currentChapterIdx);
+  // Start rain atmosphere
+  setTimeout(() => startSynopsisRain(), 300);
 }
 
 let decrypted = false;
 function doDecrypt() {
   if (decrypted) return;
   decrypted = true;
+  // Thunder crack on decrypt
+  triggerThunder(true);
   const encEl = document.getElementById('syn-encrypted');
   const txtEl = document.getElementById('syn-text');
   const btn = document.getElementById('syn-decrypt-btn');
@@ -1813,6 +2092,7 @@ function beginReading() {
   document.getElementById('synopsis-gate').style.display = 'none';
   document.getElementById('ch-reader').style.display = 'flex';
   document.getElementById('ch-reader').classList.add('show');
+  stopSynopsisRain();
   checkResume();
 }
 
@@ -2388,6 +2668,286 @@ function sendEntityMsg() {
   function sched() { setTimeout(() => { fire(); sched(); }, 5000 + Math.random() * 8000); }
   sched();
 })();
+
+/* ═══════════════════════════════════════════════════
+   SYNOPSIS RAIN + THUNDER ENGINE
+═══════════════════════════════════════════════════ */
+(function() {
+  'use strict';
+
+  /* ── STATE ── */
+  let canvas, ctx, W, H, drops = [], raf, running = false;
+  let rainSound = null, thunderSounds = [], audioUnlocked = false;
+
+  /* ── RAIN DROP FACTORY ── */
+  function mkDrop() {
+    const speed = 8 + Math.random() * 14;
+    const angle = 0.18 + Math.random() * 0.12; /* slight right-lean */
+    return {
+      x: Math.random() * (W + 200) - 100,
+      y: Math.random() * -H,
+      len: 12 + Math.random() * 28,
+      speed,
+      vx: speed * Math.sin(angle),
+      vy: speed * Math.cos(angle),
+      alpha: 0.08 + Math.random() * 0.32,
+      width: 0.4 + Math.random() * 0.7,
+      /* splash state */
+      splashing: false, splashT: 0,
+      sx: 0, sy: 0,
+    };
+  }
+
+  function resize() {
+    if (!canvas) return;
+    W = canvas.width  = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+
+  /* ── RENDER ── */
+  function draw() {
+    if (!running) return;
+    raf = requestAnimationFrame(draw);
+
+    ctx.clearRect(0, 0, W, H);
+
+    /* Dark tinted sky overlay — subtle, doesn't black out the text */
+    ctx.fillStyle = 'rgba(0,3,8,0.18)';
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.lineCap = 'round';
+
+    for (let i = drops.length - 1; i >= 0; i--) {
+      const d = drops[i];
+
+      if (d.splashing) {
+        /* Splash ripple — small arc at landing point */
+        const p = d.splashT / 12;
+        ctx.strokeStyle = `rgba(160,200,240,${(1 - p) * 0.25})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.ellipse(d.sx, d.sy, p * 8, p * 3, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        d.splashT++;
+        if (d.splashT > 12) { drops[i] = mkDrop(); }
+        continue;
+      }
+
+      /* Rain streak */
+      ctx.strokeStyle = `rgba(160,210,255,${d.alpha})`;
+      ctx.lineWidth = d.width;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x - d.vx * (d.len / d.speed), d.y - d.vy * (d.len / d.speed));
+      ctx.stroke();
+
+      /* Move */
+      d.x += d.vx;
+      d.y += d.vy;
+
+      /* Hit bottom → splash */
+      if (d.y > H) {
+        d.splashing = true; d.splashT = 0;
+        d.sx = d.x; d.sy = H - 2;
+      }
+      /* Off sides → reset */
+      if (d.x > W + 50 || d.x < -50) { drops[i] = mkDrop(); }
+    }
+
+    ctx.restore();
+  }
+
+  /* ── LIGHTNING ── */
+  const flash = () => document.getElementById('lightning-flash');
+
+  function triggerLightning() {
+    const el = flash(); if (!el) return;
+    const sequence = [
+      { bg: 'rgba(220,235,255,0.55)', dur: 50  },
+      { bg: 'rgba(220,235,255,0.0)',  dur: 80  },
+      { bg: 'rgba(220,235,255,0.35)', dur: 35  },
+      { bg: 'rgba(220,235,255,0.0)',  dur: 120 },
+      { bg: 'rgba(220,235,255,0.15)', dur: 25  },
+      { bg: 'rgba(220,235,255,0.0)',  dur: 0   },
+    ];
+    let t = 0;
+    sequence.forEach(({ bg, dur }) => {
+      setTimeout(() => { if (el) el.style.background = bg; }, t);
+      t += dur;
+    });
+    /* Draw jagged bolt on canvas */
+    drawBolt();
+  }
+
+  function drawBolt() {
+    if (!ctx || !canvas) return;
+    const startX = W * (0.2 + Math.random() * 0.6);
+    let x = startX, y = 0;
+    ctx.save();
+    ctx.strokeStyle = 'rgba(200,225,255,0.9)';
+    ctx.lineWidth = 1.5;
+    ctx.shadowColor = 'rgba(180,210,255,0.8)';
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    while (y < H * 0.55) {
+      x += (Math.random() - 0.5) * 60;
+      y += 20 + Math.random() * 30;
+      ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    /* Bright core */
+    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+    ctx.restore();
+    /* Fade bolt quickly */
+    setTimeout(() => { /* cleared next frame naturally */ }, 120);
+  }
+
+  /* ── HOWLER AUDIO ── */
+  function initAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+
+    /* Continuous rain ambience — looped */
+    rainSound = new Howl({
+      src: [
+        'https://cdn.freesound.org/previews/346/346186_5121236-lq.mp3', /* rain on glass */
+      ],
+      loop: true,
+      volume: 0,
+      html5: true,
+      onloaderror: () => {
+        /* fallback: Web Audio API generated rain noise */
+        rainSound = null;
+        startWebAudioRain();
+      }
+    });
+    rainSound.play();
+    rainSound.fade(0, 0.22, 2500);
+
+    /* Thunder sound pool — 3 variations using freesound previews */
+    const thunderUrls = [
+      'https://cdn.freesound.org/previews/398/398032_4284968-lq.mp3',
+      'https://cdn.freesound.org/previews/204/204867_3797507-lq.mp3',
+      'https://cdn.freesound.org/previews/237/237375_4284968-lq.mp3',
+    ];
+    thunderUrls.forEach(url => {
+      thunderSounds.push(new Howl({
+        src: [url],
+        volume: 0.55,
+        html5: true,
+      }));
+    });
+  }
+
+  /* Web Audio fallback — pink-noise rain */
+  let _audioCtx = null, _rainNode = null;
+  function startWebAudioRain() {
+    try {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const bufSz = _audioCtx.sampleRate * 2;
+      const buf = _audioCtx.createBuffer(1, bufSz, _audioCtx.sampleRate);
+      const data = buf.getChannelData(0);
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for (let i = 0; i < bufSz; i++) {
+        const wh = Math.random() * 2 - 1;
+        b0=0.99886*b0+wh*0.0555179; b1=0.99332*b1+wh*0.0750759;
+        b2=0.96900*b2+wh*0.1538520; b3=0.86650*b3+wh*0.3104856;
+        b4=0.55000*b4+wh*0.5329522; b5=-0.7616*b5-wh*0.0168980;
+        data[i] = (b0+b1+b2+b3+b4+b5+b6+wh*0.5362)*0.11;
+        b6 = wh * 0.115926;
+      }
+      const src = _audioCtx.createBufferSource();
+      src.buffer = buf; src.loop = true;
+      const gain = _audioCtx.createGain(); gain.gain.value = 0;
+      const filter = _audioCtx.createBiquadFilter();
+      filter.type = 'bandpass'; filter.frequency.value = 900; filter.Q.value = 0.4;
+      src.connect(filter); filter.connect(gain); gain.connect(_audioCtx.destination);
+      src.start();
+      _rainNode = gain;
+      /* Fade in */
+      gain.gain.linearRampToValueAtTime(0.18, _audioCtx.currentTime + 2.5);
+    } catch(e) { /* silent fallback */ }
+  }
+
+  function stopWebAudioRain() {
+    if (_rainNode && _audioCtx) {
+      _rainNode.gain.linearRampToValueAtTime(0, _audioCtx.currentTime + 1.5);
+    }
+  }
+
+  /* ── PUBLIC: triggerThunder ── */
+  window.triggerThunder = function(forceLightning) {
+    if (thunderSounds.length > 0) {
+      const t = thunderSounds[Math.floor(Math.random() * thunderSounds.length)];
+      t.volume(0.35 + Math.random() * 0.4);
+      t.play();
+    }
+    if (forceLightning || Math.random() > 0.3) triggerLightning();
+  };
+
+  /* ── RANDOM STORM EVENTS ── */
+  function scheduleStorm() {
+    if (!running) return;
+    const delay = 4000 + Math.random() * 12000;
+    setTimeout(() => {
+      if (!running) return;
+      window.triggerThunder(Math.random() > 0.5);
+      scheduleStorm();
+    }, delay);
+  }
+
+  /* ── START / STOP ── */
+  window.startSynopsisRain = function() {
+    canvas = document.getElementById('rain-canvas');
+    if (!canvas || running) return;
+    ctx = canvas.getContext('2d');
+    resize();
+    window.addEventListener('resize', resize);
+
+    /* Populate drops */
+    drops = [];
+    const count = Math.min(280, Math.floor((W * H) / 4000));
+    for (let i = 0; i < count; i++) {
+      const d = mkDrop();
+      d.y = Math.random() * H; /* pre-scatter vertically */
+      drops.push(d);
+    }
+
+    running = true;
+    canvas.classList.add('active');
+    draw();
+
+    /* Unlock audio on first user interaction if not yet done */
+    const unlock = () => { initAudio(); document.removeEventListener('click', unlock); document.removeEventListener('touchstart', unlock); };
+    document.addEventListener('click', unlock, { once: true });
+    document.addEventListener('touchstart', unlock, { once: true });
+    /* Also try immediately — works if user already clicked (e.g. clicked YES on gate) */
+    initAudio();
+
+    scheduleStorm();
+  };
+
+  window.stopSynopsisRain = function() {
+    running = false;
+    cancelAnimationFrame(raf);
+    const c = document.getElementById('rain-canvas');
+    if (c) c.classList.remove('active');
+    if (rainSound) rainSound.fade(rainSound.volume(), 0, 1200);
+    stopWebAudioRain();
+    const el = document.getElementById('lightning-flash');
+    if (el) el.style.background = 'rgba(220,230,255,0)';
+    setTimeout(() => {
+      if (rainSound) { rainSound.stop(); rainSound = null; }
+      audioUnlocked = false;
+      thunderSounds = [];
+    }, 1500);
+  };
+})();
+
 </script>
 
 <script src="/font-glitch.js" defer></script>
