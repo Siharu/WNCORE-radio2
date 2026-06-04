@@ -441,19 +441,169 @@ try {
       </article>
 
       <!-- ANOTHER SKY GATEWAY CARD -->
-      <article class="featured-card featured-card--anothersky" onclick="window.location.href='/anothersky.html'" role="button" aria-label="Another Sky — Enter Archive" id="as-gateway-card">
-        <div class="fc-listeners" style="color:rgba(180,0,0,0.5);font-size:0.5rem;letter-spacing:2px;">WORLD -2 // 2032</div>
+      <article class="featured-card featured-card--anothersky" onclick="window.location.href='/anothersky.html'" role="button" aria-label="Another Sky — Enter the Archive" id="as-gateway-card">
+        <div class="fc-listeners as-signal-tag">SIGNAL DETECTED · WORLD -2</div>
         <div class="fc-cover-wrap">
-          <div class="fc-cover-img" style="background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;">
-            <canvas id="as-bh-mini" width="120" height="120" style="position:absolute;inset:0;width:100%;height:100%;display:block;"></canvas>
-            <div style="position:relative;z-index:2;text-align:center;pointer-events:none;">
-              <div style="font-family:'Rubik Glitch','Special Gothic Expanded One',monospace;font-size:0.55rem;color:rgba(255,20,20,0.85);letter-spacing:2px;text-shadow:0 0 12px rgba(255,0,0,0.6);">ANOTHER SKY</div>
-            </div>
+          <div class="fc-cover-img as-bh-cover">
+            <svg id="as-bh-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <defs>
+                <radialGradient id="bhCore" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%"   stop-color="#000000"/>
+                  <stop offset="28%"  stop-color="#000000"/>
+                  <stop offset="44%"  stop-color="#1a0000"/>
+                  <stop offset="100%" stop-color="#000000"/>
+                </radialGradient>
+                <radialGradient id="diskGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%"   stop-color="#ff2200" stop-opacity="0"/>
+                  <stop offset="40%"  stop-color="#ff4400" stop-opacity="0.18"/>
+                  <stop offset="70%"  stop-color="#cc1100" stop-opacity="0.08"/>
+                  <stop offset="100%" stop-color="#000"    stop-opacity="0"/>
+                </radialGradient>
+                <radialGradient id="lensGlow" cx="50%" cy="50%" r="50%">
+                  <stop offset="0%"   stop-color="#ff3300" stop-opacity="0.55"/>
+                  <stop offset="55%"  stop-color="#aa1100" stop-opacity="0.12"/>
+                  <stop offset="100%" stop-color="#000"    stop-opacity="0"/>
+                </radialGradient>
+                <filter id="bhBlur1"><feGaussianBlur stdDeviation="1.2"/></filter>
+                <filter id="bhBlur2"><feGaussianBlur stdDeviation="2.5"/></filter>
+                <filter id="bhBlur3"><feGaussianBlur stdDeviation="0.5"/></filter>
+                <filter id="diskBlur"><feGaussianBlur stdDeviation="1.8"/></filter>
+                <clipPath id="diskClipT">
+                  <rect x="0" y="0" width="200" height="98"/>
+                </clipPath>
+                <clipPath id="diskClipB">
+                  <rect x="0" y="102" width="200" height="98"/>
+                </clipPath>
+              </defs>
+
+              <!-- Background void -->
+              <rect width="200" height="200" fill="#000"/>
+
+              <!-- Ambient field glow -->
+              <circle cx="100" cy="100" r="90" fill="url(#diskGlow)" opacity="0.7"/>
+
+              <!-- Star field — static dots -->
+              <g opacity="0.55" fill="#fff">
+                <circle cx="18"  cy="12"  r="0.7"/><circle cx="47"  cy="8"   r="0.5"/>
+                <circle cx="72"  cy="19"  r="0.9"/><circle cx="130" cy="6"   r="0.6"/>
+                <circle cx="158" cy="22"  r="0.5"/><circle cx="185" cy="11"  r="0.8"/>
+                <circle cx="8"   cy="55"  r="0.6"/><circle cx="30"  cy="40"  r="0.4"/>
+                <circle cx="168" cy="38"  r="0.7"/><circle cx="190" cy="60"  r="0.5"/>
+                <circle cx="12"  cy="90"  r="0.8"/><circle cx="22"  cy="140" r="0.6"/>
+                <circle cx="5"   cy="170" r="0.5"/><circle cx="32"  cy="185" r="0.7"/>
+                <circle cx="60"  cy="192" r="0.4"/><circle cx="110" cy="188" r="0.6"/>
+                <circle cx="145" cy="195" r="0.8"/><circle cx="175" cy="178" r="0.5"/>
+                <circle cx="192" cy="155" r="0.7"/><circle cx="188" cy="120" r="0.4"/>
+                <circle cx="55"  cy="35"  r="0.5"/><circle cx="148" cy="55"  r="0.6"/>
+                <circle cx="165" cy="150" r="0.5"/><circle cx="38"  cy="160" r="0.6"/>
+                <circle cx="80"  cy="178" r="0.4"/><circle cx="120" cy="25"  r="0.5"/>
+              </g>
+              <!-- Slightly brighter stars -->
+              <g fill="#aac4ff" opacity="0.7">
+                <circle cx="35"  cy="25"  r="1.1"/><circle cx="170" cy="45"  r="1.0"/>
+                <circle cx="15"  cy="130" r="0.9"/><circle cx="182" cy="90"  r="1.1"/>
+                <circle cx="90"  cy="190" r="0.9"/><circle cx="155" cy="185" r="1.0"/>
+              </g>
+
+              <!-- Outer lensing rings — static halo -->
+              <ellipse cx="100" cy="100" rx="82" ry="20" fill="none" stroke="#550000" stroke-width="1.2" opacity="0.18" filter="url(#bhBlur2)"/>
+              <ellipse cx="100" cy="100" rx="76" ry="16" fill="none" stroke="#880000" stroke-width="1.5" opacity="0.22" filter="url(#bhBlur1)"/>
+
+              <!-- BOTTOM disk arc — behind black hole -->
+              <g clip-path="url(#diskClipB)">
+                <!-- outer glow -->
+                <ellipse cx="100" cy="100" rx="70" ry="17" fill="none" stroke="#660000" stroke-width="8"  opacity="0.25" filter="url(#diskBlur)"/>
+                <!-- mid band -->
+                <ellipse cx="100" cy="100" rx="66" ry="14" fill="none" stroke="#cc2200" stroke-width="4"  opacity="0.4" filter="url(#bhBlur1)"/>
+                <!-- bright inner -->
+                <ellipse cx="100" cy="100" rx="60" ry="11" fill="none" stroke="#ff4400" stroke-width="2.5" opacity="0.6"/>
+                <!-- hot rim -->
+                <ellipse cx="100" cy="100" rx="54" ry="9"  fill="none" stroke="#ff8855" stroke-width="1.2" opacity="0.7"/>
+                <!-- rotating disk particles (bottom) — animated -->
+                <g class="as-disk-rot-slow">
+                  <ellipse cx="100" cy="100" rx="63" ry="12" fill="none" stroke="#ff2200" stroke-width="1" stroke-dasharray="8 28" opacity="0.5"/>
+                </g>
+                <g class="as-disk-rot-med">
+                  <ellipse cx="100" cy="100" rx="57" ry="10" fill="none" stroke="#ff6633" stroke-width="0.8" stroke-dasharray="5 45" opacity="0.6"/>
+                </g>
+              </g>
+
+              <!-- Photon ring — tight bright band at shadow edge -->
+              <ellipse cx="100" cy="100" rx="47" ry="10.5" fill="none" stroke="#ff5500" stroke-width="0.7" opacity="0.9"/>
+              <ellipse cx="100" cy="100" rx="47" ry="10.5" fill="none" stroke="#ffaa44" stroke-width="0.3" opacity="0.6" filter="url(#bhBlur3)"/>
+
+              <!-- EVENT HORIZON — absolute black sphere -->
+              <circle cx="100" cy="100" r="42" fill="url(#bhCore)"/>
+              <circle cx="100" cy="100" r="38" fill="#000"/>
+
+              <!-- Lensing glow ring at shadow boundary -->
+              <circle cx="100" cy="100" r="42" fill="none" stroke="#ff2200" stroke-width="2.5" opacity="0.5" filter="url(#bhBlur1)"/>
+              <circle cx="100" cy="100" r="42" fill="none" stroke="#ff6633" stroke-width="0.8" opacity="0.7"/>
+
+              <!-- TOP disk arc — in front of black hole -->
+              <g clip-path="url(#diskClipT)">
+                <ellipse cx="100" cy="100" rx="70" ry="17" fill="none" stroke="#660000" stroke-width="8"  opacity="0.3" filter="url(#diskBlur)"/>
+                <ellipse cx="100" cy="100" rx="66" ry="14" fill="none" stroke="#cc2200" stroke-width="4"  opacity="0.5" filter="url(#bhBlur1)"/>
+                <ellipse cx="100" cy="100" rx="60" ry="11" fill="none" stroke="#ff4400" stroke-width="2.8" opacity="0.75"/>
+                <ellipse cx="100" cy="100" rx="54" ry="9"  fill="none" stroke="#ff9966" stroke-width="1.5" opacity="0.85"/>
+                <!-- Doppler bright spot — approaching side (right) -->
+                <ellipse cx="100" cy="100" rx="57" ry="10" fill="none" stroke="#ffffff" stroke-width="1.2"
+                         stroke-dasharray="22 160" stroke-dashoffset="0" opacity="0.5" filter="url(#bhBlur3)"/>
+                <!-- rotating disk particles (top) — animated opposite -->
+                <g class="as-disk-rot-slow-rev">
+                  <ellipse cx="100" cy="100" rx="63" ry="12" fill="none" stroke="#ff3300" stroke-width="1" stroke-dasharray="8 28" opacity="0.6"/>
+                </g>
+                <g class="as-disk-rot-fast">
+                  <ellipse cx="100" cy="100" rx="50" ry="9"  fill="none" stroke="#ffaa55" stroke-width="0.6" stroke-dasharray="4 36" opacity="0.55"/>
+                </g>
+              </g>
+
+              <!-- Orbiting particles — 3 small dots on elliptical paths -->
+              <g class="as-orb-1">
+                <ellipse cx="100" cy="100" rx="65" ry="13" fill="none" stroke="none"/>
+                <circle r="1.8" fill="#ff6633" opacity="0.9" filter="url(#bhBlur3)">
+                  <animateMotion dur="4.2s" repeatCount="indefinite" rotate="auto">
+                    <mpath href="#as-orbit-path-1"/>
+                  </animateMotion>
+                </circle>
+              </g>
+              <g class="as-orb-2">
+                <circle r="1.3" fill="#ffaa44" opacity="0.75" filter="url(#bhBlur3)">
+                  <animateMotion dur="6.8s" repeatCount="indefinite" rotate="auto" begin="-2.1s">
+                    <mpath href="#as-orbit-path-1"/>
+                  </animateMotion>
+                </circle>
+              </g>
+              <g class="as-orb-3">
+                <circle r="1.0" fill="#ff2200" opacity="0.65">
+                  <animateMotion dur="9.5s" repeatCount="indefinite" rotate="auto" begin="-5.3s">
+                    <mpath href="#as-orbit-path-2"/>
+                  </animateMotion>
+                </circle>
+              </g>
+
+              <!-- Paths for animateMotion -->
+              <defs>
+                <path id="as-orbit-path-1" d="M 165,100 a 65,13 0 1,0 -130,0 a 65,13 0 1,0 130,0"/>
+                <path id="as-orbit-path-2" d="M 177,100 a 77,16 0 1,0 -154,0 a 77,16 0 1,0 154,0"/>
+              </defs>
+
+              <!-- Relativistic jet — faint vertical glow -->
+              <line x1="100" y1="57"  x2="100" y2="10"  stroke="#ff2200" stroke-width="3"  opacity="0.07" filter="url(#bhBlur2)"/>
+              <line x1="100" y1="57"  x2="100" y2="30"  stroke="#ff4400" stroke-width="1"  opacity="0.18" filter="url(#bhBlur1)"/>
+              <line x1="100" y1="143" x2="100" y2="190" stroke="#ff2200" stroke-width="3"  opacity="0.07" filter="url(#bhBlur2)"/>
+              <line x1="100" y1="143" x2="100" y2="170" stroke="#ff4400" stroke-width="1"  opacity="0.18" filter="url(#bhBlur1)"/>
+
+              <!-- Chromatic aberration ghost rings -->
+              <circle cx="101.5" cy="100" r="42" fill="none" stroke="#ff0000" stroke-width="0.6" opacity="0.2"/>
+              <circle cx="98.5"  cy="100" r="42" fill="none" stroke="#0066ff" stroke-width="0.6" opacity="0.15"/>
+
+            </svg>
           </div>
         </div>
-        <div class="fc-name" style="color:#cc1111;letter-spacing:0.5px;">Another Sky — Novel Archive</div>
-        <div class="fc-meta" style="color:rgba(180,0,0,0.5);">LOGBOOK DRIFTERS · World-2 · Serial Fiction</div>
-        <div class="fc-now" style="background:rgba(20,0,0,0.6);color:rgba(200,80,80,0.7);border:1px solid rgba(100,0,0,0.3);">The sky is wrong. Are you from this world?</div>
+        <div class="fc-name as-fc-name">Another Sky — Novel Archive</div>
+        <div class="fc-meta as-fc-meta">LOGBOOK DRIFTERS &middot; WORLD -2 &middot; 2032</div>
+        <div class="fc-now as-fc-now">The sky is wrong. <em>Are you from this world?</em></div>
       </article>
     </div>
 
@@ -2506,227 +2656,74 @@ if ('serviceWorker' in navigator) {
 })();
 </script>
 
-<!-- ANOTHER SKY GATEWAY — mini black hole + card styles -->
+
+<!-- ANOTHER SKY GATEWAY — SVG black hole card styles -->
 <style>
 .featured-card--anothersky {
-  background: #050000;
-  border: 1px solid rgba(140,0,0,0.25);
+  background: #030000;
+  border: 1px solid rgba(120,0,0,0.3);
   cursor: pointer;
-  transition: border-color 0.3s, box-shadow 0.3s;
+  transition: border-color 0.35s, box-shadow 0.35s, transform 0.25s;
 }
 .featured-card--anothersky:hover {
-  border-color: rgba(200,0,0,0.6);
-  box-shadow: 0 0 32px rgba(180,0,0,0.15), 0 12px 32px rgba(0,0,0,0.5);
+  border-color: rgba(220,30,0,0.7);
+  box-shadow: 0 0 40px rgba(200,0,0,0.12), 0 8px 32px rgba(0,0,0,0.6);
   transform: translateY(-3px);
 }
-.featured-card--anothersky .fc-cover-img {
-  height: 120px;
+.as-bh-cover {
+  background: #000 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  position: relative;
+}
+#as-bh-svg {
+  width: 100%; height: 100%;
+  display: block;
+}
+.as-signal-tag {
+  font-family: var(--font-mono, 'IBM Plex Mono') !important;
+  font-size: 0.42rem !important;
+  letter-spacing: 2.5px !important;
+  color: rgba(180,30,0,0.6) !important;
+  text-transform: uppercase;
+}
+.as-fc-name { color: #cc1100 !important; letter-spacing: 0.3px; }
+.as-fc-meta { color: rgba(160,30,0,0.55) !important; }
+.as-fc-now  {
+  background: rgba(15,0,0,0.7) !important;
+  color: rgba(200,70,60,0.75) !important;
+  border: 1px solid rgba(90,0,0,0.4) !important;
+  font-style: normal !important;
+}
+.as-fc-now em { font-style: italic; opacity: 0.8; }
+
+/* ── SVG disk rotation animations ── */
+@keyframes asDiskCW  { from { transform: rotate(0deg)   } to { transform: rotate(360deg)  } }
+@keyframes asDiskCCW { from { transform: rotate(0deg)   } to { transform: rotate(-360deg) } }
+
+.as-disk-rot-slow     { transform-origin: 100px 100px; animation: asDiskCW  18s linear infinite; }
+.as-disk-rot-med      { transform-origin: 100px 100px; animation: asDiskCW  10s linear infinite; }
+.as-disk-rot-fast     { transform-origin: 100px 100px; animation: asDiskCW   6s linear infinite; }
+.as-disk-rot-slow-rev { transform-origin: 100px 100px; animation: asDiskCCW 22s linear infinite; }
+
+/* ── Photon ring pulse ── */
+@keyframes asPhotonPulse {
+  0%,100% { opacity: 0.9; }
+  50%      { opacity: 0.4; }
+}
+#as-bh-svg ellipse[stroke="#ff5500"] { animation: asPhotonPulse 2.8s ease-in-out infinite; }
+
+/* ── Hover: spin up faster ── */
+.featured-card--anothersky:hover .as-disk-rot-slow     { animation-duration: 7s;  }
+.featured-card--anothersky:hover .as-disk-rot-med      { animation-duration: 4s;  }
+.featured-card--anothersky:hover .as-disk-rot-fast     { animation-duration: 2.5s;}
+.featured-card--anothersky:hover .as-disk-rot-slow-rev { animation-duration: 8s;  }
+
+/* ── Hover: lensing glow brightens ── */
+.featured-card--anothersky:hover #as-bh-svg circle[fill="url(#bhCore)"] {
+  filter: drop-shadow(0 0 8px #ff2200);
 }
 </style>
-<script>
-(function() {
-  /* Mini black hole — raw WebGL2 on the gateway card canvas */
-  function initMiniBlackHole() {
-    const canvas = document.getElementById('as-bh-mini');
-    if (!canvas) return;
-    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-    if (!gl) { canvas.style.display='none'; return; }
-
-    function resize() {
-      const r = canvas.parentElement.getBoundingClientRect();
-      canvas.width = r.width * Math.min(devicePixelRatio, 2);
-      canvas.height = r.height * Math.min(devicePixelRatio, 2);
-    }
-    resize();
-
-    const vert = `
-      attribute vec2 a_pos;
-      void main() { gl_Position = vec4(a_pos, 0.0, 1.0); }
-    `;
-
-    const frag = `
-      precision highp float;
-      uniform vec2 u_res;
-      uniform float u_t;
-
-      #define PI 3.14159265
-
-      float hash(vec2 p) {
-        return fract(sin(dot(p, vec2(127.1,311.7))) * 43758.5453);
-      }
-      float noise(vec2 p) {
-        vec2 i = floor(p), f = fract(p);
-        f = f*f*(3.0-2.0*f);
-        return mix(mix(hash(i),hash(i+vec2(1,0)),f.x),
-                   mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),f.x),f.y);
-      }
-      float fbm(vec2 p) {
-        float v=0.0,a=0.5;
-        for(int i=0;i<4;i++){v+=a*noise(p);p*=2.1;a*=0.5;}
-        return v;
-      }
-
-      void main() {
-        vec2 uv = (gl_FragCoord.xy - u_res*0.5) / min(u_res.x, u_res.y);
-        float r = length(uv);
-        float theta = atan(uv.y, uv.x);
-
-        vec3 col = vec3(0.0);
-
-        /* --- STAR FIELD + MILKY WAY DUST --- */
-        for(int i=0;i<3;i++){
-          vec2 sp = uv * (2.0 + float(i)*1.8) + vec2(float(i)*3.7, float(i)*2.1);
-          float s = hash(floor(sp*80.0));
-          if(s > 0.985) {
-            float br = (s-0.985)/0.015;
-            float sz = fract(sp.x*10.0+sp.y*7.3);
-            col += vec3(0.6+sz*0.4, 0.7+sz*0.3, 1.0) * br * 0.9;
-          }
-        }
-
-        /* Milky Way band — dense core around center-right */
-        vec2 mwUv = uv + vec2(0.1, 0.05);
-        float mwBand = exp(-pow(mwUv.y*4.0, 2.0)) * fbm(mwUv*3.0 + vec2(u_t*0.01));
-        col += vec3(0.08, 0.05, 0.12) * mwBand * 1.2;
-
-        /* Star cluster near BH */
-        float cluster = 0.0;
-        for(int j=0;j<6;j++){
-          vec2 cp = vec2(cos(float(j)*1.047+0.3), sin(float(j)*1.047+0.3)) * (0.45+float(j)*0.05);
-          float cd = length(uv - cp);
-          cluster += exp(-cd*18.0) * (0.3 + hash(cp)*0.5);
-        }
-        col += vec3(1.0, 0.85, 0.5) * cluster * 0.4;
-
-        /* --- NEBULA DUST CLOUDS --- */
-        float neb1 = fbm(uv*2.5 + vec2(u_t*0.008, 0.0));
-        float neb2 = fbm(uv*3.0 + vec2(0.5, u_t*0.006));
-        col += vec3(0.4,0.0,0.05) * neb1 * smoothstep(0.25,0.7,r) * 0.35;
-        col += vec3(0.0,0.0,0.08) * neb2 * smoothstep(0.2,0.6,r) * 0.2;
-
-        /* --- GRAVITATIONAL LENSING --- */
-        float lensR = r;
-        float bhR = 0.07;
-        if(lensR > bhR) {
-          float lens = 0.012 / (lensR * lensR);
-          uv += normalize(uv) * (-lens);
-        }
-
-        /* --- ACCRETION DISK --- */
-        float diskR = length(uv);
-        float diskAngle = atan(uv.y, uv.x);
-        /* Disk brightness: brightest at inner edge, fades outward */
-        float dInner = 0.10, dOuter = 0.55;
-        float dFade = smoothstep(dOuter,dInner,diskR) * smoothstep(bhR*0.9,dInner,diskR);
-
-        /* Doppler: one side brighter (approaching) */
-        float doppler = 0.5 + 0.5*sin(diskAngle + u_t*0.4);
-        float hotspot = pow(doppler, 2.5);
-
-        /* Disk thickness — squash vertically for Interstellar tilt look */
-        float diskMask = smoothstep(0.05, 0.0, abs(uv.y * 2.2 - sin(diskAngle)*0.08));
-
-        float diskBright = dFade * diskMask * (0.6 + hotspot * 0.8);
-
-        /* Disk turbulence */
-        float turb = fbm(vec2(diskAngle*2.0, diskR*8.0) + u_t*0.15);
-        diskBright *= (0.7 + turb * 0.6);
-
-        /* Disk color: white-hot inner → orange → deep red outer */
-        float t_disk = clamp((diskR - dInner) / (dOuter - dInner), 0.0, 1.0);
-        vec3 diskCol = mix(vec3(1.0, 0.85, 0.5), mix(vec3(1.0,0.25,0.02), vec3(0.4,0.0,0.0), t_disk), t_disk);
-        col += diskCol * diskBright * 2.2;
-
-        /* Photon ring — thin bright line */
-        float photon = exp(-pow((diskR - 0.092)*120.0, 2.0)) * diskMask;
-        col += vec3(1.0,0.4,0.1) * photon * (0.8 + hotspot * 0.5);
-
-        /* Secondary lensed image of disk above horizon */
-        float diskR2 = length(uv + vec2(0.0, 0.005));
-        float dFade2 = smoothstep(0.22,0.10,diskR2) * smoothstep(bhR,0.10,diskR2);
-        float diskMask2 = smoothstep(0.02,0.0,abs((uv.y+0.005)*3.5));
-        col += vec3(0.8,0.1,0.0) * dFade2 * diskMask2 * 0.5;
-
-        /* --- RELATIVISTIC JET (faint vertical glow) --- */
-        float jetR = abs(uv.x);
-        float jetH = abs(uv.y);
-        float jet = exp(-jetR*jetR*200.0) * exp(-jetH*0.8) * smoothstep(bhR*1.5, 0.35, jetH);
-        col += vec3(0.6,0.1,0.0) * jet * 0.4;
-
-        /* --- EVENT HORIZON --- */
-        float horizon = smoothstep(bhR+0.005, bhR-0.005, r);
-        col *= (1.0 - horizon);
-        col += vec3(0.0) * horizon;
-
-        /* --- GLITCH FLICKER --- */
-        float glitch = step(0.997, hash(vec2(u_t*0.3, floor(u_t*8.0))));
-        if(glitch > 0.5) {
-          col.r += hash(uv + u_t) * 0.3 * smoothstep(0.3,0.0,r);
-        }
-
-        /* Tone map */
-        col = col / (col + 0.8);
-        col = pow(col, vec3(0.45));
-
-        /* Vignette */
-        col *= 1.0 - smoothstep(0.45, 0.7, r);
-
-        gl_FragColor = vec4(col, 1.0);
-      }
-    `;
-
-    function compile(type, src) {
-      const s = gl.createShader(type);
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      return s;
-    }
-    const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl.VERTEX_SHADER, vert));
-    gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, frag));
-    gl.linkProgram(prog);
-    gl.useProgram(prog);
-
-    const buf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1,1,-1,-1,1,1,1]), gl.STATIC_DRAW);
-    const loc = gl.getAttribLocation(prog, 'a_pos');
-    gl.enableVertexAttribArray(loc);
-    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
-
-    const uRes = gl.getUniformLocation(prog, 'u_res');
-    const uT = gl.getUniformLocation(prog, 'u_t');
-
-    let t = 0, running = true, lastTs2 = 0;
-    const io = new IntersectionObserver(entries => {
-      running = entries[0].isIntersecting;
-    });
-    io.observe(canvas);
-
-    function draw(ts) {
-      requestAnimationFrame(draw);
-      if (!running) return;
-      const dt = lastTs2 ? Math.min((ts - lastTs2) / 1000, 0.05) : 0.016;
-      lastTs2 = ts;
-      t += dt;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.uniform2f(uRes, canvas.width, canvas.height);
-      gl.uniform1f(uT, t);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
-    draw(0);
-
-    window.addEventListener('resize', () => { resize(); });
-  }
-
-  /* Init when card enters DOM */
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMiniBlackHole);
-  } else {
-    initMiniBlackHole();
-  }
-})();
-</script>
 
 </body>
 </html>
