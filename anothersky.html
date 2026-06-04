@@ -673,6 +673,26 @@ body {
 .sbi-faction-body { color: var(--text3); font-size:0.44rem; line-height:1.65; }
 .sbi-faction-status { margin-top:6px; font-size:0.4rem; color: rgba(200,80,60,0.7); letter-spacing:2px; }
 
+/* ── DRIFTER HUB panel ── */
+.sbi-dot-hub { background: rgba(80,180,255,0.25) !important; border-radius: 50%; position:relative; }
+.sbi-dot-hub.active { background: rgba(80,200,255,0.9) !important; }
+#drifter-hub-wrap { display:flex; flex-direction:column; height:100%; }
+#drifter-hub-header { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+#drifter-hub-icon { flex-shrink:0; opacity:0.7; }
+#drifter-hub-title { font-size:0.44rem; letter-spacing:3px; color:rgba(80,200,255,0.85); }
+#drifter-hub-status { font-size:0.35rem; color:var(--text3); letter-spacing:2px; margin-left:auto; }
+#drifter-feed { overflow-y:auto; flex:1; max-height:148px; }
+.dhub-entry { border-left:2px solid rgba(80,180,255,0.2); padding-left:6px; margin-bottom:8px; }
+.dhub-entry-type { font-size:0.34rem; letter-spacing:3px; color:rgba(80,180,255,0.6); display:block; margin-bottom:1px; }
+.dhub-entry-text { font-size:0.41rem; color:var(--text2); line-height:1.6; }
+.dhub-entry-text.streaming::after { content:'▌'; animation:blink 0.7s infinite; opacity:0.7; }
+@keyframes blink { 0%,100%{opacity:0.7} 50%{opacity:0} }
+.dhub-entry.alert .dhub-entry-type { color:rgba(255,120,80,0.8); }
+.dhub-entry.alert { border-left-color:rgba(255,100,60,0.35); }
+#drifter-hub-refresh { margin-top:6px; font-size:0.35rem; letter-spacing:2px; color:var(--text3); cursor:pointer; background:none; border:1px solid rgba(80,180,255,0.18); padding:2px 6px; width:100%; text-align:center; transition: border-color 0.2s, color 0.2s; }
+#drifter-hub-refresh:hover { border-color:rgba(80,200,255,0.5); color:rgba(80,200,255,0.8); }
+#drifter-hub-refresh:disabled { opacity:0.35; cursor:default; }
+
 #sb-bottom {
   flex-shrink: 0; padding: 10px;
   border-top: 1px solid var(--brd);
@@ -1661,6 +1681,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
             <span class="sbi-dot" data-idx="1"></span>
             <span class="sbi-dot" data-idx="2"></span>
             <span class="sbi-dot" data-idx="3"></span>
+            <span class="sbi-dot sbi-dot-hub" data-idx="4" title="DRIFTER HUB"></span>
           </div>
         </div>
         <div id="sb-intel-body">
@@ -1673,7 +1694,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       </div>
       <div id="sb-bottom">
         <button class="sb-tool-btn" onclick="showSynopsis()">← BACK TO SYNOPSIS</button>
-        <button class="sb-tool-btn" id="sb-entity-btn" onclick="openEntityChat()">📡 DIMENSIONAL CONTACT</button>
+        <button class="sb-tool-btn" id="sb-entity-btn" onclick="openEntityChat()"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M2 10 L5 7 L7 9 L4 12 Z" fill="currentColor" opacity="0.8"/><path d="M5 7 Q5 2 10 2 Q10 5 7 7" stroke="currentColor" stroke-width="1" fill="none" opacity="0.7"/><path d="M5.5 6.5 Q5.5 3.5 9 3.5 Q9 5.5 7 7" stroke="currentColor" stroke-width="0.8" fill="none" opacity="0.45"/><circle cx="7" cy="7" r="1" fill="currentColor"/><line x1="7" y1="7" x2="11" y2="3" stroke="currentColor" stroke-width="0.7" stroke-dasharray="1.5,1" opacity="0.5"/><circle cx="11.5" cy="2.5" r="0.8" fill="rgba(255,200,80,0.9)"/></svg> DIMENSIONAL CONTACT</button>
       </div>
     </nav>
 
@@ -2388,6 +2409,121 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   // Init
   render(0);
   startAuto();
+
+  // Expose render for Drifter Hub to call
+  window._sbiRender = render;
+  window._sbiGetCurrent = () => current;
+  window._sbiStartAuto = startAuto;
+  window._sbiPanels = PANELS;
+})();
+
+/* ── DRIFTER HUB — live OpenRouter lore feed ──────── */
+(function initDrifterHub() {
+
+  // SVG icon: minimal pixel-style satellite dish, matches 10x10 icon aesthetic scaled up
+  const HUB_ICON_SVG = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" id="drifter-hub-icon">
+    <path d="M2 10 L5 7 L7 9 L4 12 Z" fill="rgba(80,200,255,0.6)"/>
+    <path d="M5 7 Q5 2 10 2 Q10 5 7 7" stroke="rgba(80,200,255,0.55)" stroke-width="1" fill="none"/>
+    <path d="M5.5 6.5 Q5.5 3.5 9 3.5 Q9 5.5 7 7" stroke="rgba(80,200,255,0.35)" stroke-width="0.8" fill="none"/>
+    <circle cx="7" cy="7" r="1" fill="rgba(80,200,255,0.9)"/>
+    <line x1="7" y1="7" x2="11" y2="3" stroke="rgba(80,200,255,0.4)" stroke-width="0.7" stroke-dasharray="1.5,1"/>
+    <circle cx="11.5" cy="2.5" r="0.8" fill="rgba(255,200,80,0.8)"/>
+  </svg>`;
+
+  // Lore context pumped into each generation
+  let hubEntries = [];
+  let isFetching = false;
+  let hubAutoTimer = null;
+
+  function hubPanelHTML() {
+    return `<div id="drifter-hub-wrap">
+      <div id="drifter-hub-header">
+        ${HUB_ICON_SVG}
+        <span id="drifter-hub-title">DRIFTER HUB</span>
+        <span id="drifter-hub-status">LIVE</span>
+      </div>
+      <div id="drifter-feed">
+        ${hubEntries.length === 0
+          ? '<div style="font-size:0.38rem;color:var(--text3);letter-spacing:2px;padding:8px 0;">SCANNING FREQUENCIES...</div>'
+          : hubEntries.map(e => `
+            <div class="dhub-entry${e.alert?' alert':''}">
+              <span class="dhub-entry-type">// ${e.type}</span>
+              <span class="dhub-entry-text">${e.text}</span>
+            </div>`).join('')}
+      </div>
+      <button id="drifter-hub-refresh" onclick="window._drifterHubFetch()">⟳ PULL NEW SIGNALS</button>
+    </div>`;
+  }
+
+  // Register as panel 4 by injecting into PANELS after init
+  function registerPanel() {
+    if (!window._sbiPanels) return;
+    window._sbiPanels[4] = {
+      label: 'DRIFTER HUB',
+      render: hubPanelHTML
+    };
+  }
+
+  async function fetchSignals() {
+    if (isFetching) return;
+    isFetching = true;
+
+    const refreshBtn = document.getElementById('drifter-hub-refresh');
+    const statusEl = document.getElementById('drifter-hub-status');
+    if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '◌ SCANNING...'; }
+    if (statusEl) statusEl.textContent = 'FETCHING';
+
+    try {
+      const res = await fetch('/api/drifter-hub', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ seed: Date.now() })
+      });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      if (Array.isArray(data.signals)) {
+        hubEntries = [...data.signals, ...hubEntries].slice(0, 9);
+        if (statusEl) statusEl.textContent = 'LIVE';
+      }
+    } catch(err) {
+      console.warn('[DrifterHub]', err);
+      if (statusEl) statusEl.textContent = 'ERR';
+      if (hubEntries.length === 0) {
+        hubEntries = [
+          { type:'WNCORE_INTERCEPT', text:'Signal degraded. Static on all primary channels.', alert:false },
+          { type:'DRIFTER_LOGBOOK',  text:'Vol.44 found at Dhaka depot. Pages 12-17 removed.', alert:false },
+          { type:'ANOMALY_REPORT',   text:'Rain of Obsedia: 3hr window. Infected count: rising.', alert:true },
+        ];
+      }
+    } finally {
+      isFetching = false;
+      if (window._sbiGetCurrent && window._sbiGetCurrent() === 4 && window._sbiRender) {
+        window._sbiRender(4);
+      }
+      const btn2 = document.getElementById('drifter-hub-refresh');
+      if (btn2) { btn2.disabled = false; btn2.textContent = '⟳ PULL NEW SIGNALS'; }
+    }
+  }
+
+  // Expose for button onclick
+  window._drifterHubFetch = fetchSignals;
+
+  // Auto-refresh every 90s when hub panel is visible
+  function startHubAuto() {
+    clearInterval(hubAutoTimer);
+    hubAutoTimer = setInterval(() => {
+      if (window._sbiGetCurrent && window._sbiGetCurrent() === 4) {
+        fetchSignals();
+      }
+    }, 90000);
+  }
+
+  // Boot: register panel and fetch initial signals
+  registerPanel();
+  fetchSignals();
+  startHubAuto();
 })();
 
 /* ── PHASE TRANSITIONS ─────────────────────────────── */
