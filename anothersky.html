@@ -342,7 +342,7 @@ body {
    ── PHASE 3: MAIN READER SHELL ──
 ═══════════════════════════════════════════════════ */
 #reader-shell {
-  display: none; min-height: 100vh;
+  display: none; min-height: 100vh; min-height: 100dvh;
   flex-direction: column;
 }
 #reader-shell.show { display: flex; }
@@ -421,6 +421,7 @@ body {
 #as-body {
   display: flex; flex: 1; min-height: 0;
   position: relative;
+  overflow: hidden;
 }
 
 /* ── SIDEBAR ── */
@@ -516,6 +517,8 @@ body {
   flex: 1; min-width: 0;
   padding: 0;
   display: flex; flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── SYNOPSIS GATE ── */
