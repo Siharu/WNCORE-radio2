@@ -159,15 +159,13 @@ body {
 /* ── Distant black hole SVG ── */
 #forest-bh {
   position: absolute;
-  width: 90px; height: 90px;
-  top: 18%; left: 62%;
+  width: 70px; height: 70px;
+  top: 44%; left: 50%;
   transform: translateX(-50%);
   pointer-events: none;
-  animation: fbhSpin 28s linear infinite, fbhDrift 18s ease-in-out infinite alternate;
-  opacity: 0.85;
+  opacity: 0.88;
+  transition: width 0.3s ease, height 0.3s ease, top 0.3s ease;
 }
-@keyframes fbhSpin  { from{--fbh-r:0deg} to{--fbh-r:360deg} }
-@keyframes fbhDrift { from{top:16%;left:60%} to{top:20%;left:65%} }
 .fbh-disk-outer { animation: fbhDiskCW 22s linear infinite; transform-origin:60px 60px; }
 .fbh-disk-mid   { animation: fbhDiskCW 14s linear infinite; transform-origin:60px 60px; }
 .fbh-disk-inner { animation: fbhDiskCW  8s linear infinite; transform-origin:60px 60px; }
@@ -181,7 +179,7 @@ body {
   bottom: 80px; left: 50%; transform: translateX(-50%);
   font-family: var(--font-mono,'IBM Plex Mono');
   font-size: 0.38rem; letter-spacing: 3px;
-  color: rgba(200,140,60,0.5);
+  color: rgba(120,170,220,0.55);
   text-transform: uppercase; white-space: nowrap;
   pointer-events: none;
   animation: moonHint 3s ease-in-out infinite;
@@ -203,7 +201,7 @@ body {
 #forest-label {
   position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
   font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.5rem;
-  letter-spacing: 4px; color: rgba(180,0,0,0.5);
+  letter-spacing: 4px; color: rgba(120,160,200,0.5);
   text-transform: uppercase; pointer-events: none;
   animation: bhLabel 8s ease-in-out infinite;
   white-space: nowrap;
@@ -1406,12 +1404,11 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 /* ── DARK FOREST INTRO ──────────────────────────────── */
 (function buildForest() {
-  const scene     = document.getElementById('bh-scene');
-  const canvas    = document.getElementById('forest-canvas');
-  const moonEl    = document.getElementById('forest-moon');
-  const moonInner = document.getElementById('forest-moon-inner');
-  const hintEl    = document.getElementById('forest-moon-hint');
-  const termEl    = document.getElementById('terminal-burst');
+  const scene   = document.getElementById('bh-scene');
+  const canvas  = document.getElementById('forest-canvas');
+  const bhEl    = document.getElementById('forest-bh');
+  const hintEl  = document.getElementById('forest-hint');
+  const termEl  = document.getElementById('terminal-burst');
   if (!canvas) { setTimeout(showGate, 800); return; }
 
   const ctx = canvas.getContext('2d');
@@ -1425,22 +1422,22 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     applyMoonSize();
   }
 
-  /* ── MOON SIZE ── */
+  /* ── BLACK HOLE GROWTH ── */
   function applyMoonSize() {
-    if (!W) return;
-    const base = Math.max(38, Math.min(64, W * 0.055));
-    const s = base * (1 + moonProgress * 7);
-    moonEl.style.width  = s + 'px';
-    moonEl.style.height = s + 'px';
-    const riseExtra = moonProgress * 28;
-    moonEl.style.bottom = (30 + riseExtra) + '%';
-    const g = moonProgress;
-    moonInner.style.boxShadow = [
-      `0 0 ${20 + g*100}px rgba(230,210,120,${0.55 + g*0.35})`,
-      `0 0 ${50 + g*250}px rgba(200,170,60,${0.25 + g*0.35})`,
-      `0 0 ${g*400}px rgba(255,240,160,${g*0.12})`,
-    ].join(',');
-    hintEl.style.opacity = Math.max(0, 1 - moonProgress * 4).toString();
+    if (!W || !bhEl) return;
+    /* BH sits at path vanishing point — horizon center */
+    const base = Math.max(50, Math.min(90, W * 0.07));
+    const s = base * (1 + moonProgress * 6);
+    bhEl.style.width  = s + 'px';
+    bhEl.style.height = s + 'px';
+    /* Position: centered on path vanishing point */
+    bhEl.style.left   = '50%';
+    bhEl.style.top    = `${48 - moonProgress * 12}%`;
+    bhEl.style.transform = 'translateX(-50%)';
+    bhEl.style.animation  = moonProgress > 0.1
+      ? `fbhDiskCW ${Math.max(2, 8 - moonProgress*6)}s linear infinite`
+      : 'fbhDrift 18s ease-in-out infinite alternate';
+    if (hintEl) hintEl.style.opacity = Math.max(0, 1 - moonProgress * 4).toString();
     if (moonProgress >= 1 && !transitioning) triggerTransition();
   }
 
@@ -1570,7 +1567,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     const trunk = drawTrunk(tree.x, tree.baseY, tree.trunkW, tree.trunkH, cols.trunk);
     drawRoots(tree.x, tree.baseY, tree.trunkW, cols.trunk);
 
-    /* Main branches from trunk top */
+    /* Main branches from trunk top — arch OVER path to create tunnel */
     ctx.save();
     ctx.strokeStyle = cols.branch;
     ctx.lineCap = 'round';
@@ -1579,11 +1576,13 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       const frac  = i / numArms;
       const armY  = trunk.topY + tree.trunkH * 0.18 * frac;
       const armX  = trunk.topX + (Math.random()-0.5) * tree.trunkW * 0.4;
-      const baseAngle = -Math.PI/2 + (tree.side === 'L' ? 0.35 : -0.35) * (1 - frac)
-                        + (Math.random()-0.5) * 0.5;
+      /* Lean strongly INWARD over path — left trees lean right, right trees lean left */
+      const inwardBias = tree.side === 'L' ? -0.55 : 0.55;
+      const baseAngle = -Math.PI/2 + inwardBias * (1.2 - frac * 0.6)
+                        + (Math.random()-0.5) * 0.35;
       drawBranch(armX, armY, baseAngle,
-        tree.trunkH * (0.28 + frac*0.12),
-        tree.trunkW * (0.22 - frac*0.06),
+        tree.trunkH * (0.32 + frac*0.10),
+        tree.trunkW * (0.22 - frac*0.05),
         tree.branchDepth, cols.branch, t, tree.swayAmp);
     }
     ctx.restore();
@@ -1620,12 +1619,12 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     const pathTopW = W * 0.018;
     const cx       = W * 0.5;
 
-    /* Base path gradient — earthy mud browns */
+    /* Base path gradient — dark earthy dirt path */
     const pg = ctx.createLinearGradient(0, horizon, 0, H);
-    pg.addColorStop(0,   'rgba(30,15,8,0)');
-    pg.addColorStop(0.15,'rgba(42,24,12,0.92)');
-    pg.addColorStop(0.55,'rgba(55,32,14,0.97)');
-    pg.addColorStop(1,   'rgba(35,18,8,1)');
+    pg.addColorStop(0,   'rgba(20,18,14,0)');
+    pg.addColorStop(0.15,'rgba(38,28,20,0.92)');
+    pg.addColorStop(0.55,'rgba(50,36,24,0.97)');
+    pg.addColorStop(1,   'rgba(30,22,14,1)');
 
     ctx.save();
     ctx.beginPath();
@@ -1675,10 +1674,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     });
     ctx.setLineDash([]);
 
-    /* Fog glow at end of path — moon light pooling */
+    /* Fog glow at end of path — cool misty blue-white light */
     const fogR = ctx.createRadialGradient(cx, horizon, 0, cx, horizon, W*0.22);
-    fogR.addColorStop(0,   `rgba(220,200,120,${0.12 + moonProgress*0.25})`);
-    fogR.addColorStop(0.4, `rgba(180,140,60,${0.06 + moonProgress*0.12})`);
+    fogR.addColorStop(0,   `rgba(180,210,240,${0.18 + moonProgress*0.30})`);
+    fogR.addColorStop(0.4, `rgba(120,160,200,${0.08 + moonProgress*0.14})`);
     fogR.addColorStop(1,   'rgba(0,0,0,0)');
     ctx.fillStyle = fogR;
     ctx.fillRect(0, 0, W, H);
@@ -1688,23 +1687,23 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
   /* ── ATMOSPHERIC FOG LAYERS ── */
   function drawFog(t) {
-    /* Ground-hugging mist */
+    /* Ground-hugging cool blue-grey mist */
     [0.52, 0.60, 0.70, 0.82].forEach((yFrac, i) => {
       const y = H * yFrac;
       const w = W * (0.5 + i * 0.15);
       const drift = Math.sin(t * 0.00025 + i * 1.4) * W * 0.03;
       const fogGrad = ctx.createRadialGradient(W/2 + drift, y, 0, W/2 + drift, y, w*0.5);
-      fogGrad.addColorStop(0,   `rgba(60,20,10,${0.12 - i*0.02})`);
-      fogGrad.addColorStop(0.5, `rgba(40,10,5,${0.06 - i*0.01})`);
+      fogGrad.addColorStop(0,   `rgba(40,70,110,${0.14 - i*0.02})`);
+      fogGrad.addColorStop(0.5, `rgba(25,45,75,${0.07 - i*0.01})`);
       fogGrad.addColorStop(1,   'rgba(0,0,0,0)');
       ctx.fillStyle = fogGrad;
       ctx.fillRect(0, y - w*0.15, W, w*0.3);
     });
 
-    /* Deep path fog — bright cone leading into distance */
+    /* Deep path fog — cool blue-white mist cone leading into distance */
     const pathFog = ctx.createLinearGradient(0, H*0.48, 0, H*0.65);
-    pathFog.addColorStop(0,   `rgba(180,130,60,${0.08 + moonProgress*0.18})`);
-    pathFog.addColorStop(0.5, `rgba(120,80,30,${0.04 + moonProgress*0.08})`);
+    pathFog.addColorStop(0,   `rgba(150,190,230,${0.14 + moonProgress*0.22})`);
+    pathFog.addColorStop(0.5, `rgba(90,130,180,${0.06 + moonProgress*0.10})`);
     pathFog.addColorStop(1,   'rgba(0,0,0,0)');
     const pathW = W * 0.18;
     ctx.save();
@@ -1787,12 +1786,13 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     bgCanvas.width = W; bgCanvas.height = H;
     bgCtx.clearRect(0,0,W,H);
 
+    /* BG silhouette trees — cool dark navy-grey */
     const count = 18;
     for (let i = 0; i < count; i++) {
       const x = (i / count) * W + (Math.random()-0.5)*(W/count)*0.8;
       const baseY = H*(0.56 + Math.random()*0.08);
       const scale = 0.22 + Math.random()*0.2;
-      const cols = { trunk: 'rgba(15,5,4,0.7)', branch: 'rgba(12,4,3,0.6)', canopy: 'rgba(10,3,2,0.55)' };
+      const cols = { trunk: 'rgba(10,16,28,0.85)', branch: 'rgba(8,14,24,0.75)', canopy: 'rgba(8,14,24,0.65)' };
       /* simplified — just trunk + canopy, no full branch recursion */
       const tW = (20+Math.random()*16)*scale;
       const tH = (110+Math.random()*80)*scale;
@@ -1817,19 +1817,28 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
     ctx.clearRect(0,0,W,H);
 
-    /* SKY */
+    /* SKY — cool blue-grey mist like the reference */
     const sky = ctx.createLinearGradient(0,0,0,H*0.65);
-    sky.addColorStop(0,    '#060002');
-    sky.addColorStop(0.2,  '#120308');
-    sky.addColorStop(0.5,  '#2e0a0a');
-    sky.addColorStop(0.75, '#4a1008');
-    sky.addColorStop(1,    '#1e0604');
+    sky.addColorStop(0,    '#08101e');
+    sky.addColorStop(0.25, '#0d1a2e');
+    sky.addColorStop(0.55, '#152036');
+    sky.addColorStop(0.8,  '#1a2a3a');
+    sky.addColorStop(1,    '#243040');
     ctx.fillStyle = sky;
     ctx.fillRect(0,0,W,H*0.65);
 
+    /* Horizon glow — misty blue-white light pooling at path vanishing point */
+    const horizGlow = ctx.createRadialGradient(W*0.5, H*0.48, 0, W*0.5, H*0.48, W*0.45);
+    horizGlow.addColorStop(0,   `rgba(180,210,240,${0.28 + moonProgress*0.3})`);
+    horizGlow.addColorStop(0.3, `rgba(120,160,200,${0.12 + moonProgress*0.15})`);
+    horizGlow.addColorStop(0.7, `rgba(60,90,130,0.05)`);
+    horizGlow.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = horizGlow;
+    ctx.fillRect(0,0,W,H);
+
     /* Ground */
     const gnd = ctx.createLinearGradient(0,H*0.55,0,H);
-    gnd.addColorStop(0,'#140604'); gnd.addColorStop(1,'#080302');
+    gnd.addColorStop(0,'#0e1824'); gnd.addColorStop(1,'#060c14');
     ctx.fillStyle = gnd;
     ctx.fillRect(0,H*0.55,W,H*0.45);
 
@@ -1843,14 +1852,14 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     /* PATH */
     drawPath(ts);
 
-    /* Mid trees */
-    const midColsL = { trunk:'rgba(18,7,5,0.92)', branch:'rgba(14,5,4,0.85)', canopy:'rgba(12,4,3,0.8)' };
-    const midColsR = { trunk:'rgba(16,6,4,0.92)', branch:'rgba(12,4,3,0.85)', canopy:'rgba(10,3,2,0.8)' };
+    /* Mid trees — dark blue-grey silhouettes */
+    const midColsL = { trunk:'rgba(12,18,32,0.95)', branch:'rgba(10,16,28,0.88)', canopy:'rgba(9,14,25,0.82)' };
+    const midColsR = { trunk:'rgba(10,16,30,0.95)', branch:'rgba(8,14,26,0.88)', canopy:'rgba(8,12,24,0.82)' };
     treesMidL.forEach(tr => drawTree(tr, ts, 0.88, midColsL));
     treesMidR.forEach(tr => drawTree(tr, ts, 0.88, midColsR));
 
-    /* Foreground trees — darkest, most detail */
-    const fgCols = { trunk:'rgba(8,3,2,1)', branch:'rgba(6,2,1,0.95)', canopy:'rgba(5,2,1,0.9)' };
+    /* Foreground trees — deepest navy-black */
+    const fgCols = { trunk:'rgba(6,10,20,1)', branch:'rgba(5,8,18,0.97)', canopy:'rgba(4,7,16,0.92)' };
     treesL.forEach(tr => drawTree(tr, ts, 1.0, fgCols));
     treesR.forEach(tr => drawTree(tr, ts, 1.0, fgCols));
 
@@ -1877,7 +1886,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     cancelAnimationFrame(raf);
 
     scene.classList.add('chr-glitch');
-    hintEl.style.display = 'none';
+    if (hintEl) hintEl.style.display = 'none';
 
     setTimeout(() => {
       scene.classList.remove('chr-glitch');
