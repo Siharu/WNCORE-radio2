@@ -144,7 +144,7 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════
-   ── PHASE 1: BLACK HOLE INTRO ──
+   ── PHASE 1: DEEP SPACE INTRO ──
 ═══════════════════════════════════════════════════ */
 #bh-scene {
   position: fixed; inset: 0; z-index: 100;
@@ -156,35 +156,18 @@ body {
 #bh-scene.exit { opacity: 0; pointer-events: none; }
 #forest-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 
-/* ── Distant black hole SVG ── */
-#forest-bh {
-  position: absolute;
-  width: 70px; height: 70px;
-  top: 44%; left: 50%;
-  transform: translateX(-50%);
-  pointer-events: none;
-  opacity: 0.88;
-  transition: width 0.3s ease, height 0.3s ease, top 0.3s ease;
-}
-.fbh-disk-outer { animation: fbhDiskCW 22s linear infinite; transform-origin:60px 60px; }
-.fbh-disk-mid   { animation: fbhDiskCW 14s linear infinite; transform-origin:60px 60px; }
-.fbh-disk-inner { animation: fbhDiskCW  8s linear infinite; transform-origin:60px 60px; }
-.fbh-photon     { animation: fbhPulse   2.6s ease-in-out infinite; }
-@keyframes fbhDiskCW { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-@keyframes fbhPulse  { 0%,100%{opacity:0.9} 50%{opacity:0.35} }
-
 /* ── Interaction hint ── */
 #forest-hint {
   position: absolute;
   bottom: 80px; left: 50%; transform: translateX(-50%);
   font-family: var(--font-mono,'IBM Plex Mono');
   font-size: 0.38rem; letter-spacing: 3px;
-  color: rgba(120,170,220,0.55);
+  color: rgba(180,140,120,0.5);
   text-transform: uppercase; white-space: nowrap;
   pointer-events: none;
   animation: moonHint 3s ease-in-out infinite;
 }
-@keyframes moonHint { 0%,100%{opacity:0.3} 50%{opacity:0.8} }
+@keyframes moonHint { 0%,100%{opacity:0.25} 50%{opacity:0.75} }
 
 /* ── Terminal burst ── */
 #terminal-burst {
@@ -197,17 +180,17 @@ body {
 }
 #terminal-burst.active { display: block; }
 
-/* ── Forest label ── */
+/* ── Space label ── */
 #forest-label {
   position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%);
   font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.5rem;
-  letter-spacing: 4px; color: rgba(120,160,200,0.5);
+  letter-spacing: 4px; color: rgba(200,140,100,0.4);
   text-transform: uppercase; pointer-events: none;
   animation: bhLabel 8s ease-in-out infinite;
   white-space: nowrap;
 }
 @keyframes bhLabel {
-  0%,100%{opacity:0.3;letter-spacing:4px} 50%{opacity:0.7;letter-spacing:6px}
+  0%,100%{opacity:0.25;letter-spacing:4px} 50%{opacity:0.65;letter-spacing:6px}
 }
 
 /* ── Chromatic glitch class injected by JS ── */
@@ -221,7 +204,6 @@ body {
 }
 
 @media (max-width: 480px) {
-  #forest-bh { width: 60px; height: 60px; top: 14%; left: 65%; }
   #forest-hint { font-size: 0.34rem; bottom: 60px; }
   #forest-label { font-size: 0.38rem; letter-spacing: 2px; white-space: normal; text-align: center; padding: 0 20px; }
 }
@@ -1080,37 +1062,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 <div id="scanlines"></div>
 <div id="vignette"></div>
 
-<!-- ═══ PHASE 1: BLACK HOLE ═══ -->
+<!-- ═══ PHASE 1: DEEP SPACE ═══ -->
 <div id="bh-scene">
   <canvas id="forest-canvas"></canvas>
-  <!-- Distant black hole SVG -->
-  <svg id="forest-bh" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <defs>
-      <radialGradient id="fbhGlow" cx="50%" cy="50%" r="50%">
-        <stop offset="0%"  stop-color="#000"/>
-        <stop offset="38%" stop-color="#000"/>
-        <stop offset="60%" stop-color="#1a0000"/>
-        <stop offset="100%" stop-color="transparent"/>
-      </radialGradient>
-      <filter id="fbhBlur"><feGaussianBlur stdDeviation="1.5"/></filter>
-    </defs>
-    <ellipse cx="60" cy="60" rx="52" ry="13" fill="none" stroke="#7a1500" stroke-width="5" opacity="0.35" filter="url(#fbhBlur)" class="fbh-disk-outer"/>
-    <ellipse cx="60" cy="60" rx="44" ry="10" fill="none" stroke="#cc2200" stroke-width="3" opacity="0.55" filter="url(#fbhBlur)" class="fbh-disk-mid"/>
-    <ellipse cx="60" cy="60" rx="36" ry="7"  fill="none" stroke="#ff4400" stroke-width="1.5" opacity="0.75" class="fbh-disk-inner"/>
-    <ellipse cx="60" cy="60" rx="30" ry="6"  fill="none" stroke="#ff6633" stroke-width="0.8" opacity="0.9" class="fbh-photon"/>
-    <circle  cx="60" cy="60" r="26" fill="url(#fbhGlow)"/>
-    <circle  cx="60" cy="60" r="22" fill="#000"/>
-    <circle  cx="60" cy="60" r="26" fill="none" stroke="#cc1100" stroke-width="2" opacity="0.5" filter="url(#fbhBlur)"/>
-    <circle r="2.2" fill="#ff5500" opacity="0.9">
-      <animateMotion dur="5.5s" repeatCount="indefinite">
-        <mpath href="#fbh-orbit"/>
-      </animateMotion>
-    </circle>
-    <defs><path id="fbh-orbit" d="M 92,60 a 32,7 0 1,0 -64,0 a 32,7 0 1,0 64,0"/></defs>
-  </svg>
-  <!-- Interaction hint -->
-  <div id="forest-hint">scroll · click · tap twice</div>
-  <!-- Terminal burst overlay -->
+  <div id="forest-hint">scroll · click · approach the singularity</div>
   <div id="terminal-burst" aria-hidden="true"></div>
   <div id="forest-label">WORLD -2 · 2032 · ANOTHER SKY DETECTED</div>
 </div>
@@ -1198,7 +1153,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <span id="sb-archive-label">ANOTHER SKY</span>
         <div id="sb-archive-meta">
           CHAPTERS: <span id="sb-count">—</span> //
-          WORLD-2 SERIAL
+          WORLD- ██████████
         </div>
       </div>
       <div id="sb-list-wrap">
@@ -1397,485 +1352,369 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 
 <!-- ═══════════════════════════════════════════════════
-     DARK FOREST — INTRO SCENE
+     DEEP SPACE — INTRO SCENE
 ═══════════════════════════════════════════════════ -->
 <script>
 'use strict';
 
-/* ── DARK FOREST INTRO ──────────────────────────────── */
-(function buildForest() {
-  const scene   = document.getElementById('bh-scene');
-  const canvas  = document.getElementById('forest-canvas');
-  const bhEl    = document.getElementById('forest-bh');
-  const hintEl  = document.getElementById('forest-hint');
-  const termEl  = document.getElementById('terminal-burst');
+/* ── DEEP SPACE INTRO ──────────────────────────────── */
+(function buildSpace() {
+  const scene  = document.getElementById('bh-scene');
+  const canvas = document.getElementById('forest-canvas');
+  const hintEl = document.getElementById('forest-hint');
+  const termEl = document.getElementById('terminal-burst');
   if (!canvas) { setTimeout(showGate, 800); return; }
 
   const ctx = canvas.getContext('2d');
   let W, H, raf, running = true;
-  let moonProgress = 0, transitioning = false, lastTap = 0;
+  let approach = 0, transitioning = false, lastTap = 0;
 
   /* ── RESIZE ── */
   function resize() {
     W = canvas.width  = window.innerWidth;
     H = canvas.height = window.innerHeight;
-    applyMoonSize();
+    initStars();
   }
 
-  /* ── BLACK HOLE GROWTH ── */
-  function applyMoonSize() {
-    if (!W || !bhEl) return;
-    /* BH sits at path vanishing point — horizon center */
-    const base = Math.max(50, Math.min(90, W * 0.07));
-    const s = base * (1 + moonProgress * 6);
-    bhEl.style.width  = s + 'px';
-    bhEl.style.height = s + 'px';
-    /* Position: centered on path vanishing point */
-    bhEl.style.left   = '50%';
-    bhEl.style.top    = `${48 - moonProgress * 12}%`;
-    bhEl.style.transform = 'translateX(-50%)';
-    bhEl.style.animation  = moonProgress > 0.1
-      ? `fbhDiskCW ${Math.max(2, 8 - moonProgress*6)}s linear infinite`
-      : 'fbhDrift 18s ease-in-out infinite alternate';
-    if (hintEl) hintEl.style.opacity = Math.max(0, 1 - moonProgress * 4).toString();
-    if (moonProgress >= 1 && !transitioning) triggerTransition();
-  }
+  /* ══════════════════════════════════════════════════
+     STARS — three layers: bg dust, mid, bright
+  ══════════════════════════════════════════════════ */
+  let stars = [];
 
-  function growMoon(amt) {
-    if (transitioning) return;
-    moonProgress = Math.min(1, moonProgress + amt);
-    applyMoonSize();
-  }
+  function initStars() {
+    stars = [];
+    const total = Math.floor((W * H) / 1600);
 
-  /* ════════════════════════════════════════════════
-     TREE DRAWING — proper deciduous anatomy
-     Each tree: thick tapered trunk, surface roots,
-     branching arms, canopy blob clusters
-  ════════════════════════════════════════════════ */
-
-  /* Recursive branch */
-  function drawBranch(x, y, angle, len, width, depth, col, t, swayAmp) {
-    if (depth < 0 || len < 3) return;
-    const sway = Math.sin(t * 0.0006 + x * 0.002) * swayAmp * (1 - depth / 7);
-    const endX = x + Math.cos(angle + sway) * len;
-    const endY = y + Math.sin(angle + sway) * len;
-
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(endX, endY);
-    ctx.lineWidth = Math.max(0.5, width);
-    ctx.strokeStyle = col;
-    ctx.stroke();
-
-    if (depth > 0) {
-      const spread = 0.28 + depth * 0.04;
-      const leftBias  = (Math.random() - 0.5) * 0.15;
-      const rightBias = (Math.random() - 0.5) * 0.15;
-      drawBranch(endX, endY, angle - spread + leftBias,  len * 0.68, width * 0.62, depth - 1, col, t, swayAmp);
-      drawBranch(endX, endY, angle + spread + rightBias, len * 0.68, width * 0.62, depth - 1, col, t, swayAmp);
-      if (depth > 2 && Math.random() > 0.5) {
-        drawBranch(endX, endY, angle + (Math.random()-0.5)*0.2, len * 0.55, width * 0.5, depth - 2, col, t, swayAmp);
-      }
-    }
-  }
-
-  /* Surface roots — bezier curves sprawling from base */
-  function drawRoots(x, baseY, trunkW, col) {
-    ctx.save();
-    ctx.strokeStyle = col;
-    ctx.lineWidth = trunkW * 0.22;
-    const count = 3 + Math.floor(Math.random() * 2);
-    for (let i = 0; i < count; i++) {
-      const side = i % 2 === 0 ? 1 : -1;
-      const spread = (0.6 + i * 0.35) * trunkW * 2.5 * side;
-      const ctrl1x = x + spread * 0.3 + (Math.random()-0.5)*trunkW;
-      const ctrl1y = baseY - trunkW * 0.5;
-      const ctrl2x = x + spread * 0.7;
-      const ctrl2y = baseY + trunkW * 0.2;
-      const ex = x + spread;
-      const ey = baseY + trunkW * 0.35;
-      ctx.beginPath();
-      ctx.moveTo(x, baseY - trunkW * 0.1);
-      ctx.bezierCurveTo(ctrl1x, ctrl1y, ctrl2x, ctrl2y, ex, ey);
-      ctx.stroke();
-      ctx.lineWidth = Math.max(0.5, trunkW * 0.10);
-    }
-    ctx.restore();
-  }
-
-  /* Trunk — tapered quad */
-  function drawTrunk(x, baseY, trunkW, trunkH, col) {
-    const topW = trunkW * 0.38;
-    const lean = (Math.random() - 0.5) * trunkW * 0.4;
-    ctx.save();
-    ctx.fillStyle = col;
-    ctx.beginPath();
-    ctx.moveTo(x - trunkW/2, baseY);
-    ctx.bezierCurveTo(
-      x - trunkW*0.45, baseY - trunkH*0.4,
-      x + lean - topW*0.6, baseY - trunkH*0.75,
-      x + lean - topW/2, baseY - trunkH
-    );
-    ctx.lineTo(x + lean + topW/2, baseY - trunkH);
-    ctx.bezierCurveTo(
-      x + lean + topW*0.6, baseY - trunkH*0.75,
-      x + trunkW*0.45, baseY - trunkH*0.4,
-      x + trunkW/2, baseY
-    );
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-    return { topX: x + lean, topY: baseY - trunkH, topW };
-  }
-
-  /* Canopy blob cluster */
-  function drawCanopy(cx, cy, radius, col, alpha) {
-    ctx.save();
-    ctx.globalAlpha = alpha;
-    ctx.fillStyle = col;
-    const blobs = 6 + Math.floor(Math.random() * 5);
-    for (let i = 0; i < blobs; i++) {
-      const bx = cx + (Math.random()-0.5)*radius*1.6;
-      const by = cy + (Math.random()-0.5)*radius*0.9 - radius*0.3;
-      const br = radius * (0.35 + Math.random() * 0.45);
-      ctx.beginPath();
-      ctx.arc(bx, by, br, 0, Math.PI*2);
-      ctx.fill();
-    }
-    ctx.restore();
-  }
-
-  /* Full tree definition */
-  function makeTree(x, baseY, scale, side) {
-    return {
-      x, baseY, scale,
-      trunkW:  (28 + Math.random()*22) * scale,
-      trunkH:  (160 + Math.random()*120) * scale,
-      canopyR: (70 + Math.random()*50) * scale,
-      branchDepth: 4 + Math.floor(Math.random()*2),
-      swayAmp: 0.04 + Math.random()*0.03,
-      seed: Math.random()*1000,
-      side,
-    };
-  }
-
-  /* Draw a complete tree */
-  function drawTree(tree, t, alpha, cols) {
-    ctx.save();
-    ctx.globalAlpha = alpha;
-
-    const trunk = drawTrunk(tree.x, tree.baseY, tree.trunkW, tree.trunkH, cols.trunk);
-    drawRoots(tree.x, tree.baseY, tree.trunkW, cols.trunk);
-
-    /* Main branches from trunk top — arch OVER path to create tunnel */
-    ctx.save();
-    ctx.strokeStyle = cols.branch;
-    ctx.lineCap = 'round';
-    const numArms = 3 + Math.floor(tree.scale * 2);
-    for (let i = 0; i < numArms; i++) {
-      const frac  = i / numArms;
-      const armY  = trunk.topY + tree.trunkH * 0.18 * frac;
-      const armX  = trunk.topX + (Math.random()-0.5) * tree.trunkW * 0.4;
-      /* Lean strongly INWARD over path — left trees lean right, right trees lean left */
-      const inwardBias = tree.side === 'L' ? -0.55 : 0.55;
-      const baseAngle = -Math.PI/2 + inwardBias * (1.2 - frac * 0.6)
-                        + (Math.random()-0.5) * 0.35;
-      drawBranch(armX, armY, baseAngle,
-        tree.trunkH * (0.32 + frac*0.10),
-        tree.trunkW * (0.22 - frac*0.05),
-        tree.branchDepth, cols.branch, t, tree.swayAmp);
-    }
-    ctx.restore();
-
-    /* Canopy */
-    drawCanopy(trunk.topX, trunk.topY - tree.canopyR*0.3, tree.canopyR, cols.canopy, alpha * 0.85);
-
-    ctx.restore();
-  }
-
-  /* ── GROUND FLOWERS ── */
-  function drawFlowers(trees) {
-    trees.forEach(tree => {
-      const count = 2 + Math.floor(Math.random()*3);
-      for (let i = 0; i < count; i++) {
-        const fx = tree.x + (Math.random()-0.5)*tree.trunkW*4;
-        const fy = tree.baseY + Math.random()*8;
-        const size = 2.5 + Math.random()*2;
-        /* tiny red/pink dot */
-        ctx.save();
-        ctx.fillStyle = Math.random() > 0.5 ? 'rgba(180,20,40,0.7)' : 'rgba(220,60,80,0.6)';
-        ctx.beginPath();
-        ctx.arc(fx, fy, size, 0, Math.PI*2);
-        ctx.fill();
-        ctx.restore();
-      }
-    });
-  }
-
-  /* ── MUDDY PATH ── */
-  function drawPath(t) {
-    const horizon  = H * 0.48;
-    const pathBotW = W * 0.28;
-    const pathTopW = W * 0.018;
-    const cx       = W * 0.5;
-
-    /* Base path gradient — dark earthy dirt path */
-    const pg = ctx.createLinearGradient(0, horizon, 0, H);
-    pg.addColorStop(0,   'rgba(20,18,14,0)');
-    pg.addColorStop(0.15,'rgba(38,28,20,0.92)');
-    pg.addColorStop(0.55,'rgba(50,36,24,0.97)');
-    pg.addColorStop(1,   'rgba(30,22,14,1)');
-
-    ctx.save();
-    ctx.beginPath();
-    /* Slightly wavy edges — hand-worn path */
-    ctx.moveTo(cx - pathTopW/2, horizon);
-    ctx.bezierCurveTo(
-      cx - pathTopW*1.5, horizon + (H-horizon)*0.3,
-      cx - pathBotW*0.55, horizon + (H-horizon)*0.7,
-      cx - pathBotW/2, H+5
-    );
-    ctx.lineTo(cx + pathBotW/2, H+5);
-    ctx.bezierCurveTo(
-      cx + pathBotW*0.55, horizon + (H-horizon)*0.7,
-      cx + pathTopW*1.5, horizon + (H-horizon)*0.3,
-      cx + pathTopW/2, horizon
-    );
-    ctx.closePath();
-    ctx.fillStyle = pg;
-    ctx.fill();
-
-    /* Puddles — shimmer */
-    [[0.2,0.32],[0.42,0.25],[0.65,0.30],[0.84,0.22]].forEach(([p,w],i) => {
-      const py = horizon + (H - horizon) * p;
-      const pw = (pathBotW*p + pathTopW*(1-p)) * w;
-      const shimmer = 0.05 + 0.04*Math.sin(t*0.0009 + i*1.8);
-      const rg = ctx.createRadialGradient(cx, py, 0, cx, py, pw*0.5);
-      rg.addColorStop(0,   `rgba(80,120,140,${shimmer*2.5})`);
-      rg.addColorStop(0.6, `rgba(50,70,90,${shimmer})`);
-      rg.addColorStop(1,    'rgba(0,0,0,0)');
-      ctx.fillStyle = rg;
-      ctx.beginPath();
-      ctx.ellipse(cx, py, pw*0.45, pw*0.09, 0, 0, Math.PI*2);
-      ctx.fill();
-    });
-
-    /* Worn tyre/foot ruts */
-    [[-0.15,0.12],[0.15,0.12],[-0.32,0.26],[0.32,0.26]].forEach(([rel,w]) => {
-      const x1 = cx + pathTopW*rel*3;
-      const x2 = cx + pathBotW*rel;
-      ctx.strokeStyle = 'rgba(18,9,4,0.6)';
-      ctx.lineWidth = 1.2;
-      ctx.setLineDash([6,8]);
-      ctx.beginPath();
-      ctx.moveTo(x1, horizon);
-      ctx.lineTo(x2, H);
-      ctx.stroke();
-    });
-    ctx.setLineDash([]);
-
-    /* Fog glow at end of path — cool misty blue-white light */
-    const fogR = ctx.createRadialGradient(cx, horizon, 0, cx, horizon, W*0.22);
-    fogR.addColorStop(0,   `rgba(180,210,240,${0.18 + moonProgress*0.30})`);
-    fogR.addColorStop(0.4, `rgba(120,160,200,${0.08 + moonProgress*0.14})`);
-    fogR.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = fogR;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.restore();
-  }
-
-  /* ── ATMOSPHERIC FOG LAYERS ── */
-  function drawFog(t) {
-    /* Ground-hugging cool blue-grey mist */
-    [0.52, 0.60, 0.70, 0.82].forEach((yFrac, i) => {
-      const y = H * yFrac;
-      const w = W * (0.5 + i * 0.15);
-      const drift = Math.sin(t * 0.00025 + i * 1.4) * W * 0.03;
-      const fogGrad = ctx.createRadialGradient(W/2 + drift, y, 0, W/2 + drift, y, w*0.5);
-      fogGrad.addColorStop(0,   `rgba(40,70,110,${0.14 - i*0.02})`);
-      fogGrad.addColorStop(0.5, `rgba(25,45,75,${0.07 - i*0.01})`);
-      fogGrad.addColorStop(1,   'rgba(0,0,0,0)');
-      ctx.fillStyle = fogGrad;
-      ctx.fillRect(0, y - w*0.15, W, w*0.3);
-    });
-
-    /* Deep path fog — cool blue-white mist cone leading into distance */
-    const pathFog = ctx.createLinearGradient(0, H*0.48, 0, H*0.65);
-    pathFog.addColorStop(0,   `rgba(150,190,230,${0.14 + moonProgress*0.22})`);
-    pathFog.addColorStop(0.5, `rgba(90,130,180,${0.06 + moonProgress*0.10})`);
-    pathFog.addColorStop(1,   'rgba(0,0,0,0)');
-    const pathW = W * 0.18;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(W/2 - pathW*0.04, H*0.48);
-    ctx.lineTo(W/2 + pathW*0.04, H*0.48);
-    ctx.lineTo(W/2 + pathW, H*0.65);
-    ctx.lineTo(W/2 - pathW, H*0.65);
-    ctx.closePath();
-    ctx.fillStyle = pathFog;
-    ctx.fill();
-    ctx.restore();
-  }
-
-  /* ── RAIN ── */
-  let rain = [];
-  function initRain() {
-    rain = [];
-    const n = Math.floor(W * H / 5500);
-    for (let i = 0; i < n; i++) {
-      rain.push({
+    for (let i = 0; i < total; i++) {
+      const layer = Math.random();
+      stars.push({
         x: Math.random() * W,
         y: Math.random() * H,
-        len: 8 + Math.random() * 18,
-        spd: 6 + Math.random() * 10,
-        a: 0.05 + Math.random() * 0.18,
+        /* size tiers */
+        r: layer < 0.70 ? 0.3 + Math.random() * 0.5   /* dust */
+         : layer < 0.92 ? 0.7 + Math.random() * 0.8   /* mid */
+         :                1.2 + Math.random() * 1.4,  /* bright */
+        /* base brightness */
+        base: 0.15 + Math.random() * 0.65,
+        /* twinkle params */
+        twinkleSpeed: 0.4 + Math.random() * 2.2,
+        twinklePhase: Math.random() * Math.PI * 2,
+        /* colour tint: mostly white, some warm/cool */
+        hue: Math.random() < 0.15
+          ? (Math.random() < 0.5 ? 'warm' : 'cool')
+          : 'white',
+        layer: layer < 0.70 ? 0 : layer < 0.92 ? 1 : 2,
+      });
+    }
+
+    /* Seed a handful of vivid foreground stars */
+    for (let i = 0; i < 18; i++) {
+      stars.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: 1.6 + Math.random() * 1.2,
+        base: 0.7 + Math.random() * 0.3,
+        twinkleSpeed: 0.8 + Math.random() * 1.4,
+        twinklePhase: Math.random() * Math.PI * 2,
+        hue: ['warm','cool','white'][Math.floor(Math.random()*3)],
+        layer: 2,
       });
     }
   }
 
-  function drawRain() {
-    ctx.save();
-    ctx.strokeStyle = 'rgba(150,190,230,1)';
-    ctx.lineCap = 'round';
-    for (const d of rain) {
-      ctx.globalAlpha = d.a;
-      ctx.lineWidth = 0.55;
+  function drawStars(ts) {
+    for (const s of stars) {
+      /* gravitational lensing — stars near BH get pulled toward it */
+      const bhX = W * 0.5;
+      const bhY = H * 0.5;
+      const dx = s.x - bhX, dy = s.y - bhY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const bhRadius = getBHRadius();
+      const pullZone = bhRadius * 6;
+
+      /* skip stars inside event horizon */
+      if (dist < bhRadius * 0.9) continue;
+
+      /* twinkle */
+      const twinkle = Math.sin(ts * 0.001 * s.twinkleSpeed + s.twinklePhase) * 0.5 + 0.5;
+      const alpha = s.base * (0.55 + twinkle * 0.45);
+
+      /* colour */
+      let col;
+      if (s.hue === 'warm') col = `rgba(255,220,160,${alpha})`;
+      else if (s.hue === 'cool') col = `rgba(160,200,255,${alpha})`;
+      else col = `rgba(255,252,240,${alpha})`;
+
+      /* lens distortion near BH — stars arc slightly around it */
+      let px = s.x, py = s.y;
+      if (approach > 0.05 && dist < pullZone && dist > bhRadius * 1.2) {
+        const pull = approach * (pullZone - dist) / pullZone * 0.04;
+        px = s.x - dx * pull;
+        py = s.y - dy * pull;
+      }
+
+      ctx.save();
+      /* glow for bright stars */
+      if (s.layer === 2) {
+        ctx.shadowBlur = 6 + twinkle * 4;
+        ctx.shadowColor = col;
+      }
+      ctx.fillStyle = col;
       ctx.beginPath();
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x + d.len*0.13, d.y + d.len);
+      ctx.arc(px, py, s.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      /* cross-spike for the brightest stars */
+      if (s.layer === 2 && s.r > 2.2) {
+        ctx.save();
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 0.4;
+        ctx.globalAlpha = alpha * 0.35;
+        const sp = s.r * 4;
+        ctx.beginPath();
+        ctx.moveTo(px - sp, py); ctx.lineTo(px + sp, py);
+        ctx.moveTo(px, py - sp); ctx.lineTo(px, py + sp);
+        ctx.stroke();
+        ctx.restore();
+      }
+    }
+  }
+
+  /* ══════════════════════════════════════════════════
+     NEBULA CLOUD — subtle deep-red wash, lore-accurate
+  ══════════════════════════════════════════════════ */
+  function drawNebula(ts) {
+    const cx = W * 0.5, cy = H * 0.5;
+    /* slow drift */
+    const ox = Math.sin(ts * 0.00008) * W * 0.04;
+    const oy = Math.cos(ts * 0.00011) * H * 0.03;
+
+    /* outer red haze */
+    const r1 = ctx.createRadialGradient(cx+ox, cy+oy, 0, cx+ox, cy+oy, W * 0.65);
+    r1.addColorStop(0,   `rgba(60,0,0,0)`);
+    r1.addColorStop(0.3, `rgba(40,0,0,${0.04 + approach * 0.06})`);
+    r1.addColorStop(0.7, `rgba(20,0,8,${0.07 + approach * 0.08})`);
+    r1.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = r1;
+    ctx.fillRect(0, 0, W, H);
+
+    /* secondary warm bloom off-center */
+    const bx = cx + W*0.18 + ox*0.5, by = cy - H*0.12 + oy*0.5;
+    const r2 = ctx.createRadialGradient(bx, by, 0, bx, by, W * 0.3);
+    r2.addColorStop(0,   `rgba(80,20,0,${0.03 + approach * 0.04})`);
+    r2.addColorStop(0.5, `rgba(40,10,0,${0.02 + approach * 0.02})`);
+    r2.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = r2;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  /* ══════════════════════════════════════════════════
+     BLACK HOLE — full canvas-drawn, no SVG
+     - Event horizon (pure black circle)
+     - Photon ring (thin bright ring)
+     - Accretion disk (elliptical, glowing, layered)
+     - Gravitational lensing glow
+     - Jet (faint vertical beam)
+  ══════════════════════════════════════════════════ */
+  function getBHRadius() {
+    const base = Math.max(40, Math.min(80, W * 0.06));
+    return base * (1 + approach * 5.5);
+  }
+
+  function drawBlackHole(ts) {
+    const cx = W * 0.5;
+    const cy = H * 0.5;
+    const R  = getBHRadius();
+
+    /* ── gravitational lensing halo ── */
+    const lensR = R * 3.2;
+    const lensG = ctx.createRadialGradient(cx, cy, R * 0.95, cx, cy, lensR);
+    lensG.addColorStop(0,   `rgba(255,80,0,${0.18 + approach * 0.15})`);
+    lensG.addColorStop(0.2, `rgba(180,40,0,${0.10 + approach * 0.10})`);
+    lensG.addColorStop(0.5, `rgba(80,15,0,${0.05 + approach * 0.04})`);
+    lensG.addColorStop(1,    'rgba(0,0,0,0)');
+    ctx.fillStyle = lensG;
+    ctx.beginPath();
+    ctx.arc(cx, cy, lensR, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* ── accretion disk — layered ellipses ── */
+    const diskAngle = ts * 0.00012;
+    const diskLayers = [
+      /* { rx, ry, color, alpha, lineW, rotation_mul } */
+      { rx: R*2.4, ry: R*0.28, col: [220,60,0],  a: 0.22, lw: R*0.18, rm: 1.0  },
+      { rx: R*2.0, ry: R*0.22, col: [255,100,20], a: 0.35, lw: R*0.12, rm: 1.4  },
+      { rx: R*1.7, ry: R*0.18, col: [255,140,40], a: 0.45, lw: R*0.08, rm: 1.8  },
+      { rx: R*1.45,ry: R*0.13, col: [255,200,80], a: 0.60, lw: R*0.05, rm: 2.2  },
+    ];
+
+    ctx.save();
+    ctx.shadowBlur = R * 0.8;
+    diskLayers.forEach((dl, i) => {
+      const rot = diskAngle * dl.rm + i * 0.4;
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
+
+      /* paint upper half only (disk behind is hidden by event horizon) */
+      ctx.shadowColor = `rgba(${dl.col[0]},${dl.col[1]},${dl.col[2]},0.8)`;
+      ctx.shadowBlur  = R * 0.6;
+      ctx.strokeStyle = `rgba(${dl.col[0]},${dl.col[1]},${dl.col[2]},${dl.a + approach * 0.15})`;
+      ctx.lineWidth   = dl.lw;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, dl.rx, dl.ry, 0, Math.PI, Math.PI * 2); /* upper arc */
       ctx.stroke();
-      d.y += d.spd; d.x += d.spd*0.1;
-      if (d.y > H) { d.y = -d.len; d.x = Math.random()*W; }
-    }
+
+      /* lower arc slightly dimmer (appears behind) */
+      ctx.globalAlpha = 0.45;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, dl.rx, dl.ry, 0, 0, Math.PI); /* lower arc */
+      ctx.stroke();
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    });
     ctx.restore();
+
+    /* ── photon ring ── */
+    ctx.save();
+    ctx.shadowBlur  = R * 0.4;
+    ctx.shadowColor = 'rgba(255,220,120,0.9)';
+    ctx.strokeStyle = `rgba(255,230,140,${0.55 + Math.sin(ts * 0.002) * 0.1})`;
+    ctx.lineWidth   = Math.max(0.8, R * 0.025);
+    ctx.beginPath();
+    ctx.arc(cx, cy, R * 1.08, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+
+    /* ── relativistic jet — faint vertical beam ── */
+    if (approach > 0.1) {
+      const jetAlpha = (approach - 0.1) * 0.4;
+      ctx.save();
+      const jetH = R * (8 + approach * 12);
+      const jg = ctx.createLinearGradient(cx, cy - R, cx, cy - R - jetH);
+      jg.addColorStop(0,   `rgba(180,80,255,${jetAlpha * 0.6})`);
+      jg.addColorStop(0.3, `rgba(100,40,200,${jetAlpha * 0.3})`);
+      jg.addColorStop(1,    'rgba(0,0,0,0)');
+      ctx.fillStyle = jg;
+      ctx.fillRect(cx - R * 0.06, cy - R - jetH, R * 0.12, jetH);
+      /* bottom jet */
+      const jg2 = ctx.createLinearGradient(cx, cy + R, cx, cy + R + jetH);
+      jg2.addColorStop(0,   `rgba(180,80,255,${jetAlpha * 0.4})`);
+      jg2.addColorStop(1,    'rgba(0,0,0,0)');
+      ctx.fillStyle = jg2;
+      ctx.fillRect(cx - R * 0.04, cy + R, R * 0.08, jetH * 0.7);
+      ctx.restore();
+    }
+
+    /* ── event horizon — pure black, painted last over disk ── */
+    const ehG = ctx.createRadialGradient(cx, cy, 0, cx, cy, R);
+    ehG.addColorStop(0,    '#000');
+    ehG.addColorStop(0.82, '#000');
+    ehG.addColorStop(1,    'rgba(0,0,0,0.9)');
+    ctx.fillStyle = ehG;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
+
+    /* subtle inner void gradient */
+    const voidG = ctx.createRadialGradient(cx - R*0.1, cy - R*0.1, 0, cx, cy, R * 0.85);
+    voidG.addColorStop(0,   'rgba(5,0,10,0.4)');
+    voidG.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = voidG;
+    ctx.beginPath();
+    ctx.arc(cx, cy, R, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  /* ── TREE INSTANCES ── */
-  let treesL = [], treesR = [], treesMidL = [], treesMidR = [];
+  /* ══════════════════════════════════════════════════
+     PARTICLE STREAM — stars/dust falling into BH
+  ══════════════════════════════════════════════════ */
+  let particles = [];
 
-  function initTrees() {
-    treesL = []; treesR = []; treesMidL = []; treesMidR = [];
+  function initParticles() {
+    particles = [];
+    const n = Math.min(120, Math.floor((W * H) / 8000));
+    for (let i = 0; i < n; i++) particles.push(mkParticle());
+  }
 
-    /* Foreground giants — flanking the path, huge */
-    const fgCount = 3;
-    for (let i = 0; i < fgCount; i++) {
-      const baseY = H * (0.80 + i * 0.06);
-      const scale = 1.1 + i * 0.15;
-      /* Left side — push into left half, x increases away from path */
-      treesL.push(makeTree(W*(0.08 + i*0.09), baseY, scale, 'L'));
-      treesR.push(makeTree(W*(0.92 - i*0.09), baseY, scale, 'R'));
-    }
+  function mkParticle() {
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = getBHRadius() * (2 + Math.random() * 8);
+    return {
+      angle,
+      dist,
+      speed: 0.003 + Math.random() * 0.006,
+      infall: 0.015 + Math.random() * 0.03,
+      alpha: 0.1 + Math.random() * 0.5,
+      r: 0.4 + Math.random() * 1.0,
+      col: Math.random() < 0.5 ? [255,180,60] : [255,255,240],
+    };
+  }
 
-    /* Mid-ground trees */
-    for (let i = 0; i < 4; i++) {
-      const scale = 0.6 + i*0.1;
-      const baseY = H*(0.72 + i*0.03);
-      treesMidL.push(makeTree(W*(0.12 + i*0.07), baseY, scale, 'L'));
-      treesMidR.push(makeTree(W*(0.88 - i*0.07), baseY, scale, 'R'));
+  function drawParticles() {
+    if (approach < 0.05) return;
+    const cx = W * 0.5, cy = H * 0.5;
+    const bhR = getBHRadius();
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      p.angle += p.speed * (1 + approach * 2);
+      p.dist  -= p.infall * (1 + approach * 3);
+      if (p.dist < bhR * 0.95) { particles[i] = mkParticle(); continue; }
+
+      const px = cx + Math.cos(p.angle) * p.dist;
+      const py = cy + Math.sin(p.angle) * p.dist * 0.35;
+      const fade = Math.min(1, (p.dist - bhR) / (bhR * 2));
+      ctx.save();
+      ctx.fillStyle = `rgba(${p.col[0]},${p.col[1]},${p.col[2]},${p.alpha * fade * approach})`;
+      ctx.beginPath();
+      ctx.arc(px, py, p.r, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
     }
   }
 
-  /* ── BACKGROUND silhouette tree layer (painted once into offscreen) ── */
-  let bgCanvas, bgCtx, bgDirty = true;
-  function paintBgTrees() {
-    if (!bgCanvas) {
-      bgCanvas = document.createElement('canvas');
-      bgCtx    = bgCanvas.getContext('2d');
-    }
-    bgCanvas.width = W; bgCanvas.height = H;
-    bgCtx.clearRect(0,0,W,H);
-
-    /* BG silhouette trees — cool dark navy-grey */
-    const count = 18;
-    for (let i = 0; i < count; i++) {
-      const x = (i / count) * W + (Math.random()-0.5)*(W/count)*0.8;
-      const baseY = H*(0.56 + Math.random()*0.08);
-      const scale = 0.22 + Math.random()*0.2;
-      const cols = { trunk: 'rgba(10,16,28,0.85)', branch: 'rgba(8,14,24,0.75)', canopy: 'rgba(8,14,24,0.65)' };
-      /* simplified — just trunk + canopy, no full branch recursion */
-      const tW = (20+Math.random()*16)*scale;
-      const tH = (110+Math.random()*80)*scale;
-      bgCtx.fillStyle = cols.trunk;
-      bgCtx.fillRect(x - tW/2, baseY - tH, tW, tH);
-      bgCtx.fillStyle = cols.canopy;
-      bgCtx.globalAlpha = 0.6;
-      bgCtx.beginPath();
-      bgCtx.arc(x, baseY - tH - (30+Math.random()*25)*scale, (35+Math.random()*30)*scale, 0, Math.PI*2);
-      bgCtx.fill();
-      bgCtx.globalAlpha = 1;
-    }
-    bgDirty = false;
-  }
-
-  /* ── MAIN DRAW ── */
-  let lastT = 0;
+  /* ══════════════════════════════════════════════════
+     MAIN DRAW LOOP
+  ══════════════════════════════════════════════════ */
   function draw(ts) {
     if (!running) return;
     raf = requestAnimationFrame(draw);
-    lastT = ts;
 
-    ctx.clearRect(0,0,W,H);
+    /* deep black background */
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, W, H);
 
-    /* SKY — cool blue-grey mist like the reference */
-    const sky = ctx.createLinearGradient(0,0,0,H*0.65);
-    sky.addColorStop(0,    '#08101e');
-    sky.addColorStop(0.25, '#0d1a2e');
-    sky.addColorStop(0.55, '#152036');
-    sky.addColorStop(0.8,  '#1a2a3a');
-    sky.addColorStop(1,    '#243040');
-    ctx.fillStyle = sky;
-    ctx.fillRect(0,0,W,H*0.65);
+    /* nebula wash */
+    drawNebula(ts);
 
-    /* Horizon glow — misty blue-white light pooling at path vanishing point */
-    const horizGlow = ctx.createRadialGradient(W*0.5, H*0.48, 0, W*0.5, H*0.48, W*0.45);
-    horizGlow.addColorStop(0,   `rgba(180,210,240,${0.28 + moonProgress*0.3})`);
-    horizGlow.addColorStop(0.3, `rgba(120,160,200,${0.12 + moonProgress*0.15})`);
-    horizGlow.addColorStop(0.7, `rgba(60,90,130,0.05)`);
-    horizGlow.addColorStop(1,   'rgba(0,0,0,0)');
-    ctx.fillStyle = horizGlow;
-    ctx.fillRect(0,0,W,H);
+    /* stars */
+    drawStars(ts);
 
-    /* Ground */
-    const gnd = ctx.createLinearGradient(0,H*0.55,0,H);
-    gnd.addColorStop(0,'#0e1824'); gnd.addColorStop(1,'#060c14');
-    ctx.fillStyle = gnd;
-    ctx.fillRect(0,H*0.55,W,H*0.45);
+    /* infalling particles */
+    drawParticles();
 
-    /* BG silhouette trees */
-    if (bgDirty) paintBgTrees();
-    ctx.drawImage(bgCanvas, 0, 0);
+    /* black hole */
+    drawBlackHole(ts);
 
-    /* Fog layers behind trees */
-    drawFog(ts);
+    /* approach vignette — deepens as user interacts */
+    if (approach > 0.02) {
+      const vig = ctx.createRadialGradient(W/2, H/2, W*0.1, W/2, H/2, W*0.72);
+      vig.addColorStop(0, 'rgba(0,0,0,0)');
+      vig.addColorStop(1, `rgba(0,0,0,${approach * 0.55})`);
+      ctx.fillStyle = vig;
+      ctx.fillRect(0, 0, W, H);
+    }
 
-    /* PATH */
-    drawPath(ts);
+    /* update hint opacity */
+    if (hintEl) hintEl.style.opacity = Math.max(0, 1 - approach * 4).toString();
+  }
 
-    /* Mid trees — dark blue-grey silhouettes */
-    const midColsL = { trunk:'rgba(12,18,32,0.95)', branch:'rgba(10,16,28,0.88)', canopy:'rgba(9,14,25,0.82)' };
-    const midColsR = { trunk:'rgba(10,16,30,0.95)', branch:'rgba(8,14,26,0.88)', canopy:'rgba(8,12,24,0.82)' };
-    treesMidL.forEach(tr => drawTree(tr, ts, 0.88, midColsL));
-    treesMidR.forEach(tr => drawTree(tr, ts, 0.88, midColsR));
-
-    /* Foreground trees — deepest navy-black */
-    const fgCols = { trunk:'rgba(6,10,20,1)', branch:'rgba(5,8,18,0.97)', canopy:'rgba(4,7,16,0.92)' };
-    treesL.forEach(tr => drawTree(tr, ts, 1.0, fgCols));
-    treesR.forEach(tr => drawTree(tr, ts, 1.0, fgCols));
-
-    /* Ground flowers at fg tree bases */
-    drawFlowers([...treesL, ...treesR]);
-
-    /* Rain */
-    drawRain();
-
-    /* Vignette */
-    const vig = ctx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.9);
-    vig.addColorStop(0,'rgba(0,0,0,0)');
-    vig.addColorStop(0.5,'rgba(0,0,0,0.15)');
-    vig.addColorStop(1,'rgba(0,0,0,0.88)');
-    ctx.fillStyle = vig;
-    ctx.fillRect(0,0,W,H);
+  /* ── APPROACH GROWTH ── */
+  function grow(amt) {
+    if (transitioning) return;
+    approach = Math.min(1, approach + amt);
+    if (approach >= 1 && !transitioning) triggerTransition();
   }
 
   /* ── TRANSITION ── */
@@ -1936,32 +1775,29 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   /* ── INPUT ── */
   window.addEventListener('wheel', e => {
     if (transitioning) return;
-    growMoon(Math.min(0.06, Math.abs(e.deltaY) / 600));
-  }, { passive:true });
+    grow(Math.min(0.06, Math.abs(e.deltaY) / 600));
+  }, { passive: true });
 
-  scene.addEventListener('click', () => { if (!transitioning) growMoon(0.14); });
+  scene.addEventListener('click', () => { if (!transitioning) grow(0.14); });
 
   scene.addEventListener('touchend', e => {
     if (transitioning) return;
     const now = Date.now();
     if (now - lastTap < 300) {
-      moonProgress = 1; applyMoonSize(); triggerTransition();
-    } else { growMoon(0.11); }
+      approach = 1; triggerTransition();
+    } else { grow(0.11); }
     lastTap = now;
-  }, { passive:true });
+  }, { passive: true });
 
   window.addEventListener('keydown', e => {
     if (transitioning) return;
-    if (e.code==='Space'||e.code==='Enter') { e.preventDefault(); growMoon(0.15); }
+    if (e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); grow(0.15); }
   });
 
   /* ── INIT ── */
   resize();
-  window.addEventListener('resize', () => {
-    resize(); bgDirty = true; initTrees(); initRain();
-  });
-  initTrees();
-  initRain();
+  initParticles();
+  window.addEventListener('resize', () => { resize(); initParticles(); });
   requestAnimationFrame(draw);
 })();
 
