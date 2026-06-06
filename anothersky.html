@@ -814,7 +814,8 @@ body {
   display: none; flex: 1;
   align-items: center; justify-content: center;
   padding: 60px 40px;
-  position: relative; overflow: hidden;
+  position: relative; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 #synopsis-gate.show { display: flex; }
 
@@ -1111,9 +1112,9 @@ to   { background-size: 100px 71px; }
   font-size: 0.92rem; line-height: 2;
   color: var(--text); margin-bottom: 32px;
   opacity: 0; max-height: 0; overflow: hidden;
-  transition: opacity 1.2s ease 0.4s, max-height 1.2s ease;
+  transition: opacity 1.2s ease 0.4s, max-height 1.5s ease;
 }
-#syn-text.show { opacity: 1; max-height: 400px; }
+#syn-text.show { opacity: 1; max-height: 2000px; }
 #syn-text p { margin-bottom: 1em; }
 #syn-text p:first-child::first-letter {
   font-family: var(--font-display, 'Special Gothic Expanded One');
