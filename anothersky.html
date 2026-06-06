@@ -1880,6 +1880,218 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     max-height: 85dvh;
   }
 }
+
+/* ── LIGHT MODE SYNOPSIS SKY ── */
+/* Warm haze sky — works with the paper parchment palette */
+:root[data-theme="paper"] #synopsis-gate {
+  /* Soft warm-light gradient bleeding from top — sunrise/haze, not clear-blue noon */
+  background: linear-gradient(
+    180deg,
+    rgba(255,235,180,0.55) 0%,
+    rgba(255,220,140,0.25) 25%,
+    transparent 60%
+  );
+}
+:root[data-theme="paper"] #synopsis-gate #sky-bg {
+  /* Warm amber-cream sky that agrees with --paper: #f5f0e8 */
+  background: linear-gradient(
+    180deg,
+    #e8c97a 0%,
+    #f0d898 18%,
+    #f5e8b8 40%,
+    #f5f0e2 70%,
+    transparent 100%
+  ) !important;
+  background-image: none !important;
+  opacity: 0.45;
+}
+/* Suppress dark cloud/storm layers */
+:root[data-theme="paper"] #synopsis-gate #sky-clouds-top,
+:root[data-theme="paper"] #synopsis-gate #sky-storm,
+:root[data-theme="paper"] #synopsis-gate #sky-blackhole {
+  opacity: 0 !important;
+  transition: opacity 1.5s ease;
+}
+/* Wisps become warm, very faint */
+:root[data-theme="paper"] #synopsis-gate #sky-wispy {
+  opacity: 0.12 !important;
+  filter: brightness(4) sepia(1) saturate(0.5);
+}
+:root[data-theme="paper"] #synopsis-gate #sky-clouds-med {
+  opacity: 0.08 !important;
+  filter: brightness(3) sepia(1) saturate(0.3);
+}
+/* Moon out */
+:root[data-theme="paper"] #synopsis-gate #sky-moon {
+  opacity: 0 !important;
+  transition: opacity 1s ease;
+}
+/* Kill rain */
+:root[data-theme="paper"] #rain-canvas,
+:root[data-theme="paper"] canvas#rain-canvas {
+  opacity: 0 !important;
+  display: none !important;
+  pointer-events: none !important;
+}
+
+/* ── SUN ELEMENT ── */
+#sky-sun {
+  position: absolute;
+  z-index: 2;
+  top: 6%;
+  right: 10%;
+  width: 70px;
+  height: 70px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 2s ease;
+  display: none;
+}
+:root[data-theme="paper"] #synopsis-gate #sky-sun {
+  display: block;
+  opacity: 1;
+}
+#sky-sun-inner {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+#sky-sun-circle {
+  position: absolute;
+  inset: 12px;
+  border-radius: 50%;
+  /* Warm golden sun, not cold white */
+  background: radial-gradient(circle at 38% 38%, #fff5b0, #ffd93d 50%, #ffaa00 100%);
+  box-shadow:
+    0 0 0 5px rgba(255,200,60,0.15),
+    0 0 22px 8px  rgba(255,180,30,0.22),
+    0 0 55px 22px rgba(255,150,0,0.12);
+  animation: sun-pulse 5s ease-in-out infinite;
+}
+/* Subtle warm ray halo */
+#sky-sun-inner::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  background: repeating-conic-gradient(
+    rgba(255,210,60,0.18) 0deg 10deg,
+    transparent 10deg 20deg
+  );
+  border-radius: 50%;
+  animation: sun-rays 28s linear infinite;
+}
+@keyframes sun-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.95; }
+  50%       { transform: scale(1.03); opacity: 0.88; }
+}
+@keyframes sun-rays {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ── SYNOPSIS BIRDS (light mode only) ── */
+#synopsis-birds-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  display: none;
+}
+:root[data-theme="paper"] #synopsis-gate #synopsis-birds-layer {
+  display: block;
+}
+/* Bird sprite — same sprite from ra04 page, dark silhouette */
+#synopsis-birds-layer .sbird {
+  position: absolute;
+  width: 72px; height: 10px;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgMTI1IiB3aWR0aD0iOTAwIiBoZWlnaHQ9IjEyNSI+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgMCkiPgogICAgICA8ZWxsaXBzZSBjeD0iNDUuMCIgY3k9IjYyLjUiIHJ4PSIxNCIgcnk9IjYiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRMjcuNSw2Mi41IDEwLjAsNjIuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDYyLjUgODAuMCw2Mi41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDxwYXRoIGQ9Ik02My4wLDU5LjUgTDY5LjAsNjAuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8cGF0aCBkPSJNMjcuMCw2NC41IEwxOS4wLDYxLjUgTTI3LjAsNjQuNSBMMjAuMCw2Ny41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L2c+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTAsIDApIj4KICAgICAgPGVsbGlwc2UgY3g9IjQ1LjAiIGN5PSI2Mi41IiByeD0iMTQiIHJ5PSI2IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTI3LjUsNjUuNCAxMC4wLDcyLjEiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRNjIuNSw2NS40IDgwLjAsNzIuMSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8Y2lyY2xlIGN4PSI1OS4wIiBjeT0iNTkuNSIgcj0iNSIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8cGF0aCBkPSJNNjMuMCw1OS41IEw2OS4wLDYwLjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTgwLCAwKSI+CiAgICAgIDxlbGxpcHNlIGN4PSI0NS4wIiBjeT0iNjIuNSIgcng9IjE0IiByeT0iNiIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFEyNy41LDY3LjkgMTAuMCw4MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTYyLjUsNjcuOSA4MC4wLDgwLjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPGNpcmNsZSBjeD0iNTkuMCIgY3k9IjU5LjUiIHI9IjUiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNy4wLDY0LjUgTDE5LjAsNjEuNSBNMjcuMCw2NC41IEwyMC4wLDY3LjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KPC9zdmc+');
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  will-change: transform;
+  /* Dark brown silhouette — matches paper ink palette */
+  filter: brightness(0) invert(0) sepia(1) saturate(2) hue-rotate(10deg) brightness(0.25);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+@keyframes sflt-a {
+  0%   { transform: translateX(-12vw) translateY(0vh)   scale(0.28); }
+  8%   { transform: translateX(5vw)   translateY(-2vh)  scale(0.33); }
+  20%  { transform: translateX(22vw)  translateY(3vh)   scale(0.40); }
+  32%  { transform: translateX(40vw)  translateY(-1vh)  scale(0.46); }
+  44%  { transform: translateX(58vw)  translateY(4vh)   scale(0.50); }
+  56%  { transform: translateX(74vw)  translateY(1vh)   scale(0.52); }
+  68%  { transform: translateX(88vw)  translateY(-2vh)  scale(0.50); }
+  80%  { transform: translateX(102vw) translateY(2vh)   scale(0.48); }
+  100% { transform: translateX(115vw) translateY(0vh)   scale(0.45); }
+}
+@keyframes sflt-b {
+  0%   { transform: translateX(-12vw) translateY(-2vh)  scale(0.35); }
+  10%  { transform: translateX(6vw)   translateY(2vh)   scale(0.30); }
+  22%  { transform: translateX(24vw)  translateY(-3vh)  scale(0.42); }
+  35%  { transform: translateX(42vw)  translateY(2vh)   scale(0.38); }
+  48%  { transform: translateX(60vw)  translateY(-2vh)  scale(0.48); }
+  60%  { transform: translateX(76vw)  translateY(3vh)   scale(0.46); }
+  72%  { transform: translateX(90vw)  translateY(-1vh)  scale(0.44); }
+  85%  { transform: translateX(104vw) translateY(1vh)   scale(0.42); }
+  100% { transform: translateX(115vw) translateY(-2vh)  scale(0.40); }
+}
+#synopsis-birds-layer .sbird:nth-child(1)  { top:7%;  animation-name:sflt-a; animation-duration:14s;   animation-delay:0s;    }
+#synopsis-birds-layer .sbird:nth-child(2)  { top:10%; animation-name:sflt-b; animation-duration:15.5s; animation-delay:1.2s;  }
+#synopsis-birds-layer .sbird:nth-child(3)  { top:6%;  animation-name:sflt-a; animation-duration:16s;   animation-delay:3s;    }
+#synopsis-birds-layer .sbird:nth-child(4)  { top:22%; animation-name:sflt-b; animation-duration:15s;   animation-delay:5s;    }
+#synopsis-birds-layer .sbird:nth-child(5)  { top:26%; animation-name:sflt-a; animation-duration:13.5s; animation-delay:6.5s;  }
+#synopsis-birds-layer .sbird:nth-child(6)  { top:20%; animation-name:sflt-b; animation-duration:17s;   animation-delay:8.5s;  }
+#synopsis-birds-layer .sbird:nth-child(7)  { top:40%; animation-name:sflt-a; animation-duration:16.5s; animation-delay:11s;   }
+#synopsis-birds-layer .sbird:nth-child(8)  { top:43%; animation-name:sflt-b; animation-duration:14.8s; animation-delay:12.5s; }
+#synopsis-birds-layer .sbird:nth-child(9)  { top:38%; animation-name:sflt-a; animation-duration:13s;   animation-delay:14s;   }
+
+/* ── LIGHT MODE SYN-BOX — transparent, blends with paper bg ── */
+/* No glass card. Just let the content sit on the parchment naturally. */
+:root[data-theme="paper"] #synopsis-gate #syn-box {
+  background: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+/* ── LIGHT MODE TITLE — keep Rubik Glitch but warm it up ── */
+/* No Comic Sans. Use the existing glitch font — just recolor warm. */
+:root[data-theme="paper"] #synopsis-gate #syn-title {
+  color: var(--red) !important;
+  /* Soften the heavy chromatic shift — just a hint */
+  filter: none;
+}
+:root[data-theme="paper"] #synopsis-gate #syn-title::before {
+  color: rgba(180,80,0,0.35);
+  opacity: 0.35;
+}
+:root[data-theme="paper"] #synopsis-gate #syn-title::after {
+  color: rgba(100,40,0,0.3);
+  opacity: 0.3;
+}
+
+/* ── LEFT ACCENT LINE — softer in light ── */
+:root[data-theme="paper"] #synopsis-gate::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(139,0,0,0.2) 0, rgba(139,0,0,0.2) 4px,
+    transparent 4px, transparent 12px
+  );
+}
+
+/* Rain canvas hard off */
+:root[data-theme="paper"] canvas#rain-canvas { display: none !important; }
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion: reduce) {
+  #synopsis-birds-layer .sbird { animation: none !important; transform: translateX(40vw) scale(0.4); }
+  #sky-sun-inner::before { animation: none !important; }
+  #sky-sun-circle { animation: none !important; }
+}
+
 </style>
 </head>
 <body>
@@ -2072,6 +2284,22 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <div id="synopsis-gate">
         <!-- Sky parallax layers -->
         <div class="sky-layer" id="sky-bg"          aria-hidden="true"></div>
+        <!-- ── LIGHT MODE: SUN ── -->
+        <div id="sky-sun" aria-hidden="true">
+          <div id="sky-sun-inner"><div id="sky-sun-circle"></div></div>
+        </div>
+        <!-- ── LIGHT MODE: BIRDS ── -->
+        <div id="synopsis-birds-layer" aria-hidden="true">
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+          <div class="sbird"></div>
+        </div>
         <div class="sky-layer" id="sky-moon"        aria-hidden="true"></div>
         <div class="sky-layer" id="sky-wispy"       aria-hidden="true"></div>
         <div class="sky-layer" id="sky-clouds-med"  aria-hidden="true"></div>
@@ -3082,9 +3310,12 @@ let currentChapterIdx = -1;
 function updateSkyStat(idx) {
   const skyEl = document.getElementById('hdr-sky-val');
   if (!skyEl) return;
-  // idx -1 = synopsis screen, which always shows rain → report RAINY not SUNNY
-  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'RAINY';
-  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#4466aa';
+  // idx -1 = synopsis screen: RAINY in dark mode, SUNNY in paper mode
+  const isPaper = document.documentElement.dataset.theme === 'paper';
+  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)]
+              : isPaper ? 'SUNNY' : 'RAINY';
+  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)]
+            : isPaper ? '#f5a623' : '#4466aa';
   skyEl.textContent = state;
   skyEl.style.color = col;
 }
@@ -3378,6 +3609,25 @@ function applyReaderOpts() {
   b.classList.toggle('rm-justify', readerOpts.justify);
   b.classList.toggle('rm-focus', readerOpts.focus);
   document.documentElement.dataset.theme = readerOpts.displayMode;
+  // Sync synopsis sky when theme toggles
+  (function syncSkyOnThemeChange() {
+    const isPaperNow = readerOpts.displayMode === 'paper';
+    // If synopsis is visible, update sky weather + rain
+    const gate = document.getElementById('synopsis-gate');
+    if (gate && (gate.style.display === 'flex' || gate.classList.contains('show'))) {
+      if (isPaperNow) {
+        if (window.stopSynopsisRain) window.stopSynopsisRain();
+      } else {
+        if (window.startSynopsisRain) window.startSynopsisRain();
+      }
+      if (window.updateSkyWeather) {
+        window.updateSkyWeather(typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1);
+      }
+      if (window.updateSkyStat) {
+        window.updateSkyStat(typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1);
+      }
+    }
+  })();
   syncThemeBtn();
 }
 function syncReaderUI() {
@@ -4116,6 +4366,8 @@ async function sendEntityMsg() {
 
   /* ── START / STOP ── */
   window.startSynopsisRain = function() {
+    // In light (paper) mode, skip rain entirely
+    if (document.documentElement.dataset.theme === 'paper') return;
     canvas = document.getElementById('rain-canvas');
     if (!canvas || running) return;
     ctx = canvas.getContext('2d');
@@ -4189,7 +4441,10 @@ async function sendEntityMsg() {
       const gate = document.getElementById('synopsis-gate');
       if (!gate) return;
       // chIdx -1 = synopsis screen → always rainy background, use sky-rainy as default
-      const wClass = chIdx < 0 ? 'sky-rainy' : WEATHER_CLASSES[Math.min(chIdx, WEATHER_CLASSES.length - 1)];
+      const _isPaper = document.documentElement.dataset.theme === 'paper';
+      const wClass = chIdx < 0
+        ? (_isPaper ? 'sky-sunny' : 'sky-rainy')
+        : WEATHER_CLASSES[Math.min(chIdx, WEATHER_CLASSES.length - 1)];
       ALL_WEATHER.forEach(c => gate.classList.remove(c));
       gate.classList.add(wClass);
       const bg = document.getElementById('sky-bg');
