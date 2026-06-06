@@ -225,6 +225,8 @@ nav a svg{width:13px;height:13px;opacity:0.6}
 @media (max-width:480px) {
   .theme-toggle        { display:none !important; }
   .live-count          { display:none !important; }
+  .nav-constellation-star { display:none !important; }
+  .nav-aberrant-star   { display:none !important; }
 }
 
 /* Ensure mobile-menu-btn always has its own space — never squeezed to 0 */

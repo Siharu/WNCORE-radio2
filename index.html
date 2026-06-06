@@ -238,13 +238,13 @@ try {
         </div>
       </div>
       <a href="/constellation.html" class="search-btn nav-constellation-star" title="Signal Cartography" style="color:var(--accent)">
-        <img src="assets/celestial/Blue_Nebula_03-512x512.png" alt="" class="nav-celestial-img" aria-hidden="true">
+        <img src="assets/newstar.gif" alt="" class="nav-celestial-img" aria-hidden="true">
       </a>
       <!-- ABERRANT STAR — flowchart link, locked until 1 constellation solved -->
       <button class="nav-aberrant-star" id="aber-star-desktop" onclick="openFlowchart()" title="Signal Cartography — CLASSIFIED">
-        <span class="aber-r"><img src="assets/celestial/planets/Black_hole.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
-        <span class="aber-b"><img src="assets/celestial/planets/Black_hole.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
-        <img src="assets/celestial/planets/Black_hole.png" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
+        <span class="aber-r"><img id="aber-moon-r" src="assets/sky/moon/clearmoon/2.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <span class="aber-b"><img id="aber-moon-b" src="assets/sky/moon/clearmoon/2.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <img id="aber-moon-main" src="assets/sky/moon/clearmoon/2.png" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
       </button>
       <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()">Sign In</button>
       <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -296,7 +296,7 @@ try {
   </a>
   <div class="mobile-nav-divider"></div>
   <a href="/constellation.html" style="color:var(--accent)" class="nav-constellation-mobile">
-    <img src="assets/celestial/Blue_Nebula_03-512x512.png" alt="" class="nav-celestial-img nav-mobile-celestial" aria-hidden="true">
+    <img src="assets/newstar.gif" alt="" class="nav-celestial-img nav-mobile-celestial" aria-hidden="true">
     Signal Cartography ↗
   </a>
   <!-- ABERRANT STAR mobile removed — desktop only -->
@@ -2699,6 +2699,36 @@ if ('serviceWorker' in navigator) {
   document.addEventListener('DOMContentLoaded', applyAberrantState);
   window.addEventListener('storage', function(e) {
     if (e.key === 'wncore-constellation-solved') applyAberrantState();
+  });
+})();
+
+// ── ABERRANT MOON CYCLER — rotates through sky/moon variants every 4s ──
+(function() {
+  var MOONS = [
+    'assets/sky/moon/clearmoon/2.png',
+    'assets/sky/moon/midnightmoon/2.png',
+    'assets/sky/moon/newmoon/2.png',
+    'assets/sky/moon/redmoon/2.png'
+  ];
+  var idx = 0;
+  function cycleMoon() {
+    idx = (idx + 1) % MOONS.length;
+    var src = MOONS[idx];
+    var main = document.getElementById('aber-moon-main');
+    var r    = document.getElementById('aber-moon-r');
+    var b    = document.getElementById('aber-moon-b');
+    if (!main) return;
+    // Fade out → swap → fade in via opacity on the parent button
+    var btn = document.getElementById('aber-star-desktop');
+    btn.style.transition = 'opacity 0.35s ease';
+    btn.style.opacity = '0';
+    setTimeout(function() {
+      main.src = src; r.src = src; b.src = src;
+      btn.style.opacity = '1';
+    }, 360);
+  }
+  document.addEventListener('DOMContentLoaded', function() {
+    setInterval(cycleMoon, 4000);
   });
 })();
 </script>
