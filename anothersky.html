@@ -1558,9 +1558,13 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 @media (max-width: 700px) {
   #synopsis-gate {
     padding: clamp(24px, 6vw, 40px) clamp(16px, 5vw, 24px);
+    padding-top: clamp(20px, 5vw, 32px);
+    /* mob-bar is ~130px tall on mobile — ensure sky and content start below it */
+    scroll-margin-top: 130px;
     align-items: flex-start;
     justify-content: flex-start;
-    min-height: 100svh;
+    /* don't use 100svh — gate lives inside as-main which is already below mob-bar */
+    min-height: 80svh;
   }
   #syn-box {
     max-width: 100%;
@@ -1625,6 +1629,26 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     position: sticky;
     top: 50px;
     z-index: 48;
+  }
+  /* synopsis sky layers must not exceed the visible area below mob-bar */
+  #synopsis-gate .sky-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  /* push syn-box clear of any overlap */
+  #syn-box {
+    position: relative;
+    z-index: 2;
+  }
+  /* mob-bar is sticky ~130px over the scroll area — compensate in as-main
+     so synopsis content never starts hidden behind it */
+  #as-main {
+    overflow-y: visible;
+  }
+  #reader-shell {
+    overflow-y: auto;
+    height: calc(100dvh - 50px); /* full viewport minus header */
   }
 }
 
