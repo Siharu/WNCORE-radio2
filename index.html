@@ -242,9 +242,9 @@ try {
       </a>
       <!-- ABERRANT STAR — flowchart link, locked until 1 constellation solved -->
       <button class="nav-aberrant-star" id="aber-star-desktop" onclick="openFlowchart()" title="Signal Cartography — CLASSIFIED">
-        <span class="aber-r"><img id="aber-moon-r" src="assets/sky/moon/clearmoon/2.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
-        <span class="aber-b"><img id="aber-moon-b" src="assets/sky/moon/clearmoon/2.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
-        <img id="aber-moon-main" src="assets/sky/moon/clearmoon/2.png" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
+        <span class="aber-r"><img id="aber-moon-r" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <span class="aber-b"><img id="aber-moon-b" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <img id="aber-moon-main" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
       </button>
       <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()">Sign In</button>
       <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -299,7 +299,13 @@ try {
     <img src="assets/newstar.gif" alt="" class="nav-celestial-img nav-mobile-celestial" aria-hidden="true">
     Signal Cartography ↗
   </a>
-  <!-- ABERRANT STAR mobile removed — desktop only -->
+  <button class="mobile-aber-link" id="aber-star-mobile" onclick="openFlowchart();toggleMobileMenu()">
+    <img id="aber-moon-mobile" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img nav-mobile-celestial" style="border-radius:50%;object-fit:cover;" aria-hidden="true">
+    <span class="aber-label">
+      <span>Signal Cartography — CLASSIFIED</span>
+      <span class="aber-sub" id="aber-mobile-sub">complete a constellation to unlock</span>
+    </span>
+  </button>
   <div class="mobile-nav-actions">
     <div style="display:flex;gap:10px">
       <button onclick="toggleDark();return false" class="mobile-action-btn">
@@ -1689,8 +1695,8 @@ try {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 34px;
+  height: 34px;
   cursor: pointer;
   flex-shrink: 0;
   background: none;
@@ -1698,28 +1704,32 @@ try {
   padding: 0;
 }
 .nav-aberrant-star img.aber-img-main {
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   animation: aber-drift 4.1s ease-in-out infinite, aber-spin-jerk 7s ease-in-out infinite;
   filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)) saturate(1.2);
   transform-origin: center;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .nav-aberrant-star .aber-r,
 .nav-aberrant-star .aber-b {
   position: absolute;
-  width: 18px;
-  height: 18px;
+  width: 26px;
+  height: 26px;
   pointer-events: none;
 }
 .nav-aberrant-star .aber-r img.aber-img {
-  width: 18px; height: 18px;
+  width: 26px; height: 26px;
   filter: sepia(1) saturate(8) hue-rotate(320deg) brightness(1.4);
   opacity: 0; animation: aber-chroma-r 3.3s ease-in-out infinite; transform-origin: center;
+  border-radius: 50%; object-fit: cover;
 }
 .nav-aberrant-star .aber-b img.aber-img {
-  width: 18px; height: 18px;
+  width: 26px; height: 26px;
   filter: sepia(1) saturate(8) hue-rotate(160deg) brightness(1.5);
   opacity: 0; animation: aber-chroma-b 3.3s ease-in-out infinite; transform-origin: center;
+  border-radius: 50%; object-fit: cover;
 }
 .nav-aberrant-star.locked img.aber-img-main { filter: saturate(0) brightness(0.3); animation: aber-locked-pulse 3s ease-in-out infinite; }
 .nav-aberrant-star.locked .aber-r,
@@ -2705,10 +2715,10 @@ if ('serviceWorker' in navigator) {
 // ── ABERRANT MOON CYCLER — rotates through sky/moon variants every 4s ──
 (function() {
   var MOONS = [
-    'assets/sky/moon/clearmoon/2.png',
-    'assets/sky/moon/midnightmoon/2.png',
-    'assets/sky/moon/newmoon/2.png',
-    'assets/sky/moon/redmoon/2.png'
+    'assets/sky/moon/clearmoon/icon.png',
+    'assets/sky/moon/midnightmoon/icon.png',
+    'assets/sky/moon/newmoon/icon.png',
+    'assets/sky/moon/redmoon/icon.png'
   ];
   var idx = 0;
   function cycleMoon() {
@@ -2717,6 +2727,7 @@ if ('serviceWorker' in navigator) {
     var main = document.getElementById('aber-moon-main');
     var r    = document.getElementById('aber-moon-r');
     var b    = document.getElementById('aber-moon-b');
+    var mob  = document.getElementById('aber-moon-mobile');
     if (!main) return;
     // Fade out → swap → fade in via opacity on the parent button
     var btn = document.getElementById('aber-star-desktop');
@@ -2724,6 +2735,7 @@ if ('serviceWorker' in navigator) {
     btn.style.opacity = '0';
     setTimeout(function() {
       main.src = src; r.src = src; b.src = src;
+      if (mob) mob.src = src;
       btn.style.opacity = '1';
     }, 360);
   }
