@@ -358,6 +358,7 @@ body.mode-chaos #main-card {
 <!-- MAIN CARD -->
 <div id="main-card">
   <span id="coord-tag">RA 04h 31m 44s / DEC +16° 41′ — CYG X-1 // SECTOR 7-BLANK</span>
+  <div id="lost-path-tag" style="display:none;font-family:monospace;font-size:0.55rem;letter-spacing:2px;opacity:0.45;margin-bottom:8px;word-break:break-all;"></div>
   <div id="mode-title">SIGNAL LOST</div>
   <div id="mode-sub"></div>
   <div id="progress-bar"><div id="progress-fill"></div></div>
@@ -366,6 +367,12 @@ body.mode-chaos #main-card {
     <div class="sdot"></div><div class="sdot"></div>
   </div>
   <div id="mode-counter">// MODE 1 OF 4 — CYCLING</div>
+</div>
+
+<!-- Return link — shown always; styled in-theme -->
+<div id="return-home" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:200;display:flex;gap:12px;pointer-events:auto;">
+  <a href="/" style="font-family:monospace;font-size:0.52rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.35);text-decoration:none;padding:7px 16px;border:1px solid rgba(255,255,255,0.12);transition:color 0.2s,border-color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.8)';this.style.borderColor='rgba(255,255,255,0.4)'" onmouseout="this.style.color='rgba(255,255,255,0.35)';this.style.borderColor='rgba(255,255,255,0.12)'">&#8592; MAIN ARRAY</a>
+  <a href="javascript:history.back()" style="font-family:monospace;font-size:0.52rem;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,0.2);text-decoration:none;padding:7px 16px;border:1px solid rgba(255,255,255,0.07);transition:color 0.2s,border-color 0.2s;" onmouseover="this.style.color='rgba(255,255,255,0.5)';this.style.borderColor='rgba(255,255,255,0.2)'" onmouseout="this.style.color='rgba(255,255,255,0.2)';this.style.borderColor='rgba(255,255,255,0.07)'">BACK</a>
 </div>
 
 <script>
@@ -529,6 +536,20 @@ const titleEl    = document.getElementById('mode-title');
 const subEl      = document.getElementById('mode-sub');
 const bgTextEl   = document.getElementById('bg-text');
 const counterEl  = document.getElementById('mode-counter');
+
+// ── LOST PATH — display the 404'd URL in lore-appropriate way ─────────
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const lost = params.get('lost');
+  const lostEl = document.getElementById('lost-path-tag');
+  if (lost && lostEl) {
+    try {
+      const decoded = decodeURIComponent(lost);
+      lostEl.textContent = 'MISSING NODE: ' + decoded;
+      lostEl.style.display = 'block';
+    } catch(e) {}
+  }
+})();
 const flashEl    = document.getElementById('flash');
 const birds      = document.querySelectorAll('.bird');
 

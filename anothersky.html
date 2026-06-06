@@ -943,29 +943,29 @@ body {
 /* Hide star/sun element in paper mode */
 :root[data-theme="paper"] #sky-moon { opacity: 0 !important; }
 
-/* Replace base sky with daytime asset in paper mode */
+/* Replace base sky with new/ asset in paper mode */
 :root[data-theme="paper"] #sky-bg {
-  background-image: url('assets/sky/day/1.png');
+  background-image: url('assets/sky/new/1.png');
   background-size: cover;
-  background-position: center;
+  background-position: center top;
   opacity: 1;
 }
-/* Replace wispy cloud layer with evening sky new/1 */
+/* Replace wispy cloud layer with new/2 */
 :root[data-theme="paper"] #sky-wispy::before {
-  background-image: url('assets/sky/new/1.png');
+  background-image: url('assets/sky/new/2.png');
   background-size: auto 100%;
   background-position: 0 0;
 }
-/* Replace medium clouds with day sky variant */
+/* Replace medium clouds with new/3 */
 :root[data-theme="paper"] #sky-clouds-med::before {
-  background-image: url('assets/sky/day/2.png');
+  background-image: url('assets/sky/new/3.png');
   background-size: auto 80%;
   background-position: 0 20%;
 }
-/* Replace top cloud layer with new sky layer */
+/* Replace top cloud layer — use new/daycloud assets for layered depth */
 :root[data-theme="paper"] #sky-clouds-top::before {
-  background-image: url('assets/sky/new/2.png');
-  background-size: auto 60%;
+  background-image: url('assets/sky/new/daycloud1.png');
+  background-size: auto 55%;
   background-position: 0 top;
 }
 /* Hide rain canvas and lightning in paper mode */
@@ -1194,6 +1194,24 @@ to   { background-size: 100px 71px; }
   margin-bottom: 8px; letter-spacing: 1px;
 }
 :root[data-theme="paper"] .ch-file-title { color: var(--text); }
+
+/* ── PAPER MODE — soften synopsis gate ── */
+:root[data-theme="paper"] #syn-encrypted {
+  color: #7a4a2a;
+  border-left-color: #b07050;
+  background: rgba(180,140,100,0.12);
+}
+:root[data-theme="paper"] #syn-title { color: #6b3520; }
+:root[data-theme="paper"] #syn-title::before { color: rgba(139,60,30,0.4); }
+:root[data-theme="paper"] #syn-title::after  { color: rgba(40,80,160,0.3); }
+:root[data-theme="paper"] #syn-stamp { color: #a07050; }
+:root[data-theme="paper"] #syn-stamp::after { background: rgba(160,112,80,0.25); }
+:root[data-theme="paper"] #syn-world-tag { color: rgba(90,55,30,0.5); }
+:root[data-theme="paper"] #syn-decrypt-btn { border-color: #8b4513; color: #8b4513; }
+:root[data-theme="paper"] #syn-decrypt-btn::before { background: #8b4513; }
+:root[data-theme="paper"] #syn-decrypt-btn:hover { color: #f5f0e8; }
+:root[data-theme="paper"] #syn-begin-btn { background: #8b4513; border-color: #8b4513; color: #f5f0e8; }
+:root[data-theme="paper"] #syn-text p:first-child::first-letter { color: #8b4513; }
 .ch-file-date {
   font-family: var(--font-mono, 'IBM Plex Mono');
   font-size: 0.36rem; letter-spacing: 3px; color: var(--dred2);
@@ -1294,6 +1312,48 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   border-top-color: var(--red);
 }
 #reader-opts-panel.open { display: block; }
+
+/* ── AMBIENT PLAYER ── */
+#ro-ambient-section { margin-top: 4px; }
+.ro-ambient-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 6px;
+}
+.ro-amb-btn {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.42rem; letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 7px 5px; cursor: pointer;
+  background: transparent; border: 1px solid var(--brd);
+  color: var(--text2); text-align: center;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ro-amb-btn:hover { border-color: var(--red); color: var(--red); }
+.ro-amb-btn.amb-active { border-color: var(--red); color: var(--red); background: rgba(200,0,0,0.06); }
+.ro-amb-btn.amb-active::before { content: '▶ '; }
+#ro-amb-vol-row {
+  display: flex; align-items: center; gap: 8px; margin-top: 8px;
+}
+#ro-amb-vol-row label {
+  font-family: var(--font-display); font-size: 0.42rem; letter-spacing: 2px;
+  color: var(--text3); text-transform: uppercase; white-space: nowrap;
+}
+#ro-amb-vol {
+  flex: 1; accent-color: var(--red); height: 2px;
+}
+#ro-amb-stop {
+  font-family: var(--font-display); font-size: 0.4rem; letter-spacing: 1.5px;
+  padding: 5px 8px; background: transparent; border: 1px solid var(--brd);
+  color: var(--text3); cursor: pointer; text-transform: uppercase;
+  transition: border-color 0.2s, color 0.2s;
+}
+#ro-amb-stop:hover { border-color: var(--red); color: var(--red); }
+#ro-amb-credit {
+  font-size: 0.35rem; color: var(--text3); font-family: var(--font-mono);
+  letter-spacing: 0.5px; margin-top: 6px; line-height: 1.6;
+}
+#ro-amb-credit a { color: var(--text3); text-decoration: none; }
+#ro-amb-credit a:hover { color: var(--red); }
+
 .ro-title { font-size: 0.36rem; color: var(--red); letter-spacing: 3px; margin-bottom: 12px; border-bottom: 1px solid var(--brd); padding-bottom: 8px; text-transform: uppercase; }
 .ro-section { font-size: 0.3rem; color: var(--text3); letter-spacing: 3px; margin-bottom: 6px; margin-top: 10px; text-transform: uppercase; }
 .ro-row { display: flex; gap: 5px; margin-bottom: 8px; }
@@ -2239,6 +2299,23 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <button id="ro-revert" onclick="revertTranslation()">
       <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:9px;height:9px;vertical-align:middle;margin-right:3px">RESTORE ORIGINAL
     </button>
+
+    <hr class="ro-divider">
+    <div class="ro-section" id="ro-ambient-section">AMBIENT</div>
+    <div class="ro-ambient-grid">
+      <button class="ro-amb-btn" data-amb="analog" onclick="setAmbient('analog',this)">ANALOG STATIC</button>
+      <button class="ro-amb-btn" data-amb="rain"   onclick="setAmbient('rain',this)">RAIN GLASS</button>
+      <button class="ro-amb-btn" data-amb="forest" onclick="setAmbient('forest',this)">FOREST NIGHT</button>
+      <button class="ro-amb-btn" data-amb="cave"   onclick="setAmbient('cave',this)">CAVE DRIP</button>
+      <button class="ro-amb-btn" data-amb="signal" onclick="setAmbient('signal',this)">SIGNAL DRIFT</button>
+      <button class="ro-amb-btn" data-amb="wind"   onclick="setAmbient('wind',this)">DEEP WIND</button>
+    </div>
+    <div id="ro-amb-vol-row">
+      <label>VOL</label>
+      <input type="range" id="ro-amb-vol" min="0" max="1" step="0.05" value="0.3" oninput="setAmbVol(this.value)">
+      <button id="ro-amb-stop" onclick="stopAmbient()">■ STOP</button>
+    </div>
+    <div id="ro-amb-credit">src: <a href="https://freesound.org" target="_blank" rel="noopener">freesound.org</a> · CC licensed</div>
   </div>
 
 </div><!-- /reader-shell -->
@@ -3085,6 +3162,7 @@ document.getElementById('btn-no').addEventListener('click', () => {
 
 /* ── SYNOPSIS + DECRYPT ────────────────────────────── */
 function showSynopsis() {
+  history.pushState({ as_view: 'synopsis' }, '', location.href.split('#')[0] + '#synopsis');
   document.getElementById('synopsis-gate').classList.add('show');
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
@@ -3130,6 +3208,7 @@ function doDecrypt() {
 }
 
 function beginReading() {
+  history.pushState({ as_view: 'reader', chIdx: currentChapterIdx }, '', location.href.split('#')[0] + '#ch-' + currentChapterIdx);
   document.getElementById('synopsis-gate').classList.remove('show');
   document.getElementById('synopsis-gate').style.display = 'none';
   document.getElementById('ch-reader').style.display = 'flex';
@@ -3277,6 +3356,8 @@ function loadChapter(idx) {
   if (isNaN(idx) || idx < 0 || idx >= chapters.length) return;
   curIdx = idx;
   currentChapterIdx = idx;
+  // Push in-page history state so back-button works within reader
+  history.pushState({ as_view: 'reader', chIdx: idx }, '', location.href.split('#')[0] + '#ch-' + idx);
 
   // Ensure reader is showing
   document.getElementById('synopsis-gate').classList.remove('show');
@@ -3461,6 +3542,59 @@ function syncReaderUI() {
   });
   const j = document.getElementById('ro-justify'); if (j) j.checked = readerOpts.justify;
   const f = document.getElementById('ro-focus'); if (f) f.checked = readerOpts.focus;
+}
+
+
+/* ── AMBIENT MUSIC PLAYER ── */
+/* All tracks: freesound.org CC previews */
+const AMBIENT_TRACKS = {
+  analog:  ['https://cdn.freesound.org/previews/316/316847_5123851-lq.mp3',
+            'https://cdn.freesound.org/previews/243/243627_4107918-lq.mp3'],
+  rain:    ['https://cdn.freesound.org/previews/346/346186_5121236-lq.mp3',
+            'https://cdn.freesound.org/previews/531/531710_7346540-lq.mp3'],
+  forest:  ['https://cdn.freesound.org/previews/531/531947_2523167-lq.mp3',
+            'https://cdn.freesound.org/previews/456/456968_5121236-lq.mp3'],
+  cave:    ['https://cdn.freesound.org/previews/346/346943_5121236-lq.mp3',
+            'https://cdn.freesound.org/previews/401/401934_7255534-lq.mp3'],
+  signal:  ['https://cdn.freesound.org/previews/399/399095_6142149-lq.mp3',
+            'https://cdn.freesound.org/previews/243/243628_4107918-lq.mp3'],
+  wind:    ['https://cdn.freesound.org/previews/361/361169_6505188-lq.mp3',
+            'https://cdn.freesound.org/previews/476/476042_6418094-lq.mp3'],
+};
+let _ambHowl = null, _ambKey = null, _ambVol = 0.3;
+
+function setAmbient(key, btnEl) {
+  // Toggle off if same track clicked
+  if (_ambKey === key) { stopAmbient(); return; }
+  stopAmbient(false);
+  _ambKey = key;
+  const srcs = AMBIENT_TRACKS[key];
+  _ambHowl = new Howl({
+    src: srcs, loop: true, volume: 0, html5: true,
+    onloaderror: () => {
+      // try second src if first fails
+      if (srcs.length > 1) {
+        _ambHowl = new Howl({ src: [srcs[1]], loop: true, volume: 0, html5: true });
+        _ambHowl.play(); _ambHowl.fade(0, _ambVol, 2000);
+      }
+    }
+  });
+  _ambHowl.play();
+  _ambHowl.fade(0, _ambVol, 2000);
+  // sync UI
+  document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
+  if (btnEl) btnEl.classList.add('amb-active');
+}
+
+function stopAmbient(clearBtn = true) {
+  if (_ambHowl) { _ambHowl.fade(_ambVol, 0, 800); setTimeout(() => { if(_ambHowl){_ambHowl.stop();_ambHowl.unload();_ambHowl=null;} }, 900); }
+  _ambKey = null;
+  if (clearBtn) document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
+}
+
+function setAmbVol(v) {
+  _ambVol = parseFloat(v);
+  if (_ambHowl) _ambHowl.volume(_ambVol);
 }
 
 function toggleReaderOpts() { document.getElementById('reader-opts-panel').classList.toggle('open'); }
@@ -4194,6 +4328,35 @@ async function sendEntityMsg() {
     if (_rainNode && _audioCtx) {
       _rainNode.gain.linearRampToValueAtTime(0, _audioCtx.currentTime + 1.5);
     }
+  }
+
+
+  /* ── IN-PAGE BACK NAVIGATION ── */
+  window.addEventListener('popstate', function(e) {
+    const st = e.state;
+    if (!st || !st.as_view) return; // let browser handle non-AS states
+    if (st.as_view === 'synopsis') {
+      // Silently show synopsis without pushing another state
+      document.getElementById('synopsis-gate').classList.add('show');
+      document.getElementById('ch-reader').classList.remove('show');
+      document.getElementById('ch-reader').style.display = 'none';
+      document.getElementById('synopsis-gate').style.display = 'flex';
+      const mobBar = document.getElementById('mob-bar');
+      if (mobBar) mobBar.classList.remove('reader-active');
+      updateSkyStat(currentChapterIdx);
+      setTimeout(() => startSynopsisRain(), 300);
+    } else if (st.as_view === 'reader') {
+      const idx = st.chIdx != null ? st.chIdx : currentChapterIdx;
+      document.getElementById('synopsis-gate').classList.remove('show');
+      document.getElementById('synopsis-gate').style.display = 'none';
+      document.getElementById('ch-reader').style.display = 'flex';
+      document.getElementById('ch-reader').classList.add('show');
+      if (idx !== currentChapterIdx) loadChapter(idx);
+    }
+  });
+  /* Push initial state so first back from synopsis goes to referrer, not this page mid-reader */
+  if (!history.state || !history.state.as_view) {
+    history.replaceState({ as_view: 'synopsis' }, '', location.href.split('#')[0] + '#synopsis');
   }
 
   /* ── PUBLIC: triggerThunder ── */

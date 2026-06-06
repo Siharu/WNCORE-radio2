@@ -238,13 +238,13 @@ try {
         </div>
       </div>
       <a href="/constellation.html" class="search-btn nav-constellation-star" title="Signal Cartography" style="color:var(--accent)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <img src="assets/celestial/Blue_Nebula_03-512x512.png" alt="" class="nav-celestial-img" aria-hidden="true">
       </a>
       <!-- ABERRANT STAR — flowchart link, locked until 1 constellation solved -->
       <button class="nav-aberrant-star" id="aber-star-desktop" onclick="openFlowchart()" title="Signal Cartography — CLASSIFIED">
-        <span class="aber-r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-        <span class="aber-b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="6" stroke-width="1.2" opacity="0.5"/><line x1="22" y1="9.27" x2="18.5" y2="10.5" stroke-width="1.2" opacity="0.5"/><line x1="18.18" y1="21.02" x2="16" y2="18" stroke-width="1.2" opacity="0.5"/></svg>
+        <span class="aber-r"><img src="assets/celestial/planets/Black_hole.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <span class="aber-b"><img src="assets/celestial/planets/Black_hole.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <img src="assets/celestial/planets/Black_hole.png" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
       </button>
       <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()">Sign In</button>
       <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -295,8 +295,8 @@ try {
     About
   </a>
   <div class="mobile-nav-divider"></div>
-  <a href="/constellation.html" style="color:var(--accent)">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/><line x1="12" y1="2" x2="12" y2="8"/></svg>
+  <a href="/constellation.html" style="color:var(--accent)" class="nav-constellation-mobile">
+    <img src="assets/celestial/Blue_Nebula_03-512x512.png" alt="" class="nav-celestial-img nav-mobile-celestial" aria-hidden="true">
     Signal Cartography ↗
   </a>
   <!-- ABERRANT STAR mobile removed — desktop only -->
@@ -1084,6 +1084,25 @@ try {
           <p style="font-size:0.68rem;color:var(--text3);line-height:1.5;margin:8px 0 0;font-style:italic;">Constellation archive and black hole run on Three.js r128 with custom shaders. Earth globe uses Globe.gl over WebGL. All renders are client-side.</p>
         </div>
 
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+            <img src="assets/lucid/File-Music.png" alt="" style="width:13px;height:13px;opacity:0.5;image-rendering:pixelated;">
+            <div style="font-size:0.62rem;font-family:var(--font-mono);letter-spacing:2px;color:var(--accent);text-transform:uppercase;">Another Sky — Ambient Audio</div>
+            <div style="flex:1;height:1px;background:var(--border);opacity:0.5"></div>
+            <a href="https://freesound.org" target="_blank" rel="noopener" style="font-size:0.55rem;font-family:var(--font-mono);color:var(--text3);text-decoration:none;letter-spacing:1px;opacity:0.7">freesound.org ↗</a>
+          </div>
+          <p style="font-size:0.78rem;color:var(--text2);line-height:1.65;margin:0 0 8px;">The ambient soundscapes inside the <em>Another Sky</em> reader are sourced from <a href="https://freesound.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Freesound.org</a> — a collaborative database of Creative Commons audio. All previews stream directly from Freesound's CDN. No audio files are hosted by WNCORE.</p>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;font-size:0.62rem;font-family:var(--font-mono);margin-bottom:8px;">
+            <span style="color:var(--text3);padding:3px 9px;border:1px solid var(--border);border-radius:5px;">Analog Static · CC0</span>
+            <span style="color:var(--text3);padding:3px 9px;border:1px solid var(--border);border-radius:5px;">Rain on Glass · CC0</span>
+            <span style="color:var(--text3);padding:3px 9px;border:1px solid var(--border);border-radius:5px;">Forest Night · CC BY</span>
+            <span style="color:var(--text3);padding:3px 9px;border:1px solid var(--border);border-radius:5px;">Cave Drip · CC0</span>
+            <span style="color:var(--text3);padding:3px 9px;border:1px solid var(--border);border-radius:5px;">Signal Drift · CC0</span>
+            <span style="color:var(--text3);padding:3px 9px;border:1px solid var(--border);border-radius:5px;">Deep Wind · CC BY</span>
+          </div>
+          <p style="font-size:0.68rem;color:var(--text3);line-height:1.5;margin:0;font-style:italic;">Howler.js handles audio routing and cross-fade. Weather-reactive rain and thunder are procedurally generated via Web Audio API as a fallback when streams are unavailable.</p>
+        </div>
+
       </div>
     </div>
 
@@ -1678,12 +1697,11 @@ try {
   border: none;
   padding: 0;
 }
-.nav-aberrant-star svg {
+.nav-aberrant-star img.aber-img-main {
   width: 18px;
   height: 18px;
-  color: var(--accent, #c8472a);
   animation: aber-drift 4.1s ease-in-out infinite, aber-spin-jerk 7s ease-in-out infinite;
-  filter: drop-shadow(0 0 4px rgba(200,71,42,0.5));
+  filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)) saturate(1.2);
   transform-origin: center;
 }
 .nav-aberrant-star .aber-r,
@@ -1693,11 +1711,19 @@ try {
   height: 18px;
   pointer-events: none;
 }
-.nav-aberrant-star .aber-r svg { color: #f16f6f; opacity: 0; animation: aber-chroma-r 3.3s ease-in-out infinite; transform-origin: center; }
-.nav-aberrant-star .aber-b svg { color: #67f3da; opacity: 0; animation: aber-chroma-b 3.3s ease-in-out infinite; transform-origin: center; }
-.nav-aberrant-star.locked svg { color: rgba(200,71,42,0.3); filter: none; animation: aber-locked-pulse 3s ease-in-out infinite; }
-.nav-aberrant-star.locked .aber-r svg,
-.nav-aberrant-star.locked .aber-b svg { display: none; }
+.nav-aberrant-star .aber-r img.aber-img {
+  width: 18px; height: 18px;
+  filter: sepia(1) saturate(8) hue-rotate(320deg) brightness(1.4);
+  opacity: 0; animation: aber-chroma-r 3.3s ease-in-out infinite; transform-origin: center;
+}
+.nav-aberrant-star .aber-b img.aber-img {
+  width: 18px; height: 18px;
+  filter: sepia(1) saturate(8) hue-rotate(160deg) brightness(1.5);
+  opacity: 0; animation: aber-chroma-b 3.3s ease-in-out infinite; transform-origin: center;
+}
+.nav-aberrant-star.locked img.aber-img-main { filter: saturate(0) brightness(0.3); animation: aber-locked-pulse 3s ease-in-out infinite; }
+.nav-aberrant-star.locked .aber-r,
+.nav-aberrant-star.locked .aber-b { display: none; }
 @keyframes aber-spin-jerk {
   0%,78%,100% { transform: rotate(0deg) scale(1); }
   79%  { transform: rotate(15deg) scale(1.1) skewX(4deg); }
@@ -1749,10 +1775,13 @@ try {
   position: relative;
   overflow: visible !important;
 }
-.nav-constellation-star svg {
+.nav-constellation-star img.nav-celestial-img {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   animation: const-star-pulse 2.8s ease-in-out infinite, const-star-spin 12s linear infinite;
   transform-origin: center;
-  filter: drop-shadow(0 0 3px rgba(200,71,42,0.6)) drop-shadow(0 0 8px rgba(200,71,42,0.2));
+  filter: drop-shadow(0 0 3px rgba(200,71,42,0.6)) drop-shadow(0 0 8px rgba(200,71,42,0.2)) saturate(1.3) hue-rotate(0deg);
 }
 .nav-constellation-star::before,
 .nav-constellation-star::after {
@@ -1762,6 +1791,24 @@ try {
   pointer-events: none;
 }
 /* Ray cross — horizontal */
+
+/* ── CELESTIAL NAV IMAGES — shared base ── */
+.nav-celestial-img {
+  display: block;
+  image-rendering: pixelated;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Mobile constellation nav image */
+.nav-constellation-mobile { display: flex; align-items: center; gap: 10px; }
+.nav-mobile-celestial {
+  width: 18px; height: 18px; border-radius: 50%;
+  filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)) saturate(1.2);
+  flex-shrink: 0;
+  animation: const-star-pulse 2.8s ease-in-out infinite;
+}
 .nav-constellation-star::before {
   width: 1px;
   height: 14px;
