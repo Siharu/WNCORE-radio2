@@ -1322,128 +1322,236 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #mob-bar {
   display: none; padding: 0;
   background: var(--surface); border-bottom: 1px solid var(--brd);
-  flex-direction: column; gap: 0;
+  flex-direction: row; align-items: center; gap: 0;
 }
 
-/* ── MOBILE CHAPTER SELECTOR (custom glitch grid) ── */
-#mob-ch-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.36rem;
-  letter-spacing: 3px;
-  color: rgba(200,0,0,0.45);
-  padding: 7px 14px 3px;
-  text-transform: uppercase;
-  border-bottom: 1px solid rgba(200,0,0,0.12);
-  display: flex; align-items: center; justify-content: space-between;
-}
-#mob-ch-label span { color: rgba(200,0,0,0.3); }
-
-/* The scroll row for chapter buttons */
-#mob-ch-grid {
+/* ── MOBILE CHAPTER TRIGGER BAR ── */
+#mob-ch-trigger {
+  flex: 1;
   display: flex;
-  flex-direction: row;
-  overflow-x: auto;
-  overflow-y: hidden;
-  gap: 6px;
-  padding: 8px 14px 10px;
-  scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  min-height: 44px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  border: none;
+  background: transparent;
+  text-align: left;
+  overflow: hidden;
 }
-#mob-ch-grid::-webkit-scrollbar { display: none; }
+#mob-ch-trigger:active { background: rgba(200,0,0,0.06); }
 
-/* Individual glitch chapter button */
-.mob-ch-btn {
-  flex: 0 0 auto;
-  min-width: 100px;
-  max-width: 140px;
+#mob-ch-trigger-icon {
+  font-size: 0.65rem;
+  color: rgba(200,0,0,0.5);
+  flex-shrink: 0;
+  line-height: 1;
+}
+#mob-ch-trigger-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 8px 10px;
-  background: rgba(40,0,0,0.6);
-  border: 1px solid rgba(200,0,0,0.22);
-  color: var(--red);
-  cursor: pointer;
-  position: relative;
+  gap: 1px;
   overflow: hidden;
-  text-align: left;
-  transition: border-color 0.15s, background 0.15s;
-  -webkit-tap-highlight-color: transparent;
 }
-.mob-ch-btn::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(200,0,0,0.07) 0%, transparent 60%);
-  pointer-events: none;
-}
-.mob-ch-btn:active,
-.mob-ch-btn.active {
-  background: rgba(200,0,0,0.18);
-  border-color: var(--red);
-}
-.mob-ch-btn .mcb-case {
+#mob-ch-trigger-label {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 0.3rem;
-  letter-spacing: 1.5px;
-  color: rgba(200,0,0,0.45);
+  letter-spacing: 2.5px;
+  color: rgba(200,0,0,0.4);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#mob-ch-trigger-current {
+  font-family: 'Comic Neue', 'Comic Sans MS', 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  font-size: 0.52rem;
+  letter-spacing: 0.5px;
+  color: var(--red);
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.mob-ch-btn .mcb-title {
-  /* Comic Sans × Rubik Mono hybrid: Comic Neue with mono fallback */
-  font-family: 'Comic Neue', 'Comic Sans MS', 'IBM Plex Mono', monospace;
-  font-weight: 700;
-  font-size: 0.55rem;
-  letter-spacing: 1px;
-  color: var(--red);
-  text-transform: uppercase;
-  line-height: 1.25;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  word-break: break-word;
+#mob-ch-trigger-arrow {
+  margin-left: auto;
+  font-size: 0.5rem;
+  color: rgba(200,0,0,0.35);
+  flex-shrink: 0;
+  transition: transform 0.2s;
 }
-
-/* Chromatic twitch animation */
-@keyframes mob-ch-twitch {
-  0%   { text-shadow: none; transform: translateX(0); }
-  10%  { text-shadow: -1px 0 rgba(0,200,255,0.7), 1px 0 rgba(255,0,80,0.7); transform: translateX(-1px); }
-  12%  { text-shadow: 1px 0 rgba(0,200,255,0.7), -1px 0 rgba(255,0,80,0.7); transform: translateX(1px); }
-  14%  { text-shadow: none; transform: translateX(0); }
-  50%  { text-shadow: none; }
-  55%  { text-shadow: 1px 0 rgba(255,0,80,0.5), -1px 0 rgba(0,200,255,0.5); transform: translateX(0.5px); }
-  57%  { text-shadow: none; transform: translateX(0); }
-  100% { text-shadow: none; transform: translateX(0); }
-}
-.mob-ch-btn .mcb-title {
-  animation: mob-ch-twitch 4s steps(1, end) infinite;
-}
-/* Stagger the twitch per button */
-.mob-ch-btn:nth-child(1) .mcb-title  { animation-delay: 0s; }
-.mob-ch-btn:nth-child(2) .mcb-title  { animation-delay: 0.4s; }
-.mob-ch-btn:nth-child(3) .mcb-title  { animation-delay: 0.8s; }
-.mob-ch-btn:nth-child(4) .mcb-title  { animation-delay: 1.2s; }
-.mob-ch-btn:nth-child(5) .mcb-title  { animation-delay: 1.6s; }
-.mob-ch-btn:nth-child(6) .mcb-title  { animation-delay: 2.0s; }
-.mob-ch-btn:nth-child(7) .mcb-title  { animation-delay: 2.4s; }
-.mob-ch-btn:nth-child(8) .mcb-title  { animation-delay: 2.8s; }
-.mob-ch-btn:nth-child(n+9) .mcb-title { animation-delay: 0.2s; }
+#mob-ch-trigger-arrow.open { transform: rotate(180deg); }
 
 /* Bottom bar (settings gear) */
 #mob-bar-tools {
   display: flex;
-  padding: 5px 14px;
-  border-top: 1px solid rgba(200,0,0,0.12);
-  justify-content: flex-end;
+  padding: 0 10px;
+  border-left: 1px solid rgba(200,0,0,0.12);
+  align-items: center;
+  align-self: stretch;
   gap: 8px;
 }
 
 /* Hidden fallback select (keep for JS compat, visually hidden) */
 #mob-ch-sel {
   display: none !important;
+}
+
+/* ── CHAPTER DRAWER OVERLAY ── */
+#mob-ch-drawer {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+#mob-ch-drawer.open { display: flex; flex-direction: column; }
+
+#mob-ch-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+}
+
+#mob-ch-panel {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  max-height: 78vh;
+  background: var(--surface);
+  border-top: 1px solid rgba(200,0,0,0.3);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  overflow: hidden;
+}
+#mob-ch-drawer.open #mob-ch-panel {
+  transform: translateY(0);
+}
+
+#mob-ch-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid rgba(200,0,0,0.15);
+  flex-shrink: 0;
+}
+#mob-ch-panel-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.32rem;
+  letter-spacing: 3px;
+  color: rgba(200,0,0,0.5);
+  text-transform: uppercase;
+}
+#mob-ch-panel-count {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.3rem;
+  letter-spacing: 1.5px;
+  color: rgba(200,0,0,0.3);
+}
+#mob-ch-panel-close {
+  border: 1px solid rgba(200,0,0,0.25);
+  background: transparent;
+  color: rgba(200,0,0,0.6);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.5rem;
+  padding: 4px 10px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s, color 0.12s;
+}
+#mob-ch-panel-close:active { background: rgba(200,0,0,0.15); color: var(--red); }
+
+#mob-ch-list {
+  overflow-y: auto;
+  flex: 1;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 6px 0 16px;
+}
+#mob-ch-list::-webkit-scrollbar { width: 3px; }
+#mob-ch-list::-webkit-scrollbar-thumb { background: rgba(200,0,0,0.3); }
+
+/* Drawer list items */
+.mob-ch-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 11px 16px;
+  border-bottom: 1px solid rgba(200,0,0,0.07);
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.12s;
+}
+.mob-ch-row::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 2px;
+  background: var(--red);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.mob-ch-row:active,
+.mob-ch-row.active {
+  background: rgba(200,0,0,0.08);
+}
+.mob-ch-row.active::before { opacity: 1; }
+.mob-ch-row.active .mrc-title { color: var(--red); }
+
+.mrc-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.32rem;
+  letter-spacing: 1.5px;
+  color: rgba(200,0,0,0.3);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  padding-top: 2px;
+  min-width: 38px;
+}
+.mrc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+.mrc-title {
+  font-family: 'Comic Neue', 'Comic Sans MS', 'IBM Plex Mono', monospace;
+  font-weight: 700;
+  font-size: 0.6rem;
+  color: rgba(200,0,0,0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
+  word-break: break-word;
+  transition: color 0.12s;
+}
+.mrc-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.28rem;
+  letter-spacing: 1px;
+  color: rgba(200,0,0,0.25);
+  text-transform: uppercase;
+}
+
+/* Glitch twitch on active row title */
+@keyframes mob-ch-twitch {
+  0%   { text-shadow: none; transform: translateX(0); }
+  10%  { text-shadow: -1px 0 rgba(0,200,255,0.7), 1px 0 rgba(255,0,80,0.7); transform: translateX(-1px); }
+  12%  { text-shadow: 1px 0 rgba(0,200,255,0.7), -1px 0 rgba(255,0,80,0.7); transform: translateX(1px); }
+  14%  { text-shadow: none; transform: translateX(0); }
+  55%  { text-shadow: 1px 0 rgba(255,0,80,0.5), -1px 0 rgba(0,200,255,0.5); }
+  57%  { text-shadow: none; }
+  100% { text-shadow: none; }
+}
+.mob-ch-row.active .mrc-title {
+  animation: mob-ch-twitch 4s steps(1, end) infinite;
 }
 
 @media(max-width: 700px) {
@@ -1493,6 +1601,114 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 .up-tab.on { background: rgba(200,0,0,0.1); color: var(--red); }
 .up-sec { display: none; }
 .up-sec.vis { display: block; }
+
+/* ═══════════════════════════════════════════════════
+   CHAPTER EDITOR (full-screen)
+═══════════════════════════════════════════════════ */
+.lucid-icon {
+  width: 12px; height: 12px;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+}
+#ced-shell {
+  display: flex; width: 100%; height: 100%;
+  background: #050000; font-family: var(--font-mono, 'IBM Plex Mono');
+}
+#ced-left {
+  width: 220px; min-width: 180px; max-width: 240px;
+  border-right: 1px solid rgba(200,0,0,0.2);
+  display: flex; flex-direction: column;
+  background: #030000; overflow: hidden;
+}
+#ced-left-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid rgba(200,0,0,0.15); flex-shrink: 0;
+}
+#ced-logo { font-size: 0.3rem; letter-spacing: 3px; color: var(--red); text-transform: uppercase; opacity: 0.7; }
+.ced-icon-btn {
+  background: transparent; border: 1px solid rgba(200,0,0,0.2);
+  padding: 4px 6px; cursor: pointer; display: flex; align-items: center; transition: border-color 0.12s;
+}
+.ced-icon-btn:hover { border-color: var(--red); }
+#ced-new-btn {
+  margin: 10px; padding: 9px 10px;
+  background: transparent; border: 1px solid rgba(200,0,0,0.3);
+  color: var(--red); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.36rem; letter-spacing: 2px; cursor: pointer;
+  text-transform: uppercase; transition: background 0.12s; flex-shrink: 0;
+}
+#ced-new-btn:hover { background: rgba(200,0,0,0.1); }
+#ced-ch-list { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent; }
+.ced-ch-item {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 14px; cursor: pointer;
+  border-bottom: 1px solid rgba(200,0,0,0.07);
+  position: relative; transition: background 0.1s;
+}
+.ced-ch-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--red); opacity: 0; transition: opacity 0.12s; }
+.ced-ch-item:hover { background: rgba(200,0,0,0.06); }
+.ced-ch-item.active { background: rgba(200,0,0,0.1); }
+.ced-ch-item.active::before { opacity: 1; }
+.ced-ch-num { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.35); text-transform: uppercase; }
+.ced-ch-name { font-size: 0.42rem; color: rgba(200,80,80,0.8); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ced-ch-item.active .ced-ch-name { color: var(--red); }
+#ced-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+#ced-toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 12px; border-bottom: 1px solid rgba(200,0,0,0.18);
+  background: #040000; flex-shrink: 0;
+}
+#ced-toolbar-meta { display: flex; gap: 8px; align-items: center; }
+#ced-num {
+  width: 52px; background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
+  color: var(--red); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.48rem; padding: 4px 6px; outline: none;
+}
+#ced-title {
+  width: 200px; background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
+  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.48rem; padding: 4px 6px; outline: none;
+}
+#ced-num:focus, #ced-title:focus { border-bottom-color: var(--red); }
+#ced-toolbar-effects { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; flex: 1; }
+.ced-toolbar-sep { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.25); padding: 0 4px; text-transform: uppercase; }
+.ced-fx-btn {
+  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+  background: transparent; border: 1px solid rgba(200,0,0,0.2); color: rgba(200,80,80,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem; letter-spacing: 1.5px;
+  cursor: pointer; text-transform: uppercase; transition: all 0.1s; white-space: nowrap;
+}
+.ced-fx-btn:hover { background: rgba(200,0,0,0.1); border-color: rgba(200,0,0,0.5); color: var(--red); }
+.ced-fx-btn .lucid-icon { width: 10px; height: 10px; }
+#ced-toolbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+#ced-status { font-size: 0.32rem; color: rgba(200,0,0,0.6); letter-spacing: 1px; min-width: 80px; text-align: right; }
+.ced-action-btn {
+  display: flex; align-items: center; gap: 5px; padding: 6px 12px;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.34rem;
+  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.12s;
+}
+.ced-save-btn { background: transparent; border: 1px solid var(--red); color: var(--red); }
+.ced-save-btn:hover { background: rgba(200,0,0,0.15); }
+.ced-del-btn { background: transparent; border: 1px solid rgba(150,0,0,0.4); color: rgba(200,60,60,0.6); }
+.ced-del-btn:hover { border-color: #ff4444; color: #ff4444; }
+#ced-split { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+#ced-editor-pane { flex: 1; display: flex; flex-direction: column; border-right: 1px solid rgba(200,0,0,0.15); min-width: 0; }
+#ced-preview-pane { flex: 1; display: flex; flex-direction: column; overflow-y: auto; min-width: 0; scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent; }
+#ced-editor-label, #ced-preview-label { font-size: 0.28rem; letter-spacing: 2px; color: rgba(200,0,0,0.25); padding: 6px 14px; border-bottom: 1px solid rgba(200,0,0,0.08); text-transform: uppercase; flex-shrink: 0; }
+#ced-body {
+  flex: 1; background: #020000; border: none; outline: none; resize: none;
+  color: #cc9999; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.52rem;
+  line-height: 1.7; padding: 16px;
+  scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent;
+}
+#ced-preview-body { padding: 20px 24px; flex: 1; }
+#ced-preview-body p { font-family: 'Comic Neue','Comic Sans MS',cursive; font-size: clamp(0.95rem, 3vw, 1.08rem); line-height: 1.85; color: var(--text); margin-bottom: 1.4em; }
+@media (max-width: 700px) {
+  #ced-left { display: none; }
+  #ced-split { flex-direction: column; }
+  #ced-preview-pane { display: none; }
+  #ced-editor-pane { flex: 1; }
+  #ced-title { width: 140px; }
+}
 
 /* ═══════════════════════════════════════════════════
    READER MODE VARIANTS
@@ -1818,20 +2034,14 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
       <!-- Mobile chapter bar — lives inside as-main so sticky works below header -->
       <div id="mob-bar">
-        <div id="mob-ch-label">
-          ⊞ ARCHIVE // CHAPTER SELECT
-          <span id="mob-sb-count">—</span>
-        </div>
-        <div id="mob-ch-grid">
-          <!-- populated by renderSidebar() -->
-          <div class="mob-ch-placeholder" id="mob-ch-placeholder" style="
-            font-family:'IBM Plex Mono',monospace;
-            font-size:0.38rem;letter-spacing:2px;
-            color:rgba(200,0,0,0.3);
-            padding:4px 2px;white-space:nowrap;
-            align-self:center;
-          ">NO TRANSMISSIONS RECEIVED</div>
-        </div>
+        <button id="mob-ch-trigger" onclick="openChDrawer()" aria-label="Select chapter">
+          <span id="mob-ch-trigger-icon">⊞</span>
+          <span id="mob-ch-trigger-meta">
+            <span id="mob-ch-trigger-label">ARCHIVE // <span id="mob-sb-count">—</span> TRANSMISSIONS</span>
+            <span id="mob-ch-trigger-current">SELECT CHAPTER</span>
+          </span>
+          <span id="mob-ch-trigger-arrow">▾</span>
+        </button>
         <div id="mob-bar-tools">
           <button class="hdr-btn" onclick="toggleReaderOpts()">⚙</button>
         </div>
@@ -1839,6 +2049,23 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <select id="mob-ch-sel" onchange="if(!isNaN(parseInt(this.value)))loadChapter(parseInt(this.value))">
           <option value="">// SELECT CHAPTER...</option>
         </select>
+      </div>
+
+      <!-- Chapter drawer overlay -->
+      <div id="mob-ch-drawer" role="dialog" aria-modal="true" aria-label="Chapter selection">
+        <div id="mob-ch-backdrop" onclick="closeChDrawer()"></div>
+        <div id="mob-ch-panel">
+          <div id="mob-ch-panel-head">
+            <div>
+              <div id="mob-ch-panel-title">ARCHIVE // CHAPTER SELECT</div>
+              <div id="mob-ch-panel-count">— TRANSMISSIONS LOADED</div>
+            </div>
+            <button id="mob-ch-panel-close" onclick="closeChDrawer()">✕ CLOSE</button>
+          </div>
+          <div id="mob-ch-list">
+            <!-- populated by renderSidebar() -->
+          </div>
+        </div>
       </div>
 
       <!-- Synopsis gate -->
@@ -1977,45 +2204,72 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 </div>
 
 <!-- Upload Modal -->
-<div id="upload-modal" class="modal">
-  <div class="upload-shell">
-    <div class="modal-title">⚡ CONTENT MANAGER // ANOTHER SKY</div>
-    <div class="up-tabs">
-      <button class="up-tab on" onclick="switchTab('add')">+ ADD CHAPTER</button>
-      <button class="up-tab" onclick="switchTab('edit')">EDIT / DELETE</button>
+<div id="upload-modal" class="modal" style="padding:0;align-items:stretch;justify-content:stretch;">
+  <div id="ced-shell">
+
+    <!-- LEFT PANEL: chapter list -->
+    <div id="ced-left">
+      <div id="ced-left-head">
+        <span id="ced-logo">CHAPTER EDITOR</span>
+        <button class="ced-icon-btn" title="Close (Ctrl+B)" onclick="closeUpload()">
+          <img src="assets/lucid/Exit.png" alt="Close" class="lucid-icon">
+        </button>
+      </div>
+      <button id="ced-new-btn" onclick="cedNewChapter()">
+        + NEW CHAPTER
+      </button>
+      <div id="ced-ch-list"><!-- populated by cedRenderList() --></div>
     </div>
-    <!-- ADD TAB -->
-    <div class="up-sec vis" id="tab-add">
-      <div class="modal-field"><label class="modal-label">CHAPTER NUMBER:</label><input type="number" class="modal-inp" id="u-num" min="1" placeholder="1" /></div>
-      <div class="modal-field"><label class="modal-label">CHAPTER TITLE:</label><input type="text" class="modal-inp" id="u-ttl" maxlength="120" placeholder="e.g. The Sky Glitches" /></div>
-      <div class="modal-field">
-        <label class="modal-label">CHAPTER TEXT:</label>
-        <textarea class="up-ta" id="u-body" placeholder="Paste chapter text. Blank lines = new paragraph.&#10;&#10;[IMG url=... align=center caption=...] for images."></textarea>
-      </div>
-      <div class="modal-row">
-        <button class="btn-r" onclick="submitChapter()">▶ PUBLISH</button>
-        <button class="btn-d" onclick="closeUpload()">CANCEL</button>
-      </div>
-      <div class="up-status" id="u-status"></div>
-    </div>
-    <!-- EDIT TAB -->
-    <div class="up-sec" id="tab-edit">
-      <div class="modal-field"><label class="modal-label">SELECT CHAPTER:</label>
-        <select class="modal-inp" id="e-sel" onchange="loadForEdit(this.value)" style="-webkit-appearance:none;cursor:pointer;">
-          <option value="">Choose...</option>
-        </select>
-      </div>
-      <div id="e-fields" style="display:none;">
-        <div class="modal-field"><label class="modal-label">TITLE:</label><input type="text" class="modal-inp" id="e-ttl" /></div>
-        <div class="modal-field"><label class="modal-label">CONTENT:</label><textarea class="up-ta" id="e-body" style="height:160px;"></textarea></div>
-        <div class="modal-row">
-          <button class="btn-r" onclick="saveEdit()">▶ SAVE</button>
-          <button class="btn-d" style="color:#ff4444;border-color:#660000;" onclick="deleteChapter()">🗑 DELETE</button>
-          <button class="btn-d" onclick="closeUpload()">CANCEL</button>
+
+    <!-- RIGHT PANEL: editor + preview -->
+    <div id="ced-right">
+
+      <!-- Toolbar -->
+      <div id="ced-toolbar">
+        <div id="ced-toolbar-meta">
+          <input type="number" id="ced-num" min="1" placeholder="CH#" title="Chapter number">
+          <input type="text" id="ced-title" placeholder="CHAPTER TITLE" maxlength="120" title="Chapter title">
         </div>
-        <div class="up-status" id="e-status"></div>
+        <div id="ced-toolbar-effects">
+          <span class="ced-toolbar-sep">FX</span>
+          <button class="ced-fx-btn" title="[GLITCH]...[/GLITCH]" onclick="cedWrap('[GLITCH]','[/GLITCH]')"><img src="assets/lucid/Signal-2.png" alt="" class="lucid-icon">GLITCH</button>
+          <button class="ced-fx-btn" title="[REDACT]...[/REDACT]" onclick="cedWrap('[REDACT]','[/REDACT]')"><img src="assets/lucid/Bookmark.png" alt="" class="lucid-icon">REDACT</button>
+          <button class="ced-fx-btn" title="[STATIC]...[/STATIC]" onclick="cedWrap('[STATIC]','[/STATIC]')"><img src="assets/lucid/Signal-0.png" alt="" class="lucid-icon">STATIC</button>
+          <button class="ced-fx-btn" title="[SPECTRAL]...[/SPECTRAL]" onclick="cedWrap('[SPECTRAL]','[/SPECTRAL]')"><img src="assets/lucid/Signal-1.png" alt="" class="lucid-icon">SPECTRAL</button>
+          <button class="ced-fx-btn" title="[INKBLEED]...[/INKBLEED]" onclick="cedWrap('[INKBLEED]','[/INKBLEED]')"><img src="assets/lucid/Speaker-1.png" alt="" class="lucid-icon">INK</button>
+          <button class="ced-fx-btn" title="[MARGIN: note]" onclick="cedInsertMargin()"><img src="assets/lucid/List.png" alt="" class="lucid-icon">MARGIN</button>
+          <span class="ced-toolbar-sep">INSERT</span>
+          <button class="ced-fx-btn" title="[IMG url=... align=center caption=...]" onclick="cedInsertImg()"><img src="assets/lucid/Gear.png" alt="" class="lucid-icon">IMG</button>
+        </div>
+        <div id="ced-toolbar-actions">
+          <div id="ced-status"></div>
+          <button class="ced-action-btn ced-del-btn" id="ced-del-btn" title="Delete chapter" onclick="cedDelete()" style="display:none;">DELETE</button>
+          <button class="ced-action-btn ced-save-btn" onclick="cedSave()"><img src="assets/lucid/Next.png" alt="" class="lucid-icon">PUBLISH</button>
+        </div>
+      </div>
+
+      <!-- Split: editor | preview -->
+      <div id="ced-split">
+        <div id="ced-editor-pane">
+          <div id="ced-editor-label">// CONTENT — blank lines = paragraphs</div>
+          <textarea id="ced-body" spellcheck="false" placeholder="Start writing...
+
+Use toolbar effects on selected text:
+[GLITCH]corrupted text[/GLITCH]
+[REDACT]classified[/REDACT]
+[STATIC]static burst[/STATIC]
+[SPECTRAL]ghost echo[/SPECTRAL]
+[INKBLEED]bleeding ink[/INKBLEED]
+[MARGIN: your margin note]
+[IMG url=https://... align=center caption=optional]"></textarea>
+        </div>
+        <div id="ced-preview-pane">
+          <div id="ced-preview-label">// LIVE PREVIEW</div>
+          <div id="ced-preview-body" class="ch-body"></div>
+        </div>
       </div>
     </div>
+
   </div>
 </div>
 
@@ -2868,8 +3122,8 @@ async function loadChapters() {
 function renderSidebar() {
   const list = document.getElementById('ch-list');
   const mob = document.getElementById('mob-ch-sel');
-  const grid = document.getElementById('mob-ch-grid');
-  const placeholder = document.getElementById('mob-ch-placeholder');
+  const drawerList = document.getElementById('mob-ch-list');
+  const panelCount = document.getElementById('mob-ch-panel-count');
   const mobCount = document.getElementById('mob-sb-count');
 
   list.innerHTML = '';
@@ -2877,14 +3131,13 @@ function renderSidebar() {
 
   if (!chapters.length) {
     list.innerHTML = '<div style="padding:14px 16px;font-size:0.38rem;color:var(--text3);letter-spacing:1px;line-height:2;">No transmissions received.</div>';
-    if (placeholder) placeholder.style.display = '';
+    if (drawerList) drawerList.innerHTML = '<div style="padding:20px 16px;font-family:\'IBM Plex Mono\',monospace;font-size:0.36rem;letter-spacing:2px;color:rgba(200,0,0,0.3);text-transform:uppercase;">NO TRANSMISSIONS RECEIVED</div>';
     return;
   }
-  if (placeholder) placeholder.style.display = 'none';
-  if (mobCount) mobCount.textContent = chapters.length;
 
-  // Remove old grid buttons (keep placeholder)
-  grid.querySelectorAll('.mob-ch-btn').forEach(el => el.remove());
+  if (mobCount) mobCount.textContent = chapters.length;
+  if (panelCount) panelCount.textContent = `${chapters.length} TRANSMISSIONS LOADED`;
+  if (drawerList) drawerList.innerHTML = '';
 
   chapters.forEach((ch, i) => {
     // Desktop sidebar button
@@ -2900,24 +3153,54 @@ function renderSidebar() {
     o.value = i; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
     mob.appendChild(o);
 
-    // Mobile glitch grid button
-    const mbtn = document.createElement('button');
-    mbtn.className = 'mob-ch-btn';
-    mbtn.dataset.idx = i;
-    const dateStr = ch.published_at
-      ? new Date(ch.published_at).toLocaleDateString('en-US', {month:'short', year:'2-digit'})
-      : '??';
-    mbtn.innerHTML = `<span class="mcb-case">AS-${String(ch.chapter_num).padStart(2,'0')} // ${dateStr}</span><span class="mcb-title">${ch.title}</span>`;
-    mbtn.onclick = () => { loadChapter(i); highlightMobBtn(i); };
-    grid.appendChild(mbtn);
+    // Drawer list row
+    if (drawerList) {
+      const row = document.createElement('div');
+      row.className = 'mob-ch-row';
+      row.dataset.idx = i;
+      const dateStr = ch.published_at
+        ? new Date(ch.published_at).toLocaleDateString('en-US', {month:'short', year:'2-digit'})
+        : '??';
+      row.innerHTML = `<span class="mrc-num">AS-${String(ch.chapter_num).padStart(2,'0')}</span><span class="mrc-info"><span class="mrc-title">${ch.title}</span><span class="mrc-date">${dateStr}</span></span>`;
+      row.onclick = () => { loadChapter(i); closeChDrawer(); };
+      drawerList.appendChild(row);
+    }
   });
   checkResume();
 }
 
 function highlightMobBtn(idx) {
-  document.querySelectorAll('.mob-ch-btn').forEach((b, i) => {
+  document.querySelectorAll('.mob-ch-row').forEach((b, i) => {
     b.classList.toggle('active', i === idx);
   });
+  // Update trigger bar current title
+  if (chapters[idx]) {
+    const cur = document.getElementById('mob-ch-trigger-current');
+    if (cur) cur.textContent = chapters[idx].title.toUpperCase();
+  }
+}
+
+function openChDrawer() {
+  const drawer = document.getElementById('mob-ch-drawer');
+  const arrow = document.getElementById('mob-ch-trigger-arrow');
+  if (!drawer) return;
+  drawer.classList.add('open');
+  if (arrow) arrow.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  // Scroll active item into view
+  setTimeout(() => {
+    const active = drawer.querySelector('.mob-ch-row.active');
+    if (active) active.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  }, 280);
+}
+
+function closeChDrawer() {
+  const drawer = document.getElementById('mob-ch-drawer');
+  const arrow = document.getElementById('mob-ch-trigger-arrow');
+  if (!drawer) return;
+  drawer.classList.remove('open');
+  if (arrow) arrow.classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function loadChapter(idx) {
@@ -2974,8 +3257,11 @@ function renderBody(ch, body) {
   const lines = (ch.content || '').split('\n');
   let buf = [];
   const flush = () => {
-    const t = buf.join('\n').trim();
-    if (t) { const p = document.createElement('p'); p.textContent = t; body.appendChild(p); }
+    const raw = buf.join('\n').trim();
+    if (!raw) { buf = []; return; }
+    const p = document.createElement('p');
+    p.innerHTML = renderEffectTags(raw);
+    body.appendChild(p);
     buf = [];
   };
   lines.forEach(line => {
@@ -2990,6 +3276,34 @@ function renderBody(ch, body) {
     } else if (!line.trim()) { flush(); } else { buf.push(line); }
   });
   flush();
+}
+
+function renderEffectTags(text) {
+  // Escape HTML first (except we'll re-add our spans)
+  let s = text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // [GLITCH]...[/GLITCH] — Rubik Glitch font + chromatic twitch
+  s = s.replace(/\[GLITCH\]([\s\S]*?)\[\/GLITCH\]/gi, (_, t) =>
+    `<span class="ch-glitch-tag" style="font-family:var(--font-glitch,\'Rubik Glitch\');color:var(--red);text-shadow:-1px 0 rgba(0,200,255,0.7),1px 0 rgba(255,0,80,0.7);">${t}</span>`);
+  // [REDACT]...[/REDACT]
+  s = s.replace(/\[REDACT\]([\s\S]*?)\[\/REDACT\]/gi, (_, t) =>
+    `<span style="background:var(--text);color:var(--text);user-select:none;letter-spacing:0.05em;" title="[REDACTED]">${t}</span>`);
+  // [STATIC]...[/STATIC]
+  s = s.replace(/\[STATIC\]([\s\S]*?)\[\/STATIC\]/gi, (_, t) => {
+    const STATIC_CHARS = ['█','▓','▒','░','▄','▌','▐','×','◆'];
+    const garbled = [...t].map(c => c !== ' ' && Math.random() < 0.4 ? STATIC_CHARS[Math.floor(Math.random()*STATIC_CHARS.length)] : c).join('');
+    return `<span class="ch-static-tag" style="font-family:var(--font-mono,\'IBM Plex Mono\');color:rgba(200,80,80,0.6);letter-spacing:0.04em;">${garbled}</span>`;
+  });
+  // [SPECTRAL]...[/SPECTRAL]
+  s = s.replace(/\[SPECTRAL\]([\s\S]*?)\[\/SPECTRAL\]/gi, (_, t) =>
+    `<span class="ch-spectral haunting" data-ghost="${t}" style="position:relative;">${t}</span>`);
+  // [INKBLEED]...[/INKBLEED]
+  s = s.replace(/\[INKBLEED\]([\s\S]*?)\[\/INKBLEED\]/gi, (_, t) =>
+    `<span class="ch-ink-bleed bleeding">${t}</span>`);
+  // [MARGIN: note]
+  s = s.replace(/\[MARGIN:\s*(.*?)\]/gi, (_, note) =>
+    `<span class="ch-margin-note visible">${note}</span>`);
+  return s;
 }
 
 function revealBody(body) {
@@ -3031,6 +3345,12 @@ function initScrollProgress() {
 
 /* ── KEYBOARD NAV ──────────────────────────────────── */
 document.addEventListener('keydown', e => {
+  // Ctrl+B — open chapter editor (admin only)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+    e.preventDefault();
+    if (isAdmin) openUpload();
+    return;
+  }
   if (document.querySelector('.modal.open')) return;
   if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
@@ -3197,74 +3517,165 @@ document.addEventListener('keydown', e => {
 function openUpload() {
   if (!isAdmin) { openLogin(); return; }
   document.getElementById('upload-modal').classList.add('open');
-  document.getElementById('u-num').value = chapters.length + 1;
-  populateEditSel();
+  cedRenderList();
+  // Default: open newest chapter or blank new chapter
+  if (chapters.length > 0) cedLoadChapter(chapters.length - 1);
+  else cedNewChapter();
 }
 function closeUpload() {
   document.getElementById('upload-modal').classList.remove('open');
-  document.getElementById('u-status').textContent = '';
-  const ef = document.getElementById('e-status'); if (ef) ef.textContent = '';
+  cedEditId = null;
 }
-function switchTab(t) {
-  document.querySelectorAll('.up-tab').forEach((b, i) => b.classList.toggle('on', (t==='add'&&i===0)||(t==='edit'&&i===1)));
-  document.getElementById('tab-add').classList.toggle('vis', t === 'add');
-  document.getElementById('tab-edit').classList.toggle('vis', t === 'edit');
+
+/* ── Chapter Editor state ── */
+let cedEditId = null;
+let cedPreviewTimer = null;
+
+function cedRenderList() {
+  const list = document.getElementById('ced-ch-list');
+  if (!list) return;
+  list.innerHTML = '';
+  chapters.forEach((ch, i) => {
+    const item = document.createElement('div');
+    item.className = 'ced-ch-item' + (ch.id === cedEditId ? ' active' : '');
+    item.dataset.idx = i;
+    item.innerHTML = `<span class="ced-ch-num">AS-${String(ch.chapter_num).padStart(2,'0')}</span><span class="ced-ch-name">${ch.title}</span>`;
+    item.onclick = () => cedLoadChapter(i);
+    list.appendChild(item);
+  });
 }
-async function submitChapter() {
+
+function cedLoadChapter(idx) {
+  const ch = chapters[idx];
+  if (!ch) return;
+  cedEditId = ch.id;
+  document.getElementById('ced-num').value = ch.chapter_num;
+  document.getElementById('ced-title').value = ch.title;
+  document.getElementById('ced-body').value = ch.content || '';
+  document.getElementById('ced-del-btn').style.display = '';
+  document.getElementById('ced-status').textContent = '';
+  // highlight in list
+  document.querySelectorAll('.ced-ch-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+  cedUpdatePreview();
+}
+
+function cedNewChapter() {
+  cedEditId = null;
+  document.getElementById('ced-num').value = chapters.length + 1;
+  document.getElementById('ced-title').value = '';
+  document.getElementById('ced-body').value = '';
+  document.getElementById('ced-del-btn').style.display = 'none';
+  document.getElementById('ced-status').textContent = '// NEW CHAPTER';
+  document.querySelectorAll('.ced-ch-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('ced-preview-body').innerHTML = '';
+  document.getElementById('ced-title').focus();
+}
+
+function cedUpdatePreview() {
+  const preview = document.getElementById('ced-preview-body');
+  if (!preview) return;
+  const raw = document.getElementById('ced-body').value;
+  const fakeChapter = { content: raw, chapter_num: 0, title: '' };
+  preview.innerHTML = '';
+  renderBody(fakeChapter, preview);
+}
+
+// Live preview with debounce
+document.addEventListener('DOMContentLoaded', () => {
+  const body = document.getElementById('ced-body');
+  if (body) {
+    body.addEventListener('input', () => {
+      clearTimeout(cedPreviewTimer);
+      cedPreviewTimer = setTimeout(cedUpdatePreview, 400);
+    });
+  }
+});
+
+function cedWrap(open, close) {
+  const ta = document.getElementById('ced-body');
+  if (!ta) return;
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const selected = ta.value.slice(start, end) || 'text';
+  const replacement = open + selected + close;
+  ta.setRangeText(replacement, start, end, 'select');
+  ta.focus();
+  cedUpdatePreview();
+}
+
+function cedInsertMargin() {
+  const ta = document.getElementById('ced-body');
+  if (!ta) return;
+  const pos = ta.selectionEnd;
+  const insert = '[MARGIN: your note here]';
+  ta.setRangeText(' ' + insert + ' ', pos, pos, 'end');
+  ta.focus();
+  cedUpdatePreview();
+}
+
+function cedInsertImg() {
+  const url = prompt('Image URL:', 'https://');
+  if (!url) return;
+  const caption = prompt('Caption (optional):', '') || '';
+  const align = prompt('Align (center / left / right):', 'center') || 'center';
+  const tag = `[IMG url=${url} align=${align}${caption ? ' caption=' + caption : ''}]`;
+  const ta = document.getElementById('ced-body');
+  const pos = ta.selectionEnd;
+  // Insert on its own line
+  const before = ta.value.slice(0, pos);
+  const after = ta.value.slice(pos);
+  const needsNewlineBefore = before.length > 0 && !before.endsWith('\n\n');
+  const insert = (needsNewlineBefore ? '\n\n' : '') + tag + '\n\n';
+  ta.value = before + insert + after;
+  ta.focus();
+  cedUpdatePreview();
+}
+
+async function cedSave() {
   if (!isAdmin || !sb) return;
-  const num = parseInt(document.getElementById('u-num').value);
-  const title = document.getElementById('u-ttl').value.trim();
-  const body = document.getElementById('u-body').value.trim();
-  const stat = document.getElementById('u-status');
-  if (!num || !title || !body) { stat.textContent = '// All fields required.'; return; }
-  stat.textContent = 'Publishing...';
-  const { error } = await sb.from('chapters').insert({
-    story_id: 'another-sky', chapter_num: num, title, content: body,
-    published_at: new Date().toISOString(),
-    published_by: localStorage.getItem('chapters_admin_user') || 'operator',
-  });
-  if (error) { stat.textContent = '// Error: ' + error.message; return; }
-  stat.textContent = '// Published.';
-  document.getElementById('u-ttl').value = ''; document.getElementById('u-body').value = '';
-  await loadChapters();
-  setTimeout(closeUpload, 1400);
-}
-function populateEditSel() {
-  const sel = document.getElementById('e-sel');
-  sel.innerHTML = '<option value="">Choose...</option>';
-  chapters.forEach(ch => {
-    const o = document.createElement('option');
-    o.value = ch.id; o.textContent = `Ch.${ch.chapter_num} — ${ch.title}`;
-    sel.appendChild(o);
-  });
-}
-function loadForEdit(id) {
-  const ch = chapters.find(c => c.id === id);
-  if (!ch) { document.getElementById('e-fields').style.display = 'none'; return; }
-  editId = id;
-  document.getElementById('e-ttl').value = ch.title;
-  document.getElementById('e-body').value = ch.content;
-  document.getElementById('e-fields').style.display = 'block';
-}
-async function saveEdit() {
-  if (!editId || !isAdmin || !sb) return;
-  const title = document.getElementById('e-ttl').value.trim();
-  const body = document.getElementById('e-body').value.trim();
-  const stat = document.getElementById('e-status');
-  if (!title || !body) { stat.textContent = '// All fields required.'; return; }
+  const num = parseInt(document.getElementById('ced-num').value);
+  const title = document.getElementById('ced-title').value.trim();
+  const body = document.getElementById('ced-body').value.trim();
+  const stat = document.getElementById('ced-status');
+  if (!num || !title || !body) { stat.textContent = '// ALL FIELDS REQUIRED'; return; }
   stat.textContent = 'Saving...';
-  const { error } = await sb.from('chapters').update({ title, content: body }).eq('id', editId);
-  if (error) { stat.textContent = '// Error: ' + error.message; return; }
-  stat.textContent = '// Saved.';
-  await loadChapters(); setTimeout(closeUpload, 1200);
+  let error;
+  if (cedEditId) {
+    ({ error } = await sb.from('chapters').update({ title, content: body, chapter_num: num }).eq('id', cedEditId));
+  } else {
+    const res = await sb.from('chapters').insert({
+      story_id: 'another-sky', chapter_num: num, title, content: body,
+      published_at: new Date().toISOString(),
+      published_by: localStorage.getItem('chapters_admin_user') || 'operator',
+    }).select('id').single();
+    error = res.error;
+    if (!error && res.data) cedEditId = res.data.id;
+  }
+  if (error) { stat.textContent = '// ERROR: ' + error.message; return; }
+  stat.textContent = '// SAVED';
+  await loadChapters();
+  cedRenderList();
+  document.getElementById('ced-del-btn').style.display = '';
+  setTimeout(() => { const s = document.getElementById('ced-status'); if (s) s.textContent = ''; }, 2000);
 }
-async function deleteChapter() {
-  if (!editId || !isAdmin || !sb) return;
+
+async function cedDelete() {
+  if (!cedEditId || !isAdmin || !sb) return;
   if (!confirm('Delete this chapter permanently?')) return;
-  const { error } = await sb.from('chapters').delete().eq('id', editId);
-  if (error) { document.getElementById('e-status').textContent = '// Delete failed.'; return; }
-  await loadChapters(); closeUpload();
+  const { error } = await sb.from('chapters').delete().eq('id', cedEditId);
+  if (error) { document.getElementById('ced-status').textContent = '// Delete failed.'; return; }
+  cedEditId = null;
+  await loadChapters();
+  cedRenderList();
+  cedNewChapter();
 }
+
+/* Keep old aliases so any other references don't break */
+function switchTab() {}
+async function submitChapter() { cedSave(); }
+function populateEditSel() {}
+function loadForEdit() {}
+async function saveEdit() { cedSave(); }
+async function deleteChapter() { cedDelete(); }
 
 /* ═══════════════════════════════════════════════════
    ENTITY CHAT (minimal — expand with clearance.js)
