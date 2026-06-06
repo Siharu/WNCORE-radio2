@@ -1626,6 +1626,11 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     position: sticky;
     top: 58px;
     z-index: 48;
+    /* hidden until reader is entered */
+    display: none !important;
+  }
+  #mob-bar.reader-active {
+    display: flex !important;
   }
   #synopsis-gate .sky-layer {
     position: absolute;
@@ -2760,6 +2765,9 @@ function showSynopsis() {
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
   document.getElementById('synopsis-gate').style.display = 'flex';
+  // Hide mobile chapter bar on synopsis screen
+  const mobBar = document.getElementById('mob-bar');
+  if (mobBar) mobBar.classList.remove('reader-active');
   updateSkyStat(currentChapterIdx);
   // Start rain atmosphere
   setTimeout(() => startSynopsisRain(), 300);
@@ -2805,6 +2813,9 @@ function beginReading() {
   // Reveal chapter list now that the user has entered the reader
   const listWrap = document.getElementById('sb-list-wrap');
   if (listWrap) listWrap.classList.add('unlocked');
+  // Show mobile chapter bar now that we're in the reader
+  const mobBar = document.getElementById('mob-bar');
+  if (mobBar) mobBar.classList.add('reader-active');
   stopSynopsisRain();
   checkResume();
 }
@@ -2919,6 +2930,9 @@ function loadChapter(idx) {
   document.getElementById('synopsis-gate').style.display = 'none';
   document.getElementById('ch-reader').style.display = 'flex';
   document.getElementById('ch-reader').classList.add('show');
+  // Show mobile chapter bar
+  const mobBar = document.getElementById('mob-bar');
+  if (mobBar) mobBar.classList.add('reader-active');
 
   const ch = chapters[idx];
   try { localStorage.setItem('_as_last', String(idx)); } catch {}
