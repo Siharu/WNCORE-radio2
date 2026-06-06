@@ -52,13 +52,13 @@
 </header>
 <div class="legal-wrap">
   <div class="legal-nav">
-    <button class="legal-nav-btn active" onclick="showLegal('privacy',this)">Privacy Policy</button>
-    <button class="legal-nav-btn" onclick="showLegal('terms',this)">Terms of Service</button>
-    <button class="legal-nav-btn" onclick="showLegal('licensing',this)">Licensing</button>
-    <button class="legal-nav-btn" onclick="showLegal('api',this)">API Access</button>
-    <button class="legal-nav-btn" onclick="showLegal('dmca',this)">DMCA Policy</button>
-    <button class="legal-nav-btn" onclick="showLegal('contact',this)">Contact / Reports</button>
-    <button class="legal-nav-btn" onclick="showLegal('patchnotes',this)">Patch Notes</button>
+    <button class="legal-nav-btn active" onclick="showLegal('privacy',this)"><img src="/assets/lucid/Lock-Closed.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Privacy Policy</button>
+    <button class="legal-nav-btn" onclick="showLegal('terms',this)"><img src="/assets/lucid/File-Text.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Terms of Service</button>
+    <button class="legal-nav-btn" onclick="showLegal('licensing',this)"><img src="/assets/lucid/Bookmark.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Licensing</button>
+    <button class="legal-nav-btn" onclick="showLegal('api',this)"><img src="/assets/lucid/Signal-2.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">API Access</button>
+    <button class="legal-nav-btn" onclick="showLegal('dmca',this)"><img src="/assets/lucid/Exclamation-Mark.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">DMCA Policy</button>
+    <button class="legal-nav-btn" onclick="showLegal('contact',this)"><img src="/assets/lucid/Mail.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Contact / Reports</button>
+    <button class="legal-nav-btn" onclick="showLegal('patchnotes',this)"><img src="/assets/lucid/List.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Patch Notes</button>
   </div>
 
   <!-- PRIVACY POLICY -->
@@ -458,7 +458,14 @@
       }
       .pn-glitch-wrap { position: relative; display: inline; }
       .pn-glitch-text { animation: pn-glitch 4s infinite; display: inline-block; color: var(--accent); font-family: 'DM Mono', monospace; font-size: 0.7rem; }
-    </style>
+    
+/* ── LUCID PIXEL ICONS ── */
+.lucid-icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+}
+</style>
 
     <div class="pn-entry major">
       <div class="pn-version">v0.1.0 · March 14, 2016 <span>INITIAL RELEASE</span></div>

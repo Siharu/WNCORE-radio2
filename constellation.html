@@ -355,6 +355,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 @keyframes bhspin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 @keyframes bhdisk{from{transform:translate(-50%,-50%) rotate(0deg) scaleY(0.28)}to{transform:translate(-50%,-50%) rotate(360deg) scaleY(0.28)}}
 
+
+/* ── LUCID PIXEL ICONS ── */
+.lucid-icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+}
 </style>
   <link rel="stylesheet" href="/fonts.css">
 </head>
@@ -400,7 +407,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <span id="hd-status">NODE 09 — <span id="hd-unlocked-count">0</span> / 20 SIGNALS MAPPED</span>
   <div style="display:flex;align-items:center;gap:12px">
     <a id="hd-situation" href="/earth.html" title="Current Situation" style="font-size:0.58rem;letter-spacing:1.5px;color:var(--accent);text-decoration:none;border:1px solid rgba(200,71,42,0.35);padding:4px 10px;border-radius:3px;transition:all 0.15s;white-space:nowrap">⚠ CURRENT SITUATION</a>
-    <a id="hd-back" href="/">← Return to Array</a>
+    <a id="hd-back" href="/"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Return to Array</a>
   </div>
 </header>
 
@@ -415,7 +422,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   <div id="ip-drag-handle"><div id="ip-drag-handle-bar"></div></div>
   <div id="ip-header">
     <span id="ip-constellation-name">—</span>
-    <button id="ip-close">✕</button>
+    <button id="ip-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
   </div>
   <div id="ip-body">
     <div class="ip-row">
@@ -435,7 +442,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div class="ip-label">FIELD NOTE</div>
       <div id="ip-hint" class="ip-hint"></div>
     </div>
-    <button id="ip-action-btn">INITIATE PUZZLE SEQUENCE</button>
+    <button id="ip-action-btn"><img src="/assets/lucid/Signal-2.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">INITIATE PUZZLE SEQUENCE</button>
   </div>
 </aside>
 
@@ -446,7 +453,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 
 <div id="puzzle-modal">
   <div id="puzzle-box">
-    <button id="puzzle-close">✕</button>
+    <button id="puzzle-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
     <div id="puzzle-title"></div>
     <div id="puzzle-subtitle"></div>
     <div id="puzzle-body"></div>
@@ -454,7 +461,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div id="lore-signal">TRANSMISSION DECODED</div>
       <div id="lore-text"></div>
       <div id="lore-code"></div>
-      <a id="lore-link" href="#" target="_blank">→ ACCESS ARCHIVE AT SIHARU.VERCEL.APP</a>
+      <a id="lore-link" href="#" target="_blank"><img src="/assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">ACCESS ARCHIVE AT SIHARU.VERCEL.APP</a>
     </div>
   </div>
 </div>
@@ -1461,7 +1468,7 @@ function buildMorsePuzzle(c,body) {
     </div>
     <input id="morse-input" type="text" placeholder="TYPE DECODED WORD" autocomplete="off" spellcheck="false">
     <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
-    <button id="puzzle-submit" onclick="submitPuzzle()">SUBMIT TRANSMISSION</button>`;
+    <button id="puzzle-submit" onclick="submitPuzzle()"><img src="/assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">SUBMIT TRANSMISSION</button>`;
   const display=document.getElementById('morse-display');
   morseCode.split('').forEach(ch => {
     if (ch===' ') { const sp=document.createElement('span'); sp.style.cssText='display:inline-block;width:14px'; display.appendChild(sp); return; }
@@ -1503,7 +1510,7 @@ function buildFrequencyPuzzle(c,body) {
     </div>
     <div id="freq-indicator"></div>
     <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
-    <button id="puzzle-submit" onclick="submitPuzzle()">LOCK FREQUENCY</button>`;
+    <button id="puzzle-submit" onclick="submitPuzzle()"><img src="/assets/lucid/Lock-Closed.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">LOCK FREQUENCY</button>`;
 }
 
 window.updateFreq = function(val) {
@@ -1533,7 +1540,7 @@ function buildAcrosticPuzzle(c,body) {
     <div id="acrostic-wrap">${rows}</div>
     <input id="acrostic-answer" type="text" placeholder="ENTER THE HIDDEN WORD" autocomplete="off" spellcheck="false" maxlength="${answer.length}">
     <div id="puzzle-error" style="font-size:0.62rem;color:#ef4444;text-align:center;min-height:18px"></div>
-    <button id="puzzle-submit" onclick="submitPuzzle()">SUBMIT TRANSMISSION</button>`;
+    <button id="puzzle-submit" onclick="submitPuzzle()"><img src="/assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">SUBMIT TRANSMISSION</button>`;
   document.getElementById('acrostic-answer').dataset.wrongCount='0';
 }
 
@@ -1654,7 +1661,7 @@ buildSidebar();
     <div class="bh-ring bh-ring2" style="animation-duration:0.65s"></div>
     <div class="bh-ring bh-ring3" style="animation-duration:0.25s"></div>
     <div class="bh-core"></div>
-    <div class="bh-close-x">✕</div>
+    <div class="bh-close-x"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></div>
   </div>`;
 
   function openMenu() {

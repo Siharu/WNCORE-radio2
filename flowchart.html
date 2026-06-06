@@ -1778,6 +1778,13 @@ body::before{
   background:rgba(148,88,200,0);transition:background 0.1s;
 }
 #konami-flash.pop{background:rgba(148,88,200,0.15)}
+
+/* ── LUCID PIXEL ICONS ── */
+.lucid-icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+}
 </style>
 </head>
 <body>
@@ -1802,11 +1809,11 @@ body::before{
 <div id="node-search-wrap">
   <input id="node-search" type="text" placeholder="SEARCH ARCHIVE..." autocomplete="off" spellcheck="false" maxlength="40">
   <span id="node-search-count"></span>
-  <button id="node-search-clear">✕</button>
+  <button id="node-search-clear"><img src="/assets/lucid/Exit.png" alt="Clear" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
 </div>
 
 <!-- SIGNAL CUBE toggle (mobile only) -->
-<button id="signal-cube-toggle" aria-label="Open signal cube">▣</button>
+<button id="signal-cube-toggle" aria-label="Open signal cube"><img src="/assets/lucid/Stack.png" alt="Signal Cube" class="lucid-icon" style="width:14px;height:14px;vertical-align:middle"></button>
 
 <!-- SIGNAL CUBE — 3D rotating ARG viewport -->
 <div id="signal-cube-wrap">
@@ -1840,7 +1847,7 @@ body::before{
 <div id="puzzle-overlay">
   <canvas id="puzzle-stars"></canvas>
   <div id="puzzle-box">
-    <button id="puzzle-close">✕ CLOSE</button>
+    <button id="puzzle-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"> CLOSE</button>
     <div id="puzzle-constellation"></div>
     <div id="puzzle-title"></div>
     <div id="puzzle-lore"></div>
@@ -1848,7 +1855,7 @@ body::before{
     <div id="puzzle-hint-text"></div>
     <div class="puzzle-input-row">
       <input id="puzzle-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="40" autocomplete="off" spellcheck="false">
-      <button id="puzzle-submit">TX</button>
+      <button id="puzzle-submit"><img src="/assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">TX</button>
     </div>
     <div id="puzzle-msg"></div>
   </div>
@@ -1861,7 +1868,7 @@ body::before{
     <div class="hd-dot"></div>
     <span>LIVE — <span id="node-count-hd" style="color:var(--acc)">—</span> NODES MAPPED</span>
   </div>
-  <a href="index.html" id="back">← RETURN</a>
+  <a href="index.html" id="back"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">RETURN</a>
 </header>
 
 <div id="progress-bar"><div id="progress-fill"></div></div>
@@ -1912,9 +1919,9 @@ body::before{
 <div id="unlock-bar">
   <div id="unlock-node-label">NODE: —</div>
   <input id="unlock-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="32" autocomplete="off" spellcheck="false">
-  <button id="unlock-submit">TRANSMIT</button>
+  <button id="unlock-submit"><img src="/assets/lucid/Signal-2.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">TRANSMIT</button>
   <span id="unlock-msg"></span>
-  <button id="unlock-close">✕</button>
+  <button id="unlock-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
 </div>
 
 <div id="bs-backdrop"></div>
@@ -1928,8 +1935,8 @@ body::before{
       <div id="bs-unlock-label">// SIGNAL KEY REQUIRED</div>
       <input id="bs-input" type="text" placeholder="ENTER SIGNAL KEY" maxlength="32" autocomplete="off" spellcheck="false" inputmode="text">
       <div id="bs-actions">
-        <button id="bs-submit">TRANSMIT</button>
-        <button id="bs-close">CLOSE</button>
+        <button id="bs-submit"><img src="/assets/lucid/Signal-2.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">TRANSMIT</button>
+        <button id="bs-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">CLOSE</button>
       </div>
       <div id="bs-msg"></div>
     </div>
@@ -1940,15 +1947,15 @@ body::before{
 </div>
 
 <div id="zoom-controls">
-  <button id="zoom-in" aria-label="Zoom in">+</button>
-  <button id="zoom-reset" aria-label="Reset zoom">FIT</button>
-  <button id="zoom-out" aria-label="Zoom out">−</button>
+  <button id="zoom-in" aria-label="Zoom in"><img src="/assets/lucid/Magnifying-Glass-Add.png" alt="Zoom in" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle"></button>
+  <button id="zoom-reset" aria-label="Reset zoom"><img src="/assets/lucid/Magnifying-Glass.png" alt="Fit" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:3px">FIT</button>
+  <button id="zoom-out" aria-label="Zoom out"><img src="/assets/lucid/Magnifying-Glass-Reduce.png" alt="Zoom out" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle"></button>
 </div>
 
-<button id="export-btn" title="Export progress code">⬡</button>
+<button id="export-btn" title="Export progress code"><img src="/assets/lucid/Download.png" alt="Export" class="lucid-icon" style="width:13px;height:13px;vertical-align:middle"></button>
 <div id="export-toast"></div>
 
-<button id="legend-btn" aria-label="Toggle legend">≡</button>
+<button id="legend-btn" aria-label="Toggle legend"><img src="/assets/lucid/List.png" alt="Legend" class="lucid-icon" style="width:13px;height:13px;vertical-align:middle"></button>
 
 <script>
 'use strict';

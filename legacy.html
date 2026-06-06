@@ -425,6 +425,13 @@ html, body {
   #hd{padding:10px 14px;box-sizing:border-box;max-width:100vw}
   #hd-right{display:none}
 }
+
+/* ── LUCID PIXEL ICONS ── */
+.lucid-icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+}
 </style>
   <link rel="stylesheet" href="/fonts.css">
 </head>
@@ -448,7 +455,7 @@ html, body {
   <div id="lock-bar-wrap"><div id="lock-bar-fill" style="width:0%"></div></div>
   <div id="lock-cta">Map constellations in the Signal Archive to unlock this system.</div>
   <a href="/constellation.html" style="font-size:0.5rem;letter-spacing:2px;color:rgba(180,100,255,0.6);text-transform:uppercase;border:1px solid rgba(180,100,255,0.2);padding:8px 20px;border-radius:4px;text-decoration:none;transition:all 0.2s;margin-top:4px">→ Signal Archive</a>
-  <a href="/earth.html" id="lock-back">← Surface Situation</a>
+  <a href="/earth.html" id="lock-back"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Surface Situation</a>
 </div>
 
 <!-- Main content (hidden until unlocked) -->
@@ -467,7 +474,7 @@ html, body {
   </div>
   <div id="hd-right">
     <span id="hd-badge">// Classified Archive</span>
-    <a id="hd-back" href="/earth.html">← Earth Overlay</a>
+    <a id="hd-back" href="/earth.html"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Earth Overlay</a>
   </div>
 </header>
 
@@ -580,7 +587,7 @@ html, body {
       <div id="ip-tag">—</div>
       <div id="ip-name">—</div>
     </div>
-    <button id="ip-close">✕</button>
+    <button id="ip-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
   </div>
   <div id="ip-body">
     <div id="ip-panel-kage-badge">// SIGNAL_KAGE ORIGIN WORLD</div>

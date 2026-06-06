@@ -370,6 +370,13 @@ body::after{
   .ctr-val{font-size:0.95rem}
 }
 
+
+/* ── LUCID PIXEL ICONS ── */
+.lucid-icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+}
 </style>
 </head>
 <body>
@@ -386,7 +393,7 @@ body::after{
   </div>
   <div id="hd-right">
     <div id="hd-live"><div class="live-dot"></div> Live Feed</div>
-    <a id="hd-back" href="/cygnus.html">← Back</a>
+    <a id="hd-back" href="/cygnus.html"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Back</a>
   </div>
 </header>
 
@@ -448,11 +455,11 @@ body::after{
 
   <!-- FILTERS -->
   <div id="filters">
-    <button class="flt-btn active" data-f="all" onclick="setFilter('all',this)">All Reapers</button>
-    <button class="flt-btn" data-f="constellation" onclick="setFilter('constellation',this)">Constellation</button>
-    <button class="flt-btn" data-f="cygnus" onclick="setFilter('cygnus',this)">Cygnus</button>
+    <button class="flt-btn active" data-f="all" onclick="setFilter('all',this)"><img src="/assets/lucid/People.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">All Reapers</button>
+    <button class="flt-btn" data-f="constellation" onclick="setFilter('constellation',this)"><img src="/assets/lucid/Star.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Constellation</button>
+    <button class="flt-btn" data-f="cygnus" onclick="setFilter('cygnus',this)"><img src="/assets/lucid/Signal-2.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Cygnus</button>
     <button class="flt-btn" data-f="earth" onclick="setFilter('earth',this)" style="padding:6px 12px;">Earth Nodes</button>
-    <button class="flt-btn" data-f="legacy" onclick="setFilter('legacy',this)">Legacy Unlocked</button>
+    <button class="flt-btn" data-f="legacy" onclick="setFilter('legacy',this)"><img src="/assets/lucid/Lock-Open.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Legacy Unlocked</button>
   </div>
 
   <!-- TABLE -->

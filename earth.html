@@ -355,6 +355,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 }
 #adm-hint.show{color:rgba(0,255,136,0.22)}
 .adm-divider{border:none;border-top:1px solid rgba(0,255,136,0.08);margin:4px 0}
+
+/* ── LUCID PIXEL ICONS ── */
+.lucid-icon {
+  display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
+}
 </style>
   <link rel="stylesheet" href="/fonts.css">
 </head>
@@ -370,7 +377,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <!-- Earth Admin Panel -->
 <div id="earth-admin-backdrop">
   <div id="earth-admin-box">
-    <button id="adm-close-btn">✕</button>
+    <button id="adm-close-btn"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
     <h2>// WNCORE Earth Admin</h2>
     <div class="adm-sub">Surface Situation Control — SIGINT Overlay</div>
 
@@ -382,7 +389,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       </div>
       <div id="adm-auth-err">// UNAUTHORIZED — Wrong password</div>
       <div class="adm-row">
-        <button class="adm-btn primary" onclick="admLogin()">Authenticate →</button>
+        <button class="adm-btn primary" onclick="admLogin()"><img src="/assets/lucid/Lock-Open.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Authenticate</button>
       </div>
     </div>
 
@@ -409,8 +416,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div id="adm-status"></div>
 
       <div class="adm-row">
-        <button class="adm-btn primary" id="adm-gen-btn" onclick="admGenerate()">⚡ Generate via Groq</button>
-        <button class="adm-btn" id="adm-raw-btn" onclick="admSaveRaw()">💾 Save Raw (no AI)</button>
+        <button class="adm-btn primary" id="adm-gen-btn" onclick="admGenerate()"><img src="/assets/lucid/Signal-2.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Generate via Groq</button>
+        <button class="adm-btn" id="adm-raw-btn" onclick="admSaveRaw()"><img src="/assets/lucid/Disk.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Save Raw (no AI)</button>
       </div>
 
       <hr class="adm-divider">
@@ -422,8 +429,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       </div>
 
       <div class="adm-row" style="margin-top:4px">
-        <button class="adm-btn danger" onclick="admClearSession()">🔒 Lock Session</button>
-        <button class="adm-btn" onclick="admLoadEntries()">↻ Refresh Entries</button>
+        <button class="adm-btn danger" onclick="admClearSession()"><img src="/assets/lucid/Lock-Closed.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Lock Session</button>
+        <button class="adm-btn" onclick="admLoadEntries()"><img src="/assets/lucid/Redo.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Refresh Entries</button>
       </div>
     </div>
   </div>
@@ -480,7 +487,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       </svg>
       <span id="bh-nav-label">Legacy Signal</span>
     </button>
-    <a id="hd-back" href="/cygnus.html">← Cygnus</a>
+    <a id="hd-back" href="/cygnus.html"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Cygnus</a>
   </div>
 </header>
 
@@ -490,7 +497,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
       <div id="cp-status-tag">—</div>
       <div id="cp-name">—</div>
     </div>
-    <button id="cp-close">✕</button>
+    <button id="cp-close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
   </div>
   <div id="cp-body">
     <div>

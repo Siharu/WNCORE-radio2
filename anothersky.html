@@ -939,6 +939,42 @@ body {
   transition: background 0.04s;
 }
 
+/* ── PAPER MODE SKY OVERRIDES ── */
+/* Hide star/sun element in paper mode */
+:root[data-theme="paper"] #sky-moon { opacity: 0 !important; }
+
+/* Replace base sky with daytime asset in paper mode */
+:root[data-theme="paper"] #sky-bg {
+  background-image: url('assets/sky/day/1.png');
+  background-size: cover;
+  background-position: center;
+  opacity: 1;
+}
+/* Replace wispy cloud layer with evening sky new/1 */
+:root[data-theme="paper"] #sky-wispy::before {
+  background-image: url('assets/sky/new/1.png');
+  background-size: auto 100%;
+  background-position: 0 0;
+}
+/* Replace medium clouds with day sky variant */
+:root[data-theme="paper"] #sky-clouds-med::before {
+  background-image: url('assets/sky/day/2.png');
+  background-size: auto 80%;
+  background-position: 0 20%;
+}
+/* Replace top cloud layer with new sky layer */
+:root[data-theme="paper"] #sky-clouds-top::before {
+  background-image: url('assets/sky/new/2.png');
+  background-size: auto 60%;
+  background-position: 0 top;
+}
+/* Hide rain canvas and lightning in paper mode */
+:root[data-theme="paper"] #rain-canvas { display: none !important; }
+:root[data-theme="paper"] #lightning-flash { display: none !important; }
+/* Paper mode — override storm/blackhole layer tints so they don't show */
+:root[data-theme="paper"] #sky-storm { opacity: 0 !important; }
+:root[data-theme="paper"] #sky-blackhole { opacity: 0 !important; }
+
 /* ── SKY WEATHER STATES ── */
 #synopsis-gate.sky-grey   #sky-clouds-top  { opacity: 0.7; }
 #synopsis-gate.sky-rainy  #sky-clouds-top  { opacity: 0.9; }
@@ -1343,9 +1379,8 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #mob-ch-trigger:active { background: rgba(200,0,0,0.06); }
 
 #mob-ch-trigger-icon {
-  font-size: 0.65rem;
-  color: rgba(200,0,0,0.5);
   flex-shrink: 0;
+  opacity: 0.5;
   line-height: 1;
 }
 #mob-ch-trigger-meta {
@@ -1375,9 +1410,8 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 }
 #mob-ch-trigger-arrow {
   margin-left: auto;
-  font-size: 0.5rem;
-  color: rgba(200,0,0,0.35);
   flex-shrink: 0;
+  opacity: 0.35;
   transition: transform 0.2s;
 }
 #mob-ch-trigger-arrow.open { transform: rotate(180deg); }
@@ -1609,6 +1643,11 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   width: 12px; height: 12px;
   filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
   display: inline-block; vertical-align: middle; flex-shrink: 0;
+  image-rendering: pixelated;
+}
+/* Paper mode: dark-brown tint */
+:root[data-theme="paper"] .lucid-icon {
+  filter: brightness(0) saturate(0) invert(0.08) sepia(0.6) saturate(3) hue-rotate(320deg);
 }
 #ced-shell {
   display: flex; width: 100%; height: 100%;
@@ -1880,218 +1919,6 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     max-height: 85dvh;
   }
 }
-
-/* ── LIGHT MODE SYNOPSIS SKY ── */
-/* Warm haze sky — works with the paper parchment palette */
-:root[data-theme="paper"] #synopsis-gate {
-  /* Soft warm-light gradient bleeding from top — sunrise/haze, not clear-blue noon */
-  background: linear-gradient(
-    180deg,
-    rgba(255,235,180,0.55) 0%,
-    rgba(255,220,140,0.25) 25%,
-    transparent 60%
-  );
-}
-:root[data-theme="paper"] #synopsis-gate #sky-bg {
-  /* Warm amber-cream sky that agrees with --paper: #f5f0e8 */
-  background: linear-gradient(
-    180deg,
-    #e8c97a 0%,
-    #f0d898 18%,
-    #f5e8b8 40%,
-    #f5f0e2 70%,
-    transparent 100%
-  ) !important;
-  background-image: none !important;
-  opacity: 0.45;
-}
-/* Suppress dark cloud/storm layers */
-:root[data-theme="paper"] #synopsis-gate #sky-clouds-top,
-:root[data-theme="paper"] #synopsis-gate #sky-storm,
-:root[data-theme="paper"] #synopsis-gate #sky-blackhole {
-  opacity: 0 !important;
-  transition: opacity 1.5s ease;
-}
-/* Wisps become warm, very faint */
-:root[data-theme="paper"] #synopsis-gate #sky-wispy {
-  opacity: 0.12 !important;
-  filter: brightness(4) sepia(1) saturate(0.5);
-}
-:root[data-theme="paper"] #synopsis-gate #sky-clouds-med {
-  opacity: 0.08 !important;
-  filter: brightness(3) sepia(1) saturate(0.3);
-}
-/* Moon out */
-:root[data-theme="paper"] #synopsis-gate #sky-moon {
-  opacity: 0 !important;
-  transition: opacity 1s ease;
-}
-/* Kill rain */
-:root[data-theme="paper"] #rain-canvas,
-:root[data-theme="paper"] canvas#rain-canvas {
-  opacity: 0 !important;
-  display: none !important;
-  pointer-events: none !important;
-}
-
-/* ── SUN ELEMENT ── */
-#sky-sun {
-  position: absolute;
-  z-index: 2;
-  top: 6%;
-  right: 10%;
-  width: 70px;
-  height: 70px;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 2s ease;
-  display: none;
-}
-:root[data-theme="paper"] #synopsis-gate #sky-sun {
-  display: block;
-  opacity: 1;
-}
-#sky-sun-inner {
-  position: relative;
-  width: 70px;
-  height: 70px;
-}
-#sky-sun-circle {
-  position: absolute;
-  inset: 12px;
-  border-radius: 50%;
-  /* Warm golden sun, not cold white */
-  background: radial-gradient(circle at 38% 38%, #fff5b0, #ffd93d 50%, #ffaa00 100%);
-  box-shadow:
-    0 0 0 5px rgba(255,200,60,0.15),
-    0 0 22px 8px  rgba(255,180,30,0.22),
-    0 0 55px 22px rgba(255,150,0,0.12);
-  animation: sun-pulse 5s ease-in-out infinite;
-}
-/* Subtle warm ray halo */
-#sky-sun-inner::before {
-  content: '';
-  position: absolute;
-  inset: -6px;
-  background: repeating-conic-gradient(
-    rgba(255,210,60,0.18) 0deg 10deg,
-    transparent 10deg 20deg
-  );
-  border-radius: 50%;
-  animation: sun-rays 28s linear infinite;
-}
-@keyframes sun-pulse {
-  0%, 100% { transform: scale(1);    opacity: 0.95; }
-  50%       { transform: scale(1.03); opacity: 0.88; }
-}
-@keyframes sun-rays {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* ── SYNOPSIS BIRDS (light mode only) ── */
-#synopsis-birds-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-  display: none;
-}
-:root[data-theme="paper"] #synopsis-gate #synopsis-birds-layer {
-  display: block;
-}
-/* Bird sprite — same sprite from ra04 page, dark silhouette */
-#synopsis-birds-layer .sbird {
-  position: absolute;
-  width: 72px; height: 10px;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5MDAgMTI1IiB3aWR0aD0iOTAwIiBoZWlnaHQ9IjEyNSI+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMCwgMCkiPgogICAgICA8ZWxsaXBzZSBjeD0iNDUuMCIgY3k9IjYyLjUiIHJ4PSIxNCIgcnk9IjYiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRMjcuNSw2Mi41IDEwLjAsNjIuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFE2Mi41LDYyLjUgODAuMCw2Mi41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDxjaXJjbGUgY3g9IjU5LjAiIGN5PSI1OS41IiByPSI1IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDxwYXRoIGQ9Ik02My4wLDU5LjUgTDY5LjAsNjAuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjIiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8cGF0aCBkPSJNMjcuMCw2NC41IEwxOS4wLDYxLjUgTTI3LjAsNjQuNSBMMjAuMCw2Ny41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICA8L2c+CgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoOTAsIDApIj4KICAgICAgPGVsbGlwc2UgY3g9IjQ1LjAiIGN5PSI2Mi41IiByeD0iMTQiIHJ5PSI2IiBmaWxsPSIjMWExYTFhIi8+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTI3LjUsNjUuNCAxMC4wLDcyLjEiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPHBhdGggZD0iTTQ1LjAsNjIuNSBRNjIuNSw2NS40IDgwLjAsNzIuMSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjUiIGZpbGw9Im5vbmUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgICA8Y2lyY2xlIGN4PSI1OS4wIiBjeT0iNTkuNSIgcj0iNSIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8cGF0aCBkPSJNNjMuMCw1OS41IEw2OS4wLDYwLjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPHBhdGggZD0iTTI3LjAsNjQuNSBMMTkuMCw2MS41IE0yNy4wLDY0LjUgTDIwLjAsNjcuNSIgc3Ryb2tlPSIjMWExYTFhIiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogICAgPC9nPgogICAgPGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTgwLCAwKSI+CiAgICAgIDxlbGxpcHNlIGN4PSI0NS4wIiBjeT0iNjIuNSIgcng9IjE0IiByeT0iNiIgZmlsbD0iIzFhMWExYSIvPgogICAgICA8cGF0aCBkPSJNNDUuMCw2Mi41IFEyNy41LDY3LjkgMTAuMCw4MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iNSIgZmlsbD0ibm9uZSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDxwYXRoIGQ9Ik00NS4wLDYyLjUgUTYyLjUsNjcuOSA4MC4wLDgwLjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSI1IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgICAgPGNpcmNsZSBjeD0iNTkuMCIgY3k9IjU5LjUiIHI9IjUiIGZpbGw9IiMxYTFhMWEiLz4KICAgICAgPHBhdGggZD0iTTYzLjAsNTkuNSBMNjkuMCw2MC41IiBzdHJva2U9IiMxYTFhMWEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgICAgIDxwYXRoIGQ9Ik0yNy4wLDY0LjUgTDE5LjAsNjEuNSBNMjcuMCw2NC41IEwyMC4wLDY3LjUiIHN0cm9rZT0iIzFhMWExYSIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICAgIDwvZz4KPC9zdmc+');
-  background-size: 100% auto;
-  background-repeat: no-repeat;
-  will-change: transform;
-  /* Dark brown silhouette — matches paper ink palette */
-  filter: brightness(0) invert(0) sepia(1) saturate(2) hue-rotate(10deg) brightness(0.25);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-@keyframes sflt-a {
-  0%   { transform: translateX(-12vw) translateY(0vh)   scale(0.28); }
-  8%   { transform: translateX(5vw)   translateY(-2vh)  scale(0.33); }
-  20%  { transform: translateX(22vw)  translateY(3vh)   scale(0.40); }
-  32%  { transform: translateX(40vw)  translateY(-1vh)  scale(0.46); }
-  44%  { transform: translateX(58vw)  translateY(4vh)   scale(0.50); }
-  56%  { transform: translateX(74vw)  translateY(1vh)   scale(0.52); }
-  68%  { transform: translateX(88vw)  translateY(-2vh)  scale(0.50); }
-  80%  { transform: translateX(102vw) translateY(2vh)   scale(0.48); }
-  100% { transform: translateX(115vw) translateY(0vh)   scale(0.45); }
-}
-@keyframes sflt-b {
-  0%   { transform: translateX(-12vw) translateY(-2vh)  scale(0.35); }
-  10%  { transform: translateX(6vw)   translateY(2vh)   scale(0.30); }
-  22%  { transform: translateX(24vw)  translateY(-3vh)  scale(0.42); }
-  35%  { transform: translateX(42vw)  translateY(2vh)   scale(0.38); }
-  48%  { transform: translateX(60vw)  translateY(-2vh)  scale(0.48); }
-  60%  { transform: translateX(76vw)  translateY(3vh)   scale(0.46); }
-  72%  { transform: translateX(90vw)  translateY(-1vh)  scale(0.44); }
-  85%  { transform: translateX(104vw) translateY(1vh)   scale(0.42); }
-  100% { transform: translateX(115vw) translateY(-2vh)  scale(0.40); }
-}
-#synopsis-birds-layer .sbird:nth-child(1)  { top:7%;  animation-name:sflt-a; animation-duration:14s;   animation-delay:0s;    }
-#synopsis-birds-layer .sbird:nth-child(2)  { top:10%; animation-name:sflt-b; animation-duration:15.5s; animation-delay:1.2s;  }
-#synopsis-birds-layer .sbird:nth-child(3)  { top:6%;  animation-name:sflt-a; animation-duration:16s;   animation-delay:3s;    }
-#synopsis-birds-layer .sbird:nth-child(4)  { top:22%; animation-name:sflt-b; animation-duration:15s;   animation-delay:5s;    }
-#synopsis-birds-layer .sbird:nth-child(5)  { top:26%; animation-name:sflt-a; animation-duration:13.5s; animation-delay:6.5s;  }
-#synopsis-birds-layer .sbird:nth-child(6)  { top:20%; animation-name:sflt-b; animation-duration:17s;   animation-delay:8.5s;  }
-#synopsis-birds-layer .sbird:nth-child(7)  { top:40%; animation-name:sflt-a; animation-duration:16.5s; animation-delay:11s;   }
-#synopsis-birds-layer .sbird:nth-child(8)  { top:43%; animation-name:sflt-b; animation-duration:14.8s; animation-delay:12.5s; }
-#synopsis-birds-layer .sbird:nth-child(9)  { top:38%; animation-name:sflt-a; animation-duration:13s;   animation-delay:14s;   }
-
-/* ── LIGHT MODE SYN-BOX — transparent, blends with paper bg ── */
-/* No glass card. Just let the content sit on the parchment naturally. */
-:root[data-theme="paper"] #synopsis-gate #syn-box {
-  background: transparent;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: none;
-  border-radius: 0;
-  padding: 0;
-  box-shadow: none;
-}
-
-/* ── LIGHT MODE TITLE — keep Rubik Glitch but warm it up ── */
-/* No Comic Sans. Use the existing glitch font — just recolor warm. */
-:root[data-theme="paper"] #synopsis-gate #syn-title {
-  color: var(--red) !important;
-  /* Soften the heavy chromatic shift — just a hint */
-  filter: none;
-}
-:root[data-theme="paper"] #synopsis-gate #syn-title::before {
-  color: rgba(180,80,0,0.35);
-  opacity: 0.35;
-}
-:root[data-theme="paper"] #synopsis-gate #syn-title::after {
-  color: rgba(100,40,0,0.3);
-  opacity: 0.3;
-}
-
-/* ── LEFT ACCENT LINE — softer in light ── */
-:root[data-theme="paper"] #synopsis-gate::before {
-  background: repeating-linear-gradient(
-    to bottom,
-    rgba(139,0,0,0.2) 0, rgba(139,0,0,0.2) 4px,
-    transparent 4px, transparent 12px
-  );
-}
-
-/* Rain canvas hard off */
-:root[data-theme="paper"] canvas#rain-canvas { display: none !important; }
-
-/* ── REDUCED MOTION ── */
-@media (prefers-reduced-motion: reduce) {
-  #synopsis-birds-layer .sbird { animation: none !important; transform: translateX(40vw) scale(0.4); }
-  #sky-sun-inner::before { animation: none !important; }
-  #sky-sun-circle { animation: none !important; }
-}
-
 </style>
 </head>
 <body>
@@ -2186,10 +2013,13 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     </div>
     <div id="hdr-right">
       <button class="hdr-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle paper mode">
+        <img src="assets/lucid/Disk.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:3px">
         <span id="theme-lbl-d">PAPER</span>
         <span id="theme-lbl-p" style="display:none">DARK</span>
       </button>
-      <button class="hdr-btn active" onclick="toggleReaderOpts()" id="opts-btn">⚙ OPTS</button>
+      <button class="hdr-btn active" onclick="toggleReaderOpts()" id="opts-btn">
+        <img src="assets/lucid/Gear.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:3px">OPTS
+      </button>
     </div>
   </header>
 
@@ -2236,7 +2066,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <div id="ch-list"></div>
       </div>
       <div id="sb-bottom">
-        <button class="sb-tool-btn" onclick="showSynopsis()">← BACK TO SYNOPSIS</button>
+        <button class="sb-tool-btn" onclick="showSynopsis()">
+          <img src="assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">BACK TO SYNOPSIS
+        </button>
         <button class="sb-tool-btn" id="sb-entity-btn" onclick="openEntityChat()"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M2 10 L5 7 L7 9 L4 12 Z" fill="currentColor" opacity="0.8"/><path d="M5 7 Q5 2 10 2 Q10 5 7 7" stroke="currentColor" stroke-width="1" fill="none" opacity="0.7"/><path d="M5.5 6.5 Q5.5 3.5 9 3.5 Q9 5.5 7 7" stroke="currentColor" stroke-width="0.8" fill="none" opacity="0.45"/><circle cx="7" cy="7" r="1" fill="currentColor"/><line x1="7" y1="7" x2="11" y2="3" stroke="currentColor" stroke-width="0.7" stroke-dasharray="1.5,1" opacity="0.5"/><circle cx="11.5" cy="2.5" r="0.8" fill="rgba(255,200,80,0.9)"/></svg> DIMENSIONAL CONTACT</button>
       </div>
     </nav>
@@ -2247,15 +2079,17 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <!-- Mobile chapter bar — lives inside as-main so sticky works below header -->
       <div id="mob-bar">
         <button id="mob-ch-trigger" onclick="openChDrawer()" aria-label="Select chapter">
-          <span id="mob-ch-trigger-icon">⊞</span>
+          <img src="assets/lucid/List.png" alt="" class="lucid-icon" id="mob-ch-trigger-icon" style="width:12px;height:12px;vertical-align:middle">
           <span id="mob-ch-trigger-meta">
             <span id="mob-ch-trigger-label">ARCHIVE // <span id="mob-sb-count">—</span> TRANSMISSIONS</span>
             <span id="mob-ch-trigger-current">SELECT CHAPTER</span>
           </span>
-          <span id="mob-ch-trigger-arrow">▾</span>
+          <img src="assets/lucid/Chevron-Arrow-Down.png" alt="" class="lucid-icon" id="mob-ch-trigger-arrow" style="width:10px;height:10px;vertical-align:middle">
         </button>
         <div id="mob-bar-tools">
-          <button class="hdr-btn" onclick="toggleReaderOpts()">⚙</button>
+          <button class="hdr-btn" onclick="toggleReaderOpts()">
+            <img src="assets/lucid/Gear.png" alt="Options" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
+          </button>
         </div>
         <!-- hidden select for JS compat -->
         <select id="mob-ch-sel" onchange="if(!isNaN(parseInt(this.value)))loadChapter(parseInt(this.value))">
@@ -2272,7 +2106,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
               <div id="mob-ch-panel-title">ARCHIVE // CHAPTER SELECT</div>
               <div id="mob-ch-panel-count">— TRANSMISSIONS LOADED</div>
             </div>
-            <button id="mob-ch-panel-close" onclick="closeChDrawer()">✕ CLOSE</button>
+            <button id="mob-ch-panel-close" onclick="closeChDrawer()">
+              <img src="assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">CLOSE
+            </button>
           </div>
           <div id="mob-ch-list">
             <!-- populated by renderSidebar() -->
@@ -2284,22 +2120,6 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <div id="synopsis-gate">
         <!-- Sky parallax layers -->
         <div class="sky-layer" id="sky-bg"          aria-hidden="true"></div>
-        <!-- ── LIGHT MODE: SUN ── -->
-        <div id="sky-sun" aria-hidden="true">
-          <div id="sky-sun-inner"><div id="sky-sun-circle"></div></div>
-        </div>
-        <!-- ── LIGHT MODE: BIRDS ── -->
-        <div id="synopsis-birds-layer" aria-hidden="true">
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-          <div class="sbird"></div>
-        </div>
         <div class="sky-layer" id="sky-moon"        aria-hidden="true"></div>
         <div class="sky-layer" id="sky-wispy"       aria-hidden="true"></div>
         <div class="sky-layer" id="sky-clouds-med"  aria-hidden="true"></div>
@@ -2327,8 +2147,12 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           </div>
 
           <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
-            <button id="syn-decrypt-btn" onclick="doDecrypt()"><span>⊞ DECRYPT ARCHIVE</span></button>
-            <button id="syn-begin-btn" onclick="beginReading()">BEGIN READING →</button>
+            <button id="syn-decrypt-btn" onclick="doDecrypt()">
+              <span><img src="assets/lucid/Lock-Open.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:4px">DECRYPT ARCHIVE</span>
+            </button>
+            <button id="syn-begin-btn" onclick="beginReading()">
+              <img src="assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:4px">BEGIN READING
+            </button>
           </div>
         </div>
       </div>
@@ -2352,8 +2176,12 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           </div>
           <div id="ch-body"></div>
           <div class="ch-nav">
-            <button class="ch-nav-btn" id="prev-btn" onclick="go(-1)">← PREVIOUS</button>
-            <button class="ch-nav-btn" id="next-btn" onclick="go(1)">NEXT →</button>
+            <button class="ch-nav-btn" id="prev-btn" onclick="go(-1)">
+              <img src="assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:4px">PREVIOUS
+            </button>
+            <button class="ch-nav-btn" id="next-btn" onclick="go(1)">
+              NEXT<img src="assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-left:4px">
+            </button>
           </div>
         </div>
       </div>
@@ -2408,25 +2236,35 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <option value="tl">Tagalog</option><option value="tr">Turkish</option>
     </select>
     <div id="ro-translate-status"></div>
-    <button id="ro-revert" onclick="revertTranslation()">✕ RESTORE ORIGINAL</button>
+    <button id="ro-revert" onclick="revertTranslation()">
+      <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:9px;height:9px;vertical-align:middle;margin-right:3px">RESTORE ORIGINAL
+    </button>
   </div>
 
 </div><!-- /reader-shell -->
 
 <!-- Admin FAB -->
-<button id="afab" onclick="openUpload()">⚡ + CONTENT</button>
+<button id="afab" onclick="openUpload()">
+  <img src="assets/lucid/Plus.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:4px">CONTENT
+</button>
 <div id="htrig" style="position:fixed;bottom:8px;right:8px;width:8px;height:8px;border-radius:50%;background:rgba(80,0,0,0.4);cursor:pointer;z-index:300;" onclick="openLogin()" title=""></div>
 
 <!-- Login Modal -->
 <div id="login-modal" class="modal">
   <div class="modal-shell">
-    <div class="modal-title">⚡ OPERATOR AUTHENTICATION</div>
+    <div class="modal-title">
+      <img src="assets/lucid/Lock-Closed.png" alt="" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle;margin-right:5px">OPERATOR AUTHENTICATION
+    </div>
     <div class="modal-field"><label class="modal-label">OPERATOR ID:</label><input type="text" class="modal-inp" id="li-user" autocomplete="off" /></div>
     <div class="modal-field"><label class="modal-label">AUTH KEY:</label><input type="password" class="modal-inp" id="li-pass" /></div>
     <div class="modal-err" id="li-err"></div>
     <div class="modal-row">
-      <button class="btn-r" onclick="doLogin()">▶ AUTHENTICATE</button>
-      <button class="btn-d" onclick="closeLogin()">CANCEL</button>
+      <button class="btn-r" onclick="doLogin()">
+        <img src="assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">AUTHENTICATE
+      </button>
+      <button class="btn-d" onclick="closeLogin()">
+        <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">CANCEL
+      </button>
     </div>
   </div>
 </div>
@@ -2444,7 +2282,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         </button>
       </div>
       <button id="ced-new-btn" onclick="cedNewChapter()">
-        + NEW CHAPTER
+        <img src="assets/lucid/Plus.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">NEW CHAPTER
       </button>
       <div id="ced-ch-list"><!-- populated by cedRenderList() --></div>
     </div>
@@ -2467,12 +2305,16 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <button class="ced-fx-btn" title="[INKBLEED]...[/INKBLEED]" onclick="cedWrap('[INKBLEED]','[/INKBLEED]')"><img src="assets/lucid/Speaker-1.png" alt="" class="lucid-icon">INK</button>
           <button class="ced-fx-btn" title="[MARGIN: note]" onclick="cedInsertMargin()"><img src="assets/lucid/List.png" alt="" class="lucid-icon">MARGIN</button>
           <span class="ced-toolbar-sep">INSERT</span>
-          <button class="ced-fx-btn" title="[IMG url=... align=center caption=...]" onclick="cedInsertImg()"><img src="assets/lucid/Gear.png" alt="" class="lucid-icon">IMG</button>
+          <button class="ced-fx-btn" title="[IMG url=... align=center caption=...]" onclick="cedInsertImg()"><img src="assets/lucid/File-Image.png" alt="" class="lucid-icon">IMG</button>
         </div>
         <div id="ced-toolbar-actions">
           <div id="ced-status"></div>
-          <button class="ced-action-btn ced-del-btn" id="ced-del-btn" title="Delete chapter" onclick="cedDelete()" style="display:none;">DELETE</button>
-          <button class="ced-action-btn ced-save-btn" onclick="cedSave()"><img src="assets/lucid/Next.png" alt="" class="lucid-icon">PUBLISH</button>
+          <button class="ced-action-btn ced-del-btn" id="ced-del-btn" title="Delete chapter" onclick="cedDelete()" style="display:none;">
+            <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:9px;height:9px;vertical-align:middle;margin-right:3px">DELETE
+          </button>
+          <button class="ced-action-btn ced-save-btn" onclick="cedSave()">
+            <img src="assets/lucid/Upload.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">PUBLISH
+          </button>
         </div>
       </div>
 
@@ -3310,12 +3152,9 @@ let currentChapterIdx = -1;
 function updateSkyStat(idx) {
   const skyEl = document.getElementById('hdr-sky-val');
   if (!skyEl) return;
-  // idx -1 = synopsis screen: RAINY in dark mode, SUNNY in paper mode
-  const isPaper = document.documentElement.dataset.theme === 'paper';
-  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)]
-              : isPaper ? 'SUNNY' : 'RAINY';
-  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)]
-            : isPaper ? '#f5a623' : '#4466aa';
+  // idx -1 = synopsis screen, which always shows rain → report RAINY not SUNNY
+  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'RAINY';
+  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#4466aa';
   skyEl.textContent = state;
   skyEl.style.color = col;
 }
@@ -3609,25 +3448,6 @@ function applyReaderOpts() {
   b.classList.toggle('rm-justify', readerOpts.justify);
   b.classList.toggle('rm-focus', readerOpts.focus);
   document.documentElement.dataset.theme = readerOpts.displayMode;
-  // Sync synopsis sky when theme toggles
-  (function syncSkyOnThemeChange() {
-    const isPaperNow = readerOpts.displayMode === 'paper';
-    // If synopsis is visible, update sky weather + rain
-    const gate = document.getElementById('synopsis-gate');
-    if (gate && (gate.style.display === 'flex' || gate.classList.contains('show'))) {
-      if (isPaperNow) {
-        if (window.stopSynopsisRain) window.stopSynopsisRain();
-      } else {
-        if (window.startSynopsisRain) window.startSynopsisRain();
-      }
-      if (window.updateSkyWeather) {
-        window.updateSkyWeather(typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1);
-      }
-      if (window.updateSkyStat) {
-        window.updateSkyStat(typeof currentChapterIdx !== 'undefined' ? currentChapterIdx : -1);
-      }
-    }
-  })();
   syncThemeBtn();
 }
 function syncReaderUI() {
@@ -3651,6 +3471,11 @@ function setDisplayMode(m) { readerOpts.displayMode = m; applyReaderOpts(); sync
 
 function toggleTheme() {
   setDisplayMode(readerOpts.displayMode === 'dark' ? 'paper' : 'dark');
+  /* Restart atmosphere in correct mode if already playing */
+  if (window.stopSynopsisRain && window.startSynopsisRain) {
+    window.stopSynopsisRain();
+    setTimeout(() => window.startSynopsisRain(), 1600);
+  }
 }
 function syncThemeBtn() {
   const isDark = readerOpts.displayMode === 'dark';
@@ -4275,7 +4100,35 @@ async function sendEntityMsg() {
     if (audioUnlocked) return;
     audioUnlocked = true;
 
-    /* Continuous rain ambience — looped */
+    const isPaper = document.documentElement.dataset.theme === 'paper';
+
+    if (isPaper) {
+      /* Paper / light mode: ambient birdsong + nature sounds */
+      rainSound = new Howl({
+        src: [
+          'https://cdn.freesound.org/previews/531/531947_2523167-lq.mp3', /* forest birds morning */
+          'https://cdn.freesound.org/previews/456/456968_5121236-lq.mp3', /* gentle birdsong */
+        ],
+        loop: true,
+        volume: 0,
+        html5: true,
+        onloaderror: () => {
+          /* fallback: try a different birds URL */
+          rainSound = new Howl({
+            src: ['https://cdn.freesound.org/previews/476/476042_6418094-lq.mp3'],
+            loop: true, volume: 0, html5: true,
+            onloaderror: () => { rainSound = null; }
+          });
+          if (rainSound) { rainSound.play(); rainSound.fade(0, 0.18, 3000); }
+        }
+      });
+      rainSound.play();
+      rainSound.fade(0, 0.18, 3000);
+      /* No thunder — add gentle ambient wind layer instead */
+      return;
+    }
+
+    /* Dark mode: Continuous rain ambience — looped */
     rainSound = new Howl({
       src: [
         'https://cdn.freesound.org/previews/346/346186_5121236-lq.mp3', /* rain on glass */
@@ -4366,8 +4219,15 @@ async function sendEntityMsg() {
 
   /* ── START / STOP ── */
   window.startSynopsisRain = function() {
-    // In light (paper) mode, skip rain entirely
-    if (document.documentElement.dataset.theme === 'paper') return;
+    /* In paper (light) mode: skip rain entirely, start birdsong instead */
+    if (document.documentElement.dataset.theme === 'paper') {
+      const unlock = () => { initAudio(); document.removeEventListener('click', unlock); document.removeEventListener('touchstart', unlock); };
+      document.addEventListener('click', unlock, { once: true });
+      document.addEventListener('touchstart', unlock, { once: true });
+      initAudio();
+      return;
+    }
+
     canvas = document.getElementById('rain-canvas');
     if (!canvas || running) return;
     ctx = canvas.getContext('2d');
@@ -4441,10 +4301,7 @@ async function sendEntityMsg() {
       const gate = document.getElementById('synopsis-gate');
       if (!gate) return;
       // chIdx -1 = synopsis screen → always rainy background, use sky-rainy as default
-      const _isPaper = document.documentElement.dataset.theme === 'paper';
-      const wClass = chIdx < 0
-        ? (_isPaper ? 'sky-sunny' : 'sky-rainy')
-        : WEATHER_CLASSES[Math.min(chIdx, WEATHER_CLASSES.length - 1)];
+      const wClass = chIdx < 0 ? 'sky-rainy' : WEATHER_CLASSES[Math.min(chIdx, WEATHER_CLASSES.length - 1)];
       ALL_WEATHER.forEach(c => gate.classList.remove(c));
       gate.classList.add(wClass);
       const bg = document.getElementById('sky-bg');
