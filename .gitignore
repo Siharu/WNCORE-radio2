@@ -1,0 +1,13 @@
+# Node modules and system files
+node_modules/
+.DS_Store
+
+# Ignore local backups
+*.bak
+
+# Ignore editor swap files
+*.swp
+
+# Ignore build outputs
+dist/
+build/

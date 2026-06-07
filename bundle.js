@@ -14,16 +14,95 @@
 // ─── RADIO BROWSER API — MIRROR RESOLVER ─────────────────────────────────
 // Radio Browser API — routed through our own Vercel proxy (/api/config?rb=)
 // so expired SSL certs on radio-browser.info never hit the browser.
-const _a = '/api/config?rb=';
-const _apiResolved = true;
-async function _resolveApi() { return _a; }
+const _BASE_PATH = (function(){
+  let path = window.location.pathname.replace(/\/[^/]*$/, '');
+  if (!path) return '/';
+  return path.endsWith('/') ? path : path + '/';
+})();
+const _a = `${_BASE_PATH}api/config?rb=`;
+const _api = `${_BASE_PATH}api/`;
+async function _resolveApi() {
+  return _a;
+}
 const _d = (function(){const p=['s','i','h','a','r','u','.','v','e','r','c','e','l','.','a','p','p'];return 'https://'+p.join('')})();
 
 const audio = document.getElementById('audio');
 let isPlaying=false, isDarkMode=false, isMinimal=false;
 let currentStation=null, exposure=0, horrorTriggered=false;
-let searchFilter='all', searchDebounce, mobileMenuOpen=false;
+let searchFilter='all', searchDebounce, mobileMenuOpen=false, desktopMenuOpen=false;
 let _progressInterval = null;
+
+// ── WNCORE Utilities (inlined) ─────────────────────────────────────────
+window.WNCORE = window.WNCORE || {};
+(function(exports){
+  function createManagedWebSocket(url, opts = {}) {
+    let ws = null;
+    let attempts = 0;
+    let reconnectTimer = null;
+    const handlers = { open: null, message: null, error: null, close: null };
+
+    function connect(){
+      attempts++;
+      try { ws = new WebSocket(url); } catch(e){ scheduleReconnect(); return; }
+
+      ws.onopen = function(e){ attempts = 0; if(typeof handlers.open === 'function') handlers.open(e); };
+      ws.onmessage = function(e){ if(typeof handlers.message === 'function') handlers.message(e); };
+      ws.onerror = function(e){ if(typeof handlers.error === 'function') handlers.error(e); };
+      ws.onclose = function(e){ if(typeof handlers.close === 'function') handlers.close(e); scheduleReconnect(); };
+    }
+
+    function scheduleReconnect(){
+      if (reconnectTimer) return;
+      const maxBackoff = opts.maxBackoff || 30000;
+      const backoff = Math.min(1000 * Math.pow(2, attempts), maxBackoff);
+      reconnectTimer = setTimeout(function(){ reconnectTimer = null; connect(); }, backoff + Math.floor(Math.random()*500));
+    }
+
+    connect();
+
+    return {
+      send: function(d){ try{ if(ws && ws.readyState === WebSocket.OPEN) ws.send(d); }catch(e){} },
+      close: function(){ try{ if(reconnectTimer) clearTimeout(reconnectTimer); reconnectTimer = null; if(ws) ws.close(); }catch(e){} },
+      get readyState(){ return ws ? ws.readyState : 3; },
+      set onopen(fn){ handlers.open = fn; },
+      set onmessage(fn){ handlers.message = fn; },
+      set onerror(fn){ handlers.error = fn; },
+      set onclose(fn){ handlers.close = fn; }
+    };
+  }
+
+  function getAdminToken(keyName){
+    try{
+      const raw = sessionStorage.getItem(keyName);
+      if(!raw) return null;
+      const t = atob(raw);
+      return (typeof t === 'string' && t.length) ? t : null;
+    } catch(e){ try{ sessionStorage.removeItem(keyName); }catch(_){} return null; }
+  }
+
+  function setAdminToken(keyName, token){
+    try{ if(!token) sessionStorage.removeItem(keyName); else sessionStorage.setItem(keyName, btoa(token)); } catch(e){}
+  }
+
+  function safeSetImage(container, src, alt, fallbackHtml){
+    if(!container) return;
+    container.innerHTML = '';
+    if(!src){ if(fallbackHtml) container.innerHTML = fallbackHtml; return; }
+    var img = document.createElement('img');
+    img.alt = alt || '';
+    img.loading = 'lazy';
+    img.style.width = '100%'; img.style.height = '100%'; img.style.objectFit = 'cover';
+    img.onerror = function(){ if(fallbackHtml) container.innerHTML = fallbackHtml; else container.innerHTML = ''; };
+    try{ img.src = src; container.appendChild(img); }catch(e){ if(fallbackHtml) container.innerHTML = fallbackHtml; }
+  }
+
+  exports.createManagedWebSocket = createManagedWebSocket;
+  exports.getAdminToken = getAdminToken;
+  exports.setAdminToken = setAdminToken;
+  exports.safeSetImage = safeSetImage;
+
+})(window.WNCORE);
+
 
 function formatTime(s){
   if(!isFinite(s) || s < 0) return '00:00';
@@ -97,25 +176,255 @@ let aboutEyeActive = false;
 let aboutEyeLastX = window.innerWidth / 2;
 let aboutEyeLastY = window.innerHeight / 2;
 let aboutEyeAnimFrame = null;
-let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+let aboutEyeTrackMouse = null; // Store reference for cleanup
+let aboutEyeGazeTimeout = null;
+let aboutEyeHideTimeout = null;
+const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
 function initAboutEyes() {
   const aboutPage = document.getElementById('page-about');
   if(!aboutPage) return;
   
-  // Show eyes randomly when about page is active
   if(aboutPage.classList.contains('active')) {
-    if(Math.random() < 0.6) { // 60% chance to show eyes
+    if(Math.random() < 0.4) { // 40% chance to show eyes
       showAboutEyes();
     }
   }
 }
 
+/* ═════════ Anime Tracker: Jikan search + trace.moe + localStorage tracker ═════════ */
+const ANIME_TRACKER_KEY = 'wncore_anime_tracker_v1';
+const ANIME_TRACKER_TABLE = 'user_anime_tracker';
+let _authUser = null;
+
+function animeTrackerSyncNote(text, isError){
+  const note = document.getElementById('anime-tracker-sync-note');
+  if (!note) return;
+  note.textContent = text || '';
+  note.style.color = isError ? 'var(--anime-pink)' : 'var(--text3)';
+}
+
+function mergeAnimeTrackerLists(localList, remoteList) {
+  const out = new Map();
+  (remoteList || []).forEach(item => { if (item && item.id !== undefined) out.set(String(item.id), item); });
+  (localList || []).forEach(item => { if (item && item.id !== undefined) out.set(String(item.id), item); });
+  return [...out.values()];
+}
+
+async function animeTrackerLoadCloud(){
+  if (!_authUser) return null;
+  const sb = await _getSupabase();
+  if (!sb) return null;
+  try {
+    const { data, error } = await sb.from(ANIME_TRACKER_TABLE).select('anime_list').eq('user_id', _authUser.id).limit(1).single();
+    if (error) {
+      console.warn('animeTrackerLoadCloud failed', error);
+      return null;
+    }
+    return data?.anime_list || null;
+  } catch (e) {
+    console.warn('animeTrackerLoadCloud failed', e);
+    return null;
+  }
+}
+
+async function animeTrackerSaveCloud(list){
+  if (!_authUser) return false;
+  const sb = await _getSupabase();
+  if (!sb) return false;
+  try {
+    const { error } = await sb.from(ANIME_TRACKER_TABLE).upsert({
+      user_id: _authUser.id,
+      anime_list: list || [],
+    }, { onConflict: 'user_id' });
+    if (error) {
+      console.warn('animeTrackerSaveCloud failed', error);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.warn('animeTrackerSaveCloud failed', e);
+    return false;
+  }
+}
+
+function animeTrackerPersist(list){
+  saveTracker(list);
+  if (!_authUser) {
+    animeTrackerSyncNote('Saved locally (sign in to sync)');
+    return;
+  }
+  animeTrackerSaveCloud(list).then(ok => {
+    if (ok) animeTrackerSyncNote('Synced to cloud');
+    else animeTrackerSyncNote('Saved locally, cloud sync failed', true);
+  }).catch(() => animeTrackerSyncNote('Saved locally, cloud sync failed', true));
+}
+
+async function animeTrackerSyncOnLogin(){
+  if (!_authUser) {
+    animeTrackerSyncNote('Saved locally (sign in to sync)');
+    return;
+  }
+  animeTrackerSyncNote('Syncing tracker with cloud…');
+  const localList = loadTracker();
+  const remoteList = await animeTrackerLoadCloud();
+  const merged = mergeAnimeTrackerLists(localList, remoteList || []);
+  saveTracker(merged);
+  const ok = await animeTrackerSaveCloud(merged);
+  await renderTracker();
+  if (ok) animeTrackerSyncNote('Tracker synced to cloud');
+  else animeTrackerSyncNote('Saved locally, cloud sync failed', true);
+}
+
+function oauthProviderLogin(provider, label){
+  return async function(){
+    const sb = await _getSupabase();
+    if (!sb) { showToast('Auth service unavailable', 'warn'); return; }
+    closeSignInBtn();
+    try {
+      await sb.auth.signInWithOAuth({ provider, options: { redirectTo: window.location.origin } });
+    } catch (e) {
+      console.warn('oauth ' + provider + ' failed', e);
+      showToast(label + ' sign-in is not configured', 'warn');
+    }
+  };
+}
+
+const oauthAniList = oauthProviderLogin('anilist', 'AniList');
+const oauthMAL = oauthProviderLogin('mal', 'MyAnimeList');
+
+async function animePingAuthStatus(){
+  const note = document.getElementById('anime-tracker-sync-note');
+  if (!_authUser) {
+    animeTrackerSyncNote('Saved locally (sign in to sync)');
+    return;
+  }
+  animeTrackerSyncNote('Signed in — tracker cloud sync enabled');
+}
+
+async function animeSearch(q){
+  if(!q || !q.trim()) return [];
+  try{
+    const url = 'https://api.jikan.moe/v4/anime?q=' + encodeURIComponent(q) + '&limit=12';
+    const r = await fetch(url);
+    if(!r.ok) return [];
+    const j = await r.json();
+    return j.data || [];
+  }catch(e){ console.warn('animeSearch failed', e); return []; }
+}
+
+function renderAnimeSearch(results){
+  const el = document.getElementById('anime-search-results');
+  if(!el) return;
+  if(!results || !results.length){ el.innerHTML = '<div style="padding:18px;color:var(--text3)">No results.</div>'; return; }
+  el.innerHTML = results.map(a => {
+    const img = (a.images?.jpg?.image_url) || (a.images?.webp?.image_url) || '';
+    const title = a.title || a.title_english || a.title_japanese || 'Unknown';
+    const yr = a.aired?.from ? new Date(a.aired.from).getFullYear() : (a.year || '');
+    return `<div class="anime-card"><div class="anime-card-img"><img src="${img}" alt=""></div><div class="anime-card-body"><div class="anime-card-title">${title}</div><div class="anime-card-meta">${a.type || ''} ${yr}</div><div style="margin-top:8px"><button class="btn anime-add-btn" data-id="${a.mal_id}">Add</button> <a class="btn" href="${a.url}" target="_blank" rel="noopener">Open</a></div></div></div>`;
+  }).join('');
+  // bind add buttons
+  el.querySelectorAll('.anime-add-btn').forEach(btn => btn.addEventListener('click', async function(){
+    const id = this.getAttribute('data-id');
+    const item = results.find(r=>String(r.mal_id)===String(id));
+    if(item) addToTrackerFromJikan(item);
+  }));
+}
+
+async function addToTrackerFromJikan(a){
+  const item = { id: a.mal_id, title: a.title, image: a.images?.jpg?.image_url || '', url: a.url, status: 'plan', rating: 0, addedAt: Date.now() };
+  const list = loadTracker();
+  if(list.find(x=>x.id===item.id)) return; // already added
+  list.unshift(item);
+  animeTrackerPersist(list);
+  renderTracker();
+}
+
+function loadTracker(){
+  try{ const raw = localStorage.getItem(ANIME_TRACKER_KEY); return raw ? JSON.parse(raw) : []; } catch(e){ return []; }
+}
+
+function saveTracker(list){
+  try{ localStorage.setItem(ANIME_TRACKER_KEY, JSON.stringify(list)); } catch(e){ console.warn('saveTracker failed', e); }
+}
+
+function renderTracker(){
+  const list = loadTracker();
+  const el = document.getElementById('anime-tracker-list'); if(!el) return;
+  if(!list.length){ el.innerHTML = '<div style="padding:18px;color:var(--text3)">Your tracker is empty.</div>'; return; }
+  el.innerHTML = list.map(it => `
+    <div class="anime-card">
+      <div class="anime-card-img"><img src="${it.image||'assets/lucid/File-Image.png'}" alt=""></div>
+      <div class="anime-card-body">
+        <div class="anime-card-title">${it.title}</div>
+        <div class="anime-card-meta">Status: <select class="anime-status" data-id="${it.id}"><option${it.status==='plan'?' selected':''} value="plan">Planned</option><option${it.status==='watch'?' selected':''} value="watch">Watching</option><option${it.status==='complete'?' selected':''} value="complete">Completed</option></select></div>
+        <div style="margin-top:8px">Rating: <input type="number" min="0" max="10" step="1" class="anime-rating" data-id="${it.id}" value="${it.rating||0}" style="width:64px"> <button class="btn anime-remove" data-id="${it.id}">Remove</button></div>
+      </div>
+    </div>
+  `).join('');
+
+  // bind status/rating/remove handlers
+  el.querySelectorAll('.anime-status').forEach(sel => sel.addEventListener('change', function(){
+    const id = this.getAttribute('data-id'); const list = loadTracker(); const it = list.find(x=>String(x.id)===String(id)); if(!it) return; it.status = this.value; animeTrackerPersist(list); renderTracker();
+  }));
+  el.querySelectorAll('.anime-rating').forEach(inp => inp.addEventListener('change', function(){
+    const id = this.getAttribute('data-id'); const list = loadTracker(); const it = list.find(x=>String(x.id)===String(id)); if(!it) return; it.rating = parseInt(this.value)||0; animeTrackerPersist(list);
+  }));
+  el.querySelectorAll('.anime-remove').forEach(btn => btn.addEventListener('click', function(){
+    const id = this.getAttribute('data-id'); let list = loadTracker(); list = list.filter(x=>String(x.id)!==String(id)); animeTrackerPersist(list); renderTracker();
+  }));
+}
+
+async function animeTraceImageFile(file){
+  if(!file) return null;
+  try{
+    const fd = new FormData(); fd.append('image', file);
+    const r = await fetch('https://api.trace.moe/search', { method: 'POST', body: fd });
+    if(!r.ok) return null;
+    const j = await r.json();
+    if(!j.result || !j.result.length) return null;
+    const top = j.result[0];
+    // prefer titles from anilist info
+    const title = (top.anilist && (top.anilist.title?.native || top.anilist.title?.romaji || top.anilist.title?.english)) || top.filename || '';
+    // search Jikan for the title
+    if(title){
+      const search = await animeSearch(title);
+      if(search && search.length) return search[0];
+    }
+    return null;
+  }catch(e){ console.warn('animeTraceImageFile failed', e); return null; }
+}
+
+function initAnimeTracker(){
+  // bind search
+  const sbtn = document.getElementById('anime-search-btn');
+  const sinp = document.getElementById('anime-search-input');
+  if(sbtn && sinp) sbtn.addEventListener('click', async function(){ const q = sinp.value.trim(); if(!q) return; sbtn.disabled = true; const results = await animeSearch(q); renderAnimeSearch(results); sbtn.disabled = false; });
+  const authBtn = document.getElementById('anime-signin-btn'); if(authBtn) authBtn.addEventListener('click', openSignIn);
+  const anilistBtn = document.getElementById('anime-signin-anilist-btn'); if(anilistBtn) anilistBtn.addEventListener('click', oauthAniList);
+  const malBtn = document.getElementById('anime-signin-mal-btn'); if(malBtn) malBtn.addEventListener('click', oauthMAL);
+  if(sinp) sinp.addEventListener('keydown', function(e){ if(e.key==='Enter'){ document.getElementById('anime-search-btn').click(); } });
+
+  // trace file
+  const traceFile = document.getElementById('anime-trace-file');
+  if(traceFile) traceFile.addEventListener('change', async function(){ if(!this.files || !this.files[0]) return; const file = this.files[0]; const res = await animeTraceImageFile(file); if(res) { renderAnimeSearch([res]); } else { alert('No match found from image.'); } this.value = ''; });
+
+  // export/import
+  const exp = document.getElementById('anime-export-btn'); if(exp) exp.addEventListener('click', function(){ const data = loadTracker(); const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'wncore-anime-tracker.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url); });
+  const imp = document.getElementById('anime-import-btn'); if(imp) imp.addEventListener('click', function(){ const inp = document.createElement('input'); inp.type='file'; inp.accept='application/json'; inp.onchange = function(){ const f = this.files[0]; if(!f) return; const r = new FileReader(); r.onload = function(){ try{ const j = JSON.parse(this.result); if(Array.isArray(j)){ animeTrackerPersist(j); renderTracker(); alert('Imported '+j.length+' items'); } }catch(e){ alert('Invalid file'); } }; r.readAsText(f); }; document.body.appendChild(inp); inp.click(); inp.remove(); });
+
+  renderTracker();
+  animePingAuthStatus();
+}
+
+// initialize when DOM ready
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAnimeTracker); else initAnimeTracker();
+
+
 function showAboutEyes() {
   if(aboutEyeActive) return;
   aboutEyeActive = true;
   
-  // Random position on screen
   const x = Math.random() * (window.innerWidth - 200);
   const y = Math.random() * (window.innerHeight - 200);
   
@@ -128,26 +437,40 @@ function showAboutEyes() {
   } else {
     startAboutEyeTracking();
   }
+  
+  // Auto-hide after 4-8 seconds
+  aboutEyeHideTimeout = setTimeout(() => {
+    hideAboutEyes();
+    // Re-trigger after 3-6 seconds
+    setTimeout(initAboutEyes, 3000 + Math.random() * 3000);
+  }, 4000 + Math.random() * 4000);
 }
 
 function hideAboutEyes() {
   aboutEyeActive = false;
   aboutEyesContainer.style.display = 'none';
+  
   if(aboutEyeAnimFrame) cancelAnimationFrame(aboutEyeAnimFrame);
+  if(aboutEyeHideTimeout) clearTimeout(aboutEyeHideTimeout);
+  if(aboutEyeGazeTimeout) clearTimeout(aboutEyeGazeTimeout);
+  
+  // CRITICAL FIX: Properly remove the mousemove listener
+  if(aboutEyeTrackMouse) {
+    document.removeEventListener('mousemove', aboutEyeTrackMouse);
+    aboutEyeTrackMouse = null;
+  }
 }
 
 function startAboutEyeTracking() {
-  function trackMouse(e) {
-    if(!aboutEyeActive) {
-      document.removeEventListener('mousemove', trackMouse);
-      return;
-    }
+  aboutEyeTrackMouse = function(e) {
+    if(!aboutEyeActive) return;
     aboutEyeLastX = e.clientX;
     aboutEyeLastY = e.clientY;
     updateAboutEyePupil();
-  }
+  };
   
   function updateAboutEyePupil() {
+    if(!aboutEyesContainer || !aboutEyePupil) return;
     const rect = aboutEyesContainer.getBoundingClientRect();
     const eyeCenterX = rect.left + rect.width / 2;
     const eyeCenterY = rect.top + rect.height / 2;
@@ -157,54 +480,58 @@ function startAboutEyeTracking() {
     const distance = Math.hypot(dx, dy);
     const angle = Math.atan2(dy, dx);
     
-    const maxOffset = 20; // Max pupil movement
-    // Negate offsets: pupil tracks toward mouse but stays inside iris
-    const offsetX = -(Math.cos(angle) * Math.min(distance * 0.1, maxOffset));
-    const offsetY = -(Math.sin(angle) * Math.min(distance * 0.1, maxOffset));
+    const maxOffset = 18;
+    const offsetX = -(Math.cos(angle) * Math.min(distance * 0.08, maxOffset));
+    const offsetY = -(Math.sin(angle) * Math.min(distance * 0.08, maxOffset));
     
     aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
   }
   
-  document.addEventListener('mousemove', trackMouse);
+  document.addEventListener('mousemove', aboutEyeTrackMouse, {passive: true});
   updateAboutEyePupil();
 }
 
 function startAboutEyeRandomLook() {
-  function randomGaze() {
+  const randomGaze = () => {
     if(!aboutEyeActive) return;
     
-    // Random angle and distance for mobile
     const angle = Math.random() * Math.PI * 2;
     const distance = Math.random() * 40;
+    const maxOffset = 18;
+    const offsetX = -(Math.cos(angle) * Math.min(distance * 0.08, maxOffset));
+    const offsetY = -(Math.sin(angle) * Math.min(distance * 0.08, maxOffset));
     
-    const maxOffset = 20;
-    // Negate: pupil stays inside iris (same fix as desktop tracking)
-    const offsetX = -(Math.cos(angle) * Math.min(distance * 0.1, maxOffset));
-    const offsetY = -(Math.sin(angle) * Math.min(distance * 0.1, maxOffset));
+    if(aboutEyePupil) {
+      aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
+    }
     
-    aboutEyePupil.style.transform = `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px))`;
-    
-    // Change gaze every 1-3 seconds
-    setTimeout(randomGaze, 1000 + Math.random() * 2000);
-  }
+    aboutEyeGazeTimeout = setTimeout(randomGaze, 800 + Math.random() * 1600);
+  };
   
   randomGaze();
 }
 
-// Trigger eyes when about page is viewed
+// CRITICAL FIX: Properly handle eyes visibility
 const pageAbout = document.getElementById('page-about');
 if(pageAbout) {
   const observer = new MutationObserver(() => {
-    if(pageAbout.classList.contains('active') && !aboutEyeActive) {
-      setTimeout(initAboutEyes, 500);
-    } else if(!pageAbout.classList.contains('active')) {
+    if(pageAbout.classList.contains('active')) {
+      if(!aboutEyeActive && Math.random() < 0.3) {
+        setTimeout(initAboutEyes, 800);
+      }
+    } else {
       hideAboutEyes();
     }
   });
   observer.observe(pageAbout, {attributes: true, attributeFilter: ['class']});
+  
+  // Cleanup on page unload
+  window.addEventListener('beforeunload', hideAboutEyes);
 }
 
 // ─── STATION DATA ─────────────────────────────────────────────────────────
+// FEATURED array — Indices 0 & 1 (Radio Paradise, BBC) are kept for legacy/documentation
+// Only index 2 (88.7 FM) is actively called from playFeatured(2) in the UI
 const FEATURED = [
   {url:'https://stream.radioparadise.com/aac-320',name:'Radio Paradise',meta:'Rock / Eclectic · California, US',emoji:'🇺🇸'},
   {url:'https://stream.bbc.co.uk/bbc_world_service',name:'BBC World Service',meta:'News / Talk · London, UK',emoji:'🇬🇧'},
@@ -458,9 +785,12 @@ let _chartsOffset = 0;
 const _CHARTS_PAGE_SIZE = 100;
 let _chartsLoading = false;
 let _chartsExhausted = false;
+let _chartsCurrentGenre = null;
 
 async function loadChartsPage() {
   const tbody = document.getElementById('charts-tbody');
+  // CRITICAL FIX: Reset exhausted flag on new page load
+  _chartsExhausted = false;
   if(chartsData) { renderTable(chartsData,'charts-tbody'); _attachChartsPagination(tbody); return; }
   tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text3);font-size:0.8rem;">Loading top charts...</td></tr>`;
 
@@ -815,7 +1145,8 @@ function _startListenMoeWs(streamUrl) {
     ? 'wss://listen.moe/kpop/gateway_v2'
     : 'wss://listen.moe/gateway_v2';
   try {
-    _listenMoeWs = new WebSocket(wsUrl);
+    // Use managed WebSocket to provide reconnect/backoff and safe handlers
+    _listenMoeWs = WNCORE.createManagedWebSocket(wsUrl);
     _listenMoeWs.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data);
@@ -827,7 +1158,7 @@ function _startListenMoeWs(streamUrl) {
         }
         // Respond to heartbeat
         if (msg.op === 9) _listenMoeWs.send(JSON.stringify({op:9}));
-      } catch(_){}
+      } catch(_){ }
     };
     _listenMoeWs.onerror = () => {};
     _listenMoeWs.onclose = () => { _listenMoeWs = null; };
@@ -954,6 +1285,7 @@ function updateUI(name, meta, emoji, favicon) {
   const npArt = document.getElementById('np-art-icon');
   if(pbArt) pbArt.innerHTML = _artHtml(40);
   if(npArt) npArt.innerHTML = _artHtml(64);
+  if (window.updateNowPlayingArt) window.updateNowPlayingArt(favicon || null);
   document.getElementById('np-track').textContent = '— receiving signal —';
   document.getElementById('np-fill').classList.remove('buffering','paused');
   document.getElementById('np-fill').classList.add('playing');
@@ -1082,16 +1414,44 @@ if (audio) {
 }
 
 function toggleFavorite(btn) {
-  // Delegate to the unified favCurrentStation() so both hearts use the same FAV_KEY store.
-  // favCurrentStation() handles add/remove, toast, and updateFavButton() UI sync.
-  if (typeof favCurrentStation === 'function') {
-    favCurrentStation();
+  if(!_currentStreamUrl || !_currentStationName) {
+    updateStatus('No station playing');
+    return;
   }
+  const favs = JSON.parse(localStorage.getItem('wncore-favorites') || '[]');
+  const favIdx = favs.findIndex(f => f.url === _currentStreamUrl);
+  if(favIdx >= 0) {
+    favs.splice(favIdx, 1);
+    if(btn) btn.style.opacity = '0.5';
+  } else {
+    favs.push({url: _currentStreamUrl, name: _currentStationName, tags: _currentStreamMeta});
+    if(btn) btn.style.opacity = '1';
+  }
+  localStorage.setItem('wncore-favorites', JSON.stringify(favs));
+  updateStatus(favIdx >= 0 ? 'Removed from favorites' : 'Added to favorites');
 }
+let _sleepTimerActive = false;
+let _sleepTimerDuration = null;
 function toggleSleepTimer(btn) {
-  // Delegate to cycleSleepTimer() which has the real countdown display and audio fade.
-  if (typeof cycleSleepTimer === 'function') {
-    cycleSleepTimer();
+  const options = [null, 5, 15, 30, 60];
+  const currentIdx = options.indexOf(_sleepTimerDuration);
+  const nextIdx = (currentIdx + 1) % options.length;
+  _sleepTimerDuration = options[nextIdx];
+  if(_sleepTimerDuration) {
+    _sleepTimerActive = true;
+    if(btn) btn.style.opacity = '0.8';
+    setTimeout(() => {
+      if(_sleepTimerActive) {
+        stopPlayback();
+        updateStatus(`Sleep timer: stopped after ${_sleepTimerDuration} min`);
+        _sleepTimerActive = false;
+      }
+    }, _sleepTimerDuration * 60 * 1000);
+    updateStatus(`Sleep timer: ${_sleepTimerDuration} min`);
+  } else {
+    _sleepTimerActive = false;
+    if(btn) btn.style.opacity = '0.5';
+    updateStatus('Sleep timer: off');
   }
 }
 
@@ -1130,21 +1490,14 @@ document.documentElement.classList.remove('dark-pre');
 
 // ─── SKIP STATION ─────────────────────────────────────────────────────────
 let _lastStations = [];
-let _historyIdx = -1; // pointer into historyLoad() for back navigation
-
 async function skipStation(dir) {
-  if (dir === -1) {
-    // Previous: walk back through real play history
-    const h = (typeof historyLoad === 'function') ? historyLoad() : [];
-    // h[0] is current, h[1] is previous, etc.
-    if (h.length > 1) {
-      const prev = h[1]; // skip h[0] which is what's playing now
-      if (prev && typeof playStation === 'function') {
-        playStation(prev.url, prev.name, prev.meta, prev.emoji || '📻');
-      }
-    }
-    return;
-  }
+  if(!_currentStreamUrl || !_lastStations || _lastStations.length < 2) return;
+  const idx = _lastStations.findIndex(s => s.url_resolved === _currentStreamUrl);
+  if(idx < 0) return;
+  const nextIdx = dir === 'next' ? idx + 1 : idx - 1;
+  if(nextIdx < 0 || nextIdx >= _lastStations.length) return;
+  const st = _lastStations[nextIdx];
+  playStation(st.url_resolved, st.name, st.tags || '', '🎵', st.favicon || null);
   // Next: pick from pool, avoid repeating current
   if (_lastStations.length < 2) {
     try {
@@ -1443,29 +1796,7 @@ try {
 })();
 
 
-// ─── NAV COLLAPSE ─────────────────────────────────────────────────────────
-function toggleNavCollapse() {
-  const collapsed = document.body.classList.toggle('nav-collapsed');
-  const icon = document.getElementById('nav-collapse-icon');
-  if (icon) {
-    // Swap icon: hamburger when expanded → left-arrow/close when collapsed
-    icon.innerHTML = collapsed
-      ? '<polyline points="15 18 9 12 15 6"/>'  // chevron-left = "expand"
-      : '<line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>'; // hamburger = "collapse"
-  }
-  try { localStorage.setItem('wncore-nav-collapsed', collapsed ? '1' : '0'); } catch(e) {}
-}
-// Restore collapsed state on load
-try {
-  if (localStorage.getItem('wncore-nav-collapsed') === '1') {
-    document.body.classList.add('nav-collapsed');
-    document.addEventListener('DOMContentLoaded', () => {
-      const icon = document.getElementById('nav-collapse-icon');
-      if (icon) icon.innerHTML = '<polyline points="15 18 9 12 15 6"/>';
-    });
-  }
-} catch(e) {}
-window.toggleNavCollapse = toggleNavCollapse;
+
 
 // ─── MOBILE MENU ──────────────────────────────────────────────────────────
 function toggleMobileMenu() {
@@ -1480,6 +1811,17 @@ function toggleMobileMenu() {
   btn.innerHTML = mobileMenuOpen
     ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
     : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+}
+
+function toggleDesktopMenu() {
+  desktopMenuOpen = !desktopMenuOpen;
+  const nav = document.getElementById('desktop-side-menu');
+  const backdrop = document.getElementById('desktop-nav-backdrop');
+  const btn = document.getElementById('desktop-menu-btn');
+  if (nav) nav.classList.toggle('open', desktopMenuOpen);
+  if (backdrop) backdrop.classList.toggle('open', desktopMenuOpen);
+  document.body.style.overflow = desktopMenuOpen ? 'hidden' : '';
+  if (btn) btn.classList.toggle('active', desktopMenuOpen);
 }
 
 // ─── SEARCH ───────────────────────────────────────────────────────────────
@@ -1506,7 +1848,13 @@ document.getElementById('search-input').addEventListener('input', e => {
 });
 document.addEventListener('keydown', e => {
   if((e.metaKey||e.ctrlKey)&&e.key==='k') { e.preventDefault(); openSearch(); }
-  if(e.key==='Escape') { closeSearch(); document.getElementById('signin-modal').classList.remove('open'); if(mobileMenuOpen) toggleMobileMenu(); }
+  if(e.key==='Escape') {
+    closeSearch();
+    document.getElementById('signin-modal').classList.remove('open');
+    if(mobileMenuOpen) toggleMobileMenu();
+    if(desktopMenuOpen) toggleDesktopMenu();
+    if(typeof closeGenrePicker === 'function') closeGenrePicker();
+  }
 });
 async function doSearch(q) {
   const results = document.getElementById('search-results');
@@ -1557,6 +1905,15 @@ function showPage(id, linkEl) {
     if (nav) nav.classList.remove('open');
     if (backdrop) backdrop.classList.remove('open');
     if (btn) btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="18" height="18"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>';
+  }
+  // Close desktop menu if open
+  if (desktopMenuOpen) {
+    desktopMenuOpen = false;
+    const nav = document.getElementById('desktop-side-menu');
+    const backdrop = document.getElementById('desktop-nav-backdrop');
+    if (nav) nav.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
+    document.body.style.overflow = '';
   }
   // Load page-specific data
   if(id==='favorites') loadFavoritesPage();
@@ -2206,7 +2563,6 @@ function closeSignInBtn() { document.getElementById('signin-modal').classList.re
 // Supabase is loaded via CDN (supabase.min.js). Client is init'd lazily so
 // the site still works if SUPABASE_URL / SUPABASE_ANON_KEY aren't configured.
 let _sbClient = null;
-let _authUser = null;
 let _sbInitPromise = null; // lock: prevents concurrent createClient calls
 
 async function _getSupabase() {
@@ -2216,7 +2572,7 @@ async function _getSupabase() {
   _sbInitPromise = (async () => {
     try {
       // Keys are injected by the Vercel api/config.js endpoint at runtime
-      const r = await fetch('/api/config');
+      const r = await fetch(_api + 'config');
       if (!r.ok) return null;
       const cfg = await r.json();
       if (!cfg.supabaseUrl || !cfg.supabaseAnonKey) return null;
@@ -2397,6 +2753,7 @@ async function _authInit() {
   if (_authUser) {
     migrateFavsToV2();
     setTimeout(authSyncFavsDown, 1000);
+    animeTrackerSyncOnLogin().catch(() => {});
     // Fetch profile early so display_name + avatar replace the OAuth name in nav ASAP
     if (typeof fetchProfile === 'function') {
       fetchProfile(false).then(p => { if (p) _authUpdateNav(_authUser); }).catch(() => {});
@@ -2416,11 +2773,15 @@ async function _authInit() {
     if (_authUser) {
       migrateFavsToV2();
       setTimeout(authSyncFavsDown, 800);
+      animeTrackerSyncOnLogin().catch(() => {});
       // Re-fetch profile on auth change (e.g. sign in) to get display_name
       if (typeof fetchProfile === 'function') {
         window.__WNCORE_PROFILE = null; // force fresh fetch
         fetchProfile(false).then(p => { if (p) _authUpdateNav(_authUser); }).catch(() => {});
       }
+    } else {
+      animeTrackerSyncNote('Saved locally (sign in to sync)');
+      renderTracker();
     }
   });
 }
@@ -3035,12 +3396,15 @@ setInterval(()=>{
 (function _startHybridLiveCount() {
   function _updateLiveCount() {
     const el = document.getElementById('live-count');
-    if (!el) return;
+    const desktopEl = document.getElementById('desktop-live-count');
+    if (!el && !desktopEl) return;
     // Real base from Radio Browser API (set by bundle_append), fallback to 12841
     const realBase = window.__WNCORE_ONLINE_COUNT || 12841;
     // Add small session variance (+/- 40) on top of real base
     const count = realBase + Math.floor(Math.random() * 80) - 40;
-    el.textContent = `${Math.max(0, count).toLocaleString()} live`;
+    const text = `${Math.max(0, count).toLocaleString()} live`;
+    if (el) el.textContent = text;
+    if (desktopEl) desktopEl.textContent = text;
   }
   _updateLiveCount();
   setInterval(_updateLiveCount, 7000);
@@ -3123,7 +3487,7 @@ async function _loadDynamicFeatured() {
     };
 
     const s1 = pick(d1), s2 = pick(d2);
-    const cards = document.querySelectorAll(".featured-card");
+    const cards = document.querySelectorAll(".featured-card.featured-card--dynamic");
 
     function applyStation(card, idx, s) {
       if (!card || !s) return;
@@ -4045,9 +4409,7 @@ async function feelingLucky() {
 
   try {
     const offset = Math.floor(Math.random() * 8000);
-    const r = await fetch(
-      `${(typeof _a !== "undefined" ? _a : "https://de1.api.radio-browser.info/json")}/stations/search?limit=1&https=true&offset=${offset}&order=random`
-    );
+    const r = await fetch(`${_a}stations/search?limit=1&https=true&offset=${offset}&order=random`);
     const stations = await r.json();
     if (stations.length && typeof playStation === 'function') {
       const s = stations[0];
@@ -7339,7 +7701,7 @@ window.__admSubmit = function(){
   inp.value = '';
 
   // Server-side auth — no client-side password storage
-  fetch('/api/config', {
+  fetch(_api + 'config', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-admin-token': val },
     body: JSON.stringify({ key: '_auth_check', value: '' })
@@ -7826,9 +8188,10 @@ function adminSaveFeatured(idx) {
   try {
     const saved = JSON.parse(localStorage.getItem('wncore_admin_featured') || '{}');
     Object.entries(saved).forEach(([key, data]) => {
-      const idx = key.replace('station_', '');
-      const cards = document.querySelectorAll('.featured-card');
-      const card = cards[parseInt(idx) - 1];
+      const idx = parseInt(key.replace('station_', ''), 10);
+      const cards = document.querySelectorAll('.featured-card.featured-card--dynamic');
+      if (Number.isNaN(idx) || idx < 1 || idx > cards.length) return;
+      const card = cards[idx - 1];
       if(card && data.name) {
         const nameEl = card.querySelector('.fc-name');
         const metaEl = card.querySelector('.fc-meta');
@@ -9031,7 +9394,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await new Promise(r => setTimeout(r, queueDelay));
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch(_api + 'chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages: history, turnCount: history.length }),
@@ -9992,14 +10355,21 @@ document.addEventListener('DOMContentLoaded', () => {
       /* Trigger enter animation on incoming page */
       requestAnimationFrame(function () {
         var activePage = document.querySelector('.page.active');
-        if (activePage) {
+          if (activePage) {
           activePage.classList.remove('p5-enter');
           void activePage.offsetWidth;
           activePage.classList.add('p5-enter');
-          activePage.addEventListener('animationend', function handler() {
-            activePage.classList.remove('p5-enter');
-            activePage.removeEventListener('animationend', handler);
-          });
+          (function(){
+            let timer = null;
+            function handler(){
+              if (timer) { clearTimeout(timer); timer = null; }
+              try{ activePage.classList.remove('p5-enter'); }catch(e){}
+              try{ activePage.removeEventListener('animationend', handler); }catch(e){}
+            }
+            // Fallback cleanup if animationend never fires (rapid navigation)
+            timer = setTimeout(function(){ try{ activePage.classList.remove('p5-enter'); }catch(e){} try{ activePage.removeEventListener('animationend', handler); }catch(e){} }, 1200);
+            activePage.addEventListener('animationend', handler);
+          })();
         }
       });
 
@@ -10050,10 +10420,12 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.remove('p5-stamp');
       void btn.offsetWidth;
       btn.classList.add('p5-stamp');
-      btn.addEventListener('animationend', function h() {
-        btn.classList.remove('p5-stamp');
-        btn.removeEventListener('animationend', h);
-      });
+      (function(el){
+        let timer = null;
+        function h(){ if (timer) { clearTimeout(timer); timer = null; } try{ el.classList.remove('p5-stamp'); }catch(e){} try{ el.removeEventListener('animationend', h); }catch(e){} }
+        timer = setTimeout(function(){ try{ el.classList.remove('p5-stamp'); }catch(e){} try{ el.removeEventListener('animationend', h); }catch(e){} }, 1200);
+        btn.addEventListener('animationend', h);
+      })(btn);
     });
   }
 
@@ -10065,10 +10437,12 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.classList.remove('p5-tap');
       void btn.offsetWidth;
       btn.classList.add('p5-tap');
-      btn.addEventListener('animationend', function h() {
-        btn.classList.remove('p5-tap');
-        btn.removeEventListener('animationend', h);
-      });
+      (function(el){
+        let timer = null;
+        function h(){ if (timer) { clearTimeout(timer); timer = null; } try{ el.classList.remove('p5-tap'); }catch(e){} try{ el.removeEventListener('animationend', h); }catch(e){} }
+        timer = setTimeout(function(){ try{ el.classList.remove('p5-tap'); }catch(e){} try{ el.removeEventListener('animationend', h); }catch(e){} }, 1200);
+        btn.addEventListener('animationend', h);
+      })(btn);
     });
   }
 
@@ -10888,7 +11262,6 @@ document.addEventListener('DOMContentLoaded', () => {
           var country = (geo && geo.address && geo.address.country) || cc;
           if (!cc) { if (typeof showToast === 'function') showToast('Could not detect country', 'warn'); return; }
 
-          var _a = window._a || 'https://de1.api.radio-browser.info/json';
           var r = await fetch(_a + 'stations/search?limit=20&https=true&order=clickcount&reverse=true&countrycode=' + cc);
           var stations = await r.json();
           if (!stations || !stations.length) { if (typeof showToast === 'function') showToast('No stations found for ' + country, 'warn'); return; }
@@ -11000,7 +11373,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function pollIcy() {
     if (!_icyCurrentUrl) return;
     try {
-      var r = await fetch('/api/icy?url=' + encodeURIComponent(_icyCurrentUrl));
+      var r = await fetch(_api + 'icy?url=' + encodeURIComponent(_icyCurrentUrl));
       if (!r.ok) return;
       var d = await r.json();
       var title = d.title || null;
@@ -11505,7 +11878,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = await _getToken();
     if (!token) return null;
     try {
-      const r = await fetch('/api/user', { headers: { 'Authorization': 'Bearer ' + token } });
+      const r = await fetch(_api + 'user', { headers: { 'Authorization': 'Bearer ' + token } });
       const d = await r.json();
       if (d.profile) {
         window.__WNCORE_PROFILE = d.profile;
@@ -11532,7 +11905,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
-      const r = await fetch('/api/user', {
+      const r = await fetch(_api + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'save_profile', ...fields })
@@ -11547,7 +11920,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
-      const r = await fetch('/api/user', {
+      const r = await fetch(_api + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'claim_node', node_id: nodeId })
@@ -11565,7 +11938,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
-      const r = await fetch('/api/user', {
+      const r = await fetch(_api + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'delete_account', confirm: 'DELETE' })

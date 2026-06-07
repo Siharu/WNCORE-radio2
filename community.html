@@ -491,6 +491,7 @@ body::after{
 /* ── STATE ── */
 let allEntries = [];
 let myCodename = '';
+let liveProgress = null;
 let currentFilter = 'all';
 let refreshTimer = 30;
 let glitchPool = [];
@@ -513,9 +514,30 @@ function getFingerprint() {
 function getLocalProgress() {
   const constSolved = (() => { try { return JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]').length; } catch { return 0; } })();
   const earthNodes  = (() => { try { return JSON.parse(localStorage.getItem('wncore-earth-arg-found') || '[]').length; } catch { return 0; } })();
-  const cygnusSections = (() => { try { return parseInt(localStorage.getItem('wncore-cygnus-sections') || '0', 10); } catch { return 0; } })();
+  const cygnusSections = (() => {
+    try {
+      const stored = parseInt(localStorage.getItem('wncore-cygnus-sections') || '0', 10);
+      if (!Number.isNaN(stored) && stored > 0) return stored;
+      const unlocked = JSON.parse(localStorage.getItem('wncore-unlocked-nodes') || '[]');
+      return Array.isArray(unlocked) ? Math.min(10, unlocked.length) : 0;
+    } catch { return 0; }
+  })();
   const legacyUnlocked = constSolved >= 10;
   return { constSolved, earthNodes, cygnusSections, legacyUnlocked };
+}
+
+function mergeProgress(local, live) {
+  if (!live || typeof live !== 'object') return local;
+  return {
+    constSolved: live.constellation_solved ?? local.constSolved,
+    cygnusSections: live.cygnus_sections ?? local.cygnusSections,
+    earthNodes: live.earth_nodes_found ?? local.earthNodes,
+    legacyUnlocked: live.legacy_unlocked ?? local.legacyUnlocked,
+  };
+}
+
+function getEffectiveProgress() {
+  return mergeProgress(getLocalProgress(), liveProgress);
 }
 
 function calcScore(p) {
@@ -723,12 +745,15 @@ async function fetchBoard() {
 
     if (prev > 0 && entries.length > prev) showToast('// New reaper detected on network');
 
+    const myEntry = entries.find(e => e.codename === myCodename);
+    if (myEntry) liveProgress = myEntry;
+
     updateCounters(entries);
     renderBoard(entries);
 
     // Find your rank
     const myRank = entries.findIndex(e => e.codename === myCodename) + 1;
-    const p = getLocalProgress();
+    const p = getEffectiveProgress();
     renderYourCard(p, myRank);
 
   } catch(e) {
@@ -759,8 +784,8 @@ async function init() {
   updateClock();
   setInterval(updateClock, 1000);
 
-  // Initial card render with local data
-  const p = getLocalProgress();
+  // Initial card render with local data, updated to use live fallback when available
+  const p = getEffectiveProgress();
   renderYourCard(p, 0);
   document.getElementById('yc-name').textContent = 'IDENTIFYING...';
 

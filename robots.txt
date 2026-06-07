@@ -1,5 +1,5 @@
 # WNCORE Radio — robots.txt
-# https://wncoreradio.vercel.app
+# https://wncore-radio.vercel.app
 
 User-agent: *
 Allow: /

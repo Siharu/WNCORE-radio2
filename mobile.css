@@ -255,6 +255,27 @@
     z-index: 481;
   }
 }
+@media (max-width: 768px) {
+  .anime-page-root .anime-search-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .anime-page-root .anime-action-btn {
+    width: 100%;
+  }
+  .anime-page-root #anime-search-input {
+    width: 100%;
+  }
+  .anime-page-root #anime-search-results,
+  .anime-page-root #anime-tracker-list {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .anime-page-root .anime-card {
+    border-radius: 18px;
+  }
+}
 @media (max-width: 600px) {
   .legal-wrap { padding: 48px 14px 100px; }
   .legal-title { font-size: 1.5rem; }
@@ -2723,6 +2744,14 @@ body:not(.mobile-menu-open) {
     display: flex !important;
     flex-shrink: 0;
   }
+  /* Hide the top nav search icon on mobile to avoid duplicate search controls. */
+  .header-right .search-btn:first-of-type {
+    display: none !important;
+  }
+  /* Keep the constellation star button visible in the header. */
+  .header-right .search-btn.nav-constellation-star {
+    display: flex !important;
+  }
   /* Hamburger: always visible and never clipped */
   .mobile-menu-btn {
     display: flex !important;
@@ -3077,8 +3106,9 @@ body:not(.mobile-menu-open) {
     overflow-x: auto !important;
     -webkit-overflow-scrolling: touch !important;
     gap: 10px !important;
-    padding: 4px 0 12px !important;
+    padding: 4px 12px 12px !important;
     margin-bottom: 20px !important;
+    box-sizing: border-box !important;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     -webkit-mask-image: linear-gradient(to right, black 80%, transparent 100%);
@@ -3087,22 +3117,62 @@ body:not(.mobile-menu-open) {
   .featured-row::-webkit-scrollbar { display: none; }
 
   .featured-card {
-    flex: 0 0 158px !important;
-    width: 158px !important;
+    flex: 0 0 140px !important;
+    width: 140px !important;
     min-width: 0 !important;
     max-width: none !important;
-    padding: 12px !important;
+    min-height: 132px !important;
+    padding: 10px !important;
     border-radius: 12px !important;
     scroll-snap-align: start;
     /* Reset any older display/flex-direction overrides */
     display: flex !important;
     flex-direction: column !important;
     align-items: flex-start !important;
-    min-height: 0 !important;
     gap: 0 !important;
     box-sizing: border-box !important;
   }
+  .featured-card--arg {
+    min-height: 132px !important;
+  }
+  .featured-card--arg .fc-name,
+  .featured-card--arg .fc-meta,
+  .featured-card--arg .fc-now {
+    display: block !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    max-height: none !important;
+    line-height: 1.2 !important;
+    animation: chroma-card-text-glitch 5.2s ease-in-out infinite !important;
+  }
+  .featured-card--dynamic {
+    display: none !important;
+  }
+  .featured-card--dynamic.genre-card-visible {
+    display: flex !important;
+  }
   .featured-card:last-child { grid-column: auto !important; }
+
+  .rec-card,
+  .anime-card,
+  .anime-station-card,
+  .mobile-signal-item,
+  .search-result-item {
+    max-width: calc(100vw - 28px) !important;
+    width: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    min-height: 132px !important;
+  }
+
+  @keyframes chroma-card-text-glitch {
+    0%, 90%, 100% { transform: none; text-shadow: none; }
+    92% { transform: translate(0.5px, -0.5px); text-shadow: 1px 0 rgba(0,200,255,0.55), -1px 0 rgba(255,80,120,0.55); }
+    94% { transform: translate(-0.5px, 0.5px); text-shadow: -1px 0 rgba(0,200,255,0.55), 1px 0 rgba(255,80,120,0.55); }
+    96% { transform: none; text-shadow: 0 0 2px rgba(255,255,255,0.2); }
+  }
 
   .fc-cover-wrap { margin-bottom: 8px !important; }
   .fc-cover-img {
@@ -3117,6 +3187,15 @@ body:not(.mobile-menu-open) {
     text-overflow: ellipsis !important;
     width: 100% !important;
     margin-bottom: 2px !important;
+  }
+  .featured-card--anothersky .fc-name,
+  .featured-card--anothersky .fc-meta,
+  .featured-card--anothersky .fc-now {
+    white-space: normal !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
   }
   .fc-meta {
     font-size: 0.6rem !important;

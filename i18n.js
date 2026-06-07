@@ -233,15 +233,28 @@ function buildLangSelector() {
   // Populate mobile lang row inside the mobile nav
   const mobileRow = document.getElementById('mobile-lang-row');
   if (mobileRow) {
-    mobileRow.innerHTML = Object.entries(WNCORE_LANGS).map(([code, info]) => `
-      <button style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:1px;padding:5px 9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer" onclick="selectLang('${code}');toggleMobileMenu()">
-        ${info.label}
-      </button>`).join('');
+    mobileRow.innerHTML = `
+      <div class="mobile-lang-selector">
+        <button id="mobile-lang-selector-btn" class="lang-selector-btn" onclick="toggleMobileLangDropdown()" aria-label="Select language" title="Select language">
+          <span class="lang-btn-code">${WNCORE_LANGS[_currentLang].label}</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown mobile-lang-dropdown" id="mobile-lang-dropdown">
+          ${Object.entries(WNCORE_LANGS).map(([code, info]) => `
+            <button class="lang-option${code === _currentLang ? ' active' : ''}" data-lang="${code}" onclick="selectLang('${code}');toggleMobileMenu()">
+              <span class="lang-option-code">${info.label}</span>
+              <span class="lang-option-name">${info.name}</span>
+            </button>
+          `).join('')}
+        </div>
+      </div>`;
   }
 
   // Close dropdown when clicking outside
   document.addEventListener('click', e => {
-    if (!sel.contains(e.target)) closeLangDropdown();
+    if (e.target.closest('.lang-selector') || e.target.closest('.mobile-lang-selector')) return;
+    closeLangDropdown();
+    closeMobileLangDropdown();
   });
 }
 
@@ -253,10 +266,24 @@ window.closeLangDropdown = function() {
   const dd = document.getElementById('lang-dropdown');
   if (dd) dd.classList.remove('open');
 };
+window.toggleMobileLangDropdown = function() {
+  const dd = document.getElementById('mobile-lang-dropdown');
+  if (dd) dd.classList.toggle('open');
+};
+window.closeMobileLangDropdown = function() {
+  const dd = document.getElementById('mobile-lang-dropdown');
+  if (dd) dd.classList.remove('open');
+};
 window.selectLang = function(lang) {
   if (!WNCORE_LANGS[lang]) return;
   applyTranslations(lang);
+  const btn = document.getElementById('lang-selector-btn');
+  if (btn) btn.querySelector('.lang-btn-code').textContent = WNCORE_LANGS[lang].label;
+  const mobileBtn = document.getElementById('mobile-lang-selector-btn');
+  if (mobileBtn) mobileBtn.querySelector('.lang-btn-code').textContent = WNCORE_LANGS[lang].label;
   closeLangDropdown();
+  closeMobileLangDropdown();
+  if (desktopMenuOpen) toggleDesktopMenu();
 };
 
 // ── Initialise on DOM ready ──────────────────────────────────────────────────

@@ -2,19 +2,19 @@
   "name": "WNCORE Radio",
   "short_name": "WNCORE",
   "description": "Stream live radio free from 12,000+ stations worldwide. Est. 2016.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0e0c0a",
   "theme_color": "#c8472a",
   "orientation": "portrait-primary",
   "icons": [
-    { "src": "/images/wncore-art-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
-    { "src": "/images/wncore-art-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/images/wncore-art-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/images/wncore-art-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    { "src": "images/wncore-art-96.png",  "sizes": "96x96",   "type": "image/png", "purpose": "any" },
+    { "src": "images/wncore-art-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "images/wncore-art-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "images/wncore-art-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "categories": ["music", "entertainment"],
   "lang": "en-US",
-  "scope": "/",
+  "scope": "./",
   "prefer_related_applications": false
 }

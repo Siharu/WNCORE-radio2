@@ -48,7 +48,11 @@ async function adminSubmitLogin() {
     }
     // 400 = bad key but authenticated (token valid); 401 = wrong token
     if (res.status === 400 || res.ok) {
-      sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(val));
+      if (window.WNCORE && typeof window.WNCORE.setAdminToken === 'function') {
+        window.WNCORE.setAdminToken(ADMIN_PANEL_SESS, val);
+      } else {
+        try { sessionStorage.setItem(ADMIN_PANEL_SESS, btoa(val)); } catch(e){}
+      }
       const screen = document.getElementById('admin-login-screen');
       const app = document.getElementById('admin-app');
       screen.style.display = 'none';
@@ -177,8 +181,9 @@ async function adminSaveField(key, inputId) {
 
   let adminToken = '';
   try {
-    const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
-    adminToken = raw ? atob(raw) : '';
+    adminToken = (window.WNCORE && typeof window.WNCORE.getAdminToken === 'function')
+      ? (window.WNCORE.getAdminToken(ADMIN_PANEL_SESS) || '')
+      : (function(){ try{ const raw=sessionStorage.getItem(ADMIN_PANEL_SESS); return raw?atob(raw):'';}catch(e){return '';}})();
   } catch(e) {}
 
   adminSetStatus(key, 'saving', '⟳ Saving…');
@@ -224,11 +229,9 @@ async function adminHandleUpload(fileInput) {
 
   adminSetStatus(key, 'saving', '⟳ Uploading ' + file.name + '…');
 
-  let adminToken = '';
-  try {
-    const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
-    adminToken = raw ? atob(raw) : '';
-  } catch(e) {}
+  let adminToken = (window.WNCORE && typeof window.WNCORE.getAdminToken === 'function')
+    ? (window.WNCORE.getAdminToken(ADMIN_PANEL_SESS) || '')
+    : (function(){ try{ const raw=sessionStorage.getItem(ADMIN_PANEL_SESS); return raw?atob(raw):'';}catch(e){return '';}})();
 
   try {
     const fd = new FormData();
@@ -288,11 +291,9 @@ async function adminSaveFeatured(num) {
   const meta = document.getElementById('admin-feat' + num + '-meta')?.value.trim() || '';
   const key  = 'featured_station_' + num;
 
-  let adminToken = '';
-  try {
-    const raw = sessionStorage.getItem(ADMIN_PANEL_SESS);
-    adminToken = raw ? atob(raw) : '';
-  } catch(e) {}
+  let adminToken = (window.WNCORE && typeof window.WNCORE.getAdminToken === 'function')
+    ? (window.WNCORE.getAdminToken(ADMIN_PANEL_SESS) || '')
+    : (function(){ try{ const raw=sessionStorage.getItem(ADMIN_PANEL_SESS); return raw?atob(raw):'';}catch(e){return '';}})();
 
   adminSetStatus('feat' + num, 'saving', '⟳ Saving…');
 

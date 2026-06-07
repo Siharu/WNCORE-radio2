@@ -609,10 +609,20 @@ function setPlayIcon(playing) {
 function updateArt(st) {
   const art = document.getElementById('wp-art');
   if (!art) return;
+  const fallback = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/><path d="M12 2a10 10 0 010 20"/></svg>';
   if (st?.favicon && st.favicon.startsWith('http')) {
-    art.innerHTML = `<img src="${st.favicon}" alt="" onerror="this.parentElement.innerHTML='<svg viewBox=\\'0 0 24 24\\' fill=\\'none\\' stroke=\\'currentColor\\' stroke-width=\\'1.5\\' stroke-linecap=\\'round\\' width=\\'18\\' height=\\'18\\'><circle cx=\\'12\\' cy=\\'12\\' r=\\'10\\'/></svg>'">`;
+    if (window.WNCORE && typeof window.WNCORE.safeSetImage === 'function') {
+      window.WNCORE.safeSetImage(art, st.favicon, st.title || '', fallback);
+    } else {
+      // fallback to safe DOM approach
+      const img = document.createElement('img');
+      img.alt = '';
+      img.loading = 'lazy';
+      img.onerror = function(){ art.innerHTML = fallback; };
+      try { img.src = st.favicon; art.innerHTML = ''; art.appendChild(img); } catch(e){ art.innerHTML = fallback; }
+    }
   } else {
-    art.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" width="18" height="18"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"/><path d="M12 2a10 10 0 010 20"/></svg>`;
+    art.innerHTML = fallback;
   }
 }
 

@@ -128,13 +128,13 @@ body::after{
   position:relative;
   display:inline-block;
   width:3600px;
-  height:4900px;
+  height:5600px;
 }
 #map-canvas{
   position:absolute;
   top:0;left:0;
   width:3600px;
-  height:4900px;
+  height:5600px;
   transform-origin:0 0;
 }
 
@@ -1659,47 +1659,6 @@ body::before{
 }
 @keyframes term-blink{0%,100%{opacity:1}50%{opacity:0}}
 
-/* ── NODE SEARCH BAR ── */
-#node-search-wrap{
-  position:fixed;top:0;left:50%;transform:translateX(-50%);
-  z-index:8002;height:57px;display:flex;align-items:center;gap:8px;
-  padding:0 14px;pointer-events:none;
-}
-#node-search{
-  pointer-events:all;
-  background:rgba(4,3,10,0.85);
-  border:none;border-bottom:1px solid rgba(200,71,42,0.25);
-  color:rgba(232,228,223,0.7);font-family:var(--mono);
-  font-size:0.44rem;letter-spacing:2px;padding:4px 8px;
-  outline:none;width:180px;text-transform:uppercase;
-  transition:border-color 0.2s, width 0.3s;
-  backdrop-filter:blur(6px);
-}
-#node-search:focus{
-  border-color:rgba(200,71,42,0.6);width:220px;
-  color:rgba(232,228,223,0.95);
-}
-#node-search::placeholder{color:rgba(200,71,42,0.2);font-size:0.38rem;}
-#node-search-count{
-  font-family:var(--mono);font-size:0.34rem;letter-spacing:1.5px;
-  color:rgba(200,71,42,0.35);pointer-events:none;white-space:nowrap;min-width:40px;
-}
-#node-search-clear{
-  pointer-events:all;
-  background:transparent;border:none;
-  color:rgba(200,71,42,0.3);font-size:0.5rem;
-  cursor:pointer;padding:0 2px;line-height:1;
-  display:none;
-}
-#node-search-clear:hover{color:rgba(200,71,42,0.7);}
-
-/* search highlight */
-.node.search-match .n-inner{
-  outline:1px solid rgba(200,71,42,0.5);
-  box-shadow:0 0 18px rgba(200,71,42,0.15);
-}
-.node.search-dim{ opacity:0.12 !important; filter:grayscale(0.8); }
-
 /* ── PROGRESS EXPORT BUTTON ── */
 #export-btn{
   position:fixed;bottom:58px;right:60px;z-index:301;
@@ -1725,9 +1684,6 @@ body::before{
 #export-toast.show{opacity:1;}
 
 @media(max-width:640px){
-  #node-search-wrap{ left:44px; transform:none; }
-  #node-search{ width:130px; }
-  #node-search:focus{ width:160px; }
   #export-btn{ display:none !important; }
 }
 .node-locked:not(.unlocked-node),
@@ -1805,13 +1761,6 @@ body::before{
 <div id="shoo-hint">// click near the cat to shoo it away</div>
 <!-- KONAMI FLASH -->
 <div id="konami-flash"></div>
-<!-- NODE SEARCH BAR -->
-<div id="node-search-wrap">
-  <input id="node-search" type="text" placeholder="SEARCH ARCHIVE..." autocomplete="off" spellcheck="false" maxlength="40">
-  <span id="node-search-count"></span>
-  <button id="node-search-clear"><img src="/assets/lucid/Exit.png" alt="Clear" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
-</div>
-
 <!-- SIGNAL CUBE toggle (mobile only) -->
 <button id="signal-cube-toggle" aria-label="Open signal cube"><img src="/assets/lucid/Stack.png" alt="Signal Cube" class="lucid-icon" style="width:14px;height:14px;vertical-align:middle"></button>
 
@@ -2466,6 +2415,7 @@ const NODES = [
    tag:'SIGNAL / GEMINI', name:'CASTOR ×6\nTWIN LOCK', sub:'sextuple system\nclearance: TARTARUS',
    tip:'A puzzle node. The hardest lock. Count carefully. Six pretending to be one, one planet, one meteor. The sum opens it.',
    x:2550, y:3650, wide:true},
+
 ];
 
 const CONNECTIONS = [
@@ -6142,7 +6092,7 @@ document.querySelectorAll && (()=>{
       c.facingLeft=c.x>window.innerWidth/2;
     });
 
-    /* show messages one by one */
+    /* show messages one by one quickly, then return to normal */
     const whisperLayer=document.getElementById('whisper-layer');
     const msgs=STARE_MESSAGES;
     msgs.forEach((msg,i)=>{
@@ -6151,28 +6101,28 @@ document.querySelectorAll && (()=>{
         const el=document.createElement('div');
         el.className='whisper';
         el.style.cssText=`
-          left:50%;top:${30+i*18}%;
+          left:50%;top:${30+i*6}%;
           transform:translateX(-50%) rotate(0deg);
-          font-size:1.4rem !important;
-          letter-spacing:6px;
+          font-size:1.2rem !important;
+          letter-spacing:4px;
           font-family:var(--salt);
         `;
         el.textContent=msg;
         whisperLayer.appendChild(el);
         requestAnimationFrame(()=>{
-          el.style.transition='color 1.2s ease';
+          el.style.transition='color 0.8s ease';
           el.style.color='rgba(200,71,42,0.6)';
         });
         setTimeout(()=>{
-          el.style.transition='color 2s ease';
+          el.style.transition='color 1.2s ease';
           el.style.color='rgba(200,71,42,0)';
-          setTimeout(()=>el.remove(),2100);
-        }, 2500);
-      }, i*1800);
+          setTimeout(()=>el.remove(),1300);
+        }, 1200);
+      }, i*300);
     });
 
-    /* after stare — vanish one by one */
-    setTimeout(()=>{ swarmPhase='VANISHING'; startVanish(); }, msgs.length*1800+3000);
+    /* after a short stare, vanish and reset quickly */
+    setTimeout(()=>{ swarmPhase='VANISHING'; startVanish(); }, 3000);
   }
 
   function startVanish(){
@@ -6257,68 +6207,6 @@ document.querySelectorAll && (()=>{
       localStorage.setItem('wncore-cat-hint','1');
     }, 5000);
   }, 8000);
-})();
-
-/* ═══════════════════════════════════════════════════════════
-   NODE SEARCH — highlight matching nodes, dim others
-   ═══════════════════════════════════════════════════════════ */
-(function(){
-  const input = document.getElementById('node-search');
-  const countEl = document.getElementById('node-search-count');
-  const clearBtn = document.getElementById('node-search-clear');
-  if(!input) return;
-
-  let searchActive = false;
-
-  function doSearch(q){
-    q = q.trim().toLowerCase();
-    const allNodes = document.querySelectorAll('.node');
-    if(!q){
-      allNodes.forEach(n=>{ n.classList.remove('search-match','search-dim'); });
-      countEl.textContent = '';
-      clearBtn.style.display = 'none';
-      searchActive = false;
-      return;
-    }
-    searchActive = true;
-    clearBtn.style.display = 'inline';
-    let matches = 0;
-    allNodes.forEach(el=>{
-      const id = el.dataset.id||'';
-      const nd = nodeMap[id];
-      if(!nd){ el.classList.add('search-dim'); el.classList.remove('search-match'); return; }
-      const text = [nd.name||'', nd.tag||'', nd.sub||'', nd.tip||'', nd.id||''].join(' ').toLowerCase();
-      if(text.includes(q)){
-        el.classList.add('search-match');
-        el.classList.remove('search-dim');
-        matches++;
-      } else {
-        el.classList.add('search-dim');
-        el.classList.remove('search-match');
-      }
-    });
-    countEl.textContent = matches ? `${matches} FOUND` : 'NO MATCH';
-  }
-
-  let debTimer;
-  input.addEventListener('input', e=>{
-    clearTimeout(debTimer);
-    debTimer = setTimeout(()=>doSearch(e.target.value), 120);
-  });
-
-  input.addEventListener('keydown', e=>{
-    if(e.key==='Escape'){ input.value=''; doSearch(''); input.blur(); }
-  });
-
-  clearBtn.addEventListener('click', ()=>{ input.value=''; doSearch(''); });
-
-  /* Ctrl+F / Cmd+F intercept */
-  document.addEventListener('keydown', e=>{
-    if((e.ctrlKey||e.metaKey) && e.key==='f'){
-      e.preventDefault();
-      input.focus(); input.select();
-    }
-  });
 })();
 
 /* ═══════════════════════════════════════════════════════════

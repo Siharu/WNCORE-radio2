@@ -37,6 +37,11 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
 
 (function () {
   'use strict';
+  const _APP_API = (function(){
+    let path = window.location.pathname.replace(/\/[^/]*$/, '');
+    if (!path) return '/';
+    return path.endsWith('/') ? path : path + '/';
+  })() + 'api/';
 
   // ── DiceBear avatar styles ───────────────────────────────────────────────
   const DICEBEAR_STYLES = [
@@ -92,7 +97,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
     const token = await _getToken();
     if (!token) return null;
     try {
-      const r = await fetch('/api/user', { headers: { 'Authorization': 'Bearer ' + token } });
+      const r = await fetch(_APP_API + 'user', { headers: { 'Authorization': 'Bearer ' + token } });
       const d = await r.json();
       if (d.profile) {
         window.__WNCORE_PROFILE = d.profile;
@@ -154,7 +159,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
       if ('default_volume' in fields && typeof fields.default_volume === 'number') {
         fields = { ...fields, default_volume: fields.default_volume / 100 };
       }
-      const r = await fetch('/api/user', {
+      const r = await fetch(_APP_API + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'save_profile', ...fields })
@@ -169,7 +174,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
-      const r = await fetch('/api/user', {
+      const r = await fetch(_APP_API + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'claim_node', node_id: nodeId })
@@ -187,7 +192,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
     const token = await _getToken();
     if (!token) return { error: 'Not signed in.' };
     try {
-      const r = await fetch('/api/user', {
+      const r = await fetch(_APP_API + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         // BUG FIX: was "DELETE" — server requires "DELETE MY ACCOUNT"
@@ -203,7 +208,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
     const token = await _getToken();
     if (!token) return null;
     try {
-      const r = await fetch('/api/user', {
+      const r = await fetch(_APP_API + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'siharu_visit' })
@@ -1462,7 +1467,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
   // BUG FIX: Was fetching /api/listeners — now unified into /api/user?mode=listeners
   async function _fetchRealUsers() {
     try {
-      const r = await fetch('/api/user?mode=listeners');
+      const r = await fetch(_APP_API + 'user?mode=listeners');
       if (!r.ok) return [];
       const d = await r.json();
       return d.users || [];
@@ -1629,23 +1634,11 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
     document.body.appendChild(card);
   }
 
-  // ── Inject nav button ─────────────────────────────────────────────────────
-  // Adds an "Online Users" button to the main nav (next to the sign-in button)
-  // and to the mobile nav menu.
+  // ── Inject menu button ───────────────────────────────────────────────────
+  // Adds an "Online Users" action to the mobile nav drawer.
+  // Desktop displays a static menu item in the side drawer instead.
   function _injectNavButton() {
     if (document.getElementById('listeners-nav-trigger')) return;
-
-    // Desktop nav — insert before the auth button
-    const navAuthBtn = document.getElementById('nav-auth-btn');
-    if (navAuthBtn && navAuthBtn.parentElement) {
-      const btn = document.createElement('button');
-      btn.id = 'listeners-nav-trigger';
-      btn.className = 'listeners-nav-btn';
-      btn.title = 'Online Users';
-      btn.innerHTML = `<span class="listeners-btn-dot"></span>ONLINE`;
-      btn.onclick = () => window.toggleListenersPanel();
-      navAuthBtn.parentElement.insertBefore(btn, navAuthBtn);
-    }
 
     // Mobile nav — add as a menu item near the top of .mobile-nav-actions
     const mobileActions = document.querySelector('.mobile-nav-actions');
@@ -1835,7 +1828,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
       try {
         const token = await _getToken();
         if (!token) return;
-        await fetch('/api/user', {
+        await fetch(_APP_API + 'user', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
           body: JSON.stringify({ mode: 'save_profile', live_station: stationName || '' })
@@ -1851,7 +1844,7 @@ if (typeof showToast === 'undefined') window.showToast = () => {};
       if (!token) return;
       // keepalive:true lets the browser complete this request even as the page unloads,
       // and — unlike sendBeacon — supports custom headers and JSON body.
-      fetch('/api/user', {
+      fetch(_APP_API + 'user', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
         body: JSON.stringify({ mode: 'save_profile', live_station: '' }),
