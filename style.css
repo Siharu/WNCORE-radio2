@@ -118,18 +118,36 @@ header{
 .header-inner{
   width:100%;max-width:1440px;margin:0 auto;
   padding:0 clamp(12px,3vw,24px);
-  display:flex;align-items:center;
-  gap:clamp(6px,1.5vw,12px);
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:0;
   min-width:0;
 }
-
-/* Logo — never shrinks, always leftmost */
-.logo{
-  display:flex;align-items:baseline;gap:8px;text-decoration:none;
-  flex-shrink:0;
-  /* Guaranteed right margin so nav never touches logo */
-  margin-right:clamp(8px,2vw,20px);
+/* Left zone: logo + collapse btn together */
+.header-left{
+  display:flex;align-items:center;gap:6px;flex-shrink:0;
 }
+/* Logo inside header-left */
+.logo{
+  display:flex;align-items:baseline;gap:8px;text-decoration:none;flex-shrink:0;
+}
+/* Nav — true center column, scrollable, no overflow */
+nav#main-nav{
+  justify-self:center;
+  min-width:0;
+  overflow:hidden;
+}
+/* Controls — pinned to right */
+.header-right{
+  margin-left:auto;
+  display:flex;align-items:center;
+  gap:6px;
+  flex-shrink:0;
+  min-width:44px;
+}
+
+/* Logo mark & freq badge */
 .logo-mark{
   font-family:var(--font-display);
   font-size:clamp(1.05rem,2.5vw,1.35rem);
@@ -201,6 +219,9 @@ nav a svg{width:13px;height:13px;opacity:0.6}
   .live-dot    { display:none !important; }
   .minimal-btn { display:none !important; }
   .mobile-menu-btn { display:flex !important; }
+  /* On mobile the center column collapses since nav is hidden — 
+     make header-inner just logo-left | spacer | controls */
+  .header-inner { grid-template-columns: auto 1fr auto; }
 }
 
 /* ≤768px — hide sign-in (in mobile drawer instead), hide theme labels */
