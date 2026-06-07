@@ -326,6 +326,8 @@ try {
         Mini Player
       </button>
     </div>
+    <!-- Mobile language selector -->
+    <div id="mobile-lang-row" style="display:flex;flex-wrap:wrap;gap:6px;padding:10px 0 4px"></div>
     <button id="mobile-nav-auth-btn" onclick="openSignIn();toggleMobileMenu();return false" class="modal-btn" style="margin:0">Sign In</button>
   </div>
 </nav>
@@ -390,43 +392,93 @@ try {
   <div class="globe-hint minimal-hidden">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
 </div>
 
-<div class="genre-strip-wrap">
-  <div class="genre-strip" id="genre-strip" role="listbox" aria-label="Filter by genre"></div>
-</div>
+<div class="page-wrap page-wrap--3col">
+  <!-- LEFT SIDEBAR: Now Playing -->
+  <aside class="sidebar sidebar--left">
+    <div class="sidebar-card sidebar-card--np">
+      <div class="sb-label">Now Playing</div>
+      <div class="np-art" id="np-art" style="position:relative;overflow:hidden">
+        <div class="np-art-icon" id="np-art-icon">
+          <img src="/assets/lucid/Music-0.png" width="36" height="36" alt="" style="opacity:0.3">
+        </div>
+        <img id="np-art-img" src="" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:10px">
+        <div class="np-wave">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="np-name" id="np-name">Network Standby</div>
+      <div class="np-meta" id="np-meta">Select a station to begin</div>
+      <div class="np-track" id="np-track">— no signal —</div>
+      <div class="np-progress"><div class="np-progress-fill" id="np-fill"></div></div>
+      <div class="np-controls">
+        <button class="np-ctrl-btn" onclick="toggleFavorite(this)" title="Save station" aria-label="Save station">
+          <img src="/assets/lucid/Heart.png" width="15" height="15" alt="" style="opacity:0.7">
+        </button>
+        <button class="np-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
+          <svg id="np-play-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="np-ctrl-btn" onclick="toggleSleepTimer(this)" title="Sleep timer" aria-label="Sleep timer">
+          <img src="/assets/lucid/Clock.png" width="15" height="15" alt="" style="opacity:0.7">
+        </button>
+      </div>
+    </div>
+    <!-- ARG CARD -->
+    <div class="arg-card minimal-hidden" id="arg-card">
+      <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
+      <div class="arg-freq">88.7</div>
+      <div class="arg-status" id="arg-status">
+        freq &nbsp;&nbsp;: 88.700 mhz<br>
+        src &nbsp;&nbsp;&nbsp;: <span class="redacted">SIGNAL_KAGE</span><br>
+        loc &nbsp;&nbsp;&nbsp;: <span class="redacted">██████████</span><br>
+        status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
+        last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
+      </div>
+      <div class="arg-broken-bar">NO SIGNAL</div>
+    </div>
+  </aside>
 
-<div class="page-wrap">
   <div class="main-col">
 
     <div class="section-hd">
       <div class="section-title">On the Dial</div>
       <a class="section-more" href="#" onclick="showPage('charts',null);return false">See all →</a>
     </div>
+    <!-- GENRE PICKER ROW -->
+    <div class="genre-picker-row" id="genre-picker-row">
+      <div class="genre-picker-label">
+        <img src="/assets/lucid/Filter.png" width="12" height="12" alt="" style="opacity:0.5">
+        <span>TUNE BY GENRE</span>
+      </div>
+      <div class="genre-picker-chips" id="genre-picker-chips"></div>
+    </div>
     <div class="featured-row" id="featured-row">
-      <article class="featured-card" onclick="playFeatured(0)" role="button" aria-label="Play Radio Paradise">
-        <div class="fc-listeners">4,211 listening</div>
+      <!-- DYNAMIC GENRE CARD 1 -->
+      <article class="featured-card featured-card--dynamic" id="dial-card-0" onclick="dialCardPlay(0)" role="button" aria-label="Genre station 1">
+        <div class="fc-listeners fc-listeners--dyn" id="dial-listeners-0">TUNING…</div>
         <div class="fc-cover-wrap">
-          <div class="fc-cover-img" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">
-            <img src="https://www.radioparadise.com/graphics/apple-touch-icon.png" loading="lazy" onerror="this.style.display='none'" alt="Radio Paradise">
+          <div class="fc-cover-img fc-cover-img--dyn" id="dial-cover-0" style="background:var(--surface2);display:flex;align-items:center;justify-content:center">
+            <img src="/assets/lucid/Signal-1.png" width="32" height="32" alt="" style="opacity:0.25" id="dial-cover-img-0">
           </div>
         </div>
-        <div class="fc-name">Radio Paradise</div>
-        <div class="fc-meta">Rock / Eclectic · California, US · 320kbps</div>
-        <div class="fc-now">"Running on Empty" — Jackson Browne</div>
+        <div class="fc-name" id="dial-name-0">Select a Genre</div>
+        <div class="fc-meta" id="dial-meta-0">Use the picker above to tune in</div>
+        <div class="fc-now" id="dial-now-0">— awaiting signal —</div>
         <div class="fc-playing-badge" id="fp-badge-0">
           <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
           Live
         </div>
       </article>
-      <article class="featured-card" onclick="playFeatured(1)" role="button" aria-label="Play BBC World Service">
-        <div class="fc-listeners">8,832 listening</div>
+      <!-- DYNAMIC GENRE CARD 2 -->
+      <article class="featured-card featured-card--dynamic" id="dial-card-1" onclick="dialCardPlay(1)" role="button" aria-label="Genre station 2">
+        <div class="fc-listeners fc-listeners--dyn" id="dial-listeners-1">TUNING…</div>
         <div class="fc-cover-wrap">
-          <div class="fc-cover-img" style="background:linear-gradient(135deg,#1d4ed8,#1e3a8a)">
-            <img src="https://www.bbc.co.uk/favicon.ico" loading="lazy" onerror="this.style.display='none'" alt="BBC World Service">
+          <div class="fc-cover-img fc-cover-img--dyn" id="dial-cover-1" style="background:var(--surface2);display:flex;align-items:center;justify-content:center">
+            <img src="/assets/lucid/Signal-0.png" width="32" height="32" alt="" style="opacity:0.25" id="dial-cover-img-1">
           </div>
         </div>
-        <div class="fc-name">BBC World Service</div>
-        <div class="fc-meta">News / Talk · London, UK · 128kbps</div>
-        <div class="fc-now">Global News Hour — Live broadcast</div>
+        <div class="fc-name" id="dial-name-1">Select a Genre</div>
+        <div class="fc-meta" id="dial-meta-1">Use the picker above to tune in</div>
+        <div class="fc-now" id="dial-now-1">— awaiting signal —</div>
         <div class="fc-playing-badge" id="fp-badge-1">
           <svg class="fc-badge-dot" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3" fill="currentColor"/></svg>
           Live
@@ -625,14 +677,14 @@ try {
     <div class="section-hd">
       <div class="section-title">Most Tuned</div>
       <div style="display:flex;align-items:center;gap:10px">
-        <button onclick="playNearMe()" style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:1.5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:none;color:var(--text2);cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='';this.style.color=''">📍 NEAR ME</button>
+        <button onclick="playNearMe()" style="font-family:var(--font-mono);font-size:0.65rem;letter-spacing:1.5px;padding:5px 12px;border:1px solid var(--border);border-radius:20px;background:none;color:var(--text2);cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:5px" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='';this.style.color=''"><img src="/assets/lucid/Location.png" width="11" height="11" alt=""> NEAR ME</button>
         <a class="section-more" href="#" onclick="showPage('charts',null);return false">View full chart →</a>
       </div>
     </div>
     <div id="home-stats-bar" style="display:none;align-items:center;gap:20px;padding:8px 4px 12px;font-family:var(--font-mono);font-size:0.65rem;letter-spacing:1.5px;color:var(--text3)">
-      <span>⏱ <span id="hstat-time">0m</span> listened</span>
-      <span>📻 <span id="hstat-stations">0</span> stations tried</span>
-      <span>🎵 <span id="hstat-genre">—</span> top genre</span>
+      <span><img src="/assets/lucid/Clock.png" width="11" height="11" alt="" style="opacity:0.5;vertical-align:middle;margin-right:4px"><span id="hstat-time">0m</span> listened</span>
+      <span><img src="/assets/lucid/Signal-1.png" width="11" height="11" alt="" style="opacity:0.5;vertical-align:middle;margin-right:4px"><span id="hstat-stations">0</span> stations tried</span>
+      <span><img src="/assets/lucid/Music-0.png" width="11" height="11" alt="" style="opacity:0.5;vertical-align:middle;margin-right:4px"><span id="hstat-genre">—</span> top genre</span>
     </div>
     <div class="station-table-wrap">
     <table class="station-table" id="station-table" aria-label="Top radio stations">
@@ -689,85 +741,55 @@ try {
 
   </div><!-- /main-col -->
 
-  <aside class="sidebar">
-    <!-- NOW PLAYING -->
+  <!-- RIGHT SIDEBAR: Trending -->
+  <aside class="sidebar sidebar--right">
     <div class="sidebar-card">
-      <div class="sb-label">Now Playing</div>
-      <div class="np-art">
-        <div class="np-art-icon" id="np-art-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round" width="40" height="40"><path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9"/><path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5"/><circle cx="12" cy="12" r="2"/><path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5"/><path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1"/></svg>
-        </div>
-        <div class="np-wave">
-          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
-        </div>
+      <div class="sb-label">
+        <img src="/assets/lucid/Star.png" width="11" height="11" alt="" style="opacity:0.5;vertical-align:middle;margin-right:4px">
+        Trending Now
       </div>
-      <div class="np-name" id="np-name">Network Standby</div>
-      <div class="np-meta" id="np-meta">Select a station to begin</div>
-      <div class="np-track" id="np-track">— no signal —</div>
-      <div class="np-progress"><div class="np-progress-fill" id="np-fill"></div></div>
-      <div class="np-controls">
-        <button class="np-ctrl-btn" onclick="toggleFavorite(this)" title="Save station" aria-label="Save station">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-        </button>
-        <button class="np-play-btn" onclick="togglePlay()" aria-label="Play/Pause">
-          <svg id="np-play-icon" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
-        </button>
-        <button class="np-ctrl-btn" onclick="toggleSleepTimer(this)" title="Sleep timer" aria-label="Sleep timer">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <!-- TRENDING -->
-    <div class="sidebar-card">
-      <div class="sb-label">Trending Now</div>
       <div id="trending-list">
         <div class="trending-item" onclick="playRec('https://stream.radioparadise.com/aac-320','Radio Paradise','Rock / Eclectic')">
           <div class="tr-rank">1</div>
-          <div class="tr-flag">
-            <svg viewBox="0 0 20 12" width="20" height="12"><rect width="20" height="12" fill="#B22234"/><rect y="1.09" width="20" height="1.09" fill="#fff"/><rect y="3.27" width="20" height="1.09" fill="#fff"/><rect y="5.45" width="20" height="1.09" fill="#fff"/><rect y="7.64" width="20" height="1.09" fill="#fff"/><rect y="9.82" width="20" height="1.09" fill="#fff"/><rect width="8" height="6.55" fill="#3C3B6E"/></svg>
+          <div class="tr-art">
+            <img src="https://www.radioparadise.com/graphics/apple-touch-icon.png" alt="Radio Paradise" onerror="this.src='/assets/lucid/Music-1.png'">
           </div>
           <div class="tr-info"><div class="tr-name">Radio Paradise</div><div class="tr-meta">Rock · Eclectic</div></div>
           <div class="tr-listeners">4.2K</div>
         </div>
         <div class="trending-item" onclick="playRec('https://stream.bbc.co.uk/bbc_world_service','BBC World Service','News')">
           <div class="tr-rank">2</div>
-          <div class="tr-flag">
-            <svg viewBox="0 0 20 12" width="20" height="12"><rect width="20" height="12" fill="#012169"/><path d="M0,0 L20,12 M20,0 L0,12" stroke="#fff" stroke-width="2.5"/><path d="M0,0 L20,12 M20,0 L0,12" stroke="#C8102E" stroke-width="1.5"/><path d="M10,0 V12 M0,6 H20" stroke="#fff" stroke-width="3.5"/><path d="M10,0 V12 M0,6 H20" stroke="#C8102E" stroke-width="2"/></svg>
+          <div class="tr-art">
+            <img src="https://www.bbc.co.uk/favicon.ico" alt="BBC" onerror="this.src='/assets/lucid/Signal-2.png'">
           </div>
           <div class="tr-info"><div class="tr-name">BBC World Service</div><div class="tr-meta">News · Talk</div></div>
           <div class="tr-listeners">8.8K</div>
         </div>
         <div class="trending-item" onclick="playRec('https://ice6.somafm.com/groovesalad-256-mp3','SomaFM Groove Salad','Ambient')">
-          <div class="tr-rank">3</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-rank">3</div>
+          <div class="tr-art">
+            <img src="https://somafm.com/groovesalad/img/groovesalad-400.jpg" alt="Groove Salad" onerror="this.src='/assets/lucid/Music-0.png'">
+          </div>
           <div class="tr-info"><div class="tr-name">SomaFM Groove Salad</div><div class="tr-meta">Ambient · Chill</div></div>
           <div class="tr-listeners">3.1K</div>
         </div>
         <div class="trending-item" onclick="playRec('https://ice1.somafm.com/lush-128-mp3','SomaFM Lush','Pop / Indie')">
-          <div class="tr-rank">4</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-rank">4</div>
+          <div class="tr-art">
+            <img src="https://somafm.com/lush/img/lush-400.jpg" alt="Lush" onerror="this.src='/assets/lucid/Music-0.png'">
+          </div>
           <div class="tr-info"><div class="tr-name">SomaFM Lush</div><div class="tr-meta">Pop · Indie · Female vocals</div></div>
           <div class="tr-listeners">2.7K</div>
         </div>
         <div class="trending-item" onclick="playRec('https://listen.181fm.com/181-jazz_128k.mp3','181.fm Jazz','Jazz')">
-          <div class="tr-rank">5</div><div class="tr-flag" style="font-size:1rem">🇺🇸</div>
+          <div class="tr-rank">5</div>
+          <div class="tr-art">
+            <img src="https://www.181.fm/favicon.ico" alt="181.fm" onerror="this.src='/assets/lucid/Music-1.png'">
+          </div>
           <div class="tr-info"><div class="tr-name">181.fm Jazz</div><div class="tr-meta">Jazz · Smooth</div></div>
           <div class="tr-listeners">1.9K</div>
         </div>
       </div>
-    </div>
-
-    <!-- ARG CARD -->
-    <div class="arg-card minimal-hidden" id="arg-card">
-      <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
-      <div class="arg-freq">88.7</div>
-      <div class="arg-status" id="arg-status">
-        freq &nbsp;&nbsp;: 88.700 mhz<br>
-        src &nbsp;&nbsp;&nbsp;: <span class="redacted">SIGNAL_KAGE</span><br>
-        loc &nbsp;&nbsp;&nbsp;: <span class="redacted">██████████</span><br>
-        status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
-        last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
-      </div>
-      <div class="arg-broken-bar">NO SIGNAL</div>
     </div>
   </aside>
 </div>
@@ -897,6 +919,22 @@ try {
       </tbody>
     </table>
     </div><!-- /station-table-wrap -->
+
+    <!-- ANIME NEWS — Trending & Airing via Jikan API -->
+    <div class="section-hd" style="margin-top:40px;">
+      <div class="section-title" style="font-family:var(--font-display);">Trending &amp; Airing Now</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="anime-news-tab active" data-tab="trending" onclick="animeNewsTab(this,'trending')">Trending</button>
+        <button class="anime-news-tab" data-tab="airing" onclick="animeNewsTab(this,'airing')">Currently Airing</button>
+        <a class="section-more" href="#" onclick="refreshAnimeNews();return false">Refresh ↺</a>
+      </div>
+    </div>
+    <div id="anime-news-grid" class="anime-news-grid">
+      <div class="anime-news-loading">
+        <img src="/assets/lucid/Signal-1.png" width="16" height="16" alt="" style="opacity:0.4;animation:spin 1.5s linear infinite">
+        <span>Fetching signals…</span>
+      </div>
+    </div>
 
   </div><!-- /anime-main-col -->
 
@@ -2644,6 +2682,212 @@ document.addEventListener('DOMContentLoaded', loadSiteConfig);
 
 <script src="i18n.js" defer></script>
 <script src="bundle.js" defer></script>
+<script>
+// ── GENRE PICKER + DIAL CARDS ────────────────────────────────────────────────
+(function(){
+  const GENRES = [
+    {label:'Jazz',q:'jazz'},{label:'Classical',q:'classical'},{label:'Hip-Hop',q:'hip hop'},
+    {label:'Rock',q:'rock'},{label:'Pop',q:'pop'},{label:'Electronic',q:'electronic'},
+    {label:'Ambient',q:'ambient'},{label:'Metal',q:'metal'},{label:'Country',q:'country'},
+    {label:'R&B',q:'rnb'},{label:'Folk',q:'folk'},{label:'News',q:'news'},
+    {label:'Lo-Fi',q:'lofi'},{label:'Reggae',q:'reggae'},{label:'Blues',q:'blues'}
+  ];
+  let activeGenre = null;
+  let dialStations = [null, null];
+
+  function buildGenreChips(){
+    const wrap = document.getElementById('genre-picker-chips');
+    if(!wrap) return;
+    wrap.innerHTML = '';
+    GENRES.forEach(g => {
+      const btn = document.createElement('button');
+      btn.className = 'genre-chip' + (activeGenre === g.q ? ' active' : '');
+      btn.textContent = g.label;
+      btn.onclick = () => selectGenre(g);
+      wrap.appendChild(btn);
+    });
+  }
+
+  async function selectGenre(g){
+    if(activeGenre === g.q){ activeGenre = null; resetDialCards(); buildGenreChips(); return; }
+    activeGenre = g.q;
+    buildGenreChips();
+    setDialLoading();
+    try {
+      const res = await fetch(`https://de1.api.radio-browser.info/json/stations/search?tag=${encodeURIComponent(g.q)}&limit=100&order=clickcount&reverse=true&hidebroken=true`);
+      const stations = await res.json();
+      const shuffled = stations.filter(s=>s.url_resolved).sort(()=>Math.random()-0.5).slice(0,2);
+      dialStations = shuffled;
+      shuffled.forEach((st, i) => renderDialCard(i, st));
+    } catch(e){ resetDialCards(); }
+  }
+
+  function setDialLoading(){
+    [0,1].forEach(i => {
+      el('dial-name-'+i).textContent = 'Scanning…';
+      el('dial-meta-'+i).textContent = 'Fetching from Radio Browser…';
+      el('dial-now-'+i).textContent = '— tuning —';
+      el('dial-listeners-'+i).textContent = 'SCANNING';
+    });
+  }
+
+  function renderDialCard(i, st){
+    el('dial-name-'+i).textContent = st.name || 'Unknown Station';
+    el('dial-meta-'+i).textContent = [st.tags ? st.tags.split(',')[0] : '', st.country, st.bitrate ? st.bitrate+'kbps' : ''].filter(Boolean).join(' · ');
+    el('dial-now-'+i).textContent = st.homepage || '— live signal —';
+    el('dial-listeners-'+i).textContent = st.clickcount ? st.clickcount+' tuned' : 'LIVE';
+    // Try favicon/logo
+    const imgEl = el('dial-cover-img-'+i);
+    const cover = el('dial-cover-'+i);
+    if(st.favicon){
+      imgEl.src = st.favicon;
+      imgEl.style.opacity = '1';
+      imgEl.style.width = '100%';
+      imgEl.style.height = '100%';
+      imgEl.style.objectFit = 'cover';
+      imgEl.style.position = 'absolute';
+      imgEl.style.inset = '0';
+      cover.style.position = 'relative';
+      cover.style.overflow = 'hidden';
+      cover.style.background = `linear-gradient(135deg,hsl(${i*120},40%,12%),hsl(${i*120+40},40%,18%))`;
+      imgEl.onerror = function(){ this.style.opacity='0.25'; this.style.width='32px'; this.style.height='32px'; this.style.position=''; this.style.inset=''; };
+    }
+  }
+
+  function resetDialCards(){
+    [0,1].forEach(i => {
+      el('dial-name-'+i).textContent = 'Select a Genre';
+      el('dial-meta-'+i).textContent = 'Use the picker above to tune in';
+      el('dial-now-'+i).textContent = '— awaiting signal —';
+      el('dial-listeners-'+i).textContent = 'TUNING…';
+    });
+  }
+
+  function el(id){ return document.getElementById(id); }
+
+  window.dialCardPlay = function(i){
+    const st = dialStations[i];
+    if(!st || !st.url_resolved) return;
+    if(typeof playStation === 'function') playStation(st.url_resolved, st.name, st.tags||'');
+    else if(typeof playRec === 'function') playRec(st.url_resolved, st.name, st.tags||'');
+  };
+
+  document.addEventListener('DOMContentLoaded', buildGenreChips);
+})();
+
+// ── ANIME NEWS (Jikan API) ────────────────────────────────────────────────────
+(function(){
+  let currentTab = 'trending';
+
+  window.animeNewsTab = function(btn, tab){
+    document.querySelectorAll('.anime-news-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentTab = tab;
+    loadAnimeNews(tab);
+  };
+
+  window.refreshAnimeNews = function(){
+    loadAnimeNews(currentTab);
+  };
+
+  async function loadAnimeNews(type){
+    const grid = document.getElementById('anime-news-grid');
+    if(!grid) return;
+    grid.innerHTML = '<div class="anime-news-loading"><img src="/assets/lucid/Signal-1.png" width="16" height="16" alt="" style="opacity:0.4;animation:spin 1.5s linear infinite"><span>Fetching signals…</span></div>';
+    try {
+      let url = type === 'airing'
+        ? 'https://api.jikan.moe/v4/anime?status=airing&order_by=popularity&limit=18'
+        : 'https://api.jikan.moe/v4/top/anime?filter=airing&limit=18';
+      const res = await fetch(url);
+      const data = await res.json();
+      const items = data.data || [];
+      if(!items.length){ grid.innerHTML = '<div class="anime-news-loading">No data available right now.</div>'; return; }
+      grid.innerHTML = items.map(a => {
+        const img = a.images?.jpg?.image_url || a.images?.webp?.image_url || '';
+        const score = a.score ? `★ ${a.score}` : '';
+        const eps = a.episodes ? `${a.episodes} ep` : a.status === 'Currently Airing' ? 'Ongoing' : '';
+        const ep = a.aired?.from ? new Date(a.aired.from).getFullYear() : '';
+        return `<a class="anime-news-card" href="${a.url||'#'}" target="_blank" rel="noopener">
+          <img class="anime-news-card-img" src="${img}" alt="${a.title||''}" loading="lazy" onerror="this.style.background='var(--surface2)';this.src='/assets/lucid/File-Image.png'">
+          <div class="anime-news-card-body">
+            <div class="anime-news-card-title">${a.title||a.title_english||'Unknown'}</div>
+            <div class="anime-news-card-meta">
+              ${ep ? `<span>${ep}</span>` : ''}
+              ${score ? `<span class="anime-news-card-score">${score}</span>` : ''}
+            </div>
+            ${eps ? `<div class="anime-news-card-ep">${eps}</div>` : ''}
+          </div>
+        </a>`;
+      }).join('');
+    } catch(e){
+      grid.innerHTML = '<div class="anime-news-loading">Signal lost — try again later.</div>';
+    }
+  }
+
+  // Auto-load when anime page is shown
+  const origShowPage = window.showPage;
+  document.addEventListener('DOMContentLoaded', function(){
+    // Intercept anime page show via MutationObserver on page-anime active class
+    const observer = new MutationObserver(() => {
+      const animePage = document.getElementById('page-anime');
+      if(animePage && animePage.classList.contains('active')){
+        if(!document.querySelector('.anime-news-card')) loadAnimeNews('trending');
+      }
+    });
+    const animePage = document.getElementById('page-anime');
+    if(animePage) observer.observe(animePage, {attributes:true, attributeFilter:['class']});
+  });
+})();
+
+// ── FULL-PAGE i18n FIX: reapply on every page switch ────────────────────────
+(function(){
+  document.addEventListener('DOMContentLoaded', function(){
+    // Patch showPage to reapply translations after page switch
+    const _orig = window.showPage;
+    if(typeof _orig === 'function'){
+      window.showPage = function(page, el){
+        _orig(page, el);
+        try {
+          const lang = localStorage.getItem('wncore-lang') || 'en';
+          if(window.WNCORE_applyTranslations) window.WNCORE_applyTranslations(lang);
+        } catch(e){}
+      };
+    }
+    // Also patch selectLang to store and apply everywhere
+    const _origSelect = window.selectLang;
+    if(typeof _origSelect === 'function'){
+      window.selectLang = function(lang){
+        _origSelect(lang);
+        // Walk ALL data-i18n elements site-wide (already done by applyTranslations,
+        // but also force-update any dynamically-rendered content via a short delay)
+        setTimeout(function(){
+          if(window.WNCORE_applyTranslations) window.WNCORE_applyTranslations(lang);
+        }, 80);
+      };
+    }
+  });
+})();
+
+// ── NOW PLAYING ART: show station favicon in np-art ──────────────────────────
+(function(){
+  // Hook into audio play events to update the Now Playing art
+  document.addEventListener('DOMContentLoaded', function(){
+    // Observe np-name changes to update art
+    const npName = document.getElementById('np-name');
+    const npArtImg = document.getElementById('np-art-img');
+    const npArtIcon = document.getElementById('np-art-icon');
+    if(!npName || !npArtImg) return;
+    // Expose a helper for bundle.js to call
+    window.updateNowPlayingArt = function(faviconUrl){
+      if(!faviconUrl){ npArtImg.style.display='none'; if(npArtIcon) npArtIcon.style.display='flex'; return; }
+      npArtImg.src = faviconUrl;
+      npArtImg.style.display = 'block';
+      if(npArtIcon) npArtIcon.style.display = 'none';
+      npArtImg.onerror = function(){ this.style.display='none'; if(npArtIcon) npArtIcon.style.display='flex'; };
+    };
+  });
+})();
+</script>
 <script src="bundle_append.js" defer></script>
 <script src="admin-panel.js" defer></script>
 <script src="wncore-player.js" defer></script>

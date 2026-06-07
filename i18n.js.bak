@@ -221,23 +221,9 @@ function buildLangSelector() {
       `).join('')}
     </div>`;
 
-  // Insert before the mobile-menu-btn so it doesn't push hamburger off screen
-  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  // Insert before the sign-in button in header-right
   const authBtn = document.getElementById('nav-auth-btn');
-  if (mobileMenuBtn) {
-    mobileMenuBtn.parentNode.insertBefore(sel, mobileMenuBtn);
-  } else if (authBtn) {
-    authBtn.parentNode.insertBefore(sel, authBtn);
-  }
-
-  // Populate mobile lang row inside the mobile nav
-  const mobileRow = document.getElementById('mobile-lang-row');
-  if (mobileRow) {
-    mobileRow.innerHTML = Object.entries(WNCORE_LANGS).map(([code, info]) => `
-      <button style="font-family:var(--font-mono);font-size:0.6rem;letter-spacing:1px;padding:5px 9px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer" onclick="selectLang('${code}');toggleMobileMenu()">
-        ${info.label}
-      </button>`).join('');
-  }
+  if (authBtn) authBtn.parentNode.insertBefore(sel, authBtn);
 
   // Close dropdown when clicking outside
   document.addEventListener('click', e => {
