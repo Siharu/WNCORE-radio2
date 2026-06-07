@@ -394,6 +394,11 @@ try {
   <div class="globe-hint minimal-hidden">ROTATE &nbsp;·&nbsp; CLICK TO TUNE</div>
 </div>
 
+<!-- genre-strip kept hidden so bundle.js doesn't throw null ref -->
+<div style="display:none" aria-hidden="true">
+  <div class="genre-strip" id="genre-strip"></div>
+</div>
+
 <div class="page-wrap page-wrap--3col">
   <!-- LEFT SIDEBAR: Now Playing -->
   <aside class="sidebar sidebar--left">
@@ -423,19 +428,6 @@ try {
           <img src="/assets/lucid/Clock.png" width="15" height="15" alt="" style="opacity:0.7">
         </button>
       </div>
-    </div>
-    <!-- ARG CARD -->
-    <div class="arg-card minimal-hidden" id="arg-card">
-      <div class="arg-card-label">TRANSMISSION LOG — NODE 09</div>
-      <div class="arg-freq">88.7</div>
-      <div class="arg-status" id="arg-status">
-        freq &nbsp;&nbsp;: 88.700 mhz<br>
-        src &nbsp;&nbsp;&nbsp;: <span class="redacted">SIGNAL_KAGE</span><br>
-        loc &nbsp;&nbsp;&nbsp;: <span class="redacted">██████████</span><br>
-        status : <span style="color:rgba(200,71,42,0.4)">NO CARRIER</span><br>
-        last &nbsp;&nbsp;: <span class="redacted">0000-00-00</span>
-      </div>
-      <div class="arg-broken-bar">NO SIGNAL</div>
     </div>
   </aside>
 
