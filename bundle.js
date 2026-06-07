@@ -687,7 +687,7 @@ function playStation(url, name, meta, emoji, favicon, _onSuccess, _onFail) {
   audio.src = '';
   // Changing audio.src detaches the MediaElementSourceNode on some browsers.
   // Reset _eqConnected so initEQ() re-wires the graph on the next openEQPanel() call.
-  if (typeof _eqConnected !== 'undefined') _eqConnected = false;
+  try { if (typeof _eqConnected !== 'undefined') _eqConnected = false; } catch(e) {}
 
   // If Live Music was active and this call is NOT coming from LM itself, reset LM UI
   if (lmIsPlaying && !_onSuccess) {
