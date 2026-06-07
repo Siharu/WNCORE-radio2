@@ -186,32 +186,32 @@ try {
     <nav id="main-nav" aria-label="Primary navigation">
       <a href="#" class="active" onclick="showPage('home',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-        Global Array
+        <span data-i18n="nav.home">Global Array</span>
       </a>
       <a href="#" onclick="showPage('charts',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Top Charts
+        <span data-i18n="nav.charts">Top Charts</span>
       </a>
       <a href="#" onclick="showPage('genres',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-        Genres
+        <span data-i18n="nav.genres">Genres</span>
       </a>
       <a href="#" onclick="showPage('anime',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        Anime / J-Music
+        <span data-i18n="nav.anime">Anime / J-Music</span>
       </a>
       <a href="#" onclick="showPage('podcasts',this);return false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        Podcasts
+        <span data-i18n="nav.podcasts">Podcasts</span>
       </a>
       <a href="#" onclick="showPage('livemusic',this);return false" class="nav-livemusic-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/><path d="M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z"/></svg>
-        Live Music
+        <span data-i18n="nav.livemusic">Live Music</span>
         <span class="nav-live-pip"></span>
       </a>
       <a href="#" onclick="showPage('iptv',this);return false" class="nav-iptv-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-        TV
+        <span data-i18n="nav.tv">TV</span>
       </a>
       <a href="community.html" class="nav-glitch-ball" title="Community">
         <div class="gb"></div>
@@ -251,7 +251,7 @@ try {
         <span class="aber-b"><img id="aber-moon-b" src="assets/CygnusX1.gif" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
         <img id="aber-moon-main" src="assets/CygnusX1.gif" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
       </button>
-      <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()">Sign In</button>
+      <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()"><span data-i18n="nav.signin">Sign In</span></button>
       <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
@@ -264,35 +264,35 @@ try {
 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
   <a href="#" onclick="showPage('home',this);toggleMobileMenu();return false" class="active">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/></svg>
-    Global Array
+    <span data-i18n="nav.home">Global Array</span>
   </a>
   <a href="#" onclick="showPage('charts',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    Top Charts
+    <span data-i18n="nav.charts">Top Charts</span>
   </a>
   <a href="#" onclick="showPage('genres',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
-    Genres
+    <span data-i18n="nav.genres">Genres</span>
   </a>
   <a href="#" onclick="showPage('anime',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-    Anime / J-Music
+    <span data-i18n="nav.anime">Anime / J-Music</span>
   </a>
   <a href="#" onclick="showPage('podcasts',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
-    Podcasts
+    <span data-i18n="nav.podcasts">Podcasts</span>
   </a>
   <a href="#" onclick="showPage('livemusic',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
-    Live Music
+    <span data-i18n="nav.livemusic">Live Music</span>
   </a>
   <a href="#" onclick="showPage('iptv',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-    TV
+    <span data-i18n="nav.tv">TV</span>
   </a>
   <a href="#" onclick="showPage('favorites',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-    Favourites
+    <span data-i18n="nav.favourites">Favourites</span>
   </a>
   <a href="community.html" class="nav-glitch-ball" title="Community">
     <div class="gb"></div>
@@ -2642,6 +2642,7 @@ async function loadSiteConfig() {
 document.addEventListener('DOMContentLoaded', loadSiteConfig);
 </script>
 
+<script src="i18n.js" defer></script>
 <script src="bundle.js" defer></script>
 <script src="bundle_append.js" defer></script>
 <script src="admin-panel.js" defer></script>
