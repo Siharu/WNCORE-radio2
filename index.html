@@ -208,6 +208,10 @@ try {
         Live Music
         <span class="nav-live-pip"></span>
       </a>
+      <a href="#" onclick="showPage('iptv',this);return false" class="nav-iptv-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+        TV
+      </a>
       <a href="community.html" class="nav-glitch-ball" title="Community">
         <div class="gb"></div>
         <div class="gb"></div>
@@ -242,9 +246,9 @@ try {
       </a>
       <!-- ABERRANT STAR — flowchart link, locked until 1 constellation solved -->
       <button class="nav-aberrant-star" id="aber-star-desktop" onclick="openFlowchart()" title="Signal Cartography — CLASSIFIED">
-        <span class="aber-r"><img id="aber-moon-r" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
-        <span class="aber-b"><img id="aber-moon-b" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
-        <img id="aber-moon-main" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
+        <span class="aber-r"><img id="aber-moon-r" src="assets/CygnusX1.gif" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <span class="aber-b"><img id="aber-moon-b" src="assets/CygnusX1.gif" alt="" class="nav-celestial-img aber-img" aria-hidden="true"></span>
+        <img id="aber-moon-main" src="assets/CygnusX1.gif" alt="" class="nav-celestial-img aber-img-main" aria-hidden="true">
       </button>
       <button class="sign-in-btn" id="nav-auth-btn" onclick="openSignIn()">Sign In</button>
       <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
@@ -281,6 +285,10 @@ try {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
     Live Music
   </a>
+  <a href="#" onclick="showPage('iptv',this);toggleMobileMenu();return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+    TV
+  </a>
   <a href="#" onclick="showPage('favorites',this);toggleMobileMenu();return false">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" width="16" height="16"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
     Favourites
@@ -300,7 +308,7 @@ try {
     Signal Cartography ↗
   </a>
   <button class="mobile-aber-link" id="aber-star-mobile" onclick="openFlowchart();toggleMobileMenu()">
-    <img id="aber-moon-mobile" src="assets/sky/moon/clearmoon/icon.png" alt="" class="nav-celestial-img nav-mobile-celestial" style="border-radius:50%;object-fit:cover;" aria-hidden="true">
+    <img id="aber-moon-mobile" src="assets/CygnusX1.gif" alt="" class="nav-celestial-img nav-mobile-celestial" aria-hidden="true">
     <span class="aber-label">
       <span>Signal Cartography — CLASSIFIED</span>
       <span class="aber-sub" id="aber-mobile-sub">complete a constellation to unlock</span>
@@ -992,6 +1000,63 @@ try {
         <span class="lm-attr-pill">WFMU (open license)</span>
         <span class="lm-attr-pill">Radio Paradise (non-commercial)</span>
         <span class="lm-attr-pill">181.fm (ad-supported free)</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="page-iptv" class="page">
+  <div class="iptv-wrap">
+    <div class="iptv-header">
+      <div class="iptv-header-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18" style="margin-right:8px;opacity:0.7;vertical-align:middle"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+        WNCORE <span style="color:var(--accent)">TV</span>
+      </div>
+      <div class="iptv-header-sub">Free live television from around the world — streamed directly from public broadcast sources</div>
+    </div>
+
+    <!-- Country filter bar -->
+    <div class="iptv-filter-bar">
+      <div class="iptv-filter-label">Region</div>
+      <div class="iptv-filter-pills" id="iptv-region-pills">
+        <button class="iptv-pill active" data-region="all" onclick="filterIPTV('all',this)">All</button>
+        <button class="iptv-pill" data-region="Americas" onclick="filterIPTV('Americas',this)">Americas</button>
+        <button class="iptv-pill" data-region="Europe" onclick="filterIPTV('Europe',this)">Europe</button>
+        <button class="iptv-pill" data-region="Asia" onclick="filterIPTV('Asia',this)">Asia</button>
+        <button class="iptv-pill" data-region="Middle East" onclick="filterIPTV('Middle East',this)">Middle East</button>
+        <button class="iptv-pill" data-region="Africa" onclick="filterIPTV('Africa',this)">Africa</button>
+        <button class="iptv-pill" data-region="Oceania" onclick="filterIPTV('Oceania',this)">Oceania</button>
+      </div>
+      <input class="iptv-search" id="iptv-search" type="text" placeholder="Search channels..." oninput="searchIPTV(this.value)" autocomplete="off">
+    </div>
+
+    <!-- Player -->
+    <div class="iptv-player-wrap" id="iptv-player-wrap" style="display:none">
+      <div class="iptv-player-inner">
+        <div class="iptv-player-info">
+          <div class="iptv-now-flag" id="iptv-now-flag"></div>
+          <div>
+            <div class="iptv-now-name" id="iptv-now-name">—</div>
+            <div class="iptv-now-country" id="iptv-now-country">—</div>
+          </div>
+          <div class="iptv-live-badge"><span class="iptv-live-dot"></span>LIVE</div>
+          <button class="iptv-close-btn" onclick="closeIPTVPlayer()" title="Close">✕</button>
+        </div>
+        <video id="iptv-video" controls autoplay playsinline style="width:100%;max-height:480px;background:#000;border-radius:0 0 4px 4px;display:block"></video>
+        <div class="iptv-player-error" id="iptv-player-error" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Stream unavailable — broadcaster may be offline or geo-restricted
+        </div>
+      </div>
+    </div>
+
+    <!-- Channel grid -->
+    <div class="iptv-grid" id="iptv-grid">
+      <div class="iptv-loading" id="iptv-loading">
+        <div class="iptv-loading-dot"></div>
+        <div class="iptv-loading-dot"></div>
+        <div class="iptv-loading-dot"></div>
+        <span style="margin-left:10px;font-size:0.75rem;letter-spacing:2px;color:var(--text2)">SCANNING FREQUENCIES</span>
       </div>
     </div>
   </div>
@@ -1704,32 +1769,33 @@ try {
   padding: 0;
 }
 .nav-aberrant-star img.aber-img-main {
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   animation: aber-drift 4.1s ease-in-out infinite, aber-spin-jerk 7s ease-in-out infinite;
-  filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)) saturate(1.2);
+  filter: drop-shadow(0 0 6px rgba(200,71,42,0.6)) saturate(1.2);
   transform-origin: center;
-  border-radius: 50%;
-  object-fit: cover;
+  border-radius: 0;
+  object-fit: contain;
+  image-rendering: auto;
 }
 .nav-aberrant-star .aber-r,
 .nav-aberrant-star .aber-b {
   position: absolute;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   pointer-events: none;
 }
 .nav-aberrant-star .aber-r img.aber-img {
-  width: 26px; height: 26px;
+  width: 28px; height: 28px;
   filter: sepia(1) saturate(8) hue-rotate(320deg) brightness(1.4);
   opacity: 0; animation: aber-chroma-r 3.3s ease-in-out infinite; transform-origin: center;
-  border-radius: 50%; object-fit: cover;
+  border-radius: 0; object-fit: contain;
 }
 .nav-aberrant-star .aber-b img.aber-img {
-  width: 26px; height: 26px;
+  width: 28px; height: 28px;
   filter: sepia(1) saturate(8) hue-rotate(160deg) brightness(1.5);
   opacity: 0; animation: aber-chroma-b 3.3s ease-in-out infinite; transform-origin: center;
-  border-radius: 50%; object-fit: cover;
+  border-radius: 0; object-fit: contain;
 }
 .nav-aberrant-star.locked img.aber-img-main { filter: saturate(0) brightness(0.3); animation: aber-locked-pulse 3s ease-in-out infinite; }
 .nav-aberrant-star.locked .aber-r,
@@ -2712,37 +2778,7 @@ if ('serviceWorker' in navigator) {
   });
 })();
 
-// ── ABERRANT MOON CYCLER — rotates through sky/moon variants every 4s ──
-(function() {
-  var MOONS = [
-    'assets/sky/moon/clearmoon/icon.png',
-    'assets/sky/moon/midnightmoon/icon.png',
-    'assets/sky/moon/newmoon/icon.png',
-    'assets/sky/moon/redmoon/icon.png'
-  ];
-  var idx = 0;
-  function cycleMoon() {
-    idx = (idx + 1) % MOONS.length;
-    var src = MOONS[idx];
-    var main = document.getElementById('aber-moon-main');
-    var r    = document.getElementById('aber-moon-r');
-    var b    = document.getElementById('aber-moon-b');
-    var mob  = document.getElementById('aber-moon-mobile');
-    if (!main) return;
-    // Fade out → swap → fade in via opacity on the parent button
-    var btn = document.getElementById('aber-star-desktop');
-    btn.style.transition = 'opacity 0.35s ease';
-    btn.style.opacity = '0';
-    setTimeout(function() {
-      main.src = src; r.src = src; b.src = src;
-      if (mob) mob.src = src;
-      btn.style.opacity = '1';
-    }, 360);
-  }
-  document.addEventListener('DOMContentLoaded', function() {
-    setInterval(cycleMoon, 4000);
-  });
-})();
+// ── ABERRANT STAR — CygnusX1.gif (static, no cycler needed) ──
 </script>
 
 
@@ -2813,6 +2849,429 @@ if ('serviceWorker' in navigator) {
   filter: drop-shadow(0 0 8px #ff2200);
 }
 </style>
+
+<style>
+/* ── IPTV PAGE ── */
+.iptv-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+.iptv-header {
+  margin-bottom: 28px;
+}
+.iptv-header-title {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text1);
+  margin-bottom: 6px;
+}
+.iptv-header-sub {
+  font-size: 0.78rem;
+  color: var(--text2);
+  letter-spacing: 0.3px;
+}
+.iptv-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+.iptv-filter-label {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 2px;
+  color: var(--text2);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.iptv-filter-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.iptv-pill {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-family: var(--font-body);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.iptv-pill:hover { border-color: var(--accent); color: var(--accent); }
+.iptv-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.iptv-search {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+  color: var(--text1);
+  width: 180px;
+  outline: none;
+  transition: border-color 0.18s;
+}
+.iptv-search:focus { border-color: var(--accent); }
+@media (max-width: 600px) {
+  .iptv-search { width: 100%; }
+  .iptv-filter-bar { flex-direction: column; align-items: flex-start; }
+}
+
+/* Player */
+.iptv-player-wrap {
+  margin-bottom: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(200,71,42,0.35);
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 0 30px rgba(200,71,42,0.1);
+}
+.iptv-player-inner { position: relative; }
+.iptv-player-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(4,3,10,0.98);
+  border-bottom: 1px solid rgba(200,71,42,0.2);
+}
+.iptv-now-flag { font-size: 1.4rem; line-height: 1; }
+.iptv-now-name { font-weight: 600; font-size: 0.88rem; color: var(--text1); }
+.iptv-now-country { font-size: 0.68rem; color: var(--text2); letter-spacing: 1px; }
+.iptv-live-badge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 2px;
+  color: var(--accent);
+}
+.iptv-live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: iptv-blink 1.2s ease-in-out infinite;
+}
+@keyframes iptv-blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+.iptv-close-btn {
+  background: none;
+  border: none;
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 6px;
+  margin-left: 8px;
+  opacity: 0.6;
+  transition: opacity 0.15s;
+}
+.iptv-close-btn:hover { opacity: 1; }
+.iptv-player-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 16px;
+  color: var(--accent);
+  font-size: 0.78rem;
+  background: rgba(200,71,42,0.06);
+  border-top: 1px solid rgba(200,71,42,0.15);
+}
+
+/* Grid */
+.iptv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+@media (max-width: 480px) {
+  .iptv-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+.iptv-channel-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.15s, box-shadow 0.18s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 90px;
+}
+.iptv-channel-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(200,71,42,0.12);
+}
+.iptv-channel-card.playing {
+  border-color: var(--accent);
+  background: rgba(200,71,42,0.06);
+}
+.iptv-card-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.iptv-card-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.04);
+  flex-shrink: 0;
+}
+.iptv-card-logo-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(200,71,42,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.iptv-card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text1);
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.iptv-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: auto;
+}
+.iptv-card-country {
+  font-size: 0.62rem;
+  color: var(--text2);
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.iptv-card-play {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+.iptv-channel-card:hover .iptv-card-play { opacity: 1; }
+.iptv-channel-card.playing .iptv-card-play { background: var(--accent); color: #fff; opacity: 1; }
+.iptv-loading {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 0;
+}
+.iptv-loading-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: iptv-load 1.2s ease-in-out infinite;
+  margin: 0 3px;
+}
+.iptv-loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.iptv-loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes iptv-load { 0%,80%,100%{transform:scale(0.6);opacity:0.4} 40%{transform:scale(1);opacity:1} }
+.iptv-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 48px 0;
+  color: var(--text2);
+  font-size: 0.82rem;
+}
+</style>
+
+<script>
+// ── IPTV PAGE ──────────────────────────────────────────────────────────────
+(function(){
+  // Curated free IPTV channels — HLS streams from iptv-org & public broadcasters
+  // Only channels with reliable, publicly accessible streams included
+  const IPTV_CHANNELS = [
+    // Americas
+    { name:'NASA TV', country:'United States', flag:'🇺🇸', region:'Americas', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e5/NASA_logo.svg/200px-NASA_logo.svg.png', url:'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8' },
+    { name:'C-SPAN', country:'United States', flag:'🇺🇸', region:'Americas', logo:'https://www.c-span.org/assets/images/og_logo.png', url:'https://cspan1.akamaized.net/hls/live/506356/cspan1/playlist.m3u8' },
+    { name:'CBC News Network', country:'Canada', flag:'🇨🇦', region:'Americas', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b0/CBC_News_Network_logo.svg/200px-CBC_News_Network_logo.svg.png', url:'https://cbcnewsnetwork-lh.akamaized.net/hls/live/706158/CBC_News_Network/master.m3u8' },
+    { name:'RT América', country:'Russia/Intl', flag:'🌐', region:'Americas', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/db/RT_logo_2017.svg/200px-RT_logo_2017.svg.png', url:'https://rt-usa-live.secure.footprint.net/index.m3u8' },
+    { name:'NHK World', country:'Japan', flag:'🇯🇵', region:'Americas', logo:'https://www.nhk.or.jp/nhkworld/common/assets/images/nhk-world-logo.png', url:'https://nhkwlive-ojp.akamaized.net/hls/live/2003459/nhkwlive-ojp-en/index.m3u8' },
+    { name:'Euronews EN', country:'Intl', flag:'🌐', region:'Americas', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Euronews_2022.svg/200px-Euronews_2022.svg.png', url:'https://euronews1livefs.akamaized.net/hls/live/590844/euronewslive/euronews_eng_720p/index.m3u8' },
+    // Europe
+    { name:'BBC World News', country:'United Kingdom', flag:'🇬🇧', region:'Europe', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/BBC_World_News_2022.svg/200px-BBC_World_News_2022.svg.png', url:'https://vs-hls-push-ww-live.akamaized.net/x=4/i=urn:bbc:pips:service:bbc_world_news_online/pc_hd.m3u8' },
+    { name:'France 24 EN', country:'France', flag:'🇫🇷', region:'Europe', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/France_24_English_logo.svg/200px-France_24_English_logo.svg.png', url:'https://france24hls-i.akamaihd.net/hls/live/221147/F24_EN_HI_HLS/master.m3u8' },
+    { name:'DW English', country:'Germany', flag:'🇩🇪', region:'Europe', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Deutsche_Welle_symbol_2012.svg/200px-Deutsche_Welle_symbol_2012.svg.png', url:'https://dwamdstream102.akamaized.net/hls/live/2015525/dwstream102/index.m3u8' },
+    { name:'TRT World', country:'Turkey', flag:'🇹🇷', region:'Europe', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/TRT_World_logo.svg/200px-TRT_World_logo.svg.png', url:'https://trtworldlive.akamaized.net/hls/live/686982/trtworld/master.m3u8' },
+    { name:'Al Jazeera English', country:'Qatar/Intl', flag:'🌐', region:'Middle East', logo:'https://upload.wikimedia.org/wikipedia/en/thumb/8/81/Al_Jazeera_Logo.svg/200px-Al_Jazeera_Logo.svg.png', url:'https://aljazeera-eng-apple-live.adaptive.level3.net/apple/aljazeera/english/audio_only/index.m3u8' },
+    { name:'France 24 AR', country:'France/Intl', flag:'🇫🇷', region:'Middle East', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/France_24_English_logo.svg/200px-France_24_English_logo.svg.png', url:'https://france24hls-i.akamaihd.net/hls/live/221148/F24_AR_HI_HLS/master.m3u8' },
+    // Asia
+    { name:'CGTN', country:'China', flag:'🇨🇳', region:'Asia', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/CGTN_logo.svg/200px-CGTN_logo.svg.png', url:'https://livesource.cgtn.com/cgtn-english/playlist.m3u8' },
+    { name:'NHK World HD', country:'Japan', flag:'🇯🇵', region:'Asia', logo:'https://www.nhk.or.jp/nhkworld/common/assets/images/nhk-world-logo.png', url:'https://nhkwlive-ojp.akamaized.net/hls/live/2003460/nhkwlive-ojp-en/index.m3u8' },
+    { name:'Arirang TV', country:'South Korea', flag:'🇰🇷', region:'Asia', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Arirang_TV_logo.svg/200px-Arirang_TV_logo.svg.png', url:'https://amdlive-ch01-ctnd-com.akamaized.net/arirang_1ch/smil:arirang_1ch.smil/playlist.m3u8' },
+    { name:'CNA', country:'Singapore', flag:'🇸🇬', region:'Asia', logo:'https://upload.wikimedia.org/wikipedia/en/thumb/e/e6/Channel_NewsAsia.svg/200px-Channel_NewsAsia.svg.png', url:'https://d2e1asnsl7br7b.cloudfront.net/7782e205e72f43aeb4a48ec97f66ebbe/index.m3u8' },
+    // Africa
+    { name:'Africa News', country:'Pan-Africa', flag:'🌍', region:'Africa', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/AfricaNews_Logo.png/200px-AfricaNews_Logo.png', url:'https://africanewslive.akamaized.net/hls/live/2016910/africanewslive/index.m3u8' },
+    { name:'TRT Arabi', country:'Turkey/MENA', flag:'🇹🇷', region:'Middle East', logo:'', url:'https://trtworldlive.akamaized.net/hls/live/686982/trtworld/master.m3u8' },
+    // Oceania
+    { name:'ABC Australia', country:'Australia', flag:'🇦🇺', region:'Oceania', logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/ABC_logo_2015.svg/200px-ABC_logo_2015.svg.png', url:'https://abc-iview-mediapackage.akamaized.net/out/v1/6e1cc6d7b24a40ca8c95ebf63ba00a48/index.m3u8' },
+  ];
+
+  let currentRegion = 'all';
+  let currentSearch = '';
+  let currentChannel = null;
+  let iptvLoaded = false;
+  let hls = null;
+
+  function getFiltered() {
+    return IPTV_CHANNELS.filter(ch => {
+      const regionOk = currentRegion === 'all' || ch.region === currentRegion;
+      const q = currentSearch.toLowerCase();
+      const searchOk = !q || ch.name.toLowerCase().includes(q) || ch.country.toLowerCase().includes(q);
+      return regionOk && searchOk;
+    });
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('iptv-grid');
+    if (!grid) return;
+    const loading = document.getElementById('iptv-loading');
+    if (loading) loading.remove();
+    const filtered = getFiltered();
+    // Remove existing cards
+    grid.querySelectorAll('.iptv-channel-card').forEach(c => c.remove());
+    const empty = grid.querySelector('.iptv-empty');
+    if (empty) empty.remove();
+    if (!filtered.length) {
+      grid.insertAdjacentHTML('beforeend', '<div class="iptv-empty">No channels found</div>');
+      return;
+    }
+    filtered.forEach((ch, i) => {
+      const playing = currentChannel && currentChannel.url === ch.url;
+      const logoHtml = ch.logo
+        ? `<img class="iptv-card-logo" src="${ch.logo}" alt="" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">\n<div class="iptv-card-logo-fallback" style="display:none">${ch.flag}</div>`
+        : `<div class="iptv-card-logo-fallback">${ch.flag}</div>`;
+      const card = document.createElement('div');
+      card.className = 'iptv-channel-card' + (playing ? ' playing' : '');
+      card.dataset.url = ch.url;
+      card.innerHTML = `
+        <div class="iptv-card-top">
+          ${logoHtml}
+          <div class="iptv-card-name">${ch.name}</div>
+        </div>
+        <div class="iptv-card-footer">
+          <div class="iptv-card-country">${ch.flag} ${ch.country}</div>
+          <div class="iptv-card-play">
+            ${playing
+              ? '<svg viewBox="0 0 24 24" fill="currentColor" width="8" height="8"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+              : '<svg viewBox="0 0 24 24" fill="currentColor" width="8" height="8"><polygon points="5,3 19,12 5,21"/></svg>'}
+          </div>
+        </div>`;
+      card.addEventListener('click', () => playIPTV(ch));
+      grid.appendChild(card);
+    });
+  }
+
+  function playIPTV(ch) {
+    currentChannel = ch;
+    const wrap = document.getElementById('iptv-player-wrap');
+    const video = document.getElementById('iptv-video');
+    const errEl = document.getElementById('iptv-player-error');
+    if (!wrap || !video) return;
+    wrap.style.display = 'block';
+    wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.getElementById('iptv-now-name').textContent = ch.name;
+    document.getElementById('iptv-now-country').textContent = ch.country;
+    document.getElementById('iptv-now-flag').textContent = ch.flag;
+    errEl.style.display = 'none';
+    video.style.display = 'block';
+
+    // Destroy previous HLS instance
+    if (hls) { hls.destroy(); hls = null; }
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+
+    // Try HLS.js first, fall back to native
+    if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+      hls = new Hls({ startLevel: -1, capLevelToPlayerSize: true });
+      hls.loadSource(ch.url);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(()=>{}));
+      hls.on(Hls.Events.ERROR, (e, d) => {
+        if (d.fatal) { errEl.style.display = 'flex'; video.style.display = 'none'; }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = ch.url;
+      video.play().catch(() => {});
+    } else {
+      errEl.style.display = 'flex';
+      video.style.display = 'none';
+    }
+    renderGrid();
+  }
+
+  window.closeIPTVPlayer = function() {
+    const wrap = document.getElementById('iptv-player-wrap');
+    const video = document.getElementById('iptv-video');
+    if (hls) { hls.destroy(); hls = null; }
+    if (video) { video.pause(); video.removeAttribute('src'); video.load(); }
+    if (wrap) wrap.style.display = 'none';
+    currentChannel = null;
+    renderGrid();
+  };
+
+  window.filterIPTV = function(region, btn) {
+    currentRegion = region;
+    document.querySelectorAll('.iptv-pill').forEach(p => p.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    renderGrid();
+  };
+
+  window.searchIPTV = function(q) {
+    currentSearch = q;
+    renderGrid();
+  };
+
+  // Load HLS.js dynamically when IPTV page is first opened
+  window._loadIPTVPage = function() {
+    if (iptvLoaded) return;
+    iptvLoaded = true;
+    if (typeof Hls === 'undefined') {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/hls.js@1.5.15/dist/hls.min.js';
+      s.onload = renderGrid;
+      document.head.appendChild(s);
+    } else {
+      renderGrid();
+    }
+  };
+})();
+</script>
 
 </body>
 </html>

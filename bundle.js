@@ -1578,6 +1578,7 @@ function showPage(id, linkEl) {
   if(id==='anime') loadAnimePage();
   if(id==='about') initAboutEerie();
   if(id==='livemusic') loadLiveMusicPage();
+  if(id==='iptv' && typeof window._loadIPTVPage === 'function') window._loadIPTVPage();
   // Re-trigger constellation resize after home page becomes visible
   // (canvas gets H=0 when section was hidden, needs recalc after display:block)
   if(id==='home') setTimeout(function(){ if(typeof window._constellationResize==='function') window._constellationResize(); }, 60);
