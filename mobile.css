@@ -3138,3 +3138,45 @@ body:not(.mobile-menu-open) {
     margin-bottom: 6px !important;
   }
 }
+
+/* ── MOBILE PERFORMANCE: Kill expensive backdrop-filters everywhere on mobile ── */
+@media (max-width: 768px) {
+  /* Modals & overlays */
+  .search-modal-backdrop,
+  .modal-backdrop,
+  .mobile-nav-backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  /* Misc overlaid panels */
+  [style*="backdrop-filter"],
+  .listeners-panel,
+  .genre-overlay,
+  .lm-lyrics-panel,
+  .signal-cube-panel,
+  .sleep-panel,
+  .admin-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  /* Reduce drop-shadow filter chains on nav elements */
+  .nav-aberrant-star img.aber-img-main {
+    filter: drop-shadow(0 0 4px rgba(200,71,42,0.5)) !important;
+    animation: aber-drift 4.1s ease-in-out infinite !important;
+    /* Drop the spin-jerk animation on mobile — saves a compositor layer repaint */
+  }
+  .nav-aberrant-star .aber-r,
+  .nav-aberrant-star .aber-b {
+    display: none !important; /* chromatic aberration layers off on mobile */
+  }
+}
+
+/* ── Reduced motion: honour OS preference ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ticker-inner { animation: none !important; }
+}

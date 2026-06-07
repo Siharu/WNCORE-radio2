@@ -1589,6 +1589,14 @@ function showPage(id, linkEl) {
 function loadGenrePage() {
   const grid = document.getElementById('genre-cards-grid');
   if(grid.dataset.loaded) return;
+  // Lazy-load the 16 genre fonts only when this page is first opened
+  if (!document.getElementById('genre-fonts-link')) {
+    const lnk = document.createElement('link');
+    lnk.id = 'genre-fonts-link';
+    lnk.rel = 'stylesheet';
+    lnk.href = 'https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=UnifrakturMaguntia&family=Permanent+Marker&family=Pacifico&family=Orbitron:wght@400;700&family=Bangers&family=Abril+Fatface&family=Fredericka+the+Great&family=Rye&family=Lobster&family=Patrick+Hand&family=Righteous&family=Bree+Serif&family=Monoton&family=Press+Start+2P&family=Rajdhani:wght@400;600&display=swap';
+    document.head.appendChild(lnk);
+  }
 
   // [key, name, desc, bgColor, fontFamily, fontSize, imgQuery, iconSvg]
   const genres = [
@@ -2663,8 +2671,16 @@ function restoreAboutText() {
 
 // ─── HORROR ENGINE ────────────────────────────────────────────────────────
 const HORROR = {stage:0, adCorrupted:false};
-setInterval(()=>{ if(isPlaying && !document.hidden){exposure+=1; checkHorrorStage()} },5000); // FIX2
-setInterval(()=>{ if(!document.hidden){exposure+=0.5; checkHorrorStage();} },12000); // FIX2
+// Intervals are created lazily inside startHorrorTracking() — called only
+// when the user clicks 88.7 FM (triggerHorrorSequence). This avoids running
+// two setIntervals constantly for all visitors who never touch the ARG path.
+let _horrorTrackingStarted = false;
+function startHorrorTracking() {
+  if (_horrorTrackingStarted) return;
+  _horrorTrackingStarted = true;
+  setInterval(()=>{ if(isPlaying && !document.hidden){exposure+=1; checkHorrorStage()} },5000);
+  setInterval(()=>{ if(!document.hidden){exposure+=0.5; checkHorrorStage();} },12000);
+}
 
 function checkHorrorStage() {
   // Stages 1 & 2 only activate after the user has clicked 88.7 FM.
@@ -2747,6 +2763,7 @@ document.addEventListener('visibilitychange', ()=>{
 // ─── HORROR SEQUENCE (stage 3) ────────────────────────────────────────────
 function triggerHorrorSequence() {
   horrorTriggered=true;
+  startHorrorTracking(); // begin exposure/stage intervals now, not at page load
   const overlay=document.getElementById('horror-overlay');
   const termBody=document.getElementById('horror-terminal-body')||document.getElementById('horror-terminal');
   overlay.classList.add('show');
@@ -5855,7 +5872,11 @@ function renderNetworkMap() {
   const canvas = document.getElementById('network-map-canvas');
   if (!canvas || !canvas.offsetParent || document.hidden) return; // FIX3
   const W = canvas.offsetWidth;
-  canvas.width = W; canvas.height = W * 0.5;
+  // Only resize canvas when dimensions actually change — resetting width clears
+  // the compositor layer every frame and is very expensive on mobile GPUs
+  if (canvas.width !== W || canvas.height !== Math.round(W * 0.5)) {
+    canvas.width = W; canvas.height = Math.round(W * 0.5);
+  }
   const H = canvas.height;
   const ctx = canvas.getContext('2d');
   const isDark = document.body.classList.contains('dark-mode');
@@ -5898,9 +5919,9 @@ function renderNetworkMap() {
     ctx.fillStyle = isGhost ? '#c8472a' : (isDark ? '#22c55e' : '#16a34a');
     ctx.fill();
 
-    // Label (only on hover-like random sample)
-    if (isGhost || Math.random() < 0.3) {
-      ctx.font = `${isGhost ? 'bold ' : ''}9px 'DM Mono', monospace`;
+    // Labels — always show ghost, show others by stable index parity (no Math.random jitter)
+    if (isGhost || i % 3 === 0) {
+      ctx.font = `${isGhost ? 'bold ' : ''}9px 'IBM Plex Mono', monospace`;
       ctx.fillStyle = isGhost ? '#c8472a' : (isDark ? 'rgba(240,237,232,0.5)' : 'rgba(26,24,20,0.4)');
       ctx.fillText(name, x + 6, y - 4);
     }
@@ -6090,22 +6111,25 @@ function startWaveformDraw(audioEl) {
       _waveAnalyser.connect(_waveAudioCtxShared.destination);
     }
     cancelAnimationFrame(_waveRaf);
+    // Pre-allocate buffer once — avoid GC pressure from per-frame new Uint8Array
+    const _waveBuf = new Uint8Array(_waveAnalyser.frequencyBinCount);
+    let _waveDarkCache = document.body.classList.contains('dark-mode');
+    let _waveFrameCount = 0;
     const draw = () => {
       _waveRaf = requestAnimationFrame(draw);
       if (!_waveCtx || !_waveCanvas) return;
+      // Only check dark mode every 60 frames (~1s) — classList.contains is cheap but called 60fps
+      if ((_waveFrameCount++ & 63) === 0) _waveDarkCache = document.body.classList.contains('dark-mode');
       const W = _waveCanvas.width, H = _waveCanvas.height;
-      const buf = new Uint8Array(_waveAnalyser.frequencyBinCount);
-      _waveAnalyser.getByteFrequencyData(buf);
+      _waveAnalyser.getByteFrequencyData(_waveBuf);
       _waveCtx.clearRect(0, 0, W, H);
-      const barW = W / buf.length;
-      const isDark = document.body.classList.contains('dark-mode');
-      buf.forEach((v, i) => {
-        const h = (v / 255) * H;
-        _waveCtx.fillStyle = isDark
-          ? `rgba(200,71,42,${0.4 + v/255*0.6})`
-          : `rgba(200,71,42,${0.3 + v/255*0.7})`;
+      const barW = W / _waveBuf.length;
+      // Use two fixed colours — skip per-bar rgba() string construction
+      _waveCtx.fillStyle = _waveDarkCache ? 'rgba(200,71,42,0.7)' : 'rgba(200,71,42,0.6)';
+      for (let i = 0; i < _waveBuf.length; i++) {
+        const h = (_waveBuf[i] / 255) * H;
         _waveCtx.fillRect(i * barW, H - h, barW - 1, h);
-      });
+      }
     };
     draw();
   } catch {
@@ -6119,19 +6143,23 @@ function animateFakeWave() {
   const W = _waveCanvas.width, H = _waveCanvas.height;
   const bars = 20;
   let frame = 0;
+  let _lastFakeTs = 0;
   cancelAnimationFrame(_waveRaf);
-  const draw = () => {
+  const draw = (ts) => {
     _waveRaf = requestAnimationFrame(draw);
+    if (document.hidden) return; // skip entirely when tab not visible
+    if (ts - _lastFakeTs < 50) return; // ~20fps cap
+    _lastFakeTs = ts;
     frame++;
     _waveCtx.clearRect(0,0,W,H);
     const bw = W / bars;
+    _waveCtx.fillStyle = 'rgba(200,71,42,0.5)';
     for (let i = 0; i < bars; i++) {
       const h = (Math.sin(frame * 0.05 + i * 0.8) * 0.5 + 0.5) * H * 0.8 + H * 0.05;
-      _waveCtx.fillStyle = `rgba(200,71,42,0.5)`;
       _waveCtx.fillRect(i * bw, H - h, bw - 1, h);
     }
   };
-  draw();
+  draw(0);
 }
 
 function stopWaveformDraw() {
