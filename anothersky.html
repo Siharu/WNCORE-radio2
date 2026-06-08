@@ -807,6 +807,9 @@ body {
   display: flex; flex-direction: column;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  /* iOS sticky fix: as-main is the scroll container, so mob-bar must sit
+     OUTSIDE as-main (as a sibling) to stick correctly on iOS Safari.
+     See mob-bar placement in HTML — it is a sibling of as-main inside as-body. */
 }
 
 /* ── SYNOPSIS GATE ── */
@@ -1942,7 +1945,8 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     position: sticky;
     top: 58px;
     z-index: 48;
-    /* hidden until reader is entered */
+    /* Now a sibling of #as-main inside #as-body (no overflow:auto parent),
+       so position:sticky works correctly on iOS Safari. */
     display: none !important;
   }
   #mob-bar.reader-active {
@@ -2134,11 +2138,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       </div>
     </nav>
 
-    <!-- Main -->
-    <main id="as-main">
-
-      <!-- Mobile chapter bar — lives inside as-main so sticky works below header -->
-      <div id="mob-bar">
+    <!-- Mobile chapter bar — MUST be outside #as-main (sibling) so sticky works on iOS Safari.
+         overflow:auto on a parent breaks position:sticky for children. -->
+    <div id="mob-bar">
         <button id="mob-ch-trigger" onclick="openChDrawer()" aria-label="Select chapter">
           <img src="assets/lucid/List.png" alt="" class="lucid-icon" id="mob-ch-trigger-icon" style="width:12px;height:12px;vertical-align:middle">
           <span id="mob-ch-trigger-meta">
@@ -2156,7 +2158,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <select id="mob-ch-sel" onchange="if(!isNaN(parseInt(this.value)))loadChapter(parseInt(this.value))">
           <option value="">// SELECT CHAPTER...</option>
         </select>
-      </div>
+    </div><!-- /#mob-bar -->
+
+    <!-- Main scroll area -->
+    <main id="as-main">
 
       <!-- Chapter drawer overlay -->
       <div id="mob-ch-drawer" role="dialog" aria-modal="true" aria-label="Chapter selection">
@@ -3290,9 +3295,10 @@ let currentChapterIdx = -1;
 function updateSkyStat(idx) {
   const skyEl = document.getElementById('hdr-sky-val');
   if (!skyEl) return;
-  // idx -1 = synopsis screen, which always shows rain → report RAINY not SUNNY
-  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'RAINY';
-  const col = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#4466aa';
+  const isPaper = document.documentElement.dataset.theme === 'paper';
+  // idx -1 = synopsis screen. Dark mode → RAINY (rain runs). Paper/light → CLEAR (rain is hidden by CSS).
+  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : (isPaper ? 'CLEAR' : 'RAINY');
+  const col   = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : (isPaper ? '#f5a623' : '#4466aa');
   skyEl.textContent = state;
   skyEl.style.color = col;
 }
@@ -3671,6 +3677,8 @@ function toggleTheme() {
   }
   /* Restart synopsis background audio (rain ↔ birdsong) if it was running */
   if (window._synAudioRestartOnTheme) window._synAudioRestartOnTheme();
+  /* Re-evaluate SKY STATUS label now that theme has changed */
+  updateSkyStat(currentChapterIdx);
 }
 function syncThemeBtn() {
   const isDark = readerOpts.displayMode === 'dark';
@@ -4507,10 +4515,14 @@ async function sendEntityMsg() {
     stopWebAudioRain();
     const el = document.getElementById('lightning-flash');
     if (el) el.style.background = 'rgba(220,230,255,0)';
+    // Clear all storm timers
+    if (window._stormTimer) { clearTimeout(window._stormTimer); window._stormTimer = null; }
     setTimeout(() => {
-      if (rainSound) { rainSound.stop(); rainSound = null; }
-      audioUnlocked = false;
+      if (rainSound) { rainSound.stop(); rainSound.unload(); rainSound = null; }
+      thunderSounds.forEach(t => { try { t.stop(); t.unload(); } catch(_){} });
       thunderSounds = [];
+      // NOTE: do NOT reset audioUnlocked here — if user re-enters synopsis quickly,
+      // the browser gesture is already unlocked and initAudio() won't fire again.
     }, 1500);
   };
 })();
@@ -4700,103 +4712,68 @@ async function sendEntityMsg() {
 
 <!-- ═══════════════════════════════════════════════════
      AI WRITING ASSISTANT — Admin Panel
-     Calls Claude via Anthropic API to help write chapters
+     Routes through /api/writer (Groq → Gemini → DeepSeek → OpenRouter)
 ═══════════════════════════════════════════════════ -->
 <script>
 (function() {
   'use strict';
 
-  const SYSTEM_PROMPT = `You are a dark fiction writing assistant for *Another Sky*, a serialized horror/sci-fi series in the Cygnus Signal Series universe.
-
-Series context:
-- Protagonist: Som, navigating a world where the sky is degrading
-- Tone: analog horror, post-apocalyptic wrongness, glitch aesthetics, dread-soaked quiet
-- World: factions, Husks (transformation taxonomy), infected zones, sky degradation events
-- Style: spare prose, fragmented at the edges, moments of brutal clarity
-- Formatting tags available: [GLITCH]...[/GLITCH], [REDACT]...[/REDACT], [STATIC]...[/STATIC], [SPECTRAL]...[/SPECTRAL], [INKBLEED]...[/INKBLEED], [MARGIN: note]
-
-You help the author:
-1. Draft scenes, continuations, dialogue
-2. Suggest edits and rewrites
-3. Check lore consistency
-4. Generate chapter outlines
-5. Add stylistic horror effects using the formatting tags above
-
-Keep responses concise and in the series tone. When generating prose, write it ready to paste. Use the formatting tags naturally when they fit.`;
-
   let aiChatHistory = [];
   let aiLastResponse = '';
   let aiDrawerOpen = false;
+  let aiAttachments = []; // { type: 'image'|'text', data, name, mimeType, previewUrl }
 
+  // ── Toggle drawer ─────────────────────────────────────────────────────────
   window.toggleAiAssist = function() {
     const drawer = document.getElementById('ai-assist-drawer');
-    const btn = document.getElementById('ai-assist-toggle');
+    const btn    = document.getElementById('ai-assist-toggle');
     aiDrawerOpen = !aiDrawerOpen;
-    drawer.style.display = aiDrawerOpen ? 'flex' : 'none';
+    drawer.style.display      = aiDrawerOpen ? 'flex' : 'none';
     drawer.style.flexDirection = 'column';
-    btn.style.color = aiDrawerOpen ? 'rgba(200,71,42,1)' : 'rgba(200,71,42,0.8)';
-    btn.style.borderColor = aiDrawerOpen ? 'rgba(200,71,42,0.8)' : 'rgba(200,71,42,0.4)';
+    btn.style.color           = aiDrawerOpen ? 'rgba(200,71,42,1)'   : 'rgba(200,71,42,0.8)';
+    btn.style.borderColor     = aiDrawerOpen ? 'rgba(200,71,42,0.8)' : 'rgba(200,71,42,0.4)';
     if (aiDrawerOpen && aiChatHistory.length === 0) {
-      appendAiLog('system', 'Cygnus Writing Assistant online. Ask me to draft a scene, continue your chapter, suggest edits, or check lore. I can see what you\'ve written so far.');
+      appendAiLog('system', 'Cygnus Writing Assistant online. Ask for dialogue, a character list, chapter outline, lore check — or drop a doc/image to include it as context.');
     }
     if (aiDrawerOpen) setTimeout(() => document.getElementById('ai-assist-inp').focus(), 80);
   };
 
-  window.sendAiAssist = async function() {
-    const inp = document.getElementById('ai-assist-inp');
-    const userMsg = inp.value.trim();
-    if (!userMsg) return;
-    inp.value = '';
+  // ── Quick action buttons ──────────────────────────────────────────────────
+  window.aiQuick = function(action) { sendAiAssist(action); };
 
-    // Include current chapter context
-    const currentBody = document.getElementById('ced-body')?.value || '';
-    const currentTitle = document.getElementById('ced-title')?.value || '';
-    const currentNum = document.getElementById('ced-num')?.value || '';
-
-    const contextPrefix = currentBody
-      ? `[Current chapter draft — AS-${currentNum || '?'}: "${currentTitle || 'Untitled'}"]\n${currentBody.slice(0, 2000)}${currentBody.length > 2000 ? '\n…[truncated]' : ''}\n\n[User request]: `
-      : '';
-
-    const fullUserMsg = contextPrefix + userMsg;
-
-    appendAiLog('user', userMsg);
-    setAiStatus('// transmitting…');
-
-    aiChatHistory.push({ role: 'user', content: fullUserMsg });
-
-    try {
-      const resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: SYSTEM_PROMPT,
-          messages: aiChatHistory.slice(-10), // keep last 10 turns for context
-        }),
-      });
-
-      if (!resp.ok) throw new Error(`API ${resp.status}`);
-      const data = await resp.json();
-      const reply = data.content?.find(b => b.type === 'text')?.text || '// no response';
-
-      aiLastResponse = reply;
-      aiChatHistory.push({ role: 'assistant', content: reply });
-      appendAiLog('assistant', reply);
-      setAiStatus('// ready');
-    } catch (err) {
-      appendAiLog('error', `// signal lost: ${err.message}`);
-      setAiStatus('// error');
-      // Remove failed user message from history
-      aiChatHistory.pop();
-    }
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  window.aiAutoResize = function(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 80) + 'px';
   };
 
+  // ── Clear history ─────────────────────────────────────────────────────────
+  window.aiClearHistory = function() {
+    aiChatHistory  = [];
+    aiLastResponse = '';
+    aiAttachments  = [];
+    const log = document.getElementById('ai-assist-log');
+    if (log) log.innerHTML = '';
+    renderAttachStrip();
+    setAiStatus('// ready');
+    appendAiLog('system', '// conversation cleared.');
+  };
+
+  // ── Copy last response ────────────────────────────────────────────────────
+  window.aiCopyLast = function() {
+    if (!aiLastResponse) return;
+    navigator.clipboard.writeText(aiLastResponse).then(() => {
+      setAiStatus('// copied!');
+      setTimeout(() => setAiStatus('// ready'), 1500);
+    });
+  };
+
+  // ── Insert last response into editor ─────────────────────────────────────
   window.aiInsertLast = function() {
     if (!aiLastResponse) return;
     const ta = document.getElementById('ced-body');
     if (!ta) return;
-    const pos = ta.selectionEnd;
+    const pos    = ta.selectionEnd;
     const insert = '\n\n' + aiLastResponse + '\n\n';
     ta.setRangeText(insert, pos, pos, 'end');
     ta.focus();
@@ -4804,14 +4781,160 @@ Keep responses concise and in the series tone. When generating prose, write it r
     appendAiLog('system', '// inserted into editor.');
   };
 
+  // ── File input handler (📎 button) ────────────────────────────────────────
+  window.aiHandleFileInput = function(files) {
+    if (!files || !files.length) return;
+    Array.from(files).forEach(f => ingestFile(f));
+    document.getElementById('ai-file-input').value = '';
+  };
+
+  // ── Drag-and-drop on drawer ───────────────────────────────────────────────
+  (function setupDrop() {
+    const drawer  = document.getElementById('ai-assist-drawer');
+    const overlay = document.getElementById('ai-drop-overlay');
+    if (!drawer) return;
+    drawer.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (overlay) overlay.style.display = 'flex';
+    });
+    drawer.addEventListener('dragleave', e => {
+      if (!drawer.contains(e.relatedTarget) && overlay) overlay.style.display = 'none';
+    });
+    drawer.addEventListener('drop', e => {
+      e.preventDefault();
+      if (overlay) overlay.style.display = 'none';
+      const files = e.dataTransfer?.files;
+      if (files && files.length) Array.from(files).forEach(f => ingestFile(f));
+    });
+  })();
+
+  // ── Ingest a dropped/selected file ───────────────────────────────────────
+  function ingestFile(file) {
+    const MAX = 4 * 1024 * 1024;
+    if (file.size > MAX) { appendAiLog('error', '// ' + file.name + ' too large (max 4 MB)'); return; }
+    const isImage = file.type.startsWith('image/');
+    const isText  = file.type.startsWith('text/') || /\.(txt|md|json|csv)$/i.test(file.name);
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const b64 = ev.target.result.split(',')[1];
+        aiAttachments.push({ type:'image', data:b64, name:file.name, mimeType:file.type, previewUrl:ev.target.result });
+        renderAttachStrip();
+      };
+      reader.readAsDataURL(file);
+    } else if (isText) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        aiAttachments.push({ type:'text', data:ev.target.result.slice(0, 8000), name:file.name });
+        renderAttachStrip();
+      };
+      reader.readAsText(file);
+    } else {
+      appendAiLog('error', '// unsupported: ' + (file.type || file.name) + '. Use images, .txt or .md.');
+    }
+  }
+
+  // ── Render attachment chips ───────────────────────────────────────────────
+  function renderAttachStrip() {
+    const strip = document.getElementById('ai-attach-strip');
+    if (!strip) return;
+    strip.innerHTML = '';
+    if (!aiAttachments.length) { strip.style.display = 'none'; return; }
+    strip.style.display = 'flex';
+    aiAttachments.forEach((att, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'ai-attach-chip';
+      chip.innerHTML = (att.type === 'image' && att.previewUrl)
+        ? '<img src="' + att.previewUrl + '" class="ai-attach-thumb" alt="">'
+        : '<span>\uD83D\uDCC4</span>';
+      chip.innerHTML += '<span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(att.name) + '</span>';
+      chip.innerHTML += '<button onclick="aiRemoveAttachment(' + i + ')" title="Remove">\u2715</button>';
+      strip.appendChild(chip);
+    });
+  }
+
+  window.aiRemoveAttachment = function(i) {
+    aiAttachments.splice(i, 1);
+    renderAttachStrip();
+  };
+
+  // ── Main send ─────────────────────────────────────────────────────────────
+  window.sendAiAssist = async function(quickAction) {
+    const inp     = document.getElementById('ai-assist-inp');
+    const userMsg = inp ? inp.value.trim() : '';
+    if (!userMsg && !quickAction) return;
+
+    const labels = {
+      dialogue:'Write dialogue', characters:'Generate character list', outline:'Generate outline',
+      continue:'Continue chapter', edit:'Suggest edits', lore:'Lore check',
+      scene:'New scene', horror:'Add horror FX'
+    };
+    const displayMsg = quickAction ? (labels[quickAction] || quickAction) : userMsg;
+
+    if (inp) inp.value = '';
+    if (inp) aiAutoResize(inp);
+
+    const chapterContext = {
+      body:  document.getElementById('ced-body')?.value  || '',
+      title: document.getElementById('ced-title')?.value || '',
+      num:   document.getElementById('ced-num')?.value   || '',
+    };
+
+    appendAiLog('user', displayMsg);
+    setAiStatus('// transmitting\u2026');
+    setInputDisabled(true);
+
+    aiChatHistory.push({ role: 'user', content: userMsg || displayMsg });
+
+    const pendingAttachments = aiAttachments.slice();
+    aiAttachments = [];
+    renderAttachStrip();
+
+    try {
+      const resp = await fetch('/api/writer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages:       aiChatHistory.slice(-14),
+          attachments:    pendingAttachments,
+          quickAction:    quickAction || null,
+          chapterContext: chapterContext.body ? chapterContext : null,
+        }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'HTTP ' + resp.status);
+      }
+      const data  = await resp.json();
+      const reply = data.reply || '// no response';
+      aiLastResponse = reply;
+      aiChatHistory.push({ role: 'assistant', content: reply });
+      appendAiLog('assistant', reply);
+      setAiStatus('// ready');
+    } catch (err) {
+      appendAiLog('error', '// signal lost: ' + err.message);
+      setAiStatus('// error');
+      aiChatHistory.pop();
+    } finally {
+      setInputDisabled(false);
+      if (inp) inp.focus();
+    }
+  };
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function setInputDisabled(val) {
+    const inp = document.getElementById('ai-assist-inp');
+    if (inp) inp.disabled = val;
+  }
+
   function appendAiLog(role, text) {
     const log = document.getElementById('ai-assist-log');
     if (!log) return;
     const line = document.createElement('div');
     line.style.marginBottom = '8px';
-    const colors = { user: '#c8472a', assistant: '#e8e4df', system: 'rgba(232,228,223,0.3)', error: '#8b0000' };
-    const labels = { user: '▶ YOU', assistant: '✦ CYGNUS', system: '//SYS', error: '// ERR' };
-    line.innerHTML = `<span style="color:${colors[role]||'#fff'};font-size:0.36rem;letter-spacing:1.5px;display:block;margin-bottom:2px;">${labels[role]||role}</span><span style="white-space:pre-wrap;">${escapeHtml(text)}</span>`;
+    const colors = { user:'#c8472a', assistant:'#e8e4df', system:'rgba(232,228,223,0.3)', error:'#8b0000' };
+    const labels = { user:'\u25B6 YOU', assistant:'\u2726 CYGNUS', system:'//SYS', error:'// ERR' };
+    line.innerHTML = '<span style="color:' + (colors[role]||'#fff') + ';font-size:0.36rem;letter-spacing:1.5px;display:block;margin-bottom:2px;">' + (labels[role]||role) + '</span><span style="white-space:pre-wrap;">' + escapeHtml(text) + '</span>';
     log.appendChild(line);
     log.scrollTop = log.scrollHeight;
   }
@@ -4822,7 +4945,7 @@ Keep responses concise and in the series tone. When generating prose, write it r
   }
 
   function escapeHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
 })();
