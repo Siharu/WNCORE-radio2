@@ -2571,1111 +2571,62 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <div id="ced-editor-pane">
           <div id="ced-editor-label" style="display:flex;align-items:center;justify-content:space-between;">
             <span>// CONTENT — blank lines = paragraphs</span>
-<!-- cw toggle lives inside #cw-wrap below -->
+            <button id="ai-assist-toggle" onclick="toggleAiAssist()" title="AI Writing Assistant" style="background:none;border:1px solid rgba(200,71,42,0.4);color:rgba(200,71,42,0.8);font-family:inherit;font-size:0.42rem;letter-spacing:1.5px;padding:2px 8px;cursor:pointer;border-radius:1px;transition:all 0.2s;">✦ AI ASSIST</button>
           </div>
 
-<!-- ══ CYGNUS WRITING ASSISTANT PANEL ══ -->
-
-<style>
-/* ── CYGNUS WRITER PANEL ──────────────────────────────────────── */
-#cw-wrap {
-  position: relative;
-  margin-bottom: 6px;
-  font-family: var(--font-mono, 'IBM Plex Mono', 'Courier New', monospace);
-}
-
-/* ── HEADER BAR ── */
-#cw-bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: transparent;
-  border: 1px solid rgba(200,71,42,0.28);
-  border-bottom: none;
-  cursor: pointer;
-  user-select: none;
-  transition: border-color 0.2s;
-}
-#cw-bar:hover { border-color: rgba(200,71,42,0.6); }
-#cw-bar.open  { border-color: rgba(200,71,42,0.55); }
-
-#cw-sigil {
-  width: 12px; height: 12px;
-  border: 1px solid rgba(200,71,42,0.6);
-  border-radius: 50%;
-  position: relative;
-  flex-shrink: 0;
-  transition: box-shadow 0.3s;
-}
-#cw-sigil::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  background: rgba(200,71,42,0.4);
-  border-radius: 50%;
-  transition: background 0.3s;
-}
-#cw-bar.open #cw-sigil::after { background: rgba(200,71,42,0.9); }
-#cw-bar.open #cw-sigil { box-shadow: 0 0 6px rgba(200,71,42,0.6); }
-
-#cw-label {
-  font-size: 0.38rem;
-  letter-spacing: 2.5px;
-  color: rgba(200,71,42,0.75);
-  text-transform: uppercase;
-  flex: 1;
-  transition: color 0.2s;
-}
-#cw-bar.open #cw-label { color: rgba(200,71,42,1); }
-
-#cw-model-tag {
-  font-size: 0.34rem;
-  letter-spacing: 1px;
-  color: rgba(212,191,184,0.28);
-  padding: 1px 5px;
-  border: 1px solid rgba(200,71,42,0.14);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-#cw-model-tag:hover { color: rgba(212,191,184,0.7); border-color: rgba(200,71,42,0.4); }
-
-#cw-chevron {
-  font-size: 0.5rem;
-  color: rgba(200,71,42,0.5);
-  transition: transform 0.25s, color 0.2s;
-  line-height: 1;
-}
-#cw-bar.open #cw-chevron { transform: rotate(180deg); color: rgba(200,71,42,0.9); }
-
-/* ── PANEL BODY ── */
-#cw-panel {
-  display: none;
-  flex-direction: column;
-  background: #060203;
-  border: 1px solid rgba(200,71,42,0.3);
-  border-top: 1px solid rgba(200,71,42,0.14);
-  max-height: 480px;
-  position: relative;
-  overflow: hidden;
-}
-#cw-panel.open { display: flex; }
-
-/* scan lines overlay */
-#cw-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0,0,0,0.07) 2px,
-    rgba(0,0,0,0.07) 4px
-  );
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* ── QUICK ACTION ROW ── */
-#cw-actions {
-  display: flex;
-  gap: 3px;
-  padding: 6px 8px 5px;
-  border-bottom: 1px solid rgba(200,71,42,0.08);
-  flex-wrap: wrap;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-}
-.cw-act {
-  background: rgba(200,71,42,0.05);
-  border: 1px solid rgba(200,71,42,0.16);
-  color: rgba(200,71,42,0.6);
-  font-family: inherit;
-  font-size: 0.33rem;
-  letter-spacing: 1px;
-  padding: 2px 6px;
-  cursor: pointer;
-  border-radius: 1px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-}
-.cw-act:hover {
-  background: rgba(200,71,42,0.15);
-  color: rgba(200,71,42,1);
-  border-color: rgba(200,71,42,0.45);
-}
-.cw-act-sep {
-  width: 1px;
-  background: rgba(200,71,42,0.12);
-  margin: 2px 1px;
-  flex-shrink: 0;
-}
-
-/* ── CHAT LOG ── */
-#cw-log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px 11px;
-  min-height: 80px;
-  max-height: 260px;
-  position: relative;
-  z-index: 1;
-}
-
-/* message rows */
-.cw-msg {
-  margin-bottom: 11px;
-  animation: cw-fadein 0.2s ease;
-}
-@keyframes cw-fadein {
-  from { opacity: 0; transform: translateY(3px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.cw-role {
-  font-size: 0.32rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-.cw-role-dot {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.cw-msg-body {
-  font-size: 0.4rem;
-  line-height: 1.7;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/* role colours */
-.cw-msg[data-role="user"]      .cw-role      { color: #c8472a; }
-.cw-msg[data-role="user"]      .cw-role-dot  { background: #c8472a; }
-.cw-msg[data-role="user"]      .cw-msg-body  { color: rgba(232,228,223,0.88); }
-
-.cw-msg[data-role="assistant"] .cw-role      { color: rgba(212,191,184,0.6); }
-.cw-msg[data-role="assistant"] .cw-role-dot  { background: rgba(212,191,184,0.5); }
-.cw-msg[data-role="assistant"] .cw-msg-body  { color: rgba(212,191,184,0.82); }
-
-.cw-msg[data-role="system"]    .cw-role      { color: rgba(212,191,184,0.22); }
-.cw-msg[data-role="system"]    .cw-msg-body  { color: rgba(212,191,184,0.25); font-size: 0.36rem; }
-
-.cw-msg[data-role="error"]     .cw-role      { color: #7a0000; }
-.cw-msg[data-role="error"]     .cw-msg-body  { color: #a03030; font-size: 0.38rem; }
-
-/* streaming cursor */
-.cw-cursor {
-  display: inline-block;
-  width: 7px; height: 1px;
-  background: rgba(212,191,184,0.6);
-  margin-left: 2px;
-  vertical-align: middle;
-  animation: cw-blink 0.7s step-end infinite;
-}
-@keyframes cw-blink {
-  0%,100% { opacity: 1; } 50% { opacity: 0; }
-}
-
-/* copy button on assistant messages */
-.cw-copy-btn {
-  background: none;
-  border: 1px solid rgba(200,71,42,0.18);
-  color: rgba(200,71,42,0.4);
-  font-family: inherit;
-  font-size: 0.3rem;
-  letter-spacing: 1px;
-  padding: 1px 5px;
-  cursor: pointer;
-  border-radius: 1px;
-  margin-top: 4px;
-  transition: all 0.15s;
-}
-.cw-copy-btn:hover { color: rgba(200,71,42,0.9); border-color: rgba(200,71,42,0.5); }
-.cw-insert-btn {
-  background: none;
-  border: 1px solid rgba(200,71,42,0.12);
-  color: rgba(200,71,42,0.3);
-  font-family: inherit;
-  font-size: 0.3rem;
-  letter-spacing: 1px;
-  padding: 1px 5px;
-  cursor: pointer;
-  border-radius: 1px;
-  margin-top: 4px;
-  margin-left: 3px;
-  transition: all 0.15s;
-}
-.cw-insert-btn:hover { color: rgba(200,71,42,0.8); border-color: rgba(200,71,42,0.4); }
-
-/* ── ATTACH STRIP ── */
-#cw-attach-strip {
-  display: none;
-  padding: 4px 8px;
-  gap: 4px;
-  flex-wrap: wrap;
-  border-top: 1px solid rgba(200,71,42,0.08);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-}
-.cw-chip {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(200,71,42,0.08);
-  border: 1px solid rgba(200,71,42,0.2);
-  border-radius: 1px;
-  padding: 2px 5px;
-  font-size: 0.33rem;
-  color: rgba(232,228,223,0.6);
-  max-width: 120px;
-}
-.cw-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.cw-chip-thumb { width: 22px; height: 22px; object-fit: cover; border-radius: 1px; flex-shrink: 0; }
-.cw-chip-rm {
-  background: none; border: none;
-  color: rgba(200,71,42,0.5); cursor: pointer;
-  font-size: 0.38rem; line-height: 1; padding: 0 0 0 2px;
-  flex-shrink: 0;
-}
-.cw-chip-rm:hover { color: rgba(200,71,42,1); }
-
-/* ── INPUT ROW ── */
-#cw-input-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
-  padding: 5px 8px 7px;
-  border-top: 1px solid rgba(200,71,42,0.1);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-}
-
-#cw-inp {
-  flex: 1;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(200,71,42,0.18);
-  border-radius: 1px;
-  color: #e8e4df;
-  font-family: inherit;
-  font-size: 0.4rem;
-  line-height: 1.55;
-  padding: 5px 7px;
-  resize: none;
-  outline: none;
-  overflow: hidden;
-  min-height: 28px;
-  max-height: 90px;
-  transition: border-color 0.2s;
-}
-#cw-inp:focus { border-color: rgba(200,71,42,0.5); }
-#cw-inp::placeholder { color: rgba(212,191,184,0.2); }
-#cw-inp:disabled { opacity: 0.4; }
-
-#cw-send-btn {
-  background: rgba(200,71,42,0.12);
-  border: 1px solid rgba(200,71,42,0.3);
-  color: rgba(200,71,42,0.75);
-  font-family: inherit;
-  font-size: 0.4rem;
-  width: 28px; height: 28px;
-  cursor: pointer;
-  border-radius: 1px;
-  flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-}
-#cw-send-btn:hover:not(:disabled) { background: rgba(200,71,42,0.25); color: #ff4020; }
-#cw-send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.cw-icon-btn {
-  background: none;
-  border: 1px solid rgba(200,71,42,0.16);
-  color: rgba(200,71,42,0.45);
-  font-size: 0.45rem;
-  width: 22px; height: 22px;
-  cursor: pointer;
-  border-radius: 1px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-.cw-icon-btn:hover { color: rgba(200,71,42,0.9); border-color: rgba(200,71,42,0.4); }
-
-#cw-file-input { display: none; }
-
-/* ── STATUS LINE ── */
-#cw-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2px 9px 3px;
-  border-top: 1px solid rgba(200,71,42,0.06);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-}
-#cw-status { font-size: 0.32rem; letter-spacing: 1.5px; color: rgba(212,191,184,0.22); }
-#cw-status.busy { color: rgba(200,71,42,0.5); animation: cw-pulse 1.2s ease-in-out infinite; }
-@keyframes cw-pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
-#cw-status-acts { display: flex; gap: 4px; }
-.cw-status-btn {
-  background: none; border: none;
-  color: rgba(212,191,184,0.2);
-  font-family: inherit; font-size: 0.3rem;
-  letter-spacing: 1px; cursor: pointer;
-  padding: 1px 3px;
-  transition: color 0.15s;
-}
-.cw-status-btn:hover { color: rgba(212,191,184,0.7); }
-
-/* ── MODEL PICKER DROPDOWN ── */
-#cw-model-picker {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 0;
-  min-width: 220px;
-  background: #0a0305;
-  border: 1px solid rgba(200,71,42,0.4);
-  z-index: 999;
-  max-height: 260px;
-  overflow-y: auto;
-}
-#cw-model-picker.open { display: block; }
-.cw-model-opt {
-  padding: 7px 12px;
-  font-size: 0.36rem;
-  letter-spacing: 0.5px;
-  color: rgba(212,191,184,0.55);
-  cursor: pointer;
-  border-bottom: 1px solid rgba(200,71,42,0.07);
-  transition: background 0.12s, color 0.12s;
-}
-.cw-model-opt:hover { background: rgba(200,71,42,0.1); color: rgba(212,191,184,0.9); }
-.cw-model-opt.active { color: #c8472a; }
-.cw-model-sep { padding: 4px 12px; font-size: 0.3rem; letter-spacing: 2px; color: rgba(200,71,42,0.3); border-bottom: 1px solid rgba(200,71,42,0.12); }
-
-/* ── API KEY SETUP PROMPT ── */
-#cw-setup {
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px 12px;
-  position: relative;
-  z-index: 1;
-}
-#cw-setup.show { display: flex; }
-#cw-setup-msg { font-size: 0.38rem; color: rgba(212,191,184,0.45); line-height: 1.6; }
-#cw-key-inp {
-  background: rgba(0,0,0,0.6);
-  border: 1px solid rgba(200,71,42,0.25);
-  border-radius: 1px;
-  color: #e8e4df;
-  font-family: inherit;
-  font-size: 0.38rem;
-  padding: 5px 8px;
-  outline: none;
-  width: 100%;
-}
-#cw-key-inp:focus { border-color: rgba(200,71,42,0.55); }
-#cw-key-save {
-  align-self: flex-start;
-  background: rgba(200,71,42,0.12);
-  border: 1px solid rgba(200,71,42,0.4);
-  color: rgba(200,71,42,0.8);
-  font-family: inherit;
-  font-size: 0.36rem;
-  letter-spacing: 1.5px;
-  padding: 4px 12px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-#cw-key-save:hover { background: rgba(200,71,42,0.22); color: #ff4020; }
-
-/* ── DROP OVERLAY ── */
-#cw-drop-overlay {
-  display: none;
-  position: absolute;
-  inset: 0;
-  background: rgba(200,71,42,0.06);
-  border: 2px dashed rgba(200,71,42,0.5);
-  z-index: 10;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.45rem;
-  letter-spacing: 3px;
-  color: rgba(200,71,42,0.7);
-  pointer-events: none;
-}
-
-/* ── PAPER MODE overrides ── */
-:root[data-theme="paper"] #cw-panel    { background: #f0e8dc; }
-:root[data-theme="paper"] #cw-inp      { background: rgba(255,255,255,0.5); color: #1a0a04; }
-:root[data-theme="paper"] #cw-inp::placeholder { color: rgba(26,10,4,0.25); }
-:root[data-theme="paper"] .cw-msg[data-role="assistant"] .cw-msg-body { color: rgba(26,10,4,0.75); }
-:root[data-theme="paper"] .cw-msg[data-role="user"]      .cw-msg-body { color: rgba(26,10,4,0.88); }
-:root[data-theme="paper"] #cw-model-picker { background: #ede4d6; }
-:root[data-theme="paper"] .cw-model-opt { color: rgba(26,10,4,0.55); }
-</style>
-
-<!-- ── MARKUP ───────────────────────────────────────────────── -->
-<div id="cw-wrap">
-
-  <!-- header toggle bar -->
-  <div id="cw-bar" onclick="cwToggle()" role="button" aria-expanded="false" aria-controls="cw-panel">
-    <div id="cw-sigil"></div>
-    <span id="cw-label">✦ WRITER</span>
-    <span id="cw-model-tag" onclick="event.stopPropagation(); cwModelPickerToggle()" title="Switch model">—</span>
-    <span id="cw-chevron">▾</span>
-  </div>
-
-  <!-- model picker -->
-  <div id="cw-model-picker">
-    <div class="cw-model-sep">OPENROUTER</div>
-    <div class="cw-model-opt" data-model="deepseek/deepseek-r1" data-provider="openrouter">deepseek/deepseek-r1</div>
-    <div class="cw-model-opt" data-model="deepseek/deepseek-chat-v3-0324" data-provider="openrouter">deepseek/deepseek-chat-v3</div>
-    <div class="cw-model-opt" data-model="google/gemini-2.5-pro" data-provider="openrouter">google/gemini-2.5-pro</div>
-    <div class="cw-model-opt" data-model="google/gemini-2.0-flash-001" data-provider="openrouter">google/gemini-2.0-flash</div>
-    <div class="cw-model-opt" data-model="anthropic/claude-sonnet-4-5" data-provider="openrouter">anthropic/claude-sonnet-4-5</div>
-    <div class="cw-model-opt" data-model="meta-llama/llama-3.3-70b-instruct" data-provider="openrouter">llama-3.3-70b</div>
-    <div class="cw-model-sep">GROQ (fast)</div>
-    <div class="cw-model-opt" data-model="llama-3.3-70b-versatile" data-provider="groq">llama-3.3-70b</div>
-    <div class="cw-model-opt" data-model="llama3-70b-8192" data-provider="groq">llama3-70b</div>
-    <div class="cw-model-opt" data-model="mixtral-8x7b-32768" data-provider="groq">mixtral-8x7b</div>
-    <div class="cw-model-sep">GEMINI</div>
-    <div class="cw-model-opt" data-model="gemini-2.5-pro" data-provider="gemini">gemini-2.5-pro</div>
-    <div class="cw-model-opt" data-model="gemini-2.0-flash" data-provider="gemini">gemini-2.0-flash</div>
-    <div class="cw-model-sep">DEEPSEEK</div>
-    <div class="cw-model-opt" data-model="deepseek-chat" data-provider="deepseek">deepseek-chat</div>
-    <div class="cw-model-opt" data-model="deepseek-reasoner" data-provider="deepseek">deepseek-reasoner</div>
-    <div class="cw-model-sep">─</div>
-    <div class="cw-model-opt" data-action="configure">⚙ configure api key…</div>
-  </div>
-
-  <!-- panel body -->
-  <div id="cw-panel" role="region" aria-label="Writing assistant">
-
-    <!-- drop overlay -->
-    <div id="cw-drop-overlay">DROP FILE</div>
-
-    <!-- api key setup -->
-    <div id="cw-setup">
-      <div id="cw-setup-msg">// no api key found for this provider.<br>paste your key below — stored locally, never sent anywhere except the api endpoint.</div>
-      <input id="cw-key-inp" type="password" placeholder="sk-or-…  /  gsk_…  /  AIza…" autocomplete="off" spellcheck="false">
-      <button id="cw-key-save" onclick="cwKeySave()">SAVE KEY</button>
-    </div>
-
-    <!-- quick actions -->
-    <div id="cw-actions">
-      <button class="cw-act" data-action="dialogue">▌DIALOGUE</button>
-      <button class="cw-act" data-action="characters">◈ CHARACTERS</button>
-      <button class="cw-act" data-action="outline">▦ OUTLINE</button>
-      <button class="cw-act" data-action="continue">▶ CONTINUE</button>
-      <div class="cw-act-sep"></div>
-      <button class="cw-act" data-action="lore">◉ LORE CHECK</button>
-      <button class="cw-act" data-action="scene">⊞ NEW SCENE</button>
-      <button class="cw-act" data-action="horror">⚠ HORROR FX</button>
-      <button class="cw-act" data-action="edit">✎ EDIT</button>
-      <div class="cw-act-sep"></div>
-      <button class="cw-act" data-action="search">⊕ WEB SEARCH</button>
-    </div>
-
-    <!-- chat log -->
-    <div id="cw-log"></div>
-
-    <!-- attachment strip -->
-    <div id="cw-attach-strip"></div>
-
-    <!-- input row -->
-    <div id="cw-input-row">
-      <label for="cw-file-input" class="cw-icon-btn" title="Attach image or text file">📎</label>
-      <input id="cw-file-input" type="file" accept="image/*,.txt,.md,.json,.csv" multiple>
-      <textarea id="cw-inp" rows="1" placeholder="Ask about lore, request a scene, draft dialogue, drop a file…" spellcheck="false"></textarea>
-      <button id="cw-send-btn" onclick="cwSend()" title="Send (Enter)">↑</button>
-    </div>
-
-    <!-- status / util row -->
-    <div id="cw-status-row">
-      <span id="cw-status">// ready</span>
-      <div id="cw-status-acts">
-        <button class="cw-status-btn" onclick="cwClear()" title="Clear history">CLEAR</button>
-        <button class="cw-status-btn" onclick="cwCopyLast()" title="Copy last response">COPY</button>
-        <button class="cw-status-btn" onclick="cwInsertLast()" title="Insert into editor">INSERT</button>
-      </div>
-    </div>
-
-  </div><!-- #cw-panel -->
-</div><!-- #cw-wrap -->
-
-<!-- ── SCRIPT ──────────────────────────────────────────────── -->
-<script>
-(function() {
-'use strict';
-
-// ── LORE SYSTEM PROMPT ──────────────────────────────────────────
-const SYSTEM_PROMPT = `You are a direct story writing assistant for the Cygnus Signal Series — specifically the novel "Another Sky" and short story "Simulunas."
-
-SERIES CORE:
-- Tagline: "What was Life, Now is death — machine walks in the land of flesh as the flesh melts back to the ground it came from."
-- Central truth: Humanity forgot an unbearable truth about reality. The veil of that forgetting is cracking. Humans transform based on their psychological response to exposure to truth — not biological infection.
-
-PROTAGONIST:
-- Som, 28, Bangladeshi, civil engineer at a Japanese firm in Dhaka. Greyed hair (trauma-linked). Glasses. Transferred from World-1 (2028) to World-2 (2032) on March 31, 2028 — arrived 4 years later in an instant. Didn't notice for 9 chapters. Lost: Anne (Filipina, ex-girlfriend of 6 years, never existed in World-2), plus 8 others erased from World-2.
-
-SOM'S MOTHER:
-- 72 in World-2. BPD with severe anger issues. Paralyzed fingers, weak legs, constant pain. Survived 1971 war, 1970 Bhola cyclone, multiple famines. First Ghuul — bitten simultaneously by Husk and Infected, integrated the paradox through love for Som. Runs to protect him. Watches from afar. Destroys survivor camps. Hair briefly turns brown in black rain (Rain of Obsedia).
-
-TRANSFORMATION TYPES:
-HUSKS (total rejection): Skoth (unstable early), Glowbubs (hyperfocus on lights), Jawies (aggressive/ramming), Whites (vibration-sensitive, white hair), Oldbones (elderly with hardened spine/skull), Disabled (compensatory mutations per pre-existing condition), Noire (nocturnal, slight hive-mind), Bloaters (screaming, cascade panic), Aquatic (underwater hunters).
-INFECTED (partial rejection — retain partial intelligence, child-level cognition, avoid familiar faces, cat-eye reflection, whisper unknown phrases): Type-1 Think, Type-2 Talk (mimic humans, infiltrate), Type-3 Trick (mimic voices of loved ones, skinwalker-like), Type-4 Take (kidnap/torture, target children), Type-5 Glitch (dimensional instability, flicker between realities).
-GHUULS: Integration. Rare (~173 worldwide). White skin/hair (turns brown in Rain of Obsedia). Eyes flicker brown↔black. Move in near-teleportation glitches. Act with purpose, retain emotion and love. Cannot lose themselves.
-IMMUNES: 8.28% of population, temporary blindness to truth. Not yet exposed.
-
-WORLD ANOMALIES:
-- Rain of Obsedia (black rain) — starts 2 weeks into outbreak, becomes daily. Calms Infected. Makes Ghuuls briefly human-seeming.
-- Fog of Medusa — yellow gas, Germany only. Kills organic life, Husks unaffected. Same as Simulunas yellow gas.
-- Global Chilling — onset 2 months into outbreak. 5-6 hail events/month.
-- Great Migration — trillions of insects moving north. Wildlife follows.
-
-FACTIONS: WNCORE (radio network — tracks Ghuul sightings, global news), Alaska Coalition (remaining govts, secretly planning nukes), Moon Dome (elites evacuated pre-outbreak, status unknown), Blood Pact (organ smuggling from Antarctica), Rooftop Seers (infected broadcasters who don't know they're infected), Pale Node (scientists), Logbook Drifters (anonymous, global intel — fake logbooks exist as counter-disinfo), White Flag (NGO/pacifist, cruise ship near London, rumored billionaire backer), Kraken's Paw (sea workers stranded together).
-
-SKY DEGRADATION: Sunny (World-1) → Blue (transfer) → Grey → Rainy → Static (veil glitching) → Unknown → Stormy → A Different Sky → Another Sky (ch.9 title = dimensional displacement confirmed).
-
-TIMELINE World-2: 2007 Cygnus signal detected. 2011 decoded: "They lied to us. Send help." 2025-27 WW3. 2028-31 Blank Zone (4 years no one remembers). 2032 March 31 Som arrives. April 5 outbreak begins Nepal. April 9 WHO pandemic. 2 weeks later: first Ghuul (Som's mother). 2 months later: Global Chilling, black rain daily.
-
-THE BLANK ZONE: The mechanism of forgetting. 2028-31. WW3 ended, then humanity was made to forget the truth. No one remembers those 4 years. The veil created from that forgetting is now failing.
-
-WRITING STYLE GUIDANCE:
-- Dark but grounded. Som's psychology is quiet, calculative, indecisive. Inner monologue-heavy in early chapters.
-- Mother is emotionally intense, unpredictable, deeply bonded — this is the emotional core.
-- Horror through wrongness, not gore. The terror is reality not making sense. The sky being wrong.
-- Anne exists as a ghost in Som's memory — photos gone, face fading.
-- Lore consistency is critical. Do not invent new transformation types or factions without flagging it.
-- Som does NOT check the year until Chapter 9. Preserve this if writing chapters 1-8.
-
-You write: dialogue, scenes, character sheets, chapter outlines, lore consistency checks, continuation of existing text, horror-effect layers, internal monologue, descriptive passages. You are direct — no preamble, no "certainly!", just the writing or the answer.`;
-
-// ── STATE ─────────────────────────────────────────────────────
-let cwOpen       = false;
-let cwBusy       = false;
-let cwHistory    = [];   // {role, content}
-let cwAttachments = [];
-let cwLastReply  = '';
-let cwPickerOpen = false;
-
-// default model/provider
-let cwProvider = localStorage.getItem('cw_provider') || 'openrouter';
-let cwModel    = localStorage.getItem('cw_model')    || 'deepseek/deepseek-chat-v3-0324';
-
-// provider API configs
-const PROVIDERS = {
-  openrouter: {
-    url: 'https://openrouter.ai/api/v1/chat/completions',
-    keyStorage: 'cw_key_openrouter',
-    authHeader: k => 'Bearer ' + k,
-    extra: { 'HTTP-Referer': location.origin, 'X-Title': 'Another Sky Writer' }
-  },
-  groq: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    keyStorage: 'cw_key_groq',
-    authHeader: k => 'Bearer ' + k,
-    extra: {}
-  },
-  gemini: {
-    url: m => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
-    keyStorage: 'cw_key_gemini',
-    authHeader: null,  // gemini uses ?key= param
-    extra: {}
-  },
-  deepseek: {
-    url: 'https://api.deepseek.com/chat/completions',
-    keyStorage: 'cw_key_deepseek',
-    authHeader: k => 'Bearer ' + k,
-    extra: {}
-  }
-};
-
-// ── INIT ──────────────────────────────────────────────────────
-(function init() {
-  // model picker
-  document.querySelectorAll('.cw-model-opt[data-model]').forEach(el => {
-    el.addEventListener('click', () => {
-      cwProvider = el.dataset.provider;
-      cwModel    = el.dataset.model;
-      localStorage.setItem('cw_provider', cwProvider);
-      localStorage.setItem('cw_model', cwModel);
-      updateModelTag();
-      cwModelPickerToggle(false);
-    });
-  });
-  document.querySelector('.cw-model-opt[data-action="configure"]')?.addEventListener('click', () => {
-    cwModelPickerToggle(false);
-    showSetup();
-  });
-
-  // quick action buttons
-  document.querySelectorAll('.cw-act[data-action]').forEach(btn => {
-    btn.addEventListener('click', () => cwQuick(btn.dataset.action));
-  });
-
-  // file input
-  document.getElementById('cw-file-input').addEventListener('change', e => {
-    Array.from(e.target.files).forEach(cwIngestFile);
-    e.target.value = '';
-  });
-
-  // textarea enter key
-  const inp = document.getElementById('cw-inp');
-  inp.addEventListener('input', cwAutoResize);
-  inp.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cwSend(); }
-  });
-
-  // drag-drop on panel
-  const panel = document.getElementById('cw-panel');
-  const overlay = document.getElementById('cw-drop-overlay');
-  panel.addEventListener('dragover', e => { e.preventDefault(); overlay.style.display = 'flex'; });
-  panel.addEventListener('dragleave', e => { if (!panel.contains(e.relatedTarget)) overlay.style.display = 'none'; });
-  panel.addEventListener('drop', e => {
-    e.preventDefault();
-    overlay.style.display = 'none';
-    Array.from(e.dataTransfer?.files || []).forEach(cwIngestFile);
-  });
-
-  // close model picker on outside click
-  document.addEventListener('click', e => {
-    if (cwPickerOpen && !document.getElementById('cw-wrap').contains(e.target)) {
-      cwModelPickerToggle(false);
-    }
-  });
-
-  updateModelTag();
-})();
-
-// ── TOGGLE ────────────────────────────────────────────────────
-window.cwToggle = function() {
-  cwOpen = !cwOpen;
-  const bar   = document.getElementById('cw-bar');
-  const panel = document.getElementById('cw-panel');
-  bar.classList.toggle('open', cwOpen);
-  bar.setAttribute('aria-expanded', cwOpen);
-  panel.classList.toggle('open', cwOpen);
-
-  if (cwOpen && cwHistory.length === 0) {
-    cwAppend('system', '// cygnus writer online — lore-grounded for another sky & simulunas. ask for scenes, dialogue, character sheets, or lore checks. drop files for context.');
-  }
-  if (cwOpen) setTimeout(() => document.getElementById('cw-inp').focus(), 80);
-};
-
-// ── MODEL PICKER ──────────────────────────────────────────────
-window.cwModelPickerToggle = function(force) {
-  cwPickerOpen = force !== undefined ? force : !cwPickerOpen;
-  const picker = document.getElementById('cw-model-picker');
-  picker.classList.toggle('open', cwPickerOpen);
-  // mark active
-  picker.querySelectorAll('.cw-model-opt[data-model]').forEach(el => {
-    el.classList.toggle('active', el.dataset.model === cwModel && el.dataset.provider === cwProvider);
-  });
-};
-
-function updateModelTag() {
-  const tag = document.getElementById('cw-model-tag');
-  const short = cwModel.split('/').pop().slice(0, 22);
-  tag.textContent = '[' + cwProvider.slice(0,2).toUpperCase() + '] ' + short;
-}
-
-// ── API KEY SETUP ─────────────────────────────────────────────
-function showSetup(msg) {
-  const setup  = document.getElementById('cw-setup');
-  const log    = document.getElementById('cw-log');
-  const inp    = document.getElementById('cw-key-inp');
-  const msgEl  = document.getElementById('cw-setup-msg');
-  if (msg) msgEl.textContent = msg;
-  else msgEl.innerHTML = '// no api key found for <b>' + cwProvider + '</b>.<br>paste your key — stored in localStorage, only sent to the api endpoint.';
-  setup.classList.add('show');
-  log.style.display    = 'none';
-  document.getElementById('cw-actions').style.display = 'none';
-  document.getElementById('cw-input-row').style.display = 'none';
-  document.getElementById('cw-status-row').style.display = 'none';
-  inp.value = localStorage.getItem(PROVIDERS[cwProvider].keyStorage) || '';
-  inp.focus();
-}
-
-function hideSetup() {
-  document.getElementById('cw-setup').classList.remove('show');
-  document.getElementById('cw-log').style.display = '';
-  document.getElementById('cw-actions').style.display = '';
-  document.getElementById('cw-input-row').style.display = '';
-  document.getElementById('cw-status-row').style.display = '';
-}
-
-window.cwKeySave = function() {
-  const val = document.getElementById('cw-key-inp').value.trim();
-  if (!val) return;
-  localStorage.setItem(PROVIDERS[cwProvider].keyStorage, val);
-  hideSetup();
-  cwAppend('system', '// key saved for ' + cwProvider + '.');
-};
-
-// ── QUICK ACTIONS ─────────────────────────────────────────────
-const QUICK_PROMPTS = {
-  dialogue:   'Write a dialogue scene set in the current chapter context. Two characters, tense, lore-grounded.',
-  characters: 'Generate a character sheet for the current chapter or the characters I\'ve been writing about.',
-  outline:    'Generate a chapter outline for what comes next, following the current narrative thread.',
-  continue:   'Continue from where the current chapter text ends. Match the tone and voice.',
-  edit:       'Review the current chapter text for consistency, pacing issues, and lore accuracy. Give specific notes.',
-  lore:       'Run a lore consistency check on the current chapter text against the series bible.',
-  scene:      'Write a new scene set in World-2, 2032, consistent with the current sky stage and outbreak timeline.',
-  horror:     'Layer in horror-effect writing — wrongness, sky degradation, body horror through transformation logic — into the current scene.',
-  search:     'Based on what I\'ve been asking about, what additional research or real-world parallels might strengthen this scene or character?'
-};
-
-window.cwQuick = function(action) {
-  const prompt = QUICK_PROMPTS[action];
-  if (!prompt) return;
-  cwSend(prompt);
-};
-
-// ── SEND ──────────────────────────────────────────────────────
-window.cwSend = async function(overrideMsg) {
-  if (cwBusy) return;
-  const inp = document.getElementById('cw-inp');
-  const userMsg = overrideMsg || (inp ? inp.value.trim() : '');
-  if (!userMsg && !cwAttachments.length) return;
-
-  // check key
-  const cfg = PROVIDERS[cwProvider];
-  const key = localStorage.getItem(cfg.keyStorage);
-  if (!key && cwProvider !== 'gemini') { showSetup(); return; }
-  if (!key && cwProvider === 'gemini') { showSetup(); return; }
-
-  if (inp && !overrideMsg) { inp.value = ''; cwAutoResize(inp); }
-
-  // build chapter context from editor if present
-  const chBody  = document.getElementById('ced-body')?.value  || '';
-  const chTitle = document.getElementById('ced-title')?.value || '';
-  const chNum   = document.getElementById('ced-num')?.value   || '';
-
-  // build user content
-  let displayMsg = userMsg;
-  let apiContent = userMsg;
-  if (chBody) apiContent += '\n\n[CURRENT EDITOR TEXT]\n' + chBody.slice(0, 3000);
-  if (chTitle) apiContent += '\n[CHAPTER: ' + chNum + ' — ' + chTitle + ']';
-
-  const pendingAtt = cwAttachments.slice();
-  cwAttachments = [];
-  renderAttachStrip();
-
-  cwAppend('user', displayMsg, pendingAtt);
-  cwSetStatus('// transmitting…', true);
-  setDisabled(true);
-
-  cwHistory.push({ role: 'user', content: apiContent });
-
-  try {
-    let reply = '';
-
-    if (cwProvider === 'gemini') {
-      reply = await callGemini(key, cwHistory, pendingAtt);
-    } else {
-      reply = await callOpenAI(key, cfg, cwHistory, pendingAtt);
-    }
-
-    cwLastReply = reply;
-    cwHistory.push({ role: 'assistant', content: reply });
-    cwAppend('assistant', reply);
-    cwSetStatus('// ready', false);
-
-  } catch (err) {
-    const msg = err.message || String(err);
-    cwAppend('error', '// signal lost: ' + msg);
-    cwSetStatus('// error', false);
-    // pop the user turn so history stays clean
-    cwHistory.pop();
-    // if auth error, show key setup
-    if (msg.includes('401') || msg.includes('403') || msg.includes('key') || msg.includes('auth')) {
-      showSetup('// auth error — check your key for ' + cwProvider + '.');
-    }
-  } finally {
-    setDisabled(false);
-    if (inp) inp.focus();
-  }
-};
-
-// ── API CALLS ─────────────────────────────────────────────────
-async function callOpenAI(key, cfg, history, attachments) {
-  const messages = [
-    { role: 'system', content: SYSTEM_PROMPT },
-    ...history.slice(-20).map((m, i) => {
-      // attach files to last user message
-      if (m.role === 'user' && i === history.length - 1 && attachments.length) {
-        const parts = [{ type: 'text', text: m.content }];
-        attachments.forEach(att => {
-          if (att.type === 'image') {
-            parts.push({ type: 'image_url', image_url: { url: 'data:' + att.mimeType + ';base64,' + att.data } });
-          } else {
-            parts.push({ type: 'text', text: '\n[ATTACHED: ' + att.name + ']\n' + att.data });
-          }
-        });
-        return { role: 'user', content: parts };
-      }
-      return { role: m.role, content: m.content };
-    })
-  ];
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': cfg.authHeader(key),
-    ...cfg.extra
-  };
-
-  const body = {
-    model: cwModel,
-    messages,
-    max_tokens: 2000,
-    temperature: 0.8
-  };
-
-  const res = await fetch(cfg.url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body)
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err.error?.message || err.message || 'HTTP ' + res.status));
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || '// no response';
-}
-
-async function callGemini(key, history, attachments) {
-  // map history to Gemini format
-  const contents = history.slice(-20).map((m, i) => {
-    const role = m.role === 'user' ? 'user' : 'model';
-    const parts = [{ text: m.content }];
-    if (m.role === 'user' && i === history.length - 1 && attachments.length) {
-      attachments.forEach(att => {
-        if (att.type === 'image') {
-          parts.push({ inline_data: { mime_type: att.mimeType, data: att.data } });
-        } else {
-          parts.push({ text: '\n[ATTACHED: ' + att.name + ']\n' + att.data });
-        }
-      });
-    }
-    return { role, parts };
-  });
-
-  const model = cwModel;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents,
-      generationConfig: { maxOutputTokens: 2000, temperature: 0.8 }
-    })
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'HTTP ' + res.status);
-  }
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '// no response';
-}
-
-// ── FILE INGEST ───────────────────────────────────────────────
-function cwIngestFile(file) {
-  if (file.size > 5 * 1024 * 1024) { cwAppend('error', '// ' + file.name + ' too large (max 5MB)'); return; }
-  const isImage = file.type.startsWith('image/');
-  const isText  = file.type.startsWith('text/') || /\.(txt|md|json|csv)$/i.test(file.name);
-
-  if (isImage) {
-    const r = new FileReader();
-    r.onload = ev => {
-      const b64 = ev.target.result.split(',')[1];
-      cwAttachments.push({ type: 'image', data: b64, name: file.name, mimeType: file.type, previewUrl: ev.target.result });
-      renderAttachStrip();
-    };
-    r.readAsDataURL(file);
-  } else if (isText) {
-    const r = new FileReader();
-    r.onload = ev => {
-      cwAttachments.push({ type: 'text', data: ev.target.result.slice(0, 10000), name: file.name });
-      renderAttachStrip();
-    };
-    r.readAsText(file);
-  } else {
-    cwAppend('error', '// unsupported file type: ' + (file.type || file.name));
-  }
-}
-
-function renderAttachStrip() {
-  const strip = document.getElementById('cw-attach-strip');
-  if (!strip) return;
-  strip.innerHTML = '';
-  if (!cwAttachments.length) { strip.style.display = 'none'; return; }
-  strip.style.display = 'flex';
-  cwAttachments.forEach((att, i) => {
-    const chip = document.createElement('div');
-    chip.className = 'cw-chip';
-    if (att.type === 'image' && att.previewUrl) {
-      chip.innerHTML = '<img class="cw-chip-thumb" src="' + att.previewUrl + '" alt="">';
-    } else {
-      chip.innerHTML = '<span style="font-size:0.55rem">📄</span>';
-    }
-    chip.innerHTML += '<span>' + cwEsc(att.name) + '</span>';
-    chip.innerHTML += '<button class="cw-chip-rm" onclick="cwRemoveAtt(' + i + ')">✕</button>';
-    strip.appendChild(chip);
-  });
-}
-
-window.cwRemoveAtt = function(i) {
-  cwAttachments.splice(i, 1);
-  renderAttachStrip();
-};
-
-// ── APPEND MESSAGE ────────────────────────────────────────────
-function cwAppend(role, text, attachments) {
-  const log = document.getElementById('cw-log');
-  if (!log) return;
-
-  const roleLabels  = { user:'▶ YOU', assistant:'✦ CYGNUS', system:'// SYS', error:'// ERR' };
-  const msg = document.createElement('div');
-  msg.className = 'cw-msg';
-  msg.dataset.role = role;
-
-  const roleEl = document.createElement('div');
-  roleEl.className = 'cw-role';
-  const dot = document.createElement('span');
-  dot.className = 'cw-role-dot';
-  roleEl.appendChild(dot);
-  roleEl.appendChild(document.createTextNode(roleLabels[role] || role.toUpperCase()));
-
-  const body = document.createElement('div');
-  body.className = 'cw-msg-body';
-  body.textContent = text;
-
-  msg.appendChild(roleEl);
-
-  // show attached images inline
-  if (attachments && attachments.length) {
-    attachments.forEach(att => {
-      if (att.type === 'image' && att.previewUrl) {
-        const img = document.createElement('img');
-        img.src = att.previewUrl;
-        img.style.cssText = 'max-width:80px;max-height:60px;object-fit:cover;border:1px solid rgba(200,71,42,0.2);border-radius:1px;display:block;margin-bottom:4px;';
-        msg.appendChild(img);
-      }
-    });
-  }
-
-  msg.appendChild(body);
-
-  // copy/insert buttons for assistant
-  if (role === 'assistant') {
-    const btnRow = document.createElement('div');
-    const copyBtn = document.createElement('button');
-    copyBtn.className = 'cw-copy-btn';
-    copyBtn.textContent = 'COPY';
-    copyBtn.onclick = () => {
-      navigator.clipboard.writeText(text).then(() => {
-        copyBtn.textContent = 'COPIED';
-        setTimeout(() => { copyBtn.textContent = 'COPY'; }, 1500);
-      });
-    };
-    const insBtn = document.createElement('button');
-    insBtn.className = 'cw-insert-btn';
-    insBtn.textContent = 'INSERT';
-    insBtn.onclick = () => {
-      const ta = document.getElementById('ced-body');
-      if (!ta) return;
-      const pos = ta.selectionEnd;
-      ta.setRangeText('\n\n' + text + '\n\n', pos, pos, 'end');
-      ta.focus();
-      if (window.cedUpdatePreview) window.cedUpdatePreview();
-    };
-    btnRow.appendChild(copyBtn);
-    btnRow.appendChild(insBtn);
-    msg.appendChild(btnRow);
-  }
-
-  log.appendChild(msg);
-  log.scrollTop = log.scrollHeight;
-}
-
-// ── UTILS ─────────────────────────────────────────────────────
-window.cwClear = function() {
-  cwHistory   = [];
-  cwLastReply = '';
-  cwAttachments = [];
-  const log = document.getElementById('cw-log');
-  if (log) log.innerHTML = '';
-  renderAttachStrip();
-  cwSetStatus('// ready', false);
-  cwAppend('system', '// cleared.');
-};
-
-window.cwCopyLast = function() {
-  if (!cwLastReply) return;
-  navigator.clipboard.writeText(cwLastReply).then(() => {
-    cwSetStatus('// copied!', false);
-    setTimeout(() => cwSetStatus('// ready', false), 1500);
-  });
-};
-
-window.cwInsertLast = function() {
-  if (!cwLastReply) return;
-  const ta = document.getElementById('ced-body');
-  if (!ta) return;
-  const pos = ta.selectionEnd;
-  ta.setRangeText('\n\n' + cwLastReply + '\n\n', pos, pos, 'end');
-  ta.focus();
-  if (window.cedUpdatePreview) window.cedUpdatePreview();
-  cwAppend('system', '// inserted into editor.');
-};
-
-function cwSetStatus(msg, busy) {
-  const el = document.getElementById('cw-status');
-  if (!el) return;
-  el.textContent = msg;
-  el.classList.toggle('busy', !!busy);
-}
-
-function setDisabled(val) {
-  cwBusy = val;
-  const inp = document.getElementById('cw-inp');
-  const btn = document.getElementById('cw-send-btn');
-  if (inp) inp.disabled = val;
-  if (btn) btn.disabled = val;
-}
-
-window.cwAutoResize = function(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
-};
-
-function cwEsc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-})();
-</script>
-
+          <!-- AI Assist Drawer -->
+          <div id="ai-assist-drawer" style="display:none;flex-direction:column;background:#080504;border:1px solid rgba(200,71,42,0.3);border-radius:2px;margin-bottom:6px;overflow:hidden;flex-shrink:0;max-height:320px;">
+
+            <!-- Header -->
+            <div style="padding:5px 10px;font-size:0.38rem;letter-spacing:2px;color:rgba(200,71,42,0.7);border-bottom:1px solid rgba(200,71,42,0.15);display:flex;align-items:center;gap:8px;flex-shrink:0;">
+              <span>✦ CYGNUS WRITING ASSISTANT</span>
+              <span id="ai-assist-status" style="margin-left:auto;font-size:0.36rem;color:rgba(232,228,223,0.3);">// ready</span>
+              <button onclick="aiClearHistory()" title="Clear conversation" style="background:none;border:none;color:rgba(232,228,223,0.2);font-family:inherit;font-size:0.36rem;cursor:pointer;padding:0 2px;" title="Clear chat">✕ CLEAR</button>
+            </div>
+
+            <!-- Quick Actions -->
+            <div id="ai-quick-actions" style="display:flex;gap:4px;padding:5px 8px;border-bottom:1px solid rgba(200,71,42,0.1);flex-wrap:wrap;flex-shrink:0;">
+              <button class="ai-quick-btn" onclick="aiQuick('dialogue')">💬 DIALOGUE</button>
+              <button class="ai-quick-btn" onclick="aiQuick('characters')">👤 CHARACTERS</button>
+              <button class="ai-quick-btn" onclick="aiQuick('outline')">📋 OUTLINE</button>
+              <button class="ai-quick-btn" onclick="aiQuick('continue')">▶ CONTINUE</button>
+              <button class="ai-quick-btn" onclick="aiQuick('edit')">✏ EDIT</button>
+              <button class="ai-quick-btn" onclick="aiQuick('lore')">📡 LORE CHECK</button>
+              <button class="ai-quick-btn" onclick="aiQuick('scene')">🎬 NEW SCENE</button>
+              <button class="ai-quick-btn" onclick="aiQuick('horror')">⚠ HORROR FX</button>
+            </div>
+
+            <!-- Chat log -->
+            <div id="ai-assist-log" style="flex:1;overflow-y:auto;padding:8px 10px;font-size:0.4rem;line-height:1.65;color:rgba(232,228,223,0.78);min-height:100px;max-height:160px;"></div>
+
+            <!-- Attachment preview strip -->
+            <div id="ai-attach-strip" style="display:none;padding:4px 8px;border-top:1px solid rgba(200,71,42,0.1);display:none;flex-wrap:wrap;gap:4px;"></div>
+
+            <!-- Drop zone overlay (shown while dragging) -->
+            <div id="ai-drop-overlay" style="display:none;position:absolute;inset:0;background:rgba(200,71,42,0.08);border:2px dashed rgba(200,71,42,0.6);z-index:10;align-items:center;justify-content:center;font-size:0.5rem;letter-spacing:2px;color:rgba(200,71,42,0.8);pointer-events:none;">DROP FILE TO ATTACH</div>
+
+            <!-- Input row -->
+            <div style="display:flex;flex-direction:column;gap:0;border-top:1px solid rgba(200,71,42,0.12);flex-shrink:0;">
+              <div style="display:flex;gap:4px;padding:5px 6px;align-items:flex-end;">
+                <label for="ai-file-input" title="Attach image or document" style="cursor:pointer;padding:4px 7px;background:rgba(200,71,42,0.08);border:1px solid rgba(200,71,42,0.25);color:rgba(200,71,42,0.6);font-size:0.5rem;line-height:1;border-radius:1px;flex-shrink:0;display:flex;align-items:center;" title="Attach file">📎</label>
+                <input id="ai-file-input" type="file" accept="image/*,.pdf,.txt,.md,.docx" multiple style="display:none;" onchange="aiHandleFileInput(this.files)">
+                <textarea id="ai-assist-inp" rows="1" placeholder="Ask anything — scenes, dialogue, character sheets, lore checks, or drop a file…" style="flex:1;background:#050302;border:1px solid rgba(200,71,42,0.2);color:#e8e4df;font-family:inherit;font-size:0.4rem;padding:5px 6px;outline:none;resize:none;overflow:hidden;min-height:28px;max-height:80px;line-height:1.5;" oninput="aiAutoResize(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiAssist();}"></textarea>
+                <button onclick="sendAiAssist()" style="background:rgba(200,71,42,0.18);border:1px solid rgba(200,71,42,0.5);color:rgba(200,71,42,1);font-family:inherit;font-size:0.5rem;padding:5px 12px;cursor:pointer;flex-shrink:0;align-self:flex-end;">▶</button>
+              </div>
+              <div style="display:flex;gap:4px;padding:0 6px 5px;justify-content:flex-end;">
+                <button onclick="aiInsertLast()" style="background:none;border:1px solid rgba(200,71,42,0.2);color:rgba(200,71,42,0.55);font-family:inherit;font-size:0.36rem;letter-spacing:1px;padding:2px 8px;cursor:pointer;">↙ INSERT INTO EDITOR</button>
+                <button onclick="aiCopyLast()" style="background:none;border:1px solid rgba(232,228,223,0.1);color:rgba(232,228,223,0.3);font-family:inherit;font-size:0.36rem;letter-spacing:1px;padding:2px 8px;cursor:pointer;">⎘ COPY</button>
+              </div>
+            </div>
+          </div>
+          <style>
+            .ai-quick-btn{background:rgba(200,71,42,0.07);border:1px solid rgba(200,71,42,0.2);color:rgba(200,71,42,0.7);font-family:inherit;font-size:0.36rem;letter-spacing:1px;padding:2px 7px;cursor:pointer;border-radius:1px;transition:background 0.15s,color 0.15s;}
+            .ai-quick-btn:hover{background:rgba(200,71,42,0.18);color:rgba(200,71,42,1);}
+            .ai-attach-chip{display:flex;align-items:center;gap:4px;background:rgba(200,71,42,0.1);border:1px solid rgba(200,71,42,0.25);border-radius:2px;padding:2px 6px;font-size:0.36rem;color:rgba(232,228,223,0.7);}
+            .ai-attach-chip button{background:none;border:none;color:rgba(200,71,42,0.6);cursor:pointer;font-size:0.4rem;padding:0 0 0 3px;line-height:1;}
+            .ai-attach-thumb{width:32px;height:32px;object-fit:cover;border-radius:1px;border:1px solid rgba(200,71,42,0.2);}
+            #ai-assist-drawer{position:relative;}
+          </style>
 
           <textarea id="ced-body" spellcheck="false" placeholder="Start writing...
 
@@ -6050,6 +5001,245 @@ async function generateNewVolume(silent) {
 })();
 </script>
 
+<!-- ═══════════════════════════════════════════════════
+     AI WRITING ASSISTANT — Admin Panel
+     Routes through /api/writer (Groq → Gemini → DeepSeek → OpenRouter)
+═══════════════════════════════════════════════════ -->
+<script>
+(function() {
+  'use strict';
 
+  let aiChatHistory = [];
+  let aiLastResponse = '';
+  let aiDrawerOpen = false;
+  let aiAttachments = []; // { type: 'image'|'text', data, name, mimeType, previewUrl }
+
+  // ── Toggle drawer ─────────────────────────────────────────────────────────
+  window.toggleAiAssist = function() {
+    const drawer = document.getElementById('ai-assist-drawer');
+    const btn    = document.getElementById('ai-assist-toggle');
+    aiDrawerOpen = !aiDrawerOpen;
+    drawer.style.display      = aiDrawerOpen ? 'flex' : 'none';
+    drawer.style.flexDirection = 'column';
+    btn.style.color           = aiDrawerOpen ? 'rgba(200,71,42,1)'   : 'rgba(200,71,42,0.8)';
+    btn.style.borderColor     = aiDrawerOpen ? 'rgba(200,71,42,0.8)' : 'rgba(200,71,42,0.4)';
+    if (aiDrawerOpen && aiChatHistory.length === 0) {
+      appendAiLog('system', 'Cygnus Writing Assistant online. Ask for dialogue, a character list, chapter outline, lore check — or drop a doc/image to include it as context.');
+    }
+    if (aiDrawerOpen) setTimeout(() => document.getElementById('ai-assist-inp').focus(), 80);
+  };
+
+  // ── Quick action buttons ──────────────────────────────────────────────────
+  window.aiQuick = function(action) { sendAiAssist(action); };
+
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  window.aiAutoResize = function(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+  };
+
+  // ── Clear history ─────────────────────────────────────────────────────────
+  window.aiClearHistory = function() {
+    aiChatHistory  = [];
+    aiLastResponse = '';
+    aiAttachments  = [];
+    const log = document.getElementById('ai-assist-log');
+    if (log) log.innerHTML = '';
+    renderAttachStrip();
+    setAiStatus('// ready');
+    appendAiLog('system', '// conversation cleared.');
+  };
+
+  // ── Copy last response ────────────────────────────────────────────────────
+  window.aiCopyLast = function() {
+    if (!aiLastResponse) return;
+    navigator.clipboard.writeText(aiLastResponse).then(() => {
+      setAiStatus('// copied!');
+      setTimeout(() => setAiStatus('// ready'), 1500);
+    });
+  };
+
+  // ── Insert last response into editor ─────────────────────────────────────
+  window.aiInsertLast = function() {
+    if (!aiLastResponse) return;
+    const ta = document.getElementById('ced-body');
+    if (!ta) return;
+    const pos    = ta.selectionEnd;
+    const insert = '\n\n' + aiLastResponse + '\n\n';
+    ta.setRangeText(insert, pos, pos, 'end');
+    ta.focus();
+    if (window.cedUpdatePreview) window.cedUpdatePreview();
+    appendAiLog('system', '// inserted into editor.');
+  };
+
+  // ── File input handler (📎 button) ────────────────────────────────────────
+  window.aiHandleFileInput = function(files) {
+    if (!files || !files.length) return;
+    Array.from(files).forEach(f => ingestFile(f));
+    document.getElementById('ai-file-input').value = '';
+  };
+
+  // ── Drag-and-drop on drawer ───────────────────────────────────────────────
+  (function setupDrop() {
+    const drawer  = document.getElementById('ai-assist-drawer');
+    const overlay = document.getElementById('ai-drop-overlay');
+    if (!drawer) return;
+    drawer.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (overlay) overlay.style.display = 'flex';
+    });
+    drawer.addEventListener('dragleave', e => {
+      if (!drawer.contains(e.relatedTarget) && overlay) overlay.style.display = 'none';
+    });
+    drawer.addEventListener('drop', e => {
+      e.preventDefault();
+      if (overlay) overlay.style.display = 'none';
+      const files = e.dataTransfer?.files;
+      if (files && files.length) Array.from(files).forEach(f => ingestFile(f));
+    });
+  })();
+
+  // ── Ingest a dropped/selected file ───────────────────────────────────────
+  function ingestFile(file) {
+    const MAX = 4 * 1024 * 1024;
+    if (file.size > MAX) { appendAiLog('error', '// ' + file.name + ' too large (max 4 MB)'); return; }
+    const isImage = file.type.startsWith('image/');
+    const isText  = file.type.startsWith('text/') || /\.(txt|md|json|csv)$/i.test(file.name);
+    if (isImage) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const b64 = ev.target.result.split(',')[1];
+        aiAttachments.push({ type:'image', data:b64, name:file.name, mimeType:file.type, previewUrl:ev.target.result });
+        renderAttachStrip();
+      };
+      reader.readAsDataURL(file);
+    } else if (isText) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        aiAttachments.push({ type:'text', data:ev.target.result.slice(0, 8000), name:file.name });
+        renderAttachStrip();
+      };
+      reader.readAsText(file);
+    } else {
+      appendAiLog('error', '// unsupported: ' + (file.type || file.name) + '. Use images, .txt or .md.');
+    }
+  }
+
+  // ── Render attachment chips ───────────────────────────────────────────────
+  function renderAttachStrip() {
+    const strip = document.getElementById('ai-attach-strip');
+    if (!strip) return;
+    strip.innerHTML = '';
+    if (!aiAttachments.length) { strip.style.display = 'none'; return; }
+    strip.style.display = 'flex';
+    aiAttachments.forEach((att, i) => {
+      const chip = document.createElement('div');
+      chip.className = 'ai-attach-chip';
+      chip.innerHTML = (att.type === 'image' && att.previewUrl)
+        ? '<img src="' + att.previewUrl + '" class="ai-attach-thumb" alt="">'
+        : '<span>\uD83D\uDCC4</span>';
+      chip.innerHTML += '<span style="max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(att.name) + '</span>';
+      chip.innerHTML += '<button onclick="aiRemoveAttachment(' + i + ')" title="Remove">\u2715</button>';
+      strip.appendChild(chip);
+    });
+  }
+
+  window.aiRemoveAttachment = function(i) {
+    aiAttachments.splice(i, 1);
+    renderAttachStrip();
+  };
+
+  // ── Main send ─────────────────────────────────────────────────────────────
+  window.sendAiAssist = async function(quickAction) {
+    const inp     = document.getElementById('ai-assist-inp');
+    const userMsg = inp ? inp.value.trim() : '';
+    if (!userMsg && !quickAction) return;
+
+    const labels = {
+      dialogue:'Write dialogue', characters:'Generate character list', outline:'Generate outline',
+      continue:'Continue chapter', edit:'Suggest edits', lore:'Lore check',
+      scene:'New scene', horror:'Add horror FX'
+    };
+    const displayMsg = quickAction ? (labels[quickAction] || quickAction) : userMsg;
+
+    if (inp) inp.value = '';
+    if (inp) aiAutoResize(inp);
+
+    const chapterContext = {
+      body:  document.getElementById('ced-body')?.value  || '',
+      title: document.getElementById('ced-title')?.value || '',
+      num:   document.getElementById('ced-num')?.value   || '',
+    };
+
+    appendAiLog('user', displayMsg);
+    setAiStatus('// transmitting\u2026');
+    setInputDisabled(true);
+
+    aiChatHistory.push({ role: 'user', content: userMsg || displayMsg });
+
+    const pendingAttachments = aiAttachments.slice();
+    aiAttachments = [];
+    renderAttachStrip();
+
+    try {
+      const resp = await fetch('/api/writer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages:       aiChatHistory.slice(-14),
+          attachments:    pendingAttachments,
+          quickAction:    quickAction || null,
+          chapterContext: chapterContext.body ? chapterContext : null,
+        }),
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || 'HTTP ' + resp.status);
+      }
+      const data  = await resp.json();
+      const reply = data.reply || '// no response';
+      aiLastResponse = reply;
+      aiChatHistory.push({ role: 'assistant', content: reply });
+      appendAiLog('assistant', reply);
+      setAiStatus('// ready');
+    } catch (err) {
+      appendAiLog('error', '// signal lost: ' + err.message);
+      setAiStatus('// error');
+      aiChatHistory.pop();
+    } finally {
+      setInputDisabled(false);
+      if (inp) inp.focus();
+    }
+  };
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function setInputDisabled(val) {
+    const inp = document.getElementById('ai-assist-inp');
+    if (inp) inp.disabled = val;
+  }
+
+  function appendAiLog(role, text) {
+    const log = document.getElementById('ai-assist-log');
+    if (!log) return;
+    const line = document.createElement('div');
+    line.style.marginBottom = '8px';
+    const colors = { user:'#c8472a', assistant:'#e8e4df', system:'rgba(232,228,223,0.3)', error:'#8b0000' };
+    const labels = { user:'\u25B6 YOU', assistant:'\u2726 CYGNUS', system:'//SYS', error:'// ERR' };
+    line.innerHTML = '<span style="color:' + (colors[role]||'#fff') + ';font-size:0.36rem;letter-spacing:1.5px;display:block;margin-bottom:2px;">' + (labels[role]||role) + '</span><span style="white-space:pre-wrap;">' + escapeHtml(text) + '</span>';
+    log.appendChild(line);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function setAiStatus(msg) {
+    const el = document.getElementById('ai-assist-status');
+    if (el) el.textContent = msg;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+})();
+</script>
 </body>
 </html>
