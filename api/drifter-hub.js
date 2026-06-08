@@ -1,8 +1,9 @@
-// WNCORE — Drifter Hub Signal Feed + Entity Chat
+// WNCORE — Drifter Hub Signal Feed + Apocalypse Log
 // Powered by OpenRouter (llama-3.1-8b-instruct:free)
 // Vercel Serverless — Node 20.x, CommonJS
-// Routes: POST /api/drifter-hub          → signal feed
-//         POST /api/drifter-hub?action=chat → dimensional contact chat
+// Routes: POST /api/drifter-hub                    → signal feed
+//         POST /api/drifter-hub?action=logbook      → procedural logbook volume generation
+//         POST /api/drifter-hub?action=chat          → (legacy, unused)
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
@@ -97,6 +98,48 @@ module.exports = async function handler(req, res) {
     } catch (err) {
       console.error('[drifter-hub/chat]', err);
       return res.status(200).json({ reply: '...s̴i̴g̴n̴a̴l̴ ̴l̴o̴s̴t̴... try again.' });
+    }
+  }
+
+  // ── ACTION: logbook generation ───────────────────────────────
+  if (action === 'logbook') {
+    const { vol, title, location, faction } = req.body || {};
+    const volNum = parseInt(vol) || 1;
+
+    const LOGBOOK_SYSTEM = `You are a lore entry generator for the Another Sky post-apocalyptic universe (2032).
+World facts: 64% of humanity turned. The Blank Zone erased 2028-2031 from all minds. Rain of Obsedia: black acidic rain, daily — infected enter stasis on contact. 173 Ghuuls exist: apex infected with memory, agenda, and names. Five infected types still think and speak. Factions: Logbook Drifters (intel carriers), Blood Pact (criminal syndicate, Antarctic origin), Pale Node (scientist cell), Rooftop Seers (infected-sympathist faith broadcasters), Signal Monks (frequency cult). WNCORE Radio: global signal aggregator still broadcasting. The sky is the wrong color above certain cities. Main survivor: Siharu, alias Riser. Nine individuals were erased from collective memory.
+
+You are generating recovered field entries for Logbook Vol.${volNum} titled "${title || 'UNKNOWN'}".
+Location: ${location || 'UNKNOWN'}. Filed by: ${faction || 'UNKNOWN'}.
+
+Generate exactly 5 logbook entries. Each entry is a distinct terse field note — a fragment of lived apocalypse: a sighting, a count, an observation, a warning, a failed contact, a route note. No narration. No explanations. Never use quotation marks around the text body.
+
+Respond ONLY with a JSON array, no markdown, no backticks, no preamble:
+[
+  {"type": "SIGNAL_TYPE", "text": "entry text here", "alert": false},
+  ...
+]
+
+Valid types: FIELD_REPORT, GHUUL_SIGHTING, ANOMALY_REPORT, DRIFTER_LOGBOOK, SURVIVOR_BEACON, WNCORE_INTERCEPT, BLOOD_PACT_INTEL, PALE_NODE_BROADCAST, ROOFTOP_SEERS_RELAY, TRANSMISSION.
+Set "alert": true for danger or urgent entries. Each text must be under 120 characters. Vary the types.`;
+
+    if (!OPENROUTER_API_KEY) {
+      // Fallback without API key
+      return res.status(200).json({ entries: FALLBACKS.map(f => ({...f})), fallback: true });
+    }
+    try {
+      const rawFull = await callOpenRouter([
+        { role: 'user', content: LOGBOOK_SYSTEM + '\n\nGenerate logbook vol.' + volNum + ' entries now.' }
+      ], 500);
+      const clean = rawFull.replace(/```json|```/g, '').trim();
+      let entries = JSON.parse(clean);
+      if (!Array.isArray(entries)) throw new Error('not array');
+      entries = entries.filter(e => e.text && typeof e.text === 'string').slice(0, 6);
+      if (entries.length === 0) throw new Error('empty');
+      return res.status(200).json({ entries });
+    } catch(err) {
+      console.error('[drifter-hub/logbook]', err);
+      return res.status(200).json({ entries: FALLBACKS.map(f => ({...f})), fallback: true });
     }
   }
 
