@@ -1978,11 +1978,94 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   }
 }
 
-/* Entity modal — full width */
+/* Apocalypse Log modal */
+#apoc-log-modal .modal-shell {
+  width: min(540px, 96vw);
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+}
+#apoc-log-body {
+  flex: 1;
+  overflow-y: auto;
+  background: #000;
+  border: 1px solid var(--brd);
+  padding: 12px 10px;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.38rem;
+  color: rgba(212,191,184,0.75);
+  min-height: 200px;
+  max-height: 55vh;
+}
+.apoc-vol-header {
+  color: var(--red);
+  font-size: 0.42rem;
+  letter-spacing: 3px;
+  border-bottom: 1px solid rgba(200,71,42,0.3);
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  margin-top: 14px;
+}
+.apoc-vol-header:first-child { margin-top: 0; }
+.apoc-vol-meta {
+  font-size: 0.33rem;
+  color: rgba(200,71,42,0.5);
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.apoc-entry {
+  margin-bottom: 8px;
+  padding: 5px 8px;
+  border-left: 2px solid rgba(200,71,42,0.25);
+  line-height: 1.55;
+}
+.apoc-entry-tag {
+  font-size: 0.3rem;
+  color: var(--signal, #f60);
+  letter-spacing: 2px;
+  display: block;
+  margin-bottom: 2px;
+}
+.apoc-entry-text {
+  font-size: 0.37rem;
+  color: rgba(212,191,184,0.7);
+  display: block;
+}
+.apoc-entry.alert { border-left-color: var(--red); }
+.apoc-entry.alert .apoc-entry-tag { color: var(--red); }
+.apoc-generating {
+  text-align: center;
+  color: rgba(200,71,42,0.5);
+  letter-spacing: 2px;
+  font-size: 0.36rem;
+  padding: 20px;
+}
+.apoc-vol-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.apoc-vol-tab {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.33rem;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border: 1px solid rgba(200,71,42,0.3);
+  background: transparent;
+  color: rgba(200,71,42,0.5);
+  cursor: pointer;
+  text-transform: uppercase;
+}
+.apoc-vol-tab.active {
+  border-color: var(--red);
+  color: var(--red);
+  background: rgba(200,71,42,0.08);
+}
+.apoc-vol-tab:hover { border-color: var(--red); color: var(--red); }
 @media (max-width: 480px) {
-  #entity-modal .modal-shell {
-    max-height: 85dvh;
-  }
+  #apoc-log-modal .modal-shell { max-height: 88dvh; }
 }
 </style>
 </head>
@@ -2134,7 +2217,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <button class="sb-tool-btn" onclick="showSynopsis()">
           <img src="assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">BACK TO SYNOPSIS
         </button>
-        <button class="sb-tool-btn" id="sb-entity-btn" onclick="openEntityChat()"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><path d="M2 10 L5 7 L7 9 L4 12 Z" fill="currentColor" opacity="0.8"/><path d="M5 7 Q5 2 10 2 Q10 5 7 7" stroke="currentColor" stroke-width="1" fill="none" opacity="0.7"/><path d="M5.5 6.5 Q5.5 3.5 9 3.5 Q9 5.5 7 7" stroke="currentColor" stroke-width="0.8" fill="none" opacity="0.45"/><circle cx="7" cy="7" r="1" fill="currentColor"/><line x1="7" y1="7" x2="11" y2="3" stroke="currentColor" stroke-width="0.7" stroke-dasharray="1.5,1" opacity="0.5"/><circle cx="11.5" cy="2.5" r="0.8" fill="rgba(255,200,80,0.9)"/></svg> DIMENSIONAL CONTACT</button>
+        <button class="sb-tool-btn" id="sb-apoclog-btn" onclick="openApocLog()"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><rect x="2" y="1" width="8" height="11" rx="0.5" stroke="currentColor" stroke-width="1" fill="none" opacity="0.8"/><line x1="4" y1="4" x2="8" y2="4" stroke="currentColor" stroke-width="0.8" opacity="0.7"/><line x1="4" y1="6" x2="8" y2="6" stroke="currentColor" stroke-width="0.8" opacity="0.7"/><line x1="4" y1="8" x2="7" y2="8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><line x1="9" y1="8" x2="12" y2="5" stroke="currentColor" stroke-width="0.8" opacity="0.6"/><circle cx="11.5" cy="4.5" r="1.2" fill="currentColor" opacity="0.85"/></svg> APOCALYPSE LOG</button>
       </div>
     </nav>
 
@@ -2485,15 +2568,15 @@ Use toolbar effects on selected text:
 </div>
 
 <!-- Entity Modal -->
-<div id="entity-modal" class="modal">
-  <div class="modal-shell" style="width:min(480px,96vw);max-height:80vh;display:flex;flex-direction:column;">
-    <div class="modal-title">📡 DIMENSIONAL CONTACT</div>
-    <div id="entity-banner" style="font-size:0.36rem;color:var(--signal);letter-spacing:1px;margin-bottom:10px;padding:6px 10px;border:1px solid var(--signal);border-radius:2px;">Connecting to World-2 survivor network...</div>
-    <div id="entity-chat-area" style="flex:1;overflow-y:auto;background:#000;border:1px solid var(--brd);padding:8px;max-height:260px;margin-bottom:10px;font-size:0.38rem;"></div>
-    <div class="modal-field"><input type="text" class="modal-inp" id="entity-msg" placeholder="Send message to dimensional survivor..." onkeydown="if(event.key==='Enter')sendEntityMsg()" /></div>
-    <div class="modal-row">
-      <button class="btn-r" onclick="sendEntityMsg()">▶ SEND</button>
-      <button class="btn-d" onclick="document.getElementById('entity-modal').classList.remove('open')">CLOSE</button>
+<div id="apoc-log-modal" class="modal">
+  <div class="modal-shell">
+    <div class="modal-title">📓 APOCALYPSE LOG — FIELD ARCHIVES</div>
+    <div id="apoc-log-status" style="font-size:0.33rem;color:rgba(200,71,42,0.5);letter-spacing:2px;margin-bottom:8px;">DRIFTER NETWORK // RECOVERED VOLUMES</div>
+    <div class="apoc-vol-nav" id="apoc-vol-tabs"></div>
+    <div id="apoc-log-body"><div class="apoc-generating">▓▓▓ RETRIEVING ARCHIVE... ▓▓▓</div></div>
+    <div class="modal-row" style="margin-top:10px;">
+      <button class="btn-r" onclick="generateNewVolume()" id="apoc-gen-btn">⊕ NEW VOLUME</button>
+      <button class="btn-d" onclick="document.getElementById('apoc-log-modal').classList.remove('open')">CLOSE</button>
     </div>
   </div>
 </div>
@@ -3956,62 +4039,138 @@ async function saveEdit() { cedSave(); }
 async function deleteChapter() { cedDelete(); }
 
 /* ═══════════════════════════════════════════════════
-   ENTITY CHAT (minimal — expand with clearance.js)
+   APOCALYPSE LOG — PROCEDURAL FIELD LOGBOOK ENGINE
 ═══════════════════════════════════════════════════ */
-function openEntityChat() {
-  const modal = document.getElementById('entity-modal');
-  modal.classList.add('open');
-  // Boot intro message if chat area is empty
-  const area = document.getElementById('entity-chat-area');
-  if (!area.innerHTML.trim()) {
-    const banner = document.getElementById('entity-banner');
-    if (banner) banner.textContent = 'SIGNAL ESTABLISHED — WORLD-2 SURVIVOR NETWORK ONLINE';
-    const intro = document.createElement('div');
-    intro.style.cssText = 'margin-bottom:8px;border-left:2px solid var(--signal);padding-left:8px;color:rgba(255,102,0,0.55);font-size:0.38rem;';
-    intro.textContent = '> SIGNAL_KAGE [88.7FM]: ...you found this frequency. that means something. speak.';
-    area.appendChild(intro);
-  }
-  setTimeout(() => document.getElementById('entity-msg').focus(), 100);
+const _apocVolumes = [];   // { vol, title, location, faction, date, entries[] }
+let _apocActiveVol = 0;
+let _apocGenerating = false;
+
+function _apocRand(seed) {
+  let s = seed ^ 0xdeadbeef;
+  return function() { s = Math.imul(s ^ (s >>> 16), 0x45d9f3b); s ^= s >>> 15; return (s >>> 0) / 4294967296; };
 }
 
-async function sendEntityMsg() {
-  const input = document.getElementById('entity-msg');
-  const msg = input.value.trim(); if (!msg) return;
-  input.value = '';
-  input.disabled = true;
-  const area = document.getElementById('entity-chat-area');
+const APOC_LOCATIONS = [
+  'DHAKA DEPOT — SECTOR 7','CHITTAGONG SHORELINE','SYLHET HIGHLAND REFUGE',
+  'PALE NODE OUTPOST 3','ROOFTOP SEERS RELAY STATION','BLOOD PACT CHECKPOINT',
+  'BLANK ZONE PERIMETER — KM 44','SIGNAL MONK SANCTUM','WNCORE AUXILIARY TOWER',
+  'KHULNA DEADWATER ZONE','RAJSHAHI QUARANTINE RING','COMILLA RELAY BUNKER',
+  'OBSERVATORY ALPHA','OBSEDIA CRATER RIM','GHUUL CORRIDOR — NORTHEAST'
+];
+const APOC_FACTIONS = [
+  'LOGBOOK DRIFTER','PALE NODE','ROOFTOP SEERS','BLOOD PACT','SIGNAL MONKS','WNCORE OPS','UNAFFILIATED'
+];
+const APOC_MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 
-  // Append user line
-  const userLine = document.createElement('div');
-  userLine.style.cssText = 'margin-bottom:8px;border-left:2px solid var(--red);padding-left:8px;color:rgba(212,191,184,0.6);font-size:0.38rem;';
-  userLine.textContent = 'YOU: ' + msg;
-  area.appendChild(userLine);
-  area.scrollTop = area.scrollHeight;
+function _apocVolMeta(volNum) {
+  const r = _apocRand(volNum * 7919);
+  const titles = [
+    'SIGNAL DEGRADATION REPORT','INFECTED COUNT — REVISED','SKY WRONG AGAIN',
+    'RAIN OF OBSEDIA — LOG','GHUUL MOVEMENT INTEL','BLANK ZONE EXPANSION',
+    'WNCORE OVERRIDE NOTES','BLOOD PACT CONTACT','DRIFTER ROUTE MAP',
+    'NINE NAMES — PARTIAL','FREQUENCY ANOMALY','SURVIVOR CENSUS',
+    'ROOFTOP SEER TRANSMISSION','PALE NODE BROADCAST','OBSEDIA STUDY'
+  ];
+  return {
+    vol: volNum,
+    title: titles[Math.floor(r() * titles.length)],
+    location: APOC_LOCATIONS[Math.floor(r() * APOC_LOCATIONS.length)],
+    faction: APOC_FACTIONS[Math.floor(r() * APOC_FACTIONS.length)],
+    date: `${String(Math.floor(r()*28)+1).padStart(2,'0')} ${APOC_MONTHS[Math.floor(r()*12)]} ${2028 + Math.floor(r()*5)}`,
+  };
+}
 
-  // Append survivor typing indicator
-  const replyLine = document.createElement('div');
-  replyLine.style.cssText = 'margin-bottom:8px;border-left:2px solid var(--signal);padding-left:8px;color:rgba(255,102,0,0.7);font-size:0.38rem;';
-  replyLine.textContent = 'SURVIVOR: ...';
-  area.appendChild(replyLine);
-  area.scrollTop = area.scrollHeight;
+function _apocRenderVolume(vol) {
+  const body = document.getElementById('apoc-log-body');
+  body.innerHTML = '';
+  const header = document.createElement('div');
+  header.className = 'apoc-vol-header';
+  header.textContent = `VOL. ${String(vol.vol).padStart(2,'0')} — ${vol.title}`;
+  body.appendChild(header);
+  const meta = document.createElement('div');
+  meta.className = 'apoc-vol-meta';
+  meta.textContent = `${vol.location} // ${vol.faction} // ${vol.date}`;
+  body.appendChild(meta);
+  if (!vol.entries || vol.entries.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'apoc-generating';
+    empty.textContent = '[ PAGES REDACTED OR MISSING ]';
+    body.appendChild(empty);
+    return;
+  }
+  vol.entries.forEach(e => {
+    const entry = document.createElement('div');
+    entry.className = 'apoc-entry' + (e.alert ? ' alert' : '');
+    entry.innerHTML = `<span class="apoc-entry-tag">${e.type || 'FIELD_REPORT'}</span><span class="apoc-entry-text">${e.text || ''}</span>`;
+    body.appendChild(entry);
+  });
+  body.scrollTop = 0;
+}
 
+function _apocRebuildTabs() {
+  const nav = document.getElementById('apoc-vol-tabs');
+  nav.innerHTML = '';
+  _apocVolumes.forEach((v, i) => {
+    const tab = document.createElement('button');
+    tab.className = 'apoc-vol-tab' + (i === _apocActiveVol ? ' active' : '');
+    tab.textContent = `VOL.${String(v.vol).padStart(2,'0')}`;
+    tab.onclick = () => { _apocActiveVol = i; _apocRebuildTabs(); _apocRenderVolume(_apocVolumes[i]); };
+    nav.appendChild(tab);
+  });
+}
+
+async function openApocLog() {
+  document.getElementById('apoc-log-modal').classList.add('open');
+  if (_apocVolumes.length === 0) await generateNewVolume(true);
+}
+
+async function generateNewVolume(silent) {
+  if (_apocGenerating) return;
+  _apocGenerating = true;
+  const btn = document.getElementById('apoc-gen-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⌛ GENERATING...'; }
+
+  const volNum = _apocVolumes.length + 1;
+  const meta = _apocVolMeta(volNum);
+  const body = document.getElementById('apoc-log-body');
+  body.innerHTML = `<div class="apoc-vol-header">VOL. ${String(volNum).padStart(2,'0')} — ${meta.title}</div>
+    <div class="apoc-vol-meta">${meta.location} // ${meta.faction} // ${meta.date}</div>
+    <div class="apoc-generating">▓ RECONSTRUCTING ENTRIES... ▓</div>`;
+
+  let entries;
   try {
-    const res = await fetch('/api/entity-chat', {
+    const res = await fetch('/api/drifter-hub?action=logbook', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg })
+      body: JSON.stringify({ vol: volNum, title: meta.title, location: meta.location, faction: meta.faction })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    replyLine.textContent = 'SURVIVOR: ' + (data.reply || '...signal lost...');
-  } catch(e) {
-    replyLine.textContent = 'SURVIVOR: ...signal interrupted. try again.';
-    replyLine.style.opacity = '0.4';
-  } finally {
-    input.disabled = false;
-    input.focus();
-    area.scrollTop = area.scrollHeight;
+    entries = Array.isArray(data.entries) ? data.entries : null;
+  } catch(e) { entries = null; }
+
+  if (!entries || entries.length === 0) {
+    const r = _apocRand(volNum * 1337 + 42);
+    const pool = [
+      { type:'FIELD_REPORT', text:'Rain of Obsedia: 4hr window confirmed. Infected count +17 in sector.', alert:true },
+      { type:'DRIFTER_LOGBOOK', text:`Vol.${volNum} recovered at ${meta.location.split(' ')[0]}. Pages 3–6 water-damaged.`, alert:false },
+      { type:'GHUUL_SIGHTING', text:'Ghuul #034 observed moving west. Memory-active. Do not approach.', alert:true },
+      { type:'SURVIVOR_BEACON', text:'Signal weak but confirmed living. Rooftop, unknown district.', alert:false },
+      { type:'PALE_NODE_BROADCAST', text:'Frequency 88.7FM broadcasting again. Origin unconfirmed.', alert:false },
+      { type:'ANOMALY_REPORT', text:'Sky above Dhaka: wrong color for 6th consecutive day.', alert:true },
+      { type:'WNCORE_INTERCEPT', text:'WNCORE still aggregating. 12 active feeds as of this writing.', alert:false },
+      { type:'BLOOD_PACT_INTEL', text:'Blood Pact expanding north. Checkpoint established KM 32.', alert:true },
+    ];
+    entries = Array.from({length:5}, () => pool[Math.floor(r() * pool.length)]);
   }
+
+  const volume = { ...meta, entries };
+  _apocVolumes.push(volume);
+  _apocActiveVol = _apocVolumes.length - 1;
+  _apocRebuildTabs();
+  _apocRenderVolume(volume);
+  if (btn) { btn.disabled = false; btn.textContent = '⊕ NEW VOLUME'; }
+  _apocGenerating = false;
 }
 
 /* ═══════════════════════════════════════════════════
