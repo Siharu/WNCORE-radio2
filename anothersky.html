@@ -283,11 +283,93 @@ body {
 #terminal-burst {
   position: absolute; inset: 0; z-index: 20;
   display: none; pointer-events: none;
-  background: #000;
+  background: #060402;
   font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.55rem; color: #00ff41;
+  font-size: 0.54rem; color: #c8a882;
+  overflow: hidden;
+  /* CRT scanline overlay */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0,0,0,0.18) 0px,
+      rgba(0,0,0,0.18) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+/* Phosphor vignette */
+#terminal-burst::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.75) 100%);
+  pointer-events: none; z-index: 1;
+}
+/* Horizontal signal dropout bar */
+#terminal-burst::after {
+  content: '';
+  position: absolute; left: 0; right: 0; height: 2px;
+  background: rgba(200,168,130,0.12);
+  animation: tb-scanbar 0.9s linear infinite;
+  z-index: 2; pointer-events: none;
+}
+@keyframes tb-scanbar {
+  0%   { top: -2px; opacity: 0; }
+  5%   { opacity: 1; }
+  95%  { opacity: 0.6; }
+  100% { top: 100%; opacity: 0; }
+}
+#terminal-burst .tb-inner {
+  position: relative; z-index: 3;
+  padding: 28px 0 0 0;
+  height: 100%;
+}
+#terminal-burst .tb-header {
+  padding: 0 20px 14px;
+  border-bottom: 1px solid rgba(200,168,130,0.12);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 10px;
+}
+#terminal-burst .tb-badge {
+  font-size: 0.38rem; letter-spacing: 3px;
+  color: rgba(200,100,60,0.7);
+  border: 1px solid rgba(200,100,60,0.3);
+  padding: 2px 7px;
+}
+#terminal-burst .tb-freq {
+  font-size: 0.38rem; letter-spacing: 2px;
+  color: rgba(200,168,130,0.3);
+  margin-left: auto;
+}
+#terminal-burst .tb-rows {
+  padding: 0 20px;
   overflow: hidden;
 }
+.tb-row {
+  display: flex; gap: 10px; align-items: baseline;
+  padding: 2px 0; line-height: 1.7;
+}
+.tb-row .tb-ts {
+  color: rgba(200,168,130,0.28);
+  font-size: 0.42rem;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+.tb-row .tb-sig {
+  color: rgba(200,100,60,0.6);
+  font-size: 0.42rem;
+  flex-shrink: 0;
+}
+.tb-row .tb-msg {
+  color: #c8a882;
+  font-size: 0.52rem;
+  letter-spacing: 0.3px;
+}
+.tb-row.tb-alert .tb-msg { color: rgba(220,120,80,0.95); }
+.tb-row.tb-corrupt .tb-msg {
+  color: rgba(200,168,130,0.4);
+  font-style: italic;
+}
+.tb-row.tb-blank { height: 8px; }
 #terminal-burst.active { display: block; }
 
 /* ── Space label ── */
@@ -2156,7 +2238,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       </div>
       <div class="hdr-stat" id="hdr-sky-stat">
         <span class="hdr-stat-label">SKY STATUS</span>
-        <span class="hdr-stat-val" id="hdr-sky-val">SUNNY</span>
+        <span class="hdr-stat-val" id="hdr-sky-val">—</span>
       </div>
     </div>
     <div id="hdr-right">
@@ -2916,34 +2998,77 @@ Use toolbar effects on selected text:
       scene.classList.remove('chr-glitch');
       termEl.classList.add('active');
 
+      // Analog ARG terminal — lore-accurate, degraded signal aesthetic
+      const CORRUPT = ['░','▒','▓','█','▄','▌','×','◆','▪','·'];
+      function glitch(str, amt = 0.25) {
+        return [...str].map(c => c !== ' ' && Math.random() < amt
+          ? CORRUPT[Math.floor(Math.random()*CORRUPT.length)] : c).join('');
+      }
+      function ts() {
+        const now = new Date();
+        return `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+      }
+
       const lines = [
-        '> INITIALISING ARCHIVE ACCESS...',
-        '> WORLD INDEX: -2',
-        '> SIGNAL ORIGIN: CYGNUS X-1',
-        '> CROSS-REFERENCING TIMELINE...',
-        '> USER CLEARANCE: PENDING',
-        '> LOGBOOK DRIFTERS DB: CONNECTED',
-        '> ANOMALY DETECTED IN SECTOR 7',
-        '> DECRYPTION KEY: ████████████',
-        '> OVERRIDE: ACCEPTED',
-        '> PORTAL INITIALISING...',
-        '> ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓ 100%',
-        '> ACCESS GRANTED',
+        { type: 'blank' },
+        { sig: 'SYS',   msg: 'WNCORE SIGNAL INTERCEPT — NODE 09', ts: ts() },
+        { sig: 'FREQ',  msg: '88.700 MHz  ·  CARRIER DETECTED', ts: ts() },
+        { type: 'blank' },
+        { sig: 'AUTH',  msg: 'REQUESTING ARCHIVE ACCESS...', ts: ts() },
+        { sig: 'AUTH',  msg: `WORLD INDEX LOOKUP: ██ → -2`, ts: ts(), alert: true },
+        { sig: 'CHK',   msg: 'BLANK ZONE RECORD: 2028—2031  [REDACTED]', ts: ts() },
+        { sig: 'CHK',   msg: glitch('CROSS-REFERENCING DRIFTER LOGS...', 0.08), ts: ts(), corrupt: true },
+        { type: 'blank' },
+        { sig: 'SIG',   msg: 'CYGNUS X-1  ·  RA 19h 58m  DEC +35°12′', ts: ts() },
+        { sig: 'SIG',   msg: 'SIGNAL AGE: INDETERMINATE', ts: ts() },
+        { sig: 'WARN',  msg: '173 GHUULS CONFIRMED — DO NOT BROADCAST LOCATION', ts: ts(), alert: true },
+        { type: 'blank' },
+        { sig: 'KAGE',  msg: '"...find the signal..."', ts: ts(), alert: true },
+        { type: 'blank' },
+        { sig: 'DEC',   msg: glitch('DECRYPTION KEY: ████████████', 0.05), ts: ts(), corrupt: true },
+        { sig: 'DEC',   msg: 'COORDINATE 0.315126  ·  VERIFIED', ts: ts() },
+        { sig: 'ACC',   msg: 'CLEARANCE GRANTED  ·  WORLD-2 ARCHIVE OPEN', ts: ts() },
+        { type: 'blank' },
       ];
+
+      // Build DOM structure
+      termEl.innerHTML = `
+        <div class="tb-inner">
+          <div class="tb-header">
+            <span class="tb-badge">WNCORE // INTERCEPT</span>
+            <span class="tb-freq">FREQ 88.700 MHz · NODE_09</span>
+          </div>
+          <div class="tb-rows" id="tb-rows-container"></div>
+        </div>`;
+
+      const rowsEl = termEl.querySelector('#tb-rows-container');
       let li = 0;
-      termEl.innerHTML = '';
       const iv = setInterval(() => {
         if (li >= lines.length) { clearInterval(iv); return; }
+        const line = lines[li++];
         const row = document.createElement('div');
-        row.style.cssText = `padding:1px 16px;opacity:${0.5+Math.random()*0.5};color:${Math.random()>0.85?'#ff2200':'#00ff41'}`;
-        row.textContent = lines[li++];
-        termEl.appendChild(row);
-        termEl.scrollTop = termEl.scrollHeight;
-        if (Math.random() > 0.55) {
-          termEl.style.opacity = (0.2+Math.random()*0.8).toString();
-          setTimeout(()=>{ termEl.style.opacity='1'; }, 35);
+
+        if (line.type === 'blank') {
+          row.className = 'tb-row tb-blank';
+        } else {
+          row.className = 'tb-row' + (line.alert ? ' tb-alert' : '') + (line.corrupt ? ' tb-corrupt' : '');
+          row.innerHTML = `<span class="tb-ts">${line.ts}</span><span class="tb-sig">[${line.sig}]</span><span class="tb-msg">${line.msg}</span>`;
         }
-      }, 46);
+
+        rowsEl.appendChild(row);
+        rowsEl.scrollTop = rowsEl.scrollHeight;
+
+        // Random signal dropout flicker
+        if (Math.random() > 0.6) {
+          termEl.style.opacity = (0.3 + Math.random() * 0.5).toString();
+          setTimeout(() => { termEl.style.opacity = '1'; }, 40 + Math.random() * 60);
+        }
+        // Occasional horizontal tear
+        if (Math.random() > 0.82) {
+          row.style.transform = `translateX(${(Math.random()-0.5)*6}px)`;
+          setTimeout(() => { row.style.transform = ''; }, 80);
+        }
+      }, 52);
 
       setTimeout(() => {
         clearInterval(iv);
@@ -3712,6 +3837,13 @@ const AMBIENT_TRACKS = {
 let _ambHowl = null, _ambKey = null, _ambVol = 0.3;
 
 function setAmbient(key, btnEl) {
+  // Unlock Web Audio context on first user gesture (browser autoplay policy).
+  // The rain engine unlocks its own Howl instance, but ambient creates a
+  // separate one — so the AudioContext may still be suspended if the user
+  // skipped the synopsis screen or reached the reader without triggering rain.
+  if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
+    window.Howler.ctx.resume().catch(() => {});
+  }
   // Toggle off if same track clicked
   if (_ambKey === key) { stopAmbient(); return; }
   stopAmbient(false);
