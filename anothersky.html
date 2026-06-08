@@ -3171,6 +3171,59 @@ let cwHistory    = [];   // {role, content}
 let cwAttachments = [];
 let cwLastReply  = '';
 let cwPickerOpen = false;
+let cwHistoryLoaded = false;
+
+// ── HISTORY PERSISTENCE ───────────────────────────────────────
+function cwGetUserId() {
+  const sbUser = window._authUser;
+  if (sbUser?.id) return sbUser.id;
+  let anonId = localStorage.getItem('cw_anon_id');
+  if (!anonId) { anonId = 'anon_' + Math.random().toString(36).slice(2); localStorage.setItem('cw_anon_id', anonId); }
+  return anonId;
+}
+
+async function cwLoadHistory() {
+  if (cwHistoryLoaded) return;
+  cwHistoryLoaded = true;
+  const userId = cwGetUserId();
+  try {
+    const r = await fetch('/api/writer?action=load&userId=' + encodeURIComponent(userId));
+    if (!r.ok) throw new Error('load failed');
+    const d = await r.json();
+    if (Array.isArray(d.messages) && d.messages.length > 0) {
+      cwHistory = d.messages;
+      const log = document.getElementById('cw-log');
+      if (log) {
+        log.innerHTML = '';
+        cwAppend('system', '// history restored — ' + Math.floor(cwHistory.length / 2) + ' exchanges');
+        cwHistory.forEach(m => cwAppend(m.role === 'assistant' ? 'assistant' : 'user', m.content));
+      }
+    }
+  } catch(e) { /* supabase not configured or network error — silently ignore */ }
+}
+
+function cwSaveHistory() {
+  const userId = cwGetUserId();
+  fetch('/api/writer?action=save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId, messages: cwHistory }),
+  }).catch(() => {});
+}
+
+window.cwClearHistory = async function() {
+  const userId = cwGetUserId();
+  cwHistory = [];
+  cwHistoryLoaded = false;
+  const log = document.getElementById('cw-log');
+  if (log) log.innerHTML = '';
+  cwAppend('system', '// history cleared');
+  await fetch('/api/writer?action=clear', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  }).catch(() => {});
+};
 
 // default model/provider
 // Model display only — actual model selection handled server-side by /api/writer cascade
@@ -3243,6 +3296,9 @@ window.cwToggle = function() {
 
   if (cwOpen && cwHistory.length === 0) {
     cwAppend('system', '// cygnus writer online — lore-grounded for another sky & simulunas. ask for scenes, dialogue, character sheets, or lore checks. drop files for context.');
+    cwLoadHistory();
+  } else if (cwOpen && !cwHistoryLoaded) {
+    cwLoadHistory();
   }
   if (cwOpen) setTimeout(() => document.getElementById('cw-inp').focus(), 80);
 };
@@ -3330,6 +3386,7 @@ window.cwSend = async function(overrideMsg) {
         messages: cwHistory.slice(-20),
         attachments: pendingAtt.length ? pendingAtt : undefined,
         chapterContext: chBody ? { body: chBody, title: chTitle, num: chNum } : undefined,
+        userId: cwGetUserId(),
       }),
     });
 
@@ -3345,6 +3402,7 @@ window.cwSend = async function(overrideMsg) {
     cwHistory.push({ role: 'assistant', content: reply });
     cwAppend('assistant', reply);
     cwSetStatus('// ready', false);
+    cwSaveHistory();
 
   } catch (err) {
     const msg = err.message || String(err);
@@ -3480,12 +3538,20 @@ function cwAppend(role, text, attachments) {
 // ── UTILS ─────────────────────────────────────────────────────
 window.cwClear = function() {
   cwHistory   = [];
+  cwHistoryLoaded = false;
   cwLastReply = '';
   cwAttachments = [];
   const log = document.getElementById('cw-log');
   if (log) log.innerHTML = '';
   renderAttachStrip();
   cwSetStatus('// ready', false);
+  // also clear from Supabase
+  const userId = cwGetUserId();
+  fetch('/api/writer?action=clear', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId }),
+  }).catch(() => {});
   cwAppend('system', '// cleared.');
 };
 
