@@ -1740,6 +1740,7 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   #as-header .hdr-stat:not(:first-child) { display: none; }
 }
 @media(min-width: 701px) { #mob-bar { display: none !important; } }
+@media(max-width: 700px)  { #hdr-right { display: none !important; } }
 
 /* ═══════════════════════════════════════════════════
    ADMIN FAB
@@ -2503,8 +2504,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <div class="modal-title">
       <img src="assets/lucid/Lock-Closed.png" alt="" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle;margin-right:5px">OPERATOR AUTHENTICATION
     </div>
-    <div class="modal-field"><label class="modal-label">OPERATOR ID:</label><input type="text" class="modal-inp" id="li-user" autocomplete="off" /></div>
-    <div class="modal-field"><label class="modal-label">AUTH KEY:</label><input type="password" class="modal-inp" id="li-pass" /></div>
+    <div class="modal-field"><label class="modal-label">ACCESS TOKEN:</label><input type="password" class="modal-inp" id="li-token" autocomplete="off" /></div>
     <div class="modal-err" id="li-err"></div>
     <div class="modal-row">
       <button class="btn-r" onclick="doLogin()">
@@ -3173,53 +3173,24 @@ let cwLastReply  = '';
 let cwPickerOpen = false;
 
 // default model/provider
-let cwProvider = localStorage.getItem('cw_provider') || 'openrouter';
-let cwModel    = localStorage.getItem('cw_model')    || 'deepseek/deepseek-chat-v3-0324';
-
-// provider API configs
-const PROVIDERS = {
-  openrouter: {
-    url: 'https://openrouter.ai/api/v1/chat/completions',
-    keyStorage: 'cw_key_openrouter',
-    authHeader: k => 'Bearer ' + k,
-    extra: { 'HTTP-Referer': location.origin, 'X-Title': 'Another Sky Writer' }
-  },
-  groq: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    keyStorage: 'cw_key_groq',
-    authHeader: k => 'Bearer ' + k,
-    extra: {}
-  },
-  gemini: {
-    url: m => `https://generativelanguage.googleapis.com/v1beta/models/${m}:generateContent`,
-    keyStorage: 'cw_key_gemini',
-    authHeader: null,  // gemini uses ?key= param
-    extra: {}
-  },
-  deepseek: {
-    url: 'https://api.deepseek.com/chat/completions',
-    keyStorage: 'cw_key_deepseek',
-    authHeader: k => 'Bearer ' + k,
-    extra: {}
-  }
-};
+// Model display only — actual model selection handled server-side by /api/writer cascade
+let cwProvider = 'server';
+let cwModel    = 'auto';
 
 // ── INIT ──────────────────────────────────────────────────────
+window.cwAutoResize = function(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+};
+
 (function init() {
   // model picker
   document.querySelectorAll('.cw-model-opt[data-model]').forEach(el => {
-    el.addEventListener('click', () => {
-      cwProvider = el.dataset.provider;
-      cwModel    = el.dataset.model;
-      localStorage.setItem('cw_provider', cwProvider);
-      localStorage.setItem('cw_model', cwModel);
-      updateModelTag();
-      cwModelPickerToggle(false);
-    });
+    el.addEventListener('click', () => cwModelPickerToggle(false));
   });
   document.querySelector('.cw-model-opt[data-action="configure"]')?.addEventListener('click', () => {
     cwModelPickerToggle(false);
-    showSetup();
+    cwAppend('system', '// model cascade: groq → gemini → deepseek → openrouter. managed server-side.');
   });
 
   // quick action buttons
@@ -3235,7 +3206,7 @@ const PROVIDERS = {
 
   // textarea enter key
   const inp = document.getElementById('cw-inp');
-  inp.addEventListener('input', cwAutoResize);
+  inp.addEventListener('input', e => window.cwAutoResize && window.cwAutoResize(e.target));
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cwSend(); }
   });
@@ -3289,42 +3260,16 @@ window.cwModelPickerToggle = function(force) {
 
 function updateModelTag() {
   const tag = document.getElementById('cw-model-tag');
-  const short = cwModel.split('/').pop().slice(0, 22);
-  tag.textContent = '[' + cwProvider.slice(0,2).toUpperCase() + '] ' + short;
+  if (tag) tag.textContent = '[SRV] cascade';
 }
 
-// ── API KEY SETUP ─────────────────────────────────────────────
+// ── API KEY SETUP — no-op (keys handled server-side via /api/writer) ──────────
 function showSetup(msg) {
-  const setup  = document.getElementById('cw-setup');
-  const log    = document.getElementById('cw-log');
-  const inp    = document.getElementById('cw-key-inp');
-  const msgEl  = document.getElementById('cw-setup-msg');
-  if (msg) msgEl.textContent = msg;
-  else msgEl.innerHTML = '// no api key found for <b>' + cwProvider + '</b>.<br>paste your key — stored in localStorage, only sent to the api endpoint.';
-  setup.classList.add('show');
-  log.style.display    = 'none';
-  document.getElementById('cw-actions').style.display = 'none';
-  document.getElementById('cw-input-row').style.display = 'none';
-  document.getElementById('cw-status-row').style.display = 'none';
-  inp.value = localStorage.getItem(PROVIDERS[cwProvider].keyStorage) || '';
-  inp.focus();
+  // Keys are stored in Vercel env vars — no client-side key needed.
+  cwAppend('system', '// api keys are managed server-side. no configuration needed.');
 }
-
-function hideSetup() {
-  document.getElementById('cw-setup').classList.remove('show');
-  document.getElementById('cw-log').style.display = '';
-  document.getElementById('cw-actions').style.display = '';
-  document.getElementById('cw-input-row').style.display = '';
-  document.getElementById('cw-status-row').style.display = '';
-}
-
-window.cwKeySave = function() {
-  const val = document.getElementById('cw-key-inp').value.trim();
-  if (!val) return;
-  localStorage.setItem(PROVIDERS[cwProvider].keyStorage, val);
-  hideSetup();
-  cwAppend('system', '// key saved for ' + cwProvider + '.');
-};
+function hideSetup() {}
+window.cwKeySave = function() {};
 
 // ── QUICK ACTIONS ─────────────────────────────────────────────
 const QUICK_PROMPTS = {
@@ -3352,13 +3297,9 @@ window.cwSend = async function(overrideMsg) {
   const userMsg = overrideMsg || (inp ? inp.value.trim() : '');
   if (!userMsg && !cwAttachments.length) return;
 
-  // check key
-  const cfg = PROVIDERS[cwProvider];
-  const key = localStorage.getItem(cfg.keyStorage);
-  if (!key && cwProvider !== 'gemini') { showSetup(); return; }
-  if (!key && cwProvider === 'gemini') { showSetup(); return; }
+  // no key needed — routed through /api/writer serverless relay
 
-  if (inp && !overrideMsg) { inp.value = ''; cwAutoResize(inp); }
+  if (inp && !overrideMsg) { inp.value = ''; window.cwAutoResize?.(inp); }
 
   // build chapter context from editor if present
   const chBody  = document.getElementById('ced-body')?.value  || '';
@@ -3382,13 +3323,23 @@ window.cwSend = async function(overrideMsg) {
   cwHistory.push({ role: 'user', content: apiContent });
 
   try {
-    let reply = '';
+    const res = await fetch('/api/writer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: cwHistory.slice(-20),
+        attachments: pendingAtt.length ? pendingAtt : undefined,
+        chapterContext: chBody ? { body: chBody, title: chTitle, num: chNum } : undefined,
+      }),
+    });
 
-    if (cwProvider === 'gemini') {
-      reply = await callGemini(key, cwHistory, pendingAtt);
-    } else {
-      reply = await callOpenAI(key, cfg, cwHistory, pendingAtt);
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.error || 'HTTP ' + res.status);
     }
+
+    const data = await res.json();
+    const reply = data.reply || '// no response';
 
     cwLastReply = reply;
     cwHistory.push({ role: 'assistant', content: reply });
@@ -3399,104 +3350,12 @@ window.cwSend = async function(overrideMsg) {
     const msg = err.message || String(err);
     cwAppend('error', '// signal lost: ' + msg);
     cwSetStatus('// error', false);
-    // pop the user turn so history stays clean
     cwHistory.pop();
-    // if auth error, show key setup
-    if (msg.includes('401') || msg.includes('403') || msg.includes('key') || msg.includes('auth')) {
-      showSetup('// auth error — check your key for ' + cwProvider + '.');
-    }
   } finally {
     setDisabled(false);
     if (inp) inp.focus();
   }
 };
-
-// ── API CALLS ─────────────────────────────────────────────────
-async function callOpenAI(key, cfg, history, attachments) {
-  const messages = [
-    { role: 'system', content: SYSTEM_PROMPT },
-    ...history.slice(-20).map((m, i) => {
-      // attach files to last user message
-      if (m.role === 'user' && i === history.length - 1 && attachments.length) {
-        const parts = [{ type: 'text', text: m.content }];
-        attachments.forEach(att => {
-          if (att.type === 'image') {
-            parts.push({ type: 'image_url', image_url: { url: 'data:' + att.mimeType + ';base64,' + att.data } });
-          } else {
-            parts.push({ type: 'text', text: '\n[ATTACHED: ' + att.name + ']\n' + att.data });
-          }
-        });
-        return { role: 'user', content: parts };
-      }
-      return { role: m.role, content: m.content };
-    })
-  ];
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': cfg.authHeader(key),
-    ...cfg.extra
-  };
-
-  const body = {
-    model: cwModel,
-    messages,
-    max_tokens: 2000,
-    temperature: 0.8
-  };
-
-  const res = await fetch(cfg.url, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body)
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err.error?.message || err.message || 'HTTP ' + res.status));
-  }
-
-  const data = await res.json();
-  return data.choices?.[0]?.message?.content || '// no response';
-}
-
-async function callGemini(key, history, attachments) {
-  // map history to Gemini format
-  const contents = history.slice(-20).map((m, i) => {
-    const role = m.role === 'user' ? 'user' : 'model';
-    const parts = [{ text: m.content }];
-    if (m.role === 'user' && i === history.length - 1 && attachments.length) {
-      attachments.forEach(att => {
-        if (att.type === 'image') {
-          parts.push({ inline_data: { mime_type: att.mimeType, data: att.data } });
-        } else {
-          parts.push({ text: '\n[ATTACHED: ' + att.name + ']\n' + att.data });
-        }
-      });
-    }
-    return { role, parts };
-  });
-
-  const model = cwModel;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
-
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents,
-      generationConfig: { maxOutputTokens: 2000, temperature: 0.8 }
-    })
-  });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.error?.message || 'HTTP ' + res.status);
-  }
-  const data = await res.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '// no response';
-}
 
 // ── FILE INGEST ───────────────────────────────────────────────
 function cwIngestFile(file) {
@@ -3664,10 +3523,6 @@ function setDisabled(val) {
   if (btn) btn.disabled = val;
 }
 
-window.cwAutoResize = function(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
-};
 
 function cwEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -4454,6 +4309,36 @@ function startGateTwitch() {
 }
 
 /* ── WORLD GATE LOGIC ──────────────────────────────── */
+/* ── GLOBAL AUDIO UNLOCK ─────────────────────────────────────────────────────
+   One-shot listener on the earliest user gesture. Resumes the shared Howler
+   AudioContext so ALL subsequent audio (synopsis rain, ambient panel, thunder)
+   works without each system needing its own unlock dance. */
+(function() {
+  function unlockAudio() {
+    // Resume Howler's shared context if it exists and is suspended
+    if (window.Howler && window.Howler.ctx) {
+      if (window.Howler.ctx.state === 'suspended') {
+        window.Howler.ctx.resume().catch(() => {});
+      }
+    } else {
+      // Howler hasn't created its context yet — create a temporary one to
+      // satisfy the browser gesture requirement, then hand off to Howler
+      try {
+        const tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // Once Howler creates its own context on first Howl(), it will be
+        // already unlocked because the gesture window is still open
+        tmpCtx.close();
+      } catch(_) {}
+    }
+    document.removeEventListener('click',      unlockAudio, true);
+    document.removeEventListener('touchstart', unlockAudio, true);
+    document.removeEventListener('keydown',    unlockAudio, true);
+  }
+  document.addEventListener('click',      unlockAudio, { once: true, capture: true });
+  document.addEventListener('touchstart', unlockAudio, { once: true, capture: true });
+  document.addEventListener('keydown',    unlockAudio, { once: true, capture: true });
+})();
+
 document.getElementById('btn-yes').addEventListener('click', () => {
   // YES — proceed to synopsis
   document.getElementById('world-gate').style.transition = 'opacity 0.8s';
@@ -4886,30 +4771,32 @@ const AMBIENT_TRACKS = {
 let _ambHowl = null, _ambKey = null, _ambVol = 0.3;
 
 function setAmbient(key, btnEl) {
-  // Unlock Web Audio context on first user gesture (browser autoplay policy).
-  // The rain engine unlocks its own Howl instance, but ambient creates a
-  // separate one — so the AudioContext may still be suspended if the user
-  // skipped the synopsis screen or reached the reader without triggering rain.
-  if (window.Howler && window.Howler.ctx && window.Howler.ctx.state === 'suspended') {
-    window.Howler.ctx.resume().catch(() => {});
-  }
   // Toggle off if same track clicked
   if (_ambKey === key) { stopAmbient(); return; }
   stopAmbient(false);
   _ambKey = key;
   const srcs = AMBIENT_TRACKS[key];
-  _ambHowl = new Howl({
-    src: srcs, loop: true, volume: 0, html5: true,
-    onloaderror: () => {
-      // try second src if first fails
-      if (srcs.length > 1) {
-        _ambHowl = new Howl({ src: [srcs[1]], loop: true, volume: 0, html5: true });
-        _ambHowl.play(); _ambHowl.fade(0, _ambVol, 2000);
+
+  function _makeHowl(srcList) {
+    _ambHowl = new Howl({
+      src: srcList, loop: true, volume: 0, html5: true,
+      onloaderror: () => {
+        // First src failed — try next if available
+        const remaining = srcs.slice(srcList === srcs ? 1 : srcs.length);
+        if (remaining.length) {
+          _makeHowl(remaining);
+        } else {
+          // All srcs failed — clear state and UI
+          _ambHowl = null; _ambKey = null;
+          document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
+        }
       }
-    }
-  });
-  _ambHowl.play();
-  _ambHowl.fade(0, _ambVol, 2000);
+    });
+    _ambHowl.play();
+    _ambHowl.fade(0, _ambVol, 2000);
+  }
+
+  _makeHowl(srcs);
   // sync UI
   document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
   if (btnEl) btnEl.classList.add('amb-active');
@@ -5019,37 +4906,45 @@ window.revertTranslation = function () {
 /* ═══════════════════════════════════════════════════
    ADMIN
 ═══════════════════════════════════════════════════ */
-function _h(s) { return [...s].reduce((h,c) => ((h<<5)-h+c.charCodeAt(0))|0, 0); }
-const ADMIN_UH = _h('theMainauthor345');
-const ADMIN_PH = _h('illgetoutofthisworld275745397');
-function checkCreds(u, p) { return _h(u) === ADMIN_UH && _h(p) === ADMIN_PH; }
-
 function autoDetect() {
-  const u = localStorage.getItem('chapters_admin_user') || '';
-  if (_h(u) === ADMIN_UH) { isAdmin = true; showFab(); loadChapters(); }
-  else { loadChapters(); }
+  // If token was verified this session, restore admin state
+  if (sessionStorage.getItem('wncore_auth') === '1') { isAdmin = true; showFab(); }
+  loadChapters();
 }
 function showFab() { document.getElementById('afab').style.display = 'block'; }
 function openLogin() {
   if (isAdmin) { openUpload(); return; }
   document.getElementById('login-modal').classList.add('open');
-  setTimeout(() => document.getElementById('li-user').focus(), 100);
+  setTimeout(() => document.getElementById('li-token').focus(), 100);
 }
 function closeLogin() {
   document.getElementById('login-modal').classList.remove('open');
   document.getElementById('li-err').textContent = '';
-  ['li-user','li-pass'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('li-token').value = '';
 }
-function doLogin() {
-  const u = document.getElementById('li-user').value.trim();
-  const p = document.getElementById('li-pass').value.trim();
-  if (checkCreds(u, p)) {
-    isAdmin = true; localStorage.setItem('chapters_admin_user', u);
-    showFab(); closeLogin(); openUpload();
-  } else {
-    document.getElementById('li-err').textContent = '// ACCESS DENIED';
-    document.getElementById('li-pass').value = '';
-    setTimeout(() => document.getElementById('li-err').textContent = '', 2200);
+async function doLogin() {
+  const token = document.getElementById('li-token').value.trim();
+  if (!token) return;
+  const errEl = document.getElementById('li-err');
+  errEl.textContent = '// verifying…';
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
+      body: JSON.stringify({ key: '_auth_check', value: '1' }),
+    });
+    if (res.ok) {
+      isAdmin = true;
+      sessionStorage.setItem('wncore_auth', '1');
+      showFab(); closeLogin(); openUpload();
+    } else {
+      errEl.textContent = '// ACCESS DENIED';
+      document.getElementById('li-token').value = '';
+      setTimeout(() => errEl.textContent = '', 2200);
+    }
+  } catch (e) {
+    errEl.textContent = '// signal lost — try again';
+    setTimeout(() => errEl.textContent = '', 2200);
   }
 }
 document.addEventListener('keydown', e => {
@@ -5810,10 +5705,7 @@ async function generateNewVolume(silent) {
   window.startSynopsisRain = function() {
     /* In paper (light) mode: skip rain entirely, start birdsong instead */
     if (document.documentElement.dataset.theme === 'paper') {
-      const unlock = () => { initAudio(); document.removeEventListener('click', unlock); document.removeEventListener('touchstart', unlock); };
-      document.addEventListener('click', unlock, { once: true });
-      document.addEventListener('touchstart', unlock, { once: true });
-      initAudio();
+        initAudio();
       return;
     }
 
@@ -5836,11 +5728,7 @@ async function generateNewVolume(silent) {
     canvas.classList.add('active');
     draw();
 
-    /* Unlock audio on first user interaction if not yet done */
-    const unlock = () => { initAudio(); document.removeEventListener('click', unlock); document.removeEventListener('touchstart', unlock); };
-    document.addEventListener('click', unlock, { once: true });
-    document.addEventListener('touchstart', unlock, { once: true });
-    /* Also try immediately — works if user already clicked (e.g. clicked YES on gate) */
+    /* Audio context already unlocked globally — init directly */
     initAudio();
 
     scheduleStorm();
