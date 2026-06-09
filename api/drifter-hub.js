@@ -149,20 +149,22 @@ Set "alert": true for danger or urgent entries. Each text must be under 120 char
     return res.status(200).json({ signals: FALLBACKS, fallback: true });
   }
 
+  try {
+    const raw = await callOpenRouter([
+      { role: 'user', content: SYSTEM_PROMPT + '\n\nGenerate 3 signal intercepts now.' }
+    ], 350);
+    const clean = raw.replace(/```json|```/g, '').trim();
     let signals;
     try {
       signals = JSON.parse(clean);
       if (!Array.isArray(signals)) throw new Error('not array');
-      // Validate each entry
       signals = signals.filter(s => s.type && typeof s.text === 'string').slice(0, 5);
       if (signals.length === 0) throw new Error('empty');
     } catch {
       console.warn('[drifter-hub] JSON parse failed, returning fallback. Raw:', raw.slice(0, 200));
       return res.status(200).json({ signals: FALLBACKS, fallback: true });
     }
-
     return res.status(200).json({ signals });
-
   } catch (err) {
     console.error('[drifter-hub] Handler error:', err);
     return res.status(200).json({ signals: FALLBACKS, fallback: true });
