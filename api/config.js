@@ -1,6 +1,25 @@
 // WNCORE Radio — Vercel Serverless API Route
 // Handles admin config reads/writes via Supabase REST API
 // Uses native fetch — zero npm dependencies, works on Vercel Hobby free tier
+//
+// ── ONE-TIME SUPABASE SETUP for stories table ────────────────────────────────
+// CREATE TABLE IF NOT EXISTS stories (
+//   id           text PRIMARY KEY,
+//   title        text NOT NULL,
+//   prefix       text NOT NULL,
+//   accent       text DEFAULT '#c80000',
+//   desc         text,
+//   synopsis     text,
+//   cover_image  text,
+//   sort_order   int  DEFAULT 0
+// );
+// ALTER TABLE stories ENABLE ROW LEVEL SECURITY;
+// CREATE POLICY "Public read" ON stories FOR SELECT USING (true);
+// CREATE POLICY "Service write" ON stories FOR ALL USING (auth.role() = 'service_role');
+// INSERT INTO stories (id,title,prefix,accent,desc,sort_order)
+// VALUES ('another-sky','Another Sky','AS','#c80000','Post-apocalyptic horror. Bangladesh.',0)
+// ON CONFLICT (id) DO NOTHING;
+// ─────────────────────────────────────────────────────────────────────────────
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
@@ -74,10 +93,53 @@ async function proxyRadioBrowser(path, res) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── STORIES: GET/POST/DELETE /api/config?action=stories ──────────────────
+  if (req.query.action === 'stories') {
+    const SEED = [{ id:'another-sky', title:'Another Sky', prefix:'AS', accent:'#c80000',
+      desc:'Post-apocalyptic horror. Bangladesh.', synopsis:null, cover_image:null, sort_order:0 }];
+
+    if (req.method === 'GET') {
+      if (!supabaseUrl || !supabaseKey) return res.status(200).json(SEED);
+      const r = await fetch(sbUrl('stories?order=sort_order.asc,id.asc'), { headers: sbHeaders() });
+      if (!r.ok) return res.status(200).json(SEED);
+      const rows = await r.json();
+      return res.status(200).json(rows.length ? rows : SEED);
+    }
+
+    // writes require auth
+    const tok = req.headers['x-admin-token'];
+    if (tok !== adminToken) return res.status(401).json({ error: 'Unauthorized' });
+
+    if (req.method === 'POST') {
+      const { id, title, prefix, accent, desc, synopsis, cover_image, sort_order } = req.body || {};
+      if (!id || !title || !prefix) return res.status(400).json({ error: 'id, title, prefix required' });
+      const r = await fetch(sbUrl('stories?on_conflict=id'), {
+        method: 'POST',
+        headers: sbHeaders({ 'Prefer': 'resolution=merge-duplicates,return=representation' }),
+        body: JSON.stringify({ id, title, prefix, accent: accent||'#c80000', desc: desc||'',
+          synopsis: synopsis||null, cover_image: cover_image||null, sort_order: sort_order??0 }),
+      });
+      if (!r.ok) { const e = await r.text(); return res.status(500).json({ error:'Failed to save story', details:e }); }
+      const data = await r.json();
+      return res.status(200).json({ success:true, story: Array.isArray(data)?data[0]:data });
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'id required' });
+      if (id === 'another-sky') return res.status(403).json({ error: 'Cannot delete core story' });
+      const r = await fetch(sbUrl(`stories?id=eq.${encodeURIComponent(id)}`), { method:'DELETE', headers:sbHeaders() });
+      if (!r.ok) return res.status(500).json({ error: 'Failed to delete story' });
+      return res.status(200).json({ success: true });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
 
   // ── Radio Browser proxy: GET /api/config?rb=<path> ───────────────────────
   if (req.method === 'GET' && req.query.rb) {
