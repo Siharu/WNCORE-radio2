@@ -30,8 +30,8 @@
   --brd:       rgba(180,0,0,0.18);
   --brd-hot:   rgba(255,0,0,0.55);
   --text:      #d4bfb8;
-  --text2:     rgba(212,191,184,0.55);
-  --text3:     rgba(212,191,184,0.22);
+  --text2:     rgba(212,191,184,0.70);
+  --text3:     rgba(212,191,184,0.42);
   --red:       #ff1a1a;
   --dred:      #8b0000;
   --dred2:     #440000;
@@ -55,8 +55,8 @@
   --brd:       rgba(100,40,0,0.18);
   --brd-hot:   rgba(139,0,0,0.55);
   --text:      #1a0a04;
-  --text2:     rgba(26,10,4,0.6);
-  --text3:     rgba(26,10,4,0.32);
+  --text2:     rgba(26,10,4,0.72);
+  --text3:     rgba(26,10,4,0.48);
   --red:       #8b0000;
   --dred:      #6b0000;
   --dred2:     #5a0000;
@@ -2487,7 +2487,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <input type="range" id="ro-amb-vol" min="0" max="1" step="0.05" value="0.3" oninput="setAmbVol(this.value)">
       <button id="ro-amb-stop" onclick="stopAmbient()">■ STOP</button>
     </div>
-    <div id="ro-amb-credit">src: <a href="https://freesound.org" target="_blank" rel="noopener">freesound.org</a> · CC licensed</div>
+    <div id="ro-amb-credit">// procedural audio · web audio api</div>
   </div>
 
 </div><!-- /reader-shell -->
@@ -2578,6 +2578,34 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 <style>
 /* ── CYGNUS WRITER PANEL ──────────────────────────────────────── */
+/* Palette tokens */
+:root {
+  --cw-accent:     #c8472a;
+  --cw-accent-dim: rgba(200,71,42,0.55);
+  --cw-accent-lo:  rgba(200,71,42,0.25);
+  --cw-accent-xlo: rgba(200,71,42,0.12);
+  --cw-ink:        #e8e4df;
+  --cw-ink2:       rgba(220,210,205,0.78);
+  --cw-ink3:       rgba(200,185,178,0.55);
+  --cw-bg:         #070104;
+  --cw-bg2:        #0e0307;
+  --cw-brd:        rgba(200,71,42,0.22);
+  --cw-brd-hot:    rgba(200,71,42,0.55);
+}
+:root[data-theme="paper"] {
+  --cw-accent:     #8b2010;
+  --cw-accent-dim: rgba(139,32,16,0.65);
+  --cw-accent-lo:  rgba(139,32,16,0.28);
+  --cw-accent-xlo: rgba(139,32,16,0.10);
+  --cw-ink:        #1a0a04;
+  --cw-ink2:       rgba(26,10,4,0.82);
+  --cw-ink3:       rgba(26,10,4,0.52);
+  --cw-bg:         #f0e8dc;
+  --cw-bg2:        #e8ddd0;
+  --cw-brd:        rgba(139,32,16,0.20);
+  --cw-brd-hot:    rgba(139,32,16,0.55);
+}
+
 #cw-wrap {
   position: relative;
   margin-bottom: 6px;
@@ -2588,21 +2616,21 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 #cw-bar {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: transparent;
-  border: 1px solid rgba(200,71,42,0.28);
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--cw-bg);
+  border: 1px solid var(--cw-brd);
   border-bottom: none;
   cursor: pointer;
   user-select: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, background 0.2s;
 }
-#cw-bar:hover { border-color: rgba(200,71,42,0.6); }
-#cw-bar.open  { border-color: rgba(200,71,42,0.55); }
+#cw-bar:hover { border-color: var(--cw-brd-hot); background: var(--cw-bg2); }
+#cw-bar.open  { border-color: var(--cw-accent-dim); background: var(--cw-bg2); }
 
 #cw-sigil {
-  width: 12px; height: 12px;
-  border: 1px solid rgba(200,71,42,0.6);
+  width: 10px; height: 10px;
+  border: 1px solid var(--cw-accent-dim);
   border-radius: 50%;
   position: relative;
   flex-shrink: 0;
@@ -2612,57 +2640,61 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   content: '';
   position: absolute;
   inset: 2px;
-  background: rgba(200,71,42,0.4);
+  background: var(--cw-accent-lo);
   border-radius: 50%;
   transition: background 0.3s;
 }
-#cw-bar.open #cw-sigil::after { background: rgba(200,71,42,0.9); }
-#cw-bar.open #cw-sigil { box-shadow: 0 0 6px rgba(200,71,42,0.6); }
+#cw-bar.open #cw-sigil::after { background: var(--cw-accent); }
+#cw-bar.open #cw-sigil { box-shadow: 0 0 7px var(--cw-accent-lo); }
 
 #cw-label {
   font-size: 0.38rem;
   letter-spacing: 2.5px;
-  color: rgba(200,71,42,0.75);
+  color: var(--cw-accent-dim);
   text-transform: uppercase;
   flex: 1;
   transition: color 0.2s;
 }
-#cw-bar.open #cw-label { color: rgba(200,71,42,1); }
+#cw-bar.open #cw-label { color: var(--cw-accent); }
 
 #cw-model-tag {
-  font-size: 0.34rem;
+  font-size: 0.33rem;
   letter-spacing: 1px;
-  color: rgba(212,191,184,0.28);
-  padding: 1px 5px;
-  border: 1px solid rgba(200,71,42,0.14);
+  color: var(--cw-ink3);
+  padding: 2px 6px;
+  border: 1px solid var(--cw-brd);
+  background: var(--cw-accent-xlo);
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-#cw-model-tag:hover { color: rgba(212,191,184,0.7); border-color: rgba(200,71,42,0.4); }
+#cw-model-tag:hover { color: var(--cw-ink2); border-color: var(--cw-accent-dim); }
 
 #cw-chevron {
-  font-size: 0.5rem;
-  color: rgba(200,71,42,0.5);
+  font-size: 0.46rem;
+  color: var(--cw-accent-lo);
   transition: transform 0.25s, color 0.2s;
   line-height: 1;
 }
-#cw-bar.open #cw-chevron { transform: rotate(180deg); color: rgba(200,71,42,0.9); }
+#cw-bar.open #cw-chevron { transform: rotate(180deg); color: var(--cw-accent); }
 
 /* ── PANEL BODY ── */
 #cw-panel {
   display: none;
   flex-direction: column;
-  background: #060203;
-  border: 1px solid rgba(200,71,42,0.3);
-  border-top: 1px solid rgba(200,71,42,0.14);
-  max-height: 480px;
+  background: var(--cw-bg);
+  border: 1px solid var(--cw-brd);
+  border-top: 1px solid var(--cw-accent-xlo);
+  max-height: 520px;
   position: relative;
   overflow: hidden;
 }
 #cw-panel.open { display: flex; }
 
-/* scan lines overlay */
+/* subtle scanline texture */
 #cw-panel::before {
   content: '';
   position: absolute;
@@ -2670,9 +2702,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   background: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 2px,
-    rgba(0,0,0,0.07) 2px,
-    rgba(0,0,0,0.07) 4px
+    transparent 3px,
+    rgba(0,0,0,0.04) 3px,
+    rgba(0,0,0,0.04) 4px
   );
   pointer-events: none;
   z-index: 0;
@@ -2682,35 +2714,36 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 #cw-actions {
   display: flex;
   gap: 3px;
-  padding: 6px 8px 5px;
-  border-bottom: 1px solid rgba(200,71,42,0.08);
+  padding: 7px 9px 6px;
+  border-bottom: 1px solid var(--cw-brd);
   flex-wrap: wrap;
   flex-shrink: 0;
   position: relative;
   z-index: 1;
+  background: var(--cw-bg2);
 }
 .cw-act {
-  background: rgba(200,71,42,0.05);
-  border: 1px solid rgba(200,71,42,0.16);
-  color: rgba(200,71,42,0.6);
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-brd);
+  color: var(--cw-ink3);
   font-family: inherit;
-  font-size: 0.33rem;
+  font-size: 0.32rem;
   letter-spacing: 1px;
-  padding: 2px 6px;
+  padding: 3px 7px;
   cursor: pointer;
   border-radius: 1px;
   transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
 .cw-act:hover {
-  background: rgba(200,71,42,0.15);
-  color: rgba(200,71,42,1);
-  border-color: rgba(200,71,42,0.45);
+  background: var(--cw-accent-lo);
+  color: var(--cw-accent);
+  border-color: var(--cw-accent-dim);
 }
 .cw-act-sep {
   width: 1px;
-  background: rgba(200,71,42,0.12);
-  margin: 2px 1px;
+  background: var(--cw-brd);
+  margin: 3px 2px;
   flex-shrink: 0;
 }
 
@@ -2718,197 +2751,245 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 #cw-log {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 11px;
+  padding: 12px 13px;
   min-height: 80px;
-  max-height: 260px;
+  max-height: 280px;
   position: relative;
   z-index: 1;
 }
+/* scrollbar */
+#cw-log::-webkit-scrollbar { width: 3px; }
+#cw-log::-webkit-scrollbar-track { background: transparent; }
+#cw-log::-webkit-scrollbar-thumb { background: var(--cw-accent-lo); border-radius: 2px; }
 
 /* message rows */
-.cw-msg {
-  margin-bottom: 11px;
-  animation: cw-fadein 0.2s ease;
-}
+.cw-msg { margin-bottom: 14px; animation: cw-fadein 0.2s ease; }
 @keyframes cw-fadein {
-  from { opacity: 0; transform: translateY(3px); }
+  from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 .cw-role {
-  font-size: 0.32rem;
-  letter-spacing: 2px;
+  font-size: 0.31rem;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  margin-bottom: 3px;
+  margin-bottom: 4px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
 }
 .cw-role-dot {
-  width: 4px; height: 4px;
+  width: 5px; height: 5px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 .cw-msg-body {
   font-size: 0.4rem;
-  line-height: 1.7;
+  line-height: 1.75;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
-/* role colours */
-.cw-msg[data-role="user"]      .cw-role      { color: #c8472a; }
-.cw-msg[data-role="user"]      .cw-role-dot  { background: #c8472a; }
-.cw-msg[data-role="user"]      .cw-msg-body  { color: rgba(232,228,223,0.88); }
+/* role colours — boosted contrast */
+.cw-msg[data-role="user"]      .cw-role      { color: var(--cw-accent); }
+.cw-msg[data-role="user"]      .cw-role-dot  { background: var(--cw-accent); }
+.cw-msg[data-role="user"]      .cw-msg-body  { color: var(--cw-ink); }
 
-.cw-msg[data-role="assistant"] .cw-role      { color: rgba(212,191,184,0.6); }
-.cw-msg[data-role="assistant"] .cw-role-dot  { background: rgba(212,191,184,0.5); }
-.cw-msg[data-role="assistant"] .cw-msg-body  { color: rgba(212,191,184,0.82); }
+.cw-msg[data-role="assistant"] .cw-role      { color: var(--cw-ink2); }
+.cw-msg[data-role="assistant"] .cw-role-dot  { background: var(--cw-ink3); }
+.cw-msg[data-role="assistant"] .cw-msg-body  { color: var(--cw-ink2); }
 
-.cw-msg[data-role="system"]    .cw-role      { color: rgba(212,191,184,0.22); }
-.cw-msg[data-role="system"]    .cw-msg-body  { color: rgba(212,191,184,0.25); font-size: 0.36rem; }
+.cw-msg[data-role="system"]    .cw-role      { display: none; }
+.cw-msg[data-role="system"]    .cw-msg-body  { color: var(--cw-ink3); font-size: 0.35rem; letter-spacing: 0.5px; padding: 2px 0; }
 
-.cw-msg[data-role="error"]     .cw-role      { color: #7a0000; }
-.cw-msg[data-role="error"]     .cw-msg-body  { color: #a03030; font-size: 0.38rem; }
+.cw-msg[data-role="error"]     .cw-role      { color: #c03030; }
+.cw-msg[data-role="error"]     .cw-msg-body  { color: #d04040; font-size: 0.38rem; }
 
 /* streaming cursor */
 .cw-cursor {
   display: inline-block;
   width: 7px; height: 1px;
-  background: rgba(212,191,184,0.6);
+  background: var(--cw-ink3);
   margin-left: 2px;
   vertical-align: middle;
   animation: cw-blink 0.7s step-end infinite;
 }
-@keyframes cw-blink {
-  0%,100% { opacity: 1; } 50% { opacity: 0; }
-}
+@keyframes cw-blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
-/* copy button on assistant messages */
-.cw-copy-btn {
+/* per-message copy/insert buttons */
+.cw-copy-btn, .cw-insert-btn {
   background: none;
-  border: 1px solid rgba(200,71,42,0.18);
-  color: rgba(200,71,42,0.4);
+  border: 1px solid var(--cw-brd);
+  color: var(--cw-ink3);
   font-family: inherit;
   font-size: 0.3rem;
   letter-spacing: 1px;
-  padding: 1px 5px;
+  padding: 1px 6px;
   cursor: pointer;
   border-radius: 1px;
-  margin-top: 4px;
+  margin-top: 5px;
   transition: all 0.15s;
 }
-.cw-copy-btn:hover { color: rgba(200,71,42,0.9); border-color: rgba(200,71,42,0.5); }
-.cw-insert-btn {
-  background: none;
-  border: 1px solid rgba(200,71,42,0.12);
-  color: rgba(200,71,42,0.3);
-  font-family: inherit;
-  font-size: 0.3rem;
-  letter-spacing: 1px;
-  padding: 1px 5px;
-  cursor: pointer;
-  border-radius: 1px;
-  margin-top: 4px;
-  margin-left: 3px;
-  transition: all 0.15s;
+.cw-copy-btn:hover, .cw-insert-btn:hover {
+  color: var(--cw-accent);
+  border-color: var(--cw-accent-dim);
+  background: var(--cw-accent-xlo);
 }
-.cw-insert-btn:hover { color: rgba(200,71,42,0.8); border-color: rgba(200,71,42,0.4); }
+.cw-insert-btn { margin-left: 4px; }
 
 /* ── ATTACH STRIP ── */
 #cw-attach-strip {
   display: none;
-  padding: 4px 8px;
-  gap: 4px;
+  padding: 5px 9px;
+  gap: 5px;
   flex-wrap: wrap;
-  border-top: 1px solid rgba(200,71,42,0.08);
+  border-top: 1px solid var(--cw-brd);
   position: relative;
   z-index: 1;
   flex-shrink: 0;
+  background: var(--cw-bg2);
 }
 .cw-chip {
   display: flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(200,71,42,0.08);
-  border: 1px solid rgba(200,71,42,0.2);
+  gap: 5px;
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-brd);
   border-radius: 1px;
-  padding: 2px 5px;
+  padding: 3px 6px;
   font-size: 0.33rem;
-  color: rgba(232,228,223,0.6);
-  max-width: 120px;
+  color: var(--cw-ink2);
+  max-width: 140px;
 }
 .cw-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 .cw-chip-thumb { width: 22px; height: 22px; object-fit: cover; border-radius: 1px; flex-shrink: 0; }
 .cw-chip-rm {
   background: none; border: none;
-  color: rgba(200,71,42,0.5); cursor: pointer;
-  font-size: 0.38rem; line-height: 1; padding: 0 0 0 2px;
+  color: var(--cw-ink3); cursor: pointer;
+  font-size: 0.38rem; line-height: 1; padding: 0 0 0 2px; flex-shrink: 0;
+}
+.cw-chip-rm:hover { color: var(--cw-accent); }
+
+/* ── SEARCH / IMAGINE INLINE PANELS ── */
+.cw-tool-panel {
+  padding: 8px 10px 6px;
+  border-top: 1px solid var(--cw-brd);
+  background: var(--cw-bg2);
+  position: relative;
+  z-index: 1;
   flex-shrink: 0;
 }
-.cw-chip-rm:hover { color: rgba(200,71,42,1); }
+.cw-tool-label {
+  font-size: 0.29rem;
+  letter-spacing: 2.5px;
+  color: var(--cw-accent-dim);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+.cw-tool-row {
+  display: flex;
+  gap: 5px;
+  align-items: flex-end;
+}
+.cw-tool-inp {
+  flex: 1;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--cw-brd);
+  color: var(--cw-ink);
+  font-family: inherit;
+  font-size: 0.38rem;
+  padding: 4px 7px;
+  outline: none;
+  resize: none;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+}
+:root[data-theme="paper"] .cw-tool-inp { background: rgba(255,255,255,0.4); }
+.cw-tool-inp:focus { border-color: var(--cw-accent-dim); }
+.cw-tool-btn {
+  padding: 4px 10px;
+  font-size: 0.31rem;
+  letter-spacing: 2px;
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-accent-dim);
+  color: var(--cw-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: inherit;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.cw-tool-btn:hover { background: var(--cw-accent-lo); }
+.cw-tool-status {
+  font-size: 0.31rem;
+  color: var(--cw-ink3);
+  margin-top: 4px;
+  min-height: 12px;
+  letter-spacing: 0.5px;
+}
 
 /* ── INPUT ROW ── */
 #cw-input-row {
   display: flex;
   align-items: flex-end;
-  gap: 5px;
-  padding: 5px 8px 7px;
-  border-top: 1px solid rgba(200,71,42,0.1);
+  gap: 6px;
+  padding: 6px 9px 8px;
+  border-top: 1px solid var(--cw-brd);
   position: relative;
   z-index: 1;
   flex-shrink: 0;
+  background: var(--cw-bg);
 }
 
 #cw-inp {
   flex: 1;
-  background: rgba(0,0,0,0.55);
-  border: 1px solid rgba(200,71,42,0.18);
+  background: var(--cw-bg2);
+  border: 1px solid var(--cw-brd);
   border-radius: 1px;
-  color: #e8e4df;
+  color: var(--cw-ink);
   font-family: inherit;
   font-size: 0.4rem;
   line-height: 1.55;
-  padding: 5px 7px;
+  padding: 5px 8px;
   resize: none;
   outline: none;
   overflow: hidden;
-  min-height: 28px;
+  min-height: 30px;
   max-height: 90px;
   transition: border-color 0.2s;
 }
-#cw-inp:focus { border-color: rgba(200,71,42,0.5); }
-#cw-inp::placeholder { color: rgba(212,191,184,0.2); }
-#cw-inp:disabled { opacity: 0.4; }
+#cw-inp:focus { border-color: var(--cw-accent-dim); }
+#cw-inp::placeholder { color: var(--cw-ink3); }
+#cw-inp:disabled { opacity: 0.35; }
 
 #cw-send-btn {
-  background: rgba(200,71,42,0.12);
-  border: 1px solid rgba(200,71,42,0.3);
-  color: rgba(200,71,42,0.75);
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-accent-dim);
+  color: var(--cw-accent);
   font-family: inherit;
-  font-size: 0.4rem;
-  width: 28px; height: 28px;
+  font-size: 0.42rem;
+  width: 30px; height: 30px;
   cursor: pointer;
   border-radius: 1px;
   flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
 }
-#cw-send-btn:hover:not(:disabled) { background: rgba(200,71,42,0.25); color: #ff4020; }
-#cw-send-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+#cw-send-btn:hover:not(:disabled) { background: var(--cw-accent-lo); color: var(--cw-ink); }
+#cw-send-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
 .cw-icon-btn {
-  background: none;
-  border: 1px solid rgba(200,71,42,0.16);
-  color: rgba(200,71,42,0.45);
-  font-size: 0.45rem;
-  width: 22px; height: 22px;
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-brd);
+  color: var(--cw-ink3);
+  font-size: 0.44rem;
+  width: 24px; height: 24px;
   cursor: pointer;
   border-radius: 1px;
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
   flex-shrink: 0;
 }
-.cw-icon-btn:hover { color: rgba(200,71,42,0.9); border-color: rgba(200,71,42,0.4); }
+.cw-icon-btn:hover { color: var(--cw-accent); border-color: var(--cw-accent-dim); }
 
 #cw-file-input { display: none; }
 
@@ -2917,25 +2998,43 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 2px 9px 3px;
-  border-top: 1px solid rgba(200,71,42,0.06);
+  padding: 3px 10px 4px;
+  border-top: 1px solid var(--cw-brd);
+  background: var(--cw-bg2);
   position: relative;
   z-index: 1;
   flex-shrink: 0;
 }
-#cw-status { font-size: 0.32rem; letter-spacing: 1.5px; color: rgba(212,191,184,0.22); }
-#cw-status.busy { color: rgba(200,71,42,0.5); animation: cw-pulse 1.2s ease-in-out infinite; }
-@keyframes cw-pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
-#cw-status-acts { display: flex; gap: 4px; }
-.cw-status-btn {
-  background: none; border: none;
-  color: rgba(212,191,184,0.2);
-  font-family: inherit; font-size: 0.3rem;
-  letter-spacing: 1px; cursor: pointer;
-  padding: 1px 3px;
-  transition: color 0.15s;
+#cw-status {
+  font-size: 0.31rem;
+  letter-spacing: 1.5px;
+  color: var(--cw-ink3);
 }
-.cw-status-btn:hover { color: rgba(212,191,184,0.7); }
+#cw-status.busy { color: var(--cw-accent-dim); animation: cw-pulse 1.2s ease-in-out infinite; }
+@keyframes cw-pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
+#cw-status-acts { display: flex; gap: 2px; }
+.cw-status-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--cw-ink3);
+  font-family: inherit;
+  font-size: 0.29rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 1px;
+  transition: all 0.15s;
+}
+.cw-status-btn:hover {
+  color: var(--cw-accent);
+  border-color: var(--cw-brd);
+  background: var(--cw-accent-xlo);
+}
+.cw-status-btn.active-tool {
+  color: var(--cw-accent);
+  border-color: var(--cw-accent-dim);
+  background: var(--cw-accent-xlo);
+}
 
 /* ── MODEL PICKER DROPDOWN ── */
 #cw-model-picker {
@@ -2943,26 +3042,38 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   position: absolute;
   top: 100%;
   right: 0;
-  min-width: 220px;
-  background: #0a0305;
-  border: 1px solid rgba(200,71,42,0.4);
+  min-width: 230px;
+  background: var(--cw-bg2);
+  border: 1px solid var(--cw-brd-hot);
+  border-top: 2px solid var(--cw-accent);
   z-index: 999;
-  max-height: 260px;
+  max-height: 280px;
   overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
+#cw-model-picker::-webkit-scrollbar { width: 3px; }
+#cw-model-picker::-webkit-scrollbar-thumb { background: var(--cw-accent-lo); }
 #cw-model-picker.open { display: block; }
 .cw-model-opt {
-  padding: 7px 12px;
+  padding: 8px 13px;
   font-size: 0.36rem;
   letter-spacing: 0.5px;
-  color: rgba(212,191,184,0.55);
+  color: var(--cw-ink2);
   cursor: pointer;
-  border-bottom: 1px solid rgba(200,71,42,0.07);
+  border-bottom: 1px solid var(--cw-brd);
   transition: background 0.12s, color 0.12s;
 }
-.cw-model-opt:hover { background: rgba(200,71,42,0.1); color: rgba(212,191,184,0.9); }
-.cw-model-opt.active { color: #c8472a; }
-.cw-model-sep { padding: 4px 12px; font-size: 0.3rem; letter-spacing: 2px; color: rgba(200,71,42,0.3); border-bottom: 1px solid rgba(200,71,42,0.12); }
+.cw-model-opt:hover { background: var(--cw-accent-lo); color: var(--cw-ink); }
+.cw-model-opt.active { color: var(--cw-accent); background: var(--cw-accent-xlo); }
+.cw-model-sep {
+  padding: 5px 13px 4px;
+  font-size: 0.29rem;
+  letter-spacing: 2.5px;
+  color: var(--cw-accent-dim);
+  background: var(--cw-bg);
+  border-bottom: 1px solid var(--cw-brd);
+  text-transform: uppercase;
+}
 
 /* ── API KEY SETUP PROMPT ── */
 #cw-setup {
@@ -2974,24 +3085,25 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   z-index: 1;
 }
 #cw-setup.show { display: flex; }
-#cw-setup-msg { font-size: 0.38rem; color: rgba(212,191,184,0.45); line-height: 1.6; }
+#cw-setup-msg { font-size: 0.38rem; color: var(--cw-ink3); line-height: 1.6; }
 #cw-key-inp {
-  background: rgba(0,0,0,0.6);
-  border: 1px solid rgba(200,71,42,0.25);
+  background: var(--cw-bg2);
+  border: 1px solid var(--cw-brd);
   border-radius: 1px;
-  color: #e8e4df;
+  color: var(--cw-ink);
   font-family: inherit;
   font-size: 0.38rem;
   padding: 5px 8px;
   outline: none;
   width: 100%;
+  transition: border-color 0.2s;
 }
-#cw-key-inp:focus { border-color: rgba(200,71,42,0.55); }
+#cw-key-inp:focus { border-color: var(--cw-accent-dim); }
 #cw-key-save {
   align-self: flex-start;
-  background: rgba(200,71,42,0.12);
-  border: 1px solid rgba(200,71,42,0.4);
-  color: rgba(200,71,42,0.8);
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-accent-dim);
+  color: var(--cw-accent);
   font-family: inherit;
   font-size: 0.36rem;
   letter-spacing: 1.5px;
@@ -2999,32 +3111,51 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   cursor: pointer;
   transition: all 0.15s;
 }
-#cw-key-save:hover { background: rgba(200,71,42,0.22); color: #ff4020; }
+#cw-key-save:hover { background: var(--cw-accent-lo); color: var(--cw-ink); }
 
 /* ── DROP OVERLAY ── */
 #cw-drop-overlay {
   display: none;
   position: absolute;
   inset: 0;
-  background: rgba(200,71,42,0.06);
-  border: 2px dashed rgba(200,71,42,0.5);
+  background: rgba(200,71,42,0.04);
+  border: 2px dashed var(--cw-accent-dim);
   z-index: 10;
   align-items: center;
   justify-content: center;
   font-size: 0.45rem;
   letter-spacing: 3px;
-  color: rgba(200,71,42,0.7);
+  color: var(--cw-accent);
   pointer-events: none;
 }
 
-/* ── PAPER MODE overrides ── */
-:root[data-theme="paper"] #cw-panel    { background: #f0e8dc; }
-:root[data-theme="paper"] #cw-inp      { background: rgba(255,255,255,0.5); color: #1a0a04; }
-:root[data-theme="paper"] #cw-inp::placeholder { color: rgba(26,10,4,0.25); }
-:root[data-theme="paper"] .cw-msg[data-role="assistant"] .cw-msg-body { color: rgba(26,10,4,0.75); }
-:root[data-theme="paper"] .cw-msg[data-role="user"]      .cw-msg-body { color: rgba(26,10,4,0.88); }
-:root[data-theme="paper"] #cw-model-picker { background: #ede4d6; }
-:root[data-theme="paper"] .cw-model-opt { color: rgba(26,10,4,0.55); }
+/* ── IMAGE GEN RESULT ── */
+#cw-imagine-result img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border: 1px solid var(--cw-brd);
+  display: block;
+  margin-top: 6px;
+}
+.cw-img-actions {
+  display: flex;
+  gap: 5px;
+  margin-top: 5px;
+}
+.cw-img-action-btn {
+  font-size: 0.3rem;
+  letter-spacing: 2px;
+  padding: 3px 8px;
+  background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-brd);
+  color: var(--cw-ink2);
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+.cw-img-action-btn:hover { border-color: var(--cw-accent-dim); color: var(--cw-accent); }
 </style>
 
 <!-- ── MARKUP ───────────────────────────────────────────────── -->
@@ -3038,27 +3169,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <span id="cw-chevron">▾</span>
   </div>
 
-  <!-- model picker -->
+  <!-- model picker — populated dynamically from /api/writer?action=models -->
   <div id="cw-model-picker">
-    <div class="cw-model-sep">OPENROUTER</div>
-    <div class="cw-model-opt" data-model="deepseek/deepseek-r1" data-provider="openrouter">deepseek/deepseek-r1</div>
-    <div class="cw-model-opt" data-model="deepseek/deepseek-chat-v3-0324" data-provider="openrouter">deepseek/deepseek-chat-v3</div>
-    <div class="cw-model-opt" data-model="google/gemini-2.5-pro" data-provider="openrouter">google/gemini-2.5-pro</div>
-    <div class="cw-model-opt" data-model="google/gemini-2.0-flash-001" data-provider="openrouter">google/gemini-2.0-flash</div>
-    <div class="cw-model-opt" data-model="anthropic/claude-sonnet-4-5" data-provider="openrouter">anthropic/claude-sonnet-4-5</div>
-    <div class="cw-model-opt" data-model="meta-llama/llama-3.3-70b-instruct" data-provider="openrouter">llama-3.3-70b</div>
-    <div class="cw-model-sep">GROQ (fast)</div>
-    <div class="cw-model-opt" data-model="llama-3.3-70b-versatile" data-provider="groq">llama-3.3-70b</div>
-    <div class="cw-model-opt" data-model="llama3-70b-8192" data-provider="groq">llama3-70b</div>
-    <div class="cw-model-opt" data-model="mixtral-8x7b-32768" data-provider="groq">mixtral-8x7b</div>
-    <div class="cw-model-sep">GEMINI</div>
-    <div class="cw-model-opt" data-model="gemini-2.5-pro" data-provider="gemini">gemini-2.5-pro</div>
-    <div class="cw-model-opt" data-model="gemini-2.0-flash" data-provider="gemini">gemini-2.0-flash</div>
-    <div class="cw-model-sep">DEEPSEEK</div>
-    <div class="cw-model-opt" data-model="deepseek-chat" data-provider="deepseek">deepseek-chat</div>
-    <div class="cw-model-opt" data-model="deepseek-reasoner" data-provider="deepseek">deepseek-reasoner</div>
-    <div class="cw-model-sep">─</div>
-    <div class="cw-model-opt" data-action="configure">⚙ configure api key…</div>
+    <div class="cw-model-sep">// loading available models…</div>
   </div>
 
   <!-- panel body -->
@@ -3103,10 +3216,33 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <button id="cw-send-btn" onclick="cwSend()" title="Send (Enter)">↑</button>
     </div>
 
+    <!-- image generation panel -->
+    <div id="cw-imagine-row" class="cw-tool-panel" style="display:none;">
+      <div class="cw-tool-label">// IMAGEN — DESCRIBE SCENE FOR AI IMAGE</div>
+      <div class="cw-tool-row">
+        <textarea id="cw-imagine-inp" rows="2" class="cw-tool-inp" placeholder="A ruined Dhaka skyline under a static grey sky, black rain falling, lone figure on a rooftop…" spellcheck="false"></textarea>
+        <button onclick="cwImagine()" class="cw-tool-btn">GENERATE</button>
+      </div>
+      <div id="cw-imagine-status" class="cw-tool-status"></div>
+      <div id="cw-imagine-result"></div>
+    </div>
+
+    <!-- search row -->
+    <div id="cw-search-row" class="cw-tool-panel" style="display:none;">
+      <div class="cw-tool-label">// WEB SEARCH — RESULTS INJECT INTO NEXT MESSAGE</div>
+      <div class="cw-tool-row">
+        <input id="cw-search-inp" type="text" class="cw-tool-inp" placeholder="Search query…" spellcheck="false">
+        <button onclick="cwSearchInject()" class="cw-tool-btn">SEARCH</button>
+      </div>
+      <div id="cw-search-status" class="cw-tool-status"></div>
+    </div>
+
     <!-- status / util row -->
     <div id="cw-status-row">
       <span id="cw-status">// ready</span>
       <div id="cw-status-acts">
+        <button class="cw-status-btn" onclick="cwToggleSearch()" title="Web search" id="cw-search-toggle">SEARCH</button>
+        <button class="cw-status-btn" onclick="cwToggleImagine()" title="AI image generation" id="cw-imagine-toggle">IMAGE</button>
         <button class="cw-status-btn" onclick="cwClear()" title="Clear history">CLEAR</button>
         <button class="cw-status-btn" onclick="cwCopyLast()" title="Copy last response">COPY</button>
         <button class="cw-status-btn" onclick="cwInsertLast()" title="Insert into editor">INSERT</button>
@@ -3225,10 +3361,8 @@ window.cwClearHistory = async function() {
   }).catch(() => {});
 };
 
-// default model/provider
-// Model display only — actual model selection handled server-side by /api/writer cascade
-let cwProvider = 'server';
-let cwModel    = 'auto';
+// model selection
+let cwModelId = 'auto';  // matches AVAILABLE_MODELS id from server
 
 // ── INIT ──────────────────────────────────────────────────────
 window.cwAutoResize = function(el) {
@@ -3237,15 +3371,6 @@ window.cwAutoResize = function(el) {
 };
 
 (function init() {
-  // model picker
-  document.querySelectorAll('.cw-model-opt[data-model]').forEach(el => {
-    el.addEventListener('click', () => cwModelPickerToggle(false));
-  });
-  document.querySelector('.cw-model-opt[data-action="configure"]')?.addEventListener('click', () => {
-    cwModelPickerToggle(false);
-    cwAppend('system', '// model cascade: groq → gemini → deepseek → openrouter. managed server-side.');
-  });
-
   // quick action buttons
   document.querySelectorAll('.cw-act[data-action]').forEach(btn => {
     btn.addEventListener('click', () => cwQuick(btn.dataset.action));
@@ -3262,6 +3387,11 @@ window.cwAutoResize = function(el) {
   inp.addEventListener('input', e => window.cwAutoResize && window.cwAutoResize(e.target));
   inp.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); cwSend(); }
+  });
+
+  // search input enter key
+  document.getElementById('cw-search-inp')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') cwSearchInject();
   });
 
   // drag-drop on panel
@@ -3282,8 +3412,51 @@ window.cwAutoResize = function(el) {
     }
   });
 
-  updateModelTag();
+  // load available models from server
+  cwLoadModels();
 })();
+
+// ── LOAD MODELS FROM SERVER ───────────────────────────────────
+async function cwLoadModels() {
+  try {
+    const r = await fetch('/api/writer?action=models');
+    if (!r.ok) throw new Error();
+    const d = await r.json();
+    const picker = document.getElementById('cw-model-picker');
+    picker.innerHTML = '';
+    const byProvider = {};
+    (d.models || []).forEach(m => {
+      const p = m.provider || 'other';
+      if (!byProvider[p]) byProvider[p] = [];
+      byProvider[p].push(m);
+    });
+    Object.entries(byProvider).forEach(([provider, models]) => {
+      const sep = document.createElement('div');
+      sep.className = 'cw-model-sep';
+      sep.textContent = provider.toUpperCase() + (models[0]?.fast ? ' (fast)' : '');
+      picker.appendChild(sep);
+      models.forEach(m => {
+        const el = document.createElement('div');
+        el.className = 'cw-model-opt';
+        el.dataset.modelId = m.id;
+        el.textContent = m.label;
+        if (m.id === cwModelId) el.classList.add('active');
+        el.addEventListener('click', () => {
+          cwModelId = m.id;
+          document.querySelectorAll('.cw-model-opt').forEach(x => x.classList.remove('active'));
+          el.classList.add('active');
+          updateModelTag(m.label);
+          cwModelPickerToggle(false);
+        });
+        picker.appendChild(el);
+      });
+    });
+    updateModelTag('auto');
+  } catch {
+    const picker = document.getElementById('cw-model-picker');
+    picker.innerHTML = '<div class="cw-model-sep">// could not load models</div>';
+  }
+}
 
 // ── TOGGLE ────────────────────────────────────────────────────
 window.cwToggle = function() {
@@ -3308,16 +3481,102 @@ window.cwModelPickerToggle = function(force) {
   cwPickerOpen = force !== undefined ? force : !cwPickerOpen;
   const picker = document.getElementById('cw-model-picker');
   picker.classList.toggle('open', cwPickerOpen);
-  // mark active
-  picker.querySelectorAll('.cw-model-opt[data-model]').forEach(el => {
-    el.classList.toggle('active', el.dataset.model === cwModel && el.dataset.provider === cwProvider);
-  });
 };
 
-function updateModelTag() {
+function updateModelTag(label) {
   const tag = document.getElementById('cw-model-tag');
-  if (tag) tag.textContent = '[SRV] cascade';
+  if (tag) tag.textContent = '[' + (label || cwModelId || 'auto') + ']';
 }
+
+// ── SEARCH PANEL TOGGLE ───────────────────────────────────────
+window.cwToggleSearch = function() {
+  const row = document.getElementById('cw-search-row');
+  const btn = document.getElementById('cw-search-toggle');
+  const open = row.style.display === 'none' || row.style.display === '';
+  row.style.display = open ? 'block' : 'none';
+  btn.classList.toggle('active-tool', open);
+};
+
+// ── SEARCH INJECT — attaches results to next message ─────────
+let cwPendingSearch = null;
+window.cwSearchInject = async function() {
+  const inp = document.getElementById('cw-search-inp');
+  const status = document.getElementById('cw-search-status');
+  const q = inp?.value?.trim();
+  if (!q) return;
+  status.textContent = '// searching…';
+  inp.disabled = true;
+  try {
+    // We'll pass searchQuery to /api/writer on the next send
+    cwPendingSearch = q;
+    status.textContent = '// query queued — will inject on next send: "' + q.slice(0, 40) + '"';
+    inp.value = '';
+  } finally {
+    inp.disabled = false;
+  }
+};
+
+// ── IMAGINE PANEL TOGGLE ──────────────────────────────────────
+window.cwToggleImagine = function() {
+  const row = document.getElementById('cw-imagine-row');
+  const btn = document.getElementById('cw-imagine-toggle');
+  const open = row.style.display === 'none' || row.style.display === '';
+  row.style.display = open ? 'block' : 'none';
+  btn.classList.toggle('active-tool', open);
+};
+
+// ── IMAGE GENERATION ──────────────────────────────────────────
+window.cwImagine = async function() {
+  const inp    = document.getElementById('cw-imagine-inp');
+  const status = document.getElementById('cw-imagine-status');
+  const result = document.getElementById('cw-imagine-result');
+  const prompt = inp?.value?.trim();
+  if (!prompt) return;
+  status.textContent = '// generating image…';
+  result.innerHTML = '';
+  inp.disabled = true;
+  try {
+    const r = await fetch('/api/writer?action=imagine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'generation failed');
+    // Show the image
+    const img = document.createElement('img');
+    img.src = d.dataUrl;
+    img.style.cssText = 'width:100%;max-height:220px;object-fit:contain;border:1px solid rgba(200,71,42,0.2);display:block;margin-top:4px;';
+    result.appendChild(img);
+    // Add insert-into-chapter button
+    const btnRow = document.createElement('div');
+    btnRow.className = 'cw-img-actions';
+    const insBtn = document.createElement('button');
+    insBtn.textContent = 'INSERT INTO CHAPTER';
+    insBtn.className = 'cw-img-action-btn';
+    insBtn.onclick = () => {
+      const editor = document.getElementById('ced-body');
+      if (editor) {
+        const tag = '[IMG url=' + d.dataUrl.slice(0,60) + '… align=center caption=' + prompt.slice(0,40) + ']';
+        editor.value += '\n' + tag + '\n';
+        cwAppend('system', '// image reference inserted into chapter editor');
+      }
+    };
+    const dlBtn = document.createElement('a');
+    dlBtn.textContent = 'DOWNLOAD';
+    dlBtn.href = d.dataUrl;
+    dlBtn.download = 'cygnus-image.png';
+    dlBtn.className = 'cw-img-action-btn';
+    btnRow.appendChild(insBtn);
+    btnRow.appendChild(dlBtn);
+    result.appendChild(btnRow);
+    status.textContent = '// image ready';
+  } catch(e) {
+    status.textContent = '// error: ' + e.message;
+  } finally {
+    inp.disabled = false;
+  }
+};
 
 // ── API KEY SETUP — no-op (keys handled server-side via /api/writer) ──────────
 function showSetup(msg) {
@@ -3387,6 +3646,8 @@ window.cwSend = async function(overrideMsg) {
         attachments: pendingAtt.length ? pendingAtt : undefined,
         chapterContext: chBody ? { body: chBody, title: chTitle, num: chNum } : undefined,
         userId: cwGetUserId(),
+        modelId: cwModelId,
+        searchQuery: cwPendingSearch || undefined,
       }),
     });
 
@@ -3403,6 +3664,12 @@ window.cwSend = async function(overrideMsg) {
     cwAppend('assistant', reply);
     cwSetStatus('// ready', false);
     cwSaveHistory();
+    // clear pending search after it was used
+    if (cwPendingSearch) {
+      cwPendingSearch = null;
+      const ss = document.getElementById('cw-search-status');
+      if (ss) ss.textContent = '// search results injected';
+    }
 
   } catch (err) {
     const msg = err.message || String(err);
@@ -4820,63 +5087,233 @@ function syncReaderUI() {
 
 /* ── AMBIENT MUSIC PLAYER ── */
 /* All tracks: freesound.org CC previews */
-const AMBIENT_TRACKS = {
-  analog:  ['https://cdn.freesound.org/previews/316/316847_5123851-lq.mp3',
-            'https://cdn.freesound.org/previews/243/243627_4107918-lq.mp3'],
-  rain:    ['https://cdn.freesound.org/previews/346/346186_5121236-lq.mp3',
-            'https://cdn.freesound.org/previews/531/531710_7346540-lq.mp3'],
-  forest:  ['https://cdn.freesound.org/previews/531/531947_2523167-lq.mp3',
-            'https://cdn.freesound.org/previews/456/456968_5121236-lq.mp3'],
-  cave:    ['https://cdn.freesound.org/previews/346/346943_5121236-lq.mp3',
-            'https://cdn.freesound.org/previews/401/401934_7255534-lq.mp3'],
-  signal:  ['https://cdn.freesound.org/previews/399/399095_6142149-lq.mp3',
-            'https://cdn.freesound.org/previews/243/243628_4107918-lq.mp3'],
-  wind:    ['https://cdn.freesound.org/previews/361/361169_6505188-lq.mp3',
-            'https://cdn.freesound.org/previews/476/476042_6418094-lq.mp3'],
+// ── AMBIENT SOUND ENGINE — Web Audio API, no external files ──────────────────
+// All sounds are procedurally generated: no CDN hotlinking, no 403s.
+let _ambCtx = null, _ambNodes = [], _ambKey = null, _ambVol = 0.3, _ambGain = null;
+
+function _getAmbCtx() {
+  if (!_ambCtx || _ambCtx.state === 'closed') {
+    _ambCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (_ambCtx.state === 'suspended') _ambCtx.resume();
+  return _ambCtx;
+}
+
+function _makeNoise(ctx, type) {
+  // Generate a 3-second noise buffer, looped
+  const sr = ctx.sampleRate;
+  const buf = ctx.createBuffer(1, sr * 3, sr);
+  const d = buf.getChannelData(0);
+  if (type === 'white') {
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  } else if (type === 'brown') {
+    let last = 0;
+    for (let i = 0; i < d.length; i++) {
+      const w = Math.random() * 2 - 1;
+      d[i] = (last + 0.02 * w) / 1.02; last = d[i]; d[i] *= 3.5;
+    }
+  } else { // pink
+    let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+    for (let i = 0; i < d.length; i++) {
+      const w = Math.random() * 2 - 1;
+      b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+      b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+      b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+      d[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+    }
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buf; src.loop = true;
+  return src;
+}
+
+function _makeBpFilter(ctx, freq, Q) {
+  const f = ctx.createBiquadFilter();
+  f.type = 'bandpass'; f.frequency.value = freq; f.Q.value = Q;
+  return f;
+}
+function _makeLpFilter(ctx, freq) {
+  const f = ctx.createBiquadFilter();
+  f.type = 'lowpass'; f.frequency.value = freq;
+  return f;
+}
+function _makeHpFilter(ctx, freq) {
+  const f = ctx.createBiquadFilter();
+  f.type = 'highpass'; f.frequency.value = freq;
+  return f;
+}
+
+const AMBIENT_BUILDERS = {
+  // ANALOG STATIC — white noise + narrow band-pass to mimic AM radio hiss
+  analog: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'white');
+    const bp1 = _makeBpFilter(ctx, 1200, 0.8);
+    const bp2 = _makeBpFilter(ctx, 3400, 0.5);
+    const lp  = _makeLpFilter(ctx, 6000);
+    const g   = ctx.createGain(); g.gain.value = 0.55;
+    noise.connect(bp1); bp1.connect(bp2); bp2.connect(lp); lp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Slow LFO to modulate the static volume (crackle effect)
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.4; lfo.type = 'sine';
+    const lfoGain = ctx.createGain(); lfoGain.gain.value = 0.2;
+    lfo.connect(lfoGain); lfoGain.connect(g.gain);
+    lfo.start();
+    return [noise, lfo];
+  },
+
+  // RAIN ON GLASS — pink noise + heavy low-pass + subtle drip resonance
+  rain: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'pink');
+    const lp  = _makeLpFilter(ctx, 900);
+    const hp  = _makeHpFilter(ctx, 80);
+    const g   = ctx.createGain(); g.gain.value = 0.7;
+    noise.connect(lp); lp.connect(hp); hp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Occasional drip — low-freq sine blip
+    let dripTimer;
+    function drip() {
+      const osc = ctx.createOscillator(); osc.frequency.value = 180 + Math.random()*120;
+      const dg = ctx.createGain(); dg.gain.setValueAtTime(0.18, ctx.currentTime);
+      dg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+      osc.connect(dg); dg.connect(masterGain); osc.start(); osc.stop(ctx.currentTime + 0.35);
+      dripTimer = setTimeout(drip, 600 + Math.random() * 2400);
+    }
+    drip();
+    const stopDrip = () => clearTimeout(dripTimer);
+    noise._stopDrip = stopDrip;
+    return [noise];
+  },
+
+  // FOREST NIGHT — brown noise base + cricket-like high pitched tones + LFO swell
+  forest: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'brown');
+    const lp  = _makeLpFilter(ctx, 600);
+    const g   = ctx.createGain(); g.gain.value = 0.5;
+    noise.connect(lp); lp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Cricket layer — two detuned oscillators modulated fast
+    const nodes = [noise];
+    [3800, 4100, 4600].forEach((freq, i) => {
+      const osc = ctx.createOscillator(); osc.frequency.value = freq; osc.type = 'sine';
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 14 + i*3; lfo.type = 'sine';
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.015;
+      const oscG = ctx.createGain(); oscG.gain.value = 0.022;
+      lfo.connect(lfoG); lfoG.connect(oscG.gain);
+      osc.connect(oscG); oscG.connect(masterGain);
+      osc.start(); lfo.start();
+      nodes.push(osc, lfo);
+    });
+    return nodes;
+  },
+
+  // CAVE DRIP — very quiet brown noise + reverb-like delay + resonant drips
+  cave: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'brown');
+    const lp = _makeLpFilter(ctx, 200);
+    const g  = ctx.createGain(); g.gain.value = 0.3;
+    noise.connect(lp); lp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Delay for cave echo
+    const delay = ctx.createDelay(2.0); delay.delayTime.value = 0.55;
+    const fbGain = ctx.createGain(); fbGain.gain.value = 0.45;
+    delay.connect(fbGain); fbGain.connect(delay); delay.connect(masterGain);
+    // Drips with longer decay
+    let dripTimer;
+    function drip() {
+      const osc = ctx.createOscillator(); osc.frequency.value = 260 + Math.random()*140;
+      const dg = ctx.createGain(); dg.gain.setValueAtTime(0.22, ctx.currentTime);
+      dg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
+      osc.connect(dg); dg.connect(delay); dg.connect(masterGain);
+      osc.start(); osc.stop(ctx.currentTime + 0.6);
+      dripTimer = setTimeout(drip, 1800 + Math.random() * 4000);
+    }
+    drip();
+    noise._stopDrip = () => clearTimeout(dripTimer);
+    return [noise];
+  },
+
+  // SIGNAL DRIFT — narrow sweeping bandpass over white noise, eerie carrier tone
+  signal: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'white');
+    const bp = _makeBpFilter(ctx, 800, 12);
+    const g  = ctx.createGain(); g.gain.value = 0.35;
+    noise.connect(bp); bp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Sweep the bandpass centre freq slowly
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.07; lfo.type = 'sine';
+    const lfoG = ctx.createGain(); lfoG.gain.value = 600;
+    lfo.connect(lfoG); lfoG.connect(bp.frequency);
+    lfo.start();
+    // Carrier tone — barely audible sine
+    const carrier = ctx.createOscillator(); carrier.frequency.value = 440; carrier.type = 'sine';
+    const cg = ctx.createGain(); cg.gain.value = 0.04;
+    carrier.connect(cg); cg.connect(masterGain); carrier.start();
+    return [noise, lfo, carrier];
+  },
+
+  // DEEP WIND — layered brown + pink with slow LFO swell
+  wind: (ctx, masterGain) => {
+    const n1 = _makeNoise(ctx, 'brown');
+    const n2 = _makeNoise(ctx, 'pink');
+    const lp1 = _makeLpFilter(ctx, 400);
+    const lp2 = _makeLpFilter(ctx, 700);
+    const g1 = ctx.createGain(); g1.gain.value = 0.5;
+    const g2 = ctx.createGain(); g2.gain.value = 0.25;
+    n1.connect(lp1); lp1.connect(g1); g1.connect(masterGain);
+    n2.connect(lp2); lp2.connect(g2); g2.connect(masterGain);
+    n1.start(); n2.start();
+    // Slow volume swell on the brown layer
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.12; lfo.type = 'sine';
+    const lfoG = ctx.createGain(); lfoG.gain.value = 0.22;
+    lfo.connect(lfoG); lfoG.connect(g1.gain);
+    lfo.start();
+    return [n1, n2, lfo];
+  },
 };
-let _ambHowl = null, _ambKey = null, _ambVol = 0.3;
 
 function setAmbient(key, btnEl) {
-  // Toggle off if same track clicked
   if (_ambKey === key) { stopAmbient(); return; }
   stopAmbient(false);
   _ambKey = key;
-  const srcs = AMBIENT_TRACKS[key];
-
-  function _makeHowl(srcList) {
-    _ambHowl = new Howl({
-      src: srcList, loop: true, volume: 0, html5: true,
-      onloaderror: () => {
-        // First src failed — try next if available
-        const remaining = srcs.slice(srcList === srcs ? 1 : srcs.length);
-        if (remaining.length) {
-          _makeHowl(remaining);
-        } else {
-          // All srcs failed — clear state and UI
-          _ambHowl = null; _ambKey = null;
-          document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
-        }
-      }
-    });
-    _ambHowl.play();
-    _ambHowl.fade(0, _ambVol, 2000);
+  try {
+    const ctx = _getAmbCtx();
+    _ambGain = ctx.createGain();
+    _ambGain.gain.setValueAtTime(0, ctx.currentTime);
+    _ambGain.gain.linearRampToValueAtTime(_ambVol, ctx.currentTime + 2.0);
+    _ambGain.connect(ctx.destination);
+    const builder = AMBIENT_BUILDERS[key];
+    if (builder) _ambNodes = builder(ctx, _ambGain);
+  } catch(e) {
+    console.warn('[ambient] Web Audio error:', e);
+    _ambKey = null;
+    return;
   }
-
-  _makeHowl(srcs);
-  // sync UI
   document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
   if (btnEl) btnEl.classList.add('amb-active');
 }
 
 function stopAmbient(clearBtn = true) {
-  if (_ambHowl) { _ambHowl.fade(_ambVol, 0, 800); setTimeout(() => { if(_ambHowl){_ambHowl.stop();_ambHowl.unload();_ambHowl=null;} }, 900); }
+  if (_ambGain && _ambCtx) {
+    try {
+      _ambGain.gain.linearRampToValueAtTime(0, _ambCtx.currentTime + 0.8);
+      const ctx = _ambCtx;
+      setTimeout(() => {
+        _ambNodes.forEach(n => { try { if(n._stopDrip) n._stopDrip(); n.stop?.(); } catch{} });
+        _ambNodes = [];
+        try { _ambGain?.disconnect(); } catch{}
+        _ambGain = null;
+      }, 900);
+    } catch(e) {}
+  }
   _ambKey = null;
   if (clearBtn) document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
 }
 
 function setAmbVol(v) {
   _ambVol = parseFloat(v);
-  if (_ambHowl) _ambHowl.volume(_ambVol);
+  if (_ambGain && _ambCtx) {
+    _ambGain.gain.linearRampToValueAtTime(_ambVol, _ambCtx.currentTime + 0.1);
+  }
 }
 
 function toggleReaderOpts() { document.getElementById('reader-opts-panel').classList.toggle('open'); }
