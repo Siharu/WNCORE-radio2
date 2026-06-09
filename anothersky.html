@@ -1845,433 +1845,698 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 :root[data-theme="paper"] .lucid-icon {
   filter: brightness(0) saturate(0) invert(0.08) sepia(0.6) saturate(3) hue-rotate(320deg);
 }
-#ced-shell {
-  display: flex; width: 100%; height: 100%;
-  background: #020000; font-family: var(--font-mono, 'IBM Plex Mono');
+/* ═══════════════════════════════════════════════════════════
+   CHAPTER EDITOR — SANTAX / DOSSIER TERMINAL SKIN
+   Aesthetic ref: SANTAX VITAL SERIES + Cyberpunk 2077 char screen
+═══════════════════════════════════════════════════════════ */
+
+/* ── CORNER BRACKET MIXIN (pseudo-element pattern) ─────────── */
+.ced-bracketed {
   position: relative;
 }
-/* scanline texture */
-#ced-shell::before {
-  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
+.ced-bracketed::before,
+.ced-bracketed::after {
+  content: '';
+  position: absolute;
+  width: 10px; height: 10px;
+  border-color: rgba(200,71,42,0.55);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 2;
 }
+.ced-bracketed::before { top: 0; left: 0; border-width: 1px 0 0 1px; }
+.ced-bracketed::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
+
+/* ── SHELL ──────────────────────────────────────────────────── */
+#ced-shell {
+  display: flex; width: 100%; height: 100%;
+  background: #050000;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  position: relative;
+  overflow: hidden;
+}
+/* CRT scanline wash */
+#ced-shell::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.10) 2px,
+      rgba(0,0,0,0.10) 4px
+    );
+  mix-blend-mode: multiply;
+}
+/* Ambient red glow bottom-left */
+#ced-shell::after {
+  content: '';
+  position: absolute; bottom: -60px; left: -60px;
+  width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,71,42,0.07) 0%, transparent 70%);
+  pointer-events: none; z-index: 0;
+}
+
+/* ── LEFT PANEL — DOSSIER SIDEBAR ───────────────────────────── */
 #ced-left {
   width: 220px; min-width: 180px; max-width: 240px;
-  border-right: 1px solid rgba(255,20,20,0.18);
+  border-right: 1px solid rgba(200,71,42,0.22);
   display: flex; flex-direction: column;
-  background: #010000; overflow: hidden; position: relative; z-index: 1;
+  background: #030000; overflow: hidden;
+  position: relative; z-index: 1;
 }
+/* Top bracket on left panel */
+#ced-left::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 14px; height: 14px;
+  border-top: 1px solid rgba(200,71,42,0.7);
+  border-left: 1px solid rgba(200,71,42,0.7);
+  pointer-events: none; z-index: 3;
+}
+#ced-left::after {
+  content: ''; position: absolute; bottom: 0; right: 0;
+  width: 14px; height: 14px;
+  border-bottom: 1px solid rgba(200,71,42,0.7);
+  border-right: 1px solid rgba(200,71,42,0.7);
+  pointer-events: none; z-index: 3;
+}
+
 #ced-left-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px 8px;
-  border-bottom: 1px solid rgba(255,20,20,0.15); flex-shrink: 0;
-  background: rgba(200,0,0,0.06);
+  padding: 8px 12px 7px;
+  border-bottom: 1px solid rgba(200,71,42,0.18);
+  flex-shrink: 0;
+  background: #000;
+  position: relative;
 }
-#ced-logo { font-size: 0.28rem; letter-spacing: 4px; color: rgba(255,20,20,0.6); text-transform: uppercase; }
+/* Red underline accent on header */
+#ced-left-head::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, rgba(200,71,42,0.6) 0%, transparent 100%);
+}
+
+#ced-logo {
+  font-size: 0.22rem; letter-spacing: 4px;
+  color: rgba(200,71,42,0.5); text-transform: uppercase;
+}
+/* Dossier unit tag — shown next to logo */
+#ced-logo::before {
+  content: '▐ ';
+  color: rgba(200,71,42,0.35);
+}
+
 .ced-icon-btn {
-  background: transparent; border: 1px solid rgba(255,20,20,0.2);
-  padding: 4px 6px; cursor: pointer; display: flex; align-items: center; transition: border-color 0.12s;
-  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%);
+  background: transparent;
+  border: 1px solid rgba(200,71,42,0.2);
+  padding: 4px 6px; cursor: pointer;
+  display: flex; align-items: center;
+  transition: border-color 0.12s, background 0.12s;
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
 }
-.ced-icon-btn:hover { border-color: #ff1a1a; background: rgba(255,0,0,0.07); }
+.ced-icon-btn:hover { border-color: #c8472a; background: rgba(200,71,42,0.08); }
+
+/* NEW CHAPTER button — styled as a PROTOCOL button */
 #ced-new-btn {
-  margin: 10px 10px 6px; padding: 9px 10px;
-  background: transparent; border: 1px solid rgba(255,20,20,0.3);
-  color: rgba(255,20,20,0.7); font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.34rem; letter-spacing: 3px; cursor: pointer;
+  margin: 10px 10px 4px; padding: 8px 10px;
+  background: transparent;
+  border: 1px solid rgba(200,71,42,0.35);
+  color: rgba(200,71,42,0.75);
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 3px; cursor: pointer;
   text-transform: uppercase; transition: all 0.12s; flex-shrink: 0;
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
+  position: relative;
 }
-#ced-new-btn:hover { background: rgba(255,0,0,0.1); border-color: rgba(255,20,20,0.6); color: #ff1a1a; }
-#ced-ch-list { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent; }
+#ced-new-btn::after {
+  content: '';
+  position: absolute; bottom: -1px; left: 4px; right: 4px; height: 1px;
+  background: rgba(200,71,42,0.3);
+}
+#ced-new-btn:hover {
+  background: rgba(200,71,42,0.1);
+  border-color: rgba(200,71,42,0.7);
+  color: #c8472a;
+}
+
+/* Chapter search filter */
+#ced-ch-search {
+  margin: 6px 10px 4px; padding: 5px 8px;
+  background: #000;
+  border: none; border-bottom: 1px solid rgba(200,71,42,0.2);
+  color: rgba(200,100,80,0.8);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  outline: none; letter-spacing: 1px;
+  width: calc(100% - 20px); box-sizing: border-box;
+}
+#ced-ch-search:focus { border-bottom-color: #c8472a; }
+#ced-ch-search::placeholder { color: rgba(200,71,42,0.2); }
+
+/* Chapter list */
+#ced-ch-list {
+  flex: 1; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: rgba(200,71,42,0.15) transparent;
+}
+
+/* Chapter list item — dossier record row */
 .ced-ch-item {
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 10px 14px; cursor: pointer;
-  border-bottom: 1px solid rgba(200,0,0,0.07);
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 9px 12px 9px 14px; cursor: grab;
+  border-bottom: 1px solid rgba(200,71,42,0.06);
   position: relative; transition: background 0.1s;
 }
-.ced-ch-item::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--red); opacity: 0; transition: opacity 0.12s; }
-.ced-ch-item:hover { background: rgba(200,0,0,0.06); }
-.ced-ch-item.active { background: rgba(200,0,0,0.1); }
+/* Left accent bar */
+.ced-ch-item::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: #c8472a; opacity: 0; transition: opacity 0.12s;
+}
+.ced-ch-item:hover { background: rgba(200,71,42,0.05); }
+.ced-ch-item.active { background: rgba(200,71,42,0.09); }
 .ced-ch-item.active::before { opacity: 1; }
-.ced-ch-num { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.35); text-transform: uppercase; }
-.ced-ch-name { font-size: 0.42rem; color: rgba(200,80,80,0.8); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ced-ch-item.active .ced-ch-name { color: var(--red); }
-#ced-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.ced-ch-item.dragging { opacity: 0.35; cursor: grabbing; }
+.ced-ch-item.drag-over { border-top: 2px solid #c8472a; }
+
+/* Record ID label above chapter name */
+.ced-ch-num {
+  font-size: 0.2rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.3); text-transform: uppercase;
+}
+.ced-ch-num::before { content: 'REC-'; }
+
+.ced-ch-name {
+  font-size: 0.38rem; color: rgba(200,120,100,0.8);
+  text-transform: uppercase; letter-spacing: 0.5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ced-ch-item.active .ced-ch-name { color: #fff; }
+
+/* Published / draft badge */
+.ced-ch-status {
+  font-size: 0.19rem; letter-spacing: 2px; text-transform: uppercase;
+  margin-top: 2px; padding: 1px 4px; align-self: flex-start;
+  border: 1px solid transparent;
+}
+.ced-ch-status.pub  { color: rgba(60,200,100,0.55); border-color: rgba(60,200,100,0.18); }
+.ced-ch-status.draft{ color: rgba(200,130,0,0.55);  border-color: rgba(200,130,0,0.18); }
+
+/* ── LORE DROPBOX — left panel section ─────────────────────── */
+#ced-lore-section {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(200,71,42,0.12);
+  background: #000;
+}
+#ced-lore-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 12px; cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.12s;
+}
+#ced-lore-header:hover { border-bottom-color: rgba(200,71,42,0.12); }
+#ced-lore-header-label {
+  font-size: 0.22rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.45); text-transform: uppercase;
+}
+#ced-lore-header-label::before { content: '◉ '; }
+#ced-lore-chevron {
+  font-size: 0.22rem; color: rgba(200,71,42,0.3);
+  transition: transform 0.15s;
+}
+#ced-lore-section.open #ced-lore-chevron { transform: rotate(180deg); }
+#ced-lore-body {
+  display: none; padding: 0 10px 8px; flex-direction: column; gap: 4px;
+}
+#ced-lore-section.open #ced-lore-body { display: flex; }
+#ced-lore-field {
+  font-size: 0.19rem; letter-spacing: 2px;
+  color: rgba(200,71,42,0.3); text-transform: uppercase;
+  padding: 0 2px 3px;
+  border-bottom: 1px solid rgba(200,71,42,0.1);
+  margin-bottom: 4px;
+}
+#ced-lore-ta {
+  background: #000; border: 1px solid rgba(200,71,42,0.14);
+  border-left: 2px solid rgba(200,71,42,0.35);
+  color: rgba(200,140,120,0.75);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  line-height: 1.55; padding: 7px 8px; resize: none; outline: none;
+  height: 88px; scrollbar-width: thin;
+  scrollbar-color: rgba(200,71,42,0.15) transparent;
+  width: 100%; box-sizing: border-box;
+  transition: border-color 0.12s;
+}
+#ced-lore-ta:focus { border-color: rgba(200,71,42,0.4); border-left-color: #c8472a; }
+#ced-lore-ta::placeholder { color: rgba(200,71,42,0.15); }
+#ced-lore-status {
+  font-size: 0.19rem; letter-spacing: 1.5px;
+  color: rgba(200,71,42,0.3); text-transform: uppercase;
+  padding: 0 2px;
+}
+#ced-lore-status.active { color: rgba(200,71,42,0.6); }
+
+/* ── PRIVATE NOTES ──────────────────────────────────────────── */
+#ced-notes-wrap {
+  flex-shrink: 0; border-top: 1px solid rgba(200,71,42,0.1);
+  padding: 6px 10px 8px;
+  display: flex; flex-direction: column; gap: 3px;
+  background: #000;
+}
+#ced-notes-label {
+  font-size: 0.19rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.3); text-transform: uppercase;
+}
+#ced-notes {
+  background: #000; border: none;
+  border-left: 2px solid rgba(200,71,42,0.12);
+  color: rgba(180,120,100,0.65);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.32rem; line-height: 1.5; padding: 5px 8px;
+  resize: none; outline: none; height: 52px; scrollbar-width: thin;
+}
+#ced-notes:focus { border-left-color: rgba(200,71,42,0.4); }
+#ced-notes::placeholder { color: rgba(200,71,42,0.15); }
+
+/* ── STORY SHELF ────────────────────────────────────────────── */
+#ced-story-shelf {
+  width: 100%; padding: 8px 10px 0; flex-shrink: 0;
+  display: flex; align-items: center; gap: 6px;
+  border-bottom: 1px solid rgba(200,71,42,0.12);
+  overflow-x: auto; scrollbar-width: none;
+  background: #020000;
+}
+#ced-story-shelf::-webkit-scrollbar { display: none; }
+
+.ced-story-card {
+  flex-shrink: 0; padding: 6px 9px 8px;
+  border: 1px solid rgba(200,71,42,0.18);
+  border-top: 2px solid var(--s-accent, rgba(200,71,42,0.5));
+  cursor: pointer; position: relative;
+  background: transparent; transition: background 0.12s, border-color 0.12s;
+  min-width: 80px; max-width: 120px;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+}
+.ced-story-card:hover { background: rgba(200,71,42,0.05); }
+.ced-story-card.active {
+  background: rgba(200,71,42,0.09);
+  border-color: var(--s-accent, #c8472a);
+}
+.ced-story-card .sc-prefix {
+  font-size: 0.2rem; letter-spacing: 2px;
+  color: var(--s-accent, #c8472a); text-transform: uppercase; opacity: 0.7;
+}
+.ced-story-card .sc-title {
+  font-size: 0.3rem; letter-spacing: 0.5px; color: rgba(200,160,150,0.9);
+  text-transform: uppercase; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  max-width: 100px; margin-top: 2px;
+}
+.ced-story-card.active .sc-title { color: #fff; }
+.ced-story-card .sc-count {
+  font-size: 0.19rem; color: rgba(200,71,42,0.28); letter-spacing: 1px; margin-top: 2px;
+}
+.ced-story-card .sc-gear {
+  margin-left: auto; font-size: 0.24rem; opacity: 0.3; cursor: pointer;
+  padding: 2px 4px; transition: opacity 0.12s;
+}
+.ced-story-card:hover .sc-gear { opacity: 0.7; }
+.ced-story-card .sc-gear:hover { opacity: 1; }
+.ced-story-card .sc-del {
+  display: none; position: absolute; top: 2px; right: 3px;
+  font-size: 0.19rem; color: rgba(200,71,42,0.4); cursor: pointer;
+  padding: 1px 3px; background: #020000;
+  border: 1px solid rgba(200,71,42,0.2); line-height: 1;
+}
+.ced-story-card:hover .sc-del { display: block; }
+.ced-story-card .sc-del:hover { color: #c8472a; border-color: #c8472a; }
+
+.ced-story-add-btn {
+  flex-shrink: 0; padding: 6px 10px; cursor: pointer;
+  border: 1px dashed rgba(200,71,42,0.18); background: transparent;
+  color: rgba(200,71,42,0.3);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 2px; text-transform: uppercase;
+  transition: all 0.12s; white-space: nowrap;
+  align-self: stretch; display: flex; align-items: center; gap: 5px;
+}
+.ced-story-add-btn:hover { border-color: #c8472a; color: #c8472a; background: rgba(200,71,42,0.04); }
+
+/* Story settings inline */
+.ced-story-settings {
+  background: rgba(8,0,0,0.95); border: 1px solid rgba(200,71,42,0.18);
+  border-top: none; padding: 8px 10px; margin-bottom: 3px;
+}
+
+/* New story modal */
+#ced-new-story-modal {
+  display: none; position: absolute; left: 10px; top: 50px; z-index: 10;
+  background: #060000; border: 1px solid rgba(200,71,42,0.35);
+  padding: 14px; width: 250px; flex-direction: column; gap: 9px;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 0 100%);
+}
+#ced-new-story-modal.open { display: flex; }
+.cns-field { display: flex; flex-direction: column; gap: 3px; }
+.cns-label {
+  font-size: 0.2rem; letter-spacing: 2.5px; color: rgba(200,71,42,0.45); text-transform: uppercase;
+}
+.cns-input {
+  background: #000; border: none; border-bottom: 1px solid rgba(200,71,42,0.28);
+  color: rgba(220,160,140,0.9);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.38rem;
+  padding: 4px 6px; outline: none; width: 100%;
+}
+.cns-input:focus { border-bottom-color: #c8472a; }
+.cns-color-row { display: flex; gap: 5px; flex-wrap: wrap; }
+.cns-swatch { width: 20px; height: 20px; border-radius: 2px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.1s; }
+.cns-swatch.selected { border-color: #fff; }
+.cns-btn {
+  padding: 7px 0; text-align: center; cursor: pointer;
+  background: transparent; border: 1px solid rgba(200,71,42,0.4);
+  color: #c8472a;
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 2.5px; text-transform: uppercase;
+  transition: background 0.12s;
+}
+.cns-btn:hover { background: rgba(200,71,42,0.1); }
+
+/* ── RIGHT PANEL ────────────────────────────────────────────── */
+#ced-right {
+  flex: 1; display: flex; flex-direction: column;
+  overflow: hidden; min-width: 0; position: relative; z-index: 1;
+}
+/* Corner brackets on right panel */
+#ced-right::before {
+  content: ''; position: absolute; top: 0; right: 0;
+  width: 14px; height: 14px;
+  border-top: 1px solid rgba(200,71,42,0.5);
+  border-right: 1px solid rgba(200,71,42,0.5);
+  pointer-events: none; z-index: 3;
+}
+
+/* ── TOOLBAR / OPERATION HEADER ─────────────────────────────── */
 #ced-toolbar {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 8px 12px; border-bottom: 1px solid rgba(255,20,20,0.15);
-  background: #010000; flex-shrink: 0; position: relative; z-index: 1;
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(200,71,42,0.18);
+  background: #000; flex-shrink: 0;
+  position: relative; z-index: 1; min-height: 44px;
 }
-/* HUD grid line accent */
+/* Red gradient underline */
 #ced-toolbar::after {
-  content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
-  background: linear-gradient(90deg, rgba(255,20,20,0.5) 0%, rgba(255,20,20,0.1) 40%, transparent 100%);
+  content: '';
+  position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, rgba(200,71,42,0.55) 0%, rgba(200,71,42,0.1) 50%, transparent 100%);
 }
-#ced-toolbar-meta { display: flex; gap: 8px; align-items: center; }
+
+/* CH# and title — dossier field treatment */
+#ced-toolbar-meta {
+  display: flex; gap: 0; align-items: stretch;
+  border: 1px solid rgba(200,71,42,0.2); flex-shrink: 0;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+  background: #080000;
+}
 #ced-num {
-  width: 52px; background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
-  color: var(--red); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.48rem; padding: 4px 6px; outline: none;
+  width: 44px; background: transparent;
+  border: none; border-right: 1px solid rgba(200,71,42,0.2);
+  color: #c8472a; font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.44rem; padding: 6px 8px; outline: none;
+  text-align: center;
 }
 #ced-title {
-  width: 200px; background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
-  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.48rem; padding: 4px 6px; outline: none;
+  width: 190px; background: transparent; border: none;
+  color: rgba(220,160,140,0.9);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.4rem;
+  padding: 6px 8px; outline: none; text-transform: uppercase; letter-spacing: 0.5px;
 }
-#ced-num:focus, #ced-title:focus { border-bottom-color: var(--red); }
-#ced-toolbar-effects { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; flex: 1; }
-.ced-toolbar-sep { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.25); padding: 0 4px; text-transform: uppercase; }
+#ced-num:focus, #ced-title:focus { background: rgba(200,71,42,0.04); }
+
+/* FX buttons row */
+#ced-toolbar-effects {
+  display: flex; align-items: center; gap: 3px; flex-wrap: wrap; flex: 1;
+}
+.ced-toolbar-sep {
+  font-size: 0.2rem; letter-spacing: 2px;
+  color: rgba(200,71,42,0.22); padding: 0 3px; text-transform: uppercase;
+}
 .ced-fx-btn {
-  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
-  background: transparent; border: 1px solid rgba(200,0,0,0.2); color: rgba(200,80,80,0.7);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem; letter-spacing: 1.5px;
-  cursor: pointer; text-transform: uppercase; transition: all 0.1s; white-space: nowrap;
+  display: flex; align-items: center; gap: 3px; padding: 3px 7px;
+  background: transparent; border: 1px solid rgba(200,71,42,0.16);
+  color: rgba(200,100,80,0.65);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.25rem;
+  letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase;
+  transition: all 0.1s; white-space: nowrap;
 }
-.ced-fx-btn:hover { background: rgba(200,0,0,0.1); border-color: rgba(200,0,0,0.5); color: var(--red); }
-.ced-fx-btn .lucid-icon { width: 10px; height: 10px; }
-#ced-toolbar-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
-#ced-status { font-size: 0.32rem; color: rgba(200,0,0,0.6); letter-spacing: 1px; min-width: 80px; text-align: right; }
+.ced-fx-btn:hover { background: rgba(200,71,42,0.09); border-color: rgba(200,71,42,0.5); color: #c8472a; }
+.ced-fx-btn .lucid-icon { width: 9px; height: 9px; }
+
+/* Toolbar actions group */
+#ced-toolbar-actions {
+  display: flex; align-items: center; gap: 6px; margin-left: auto;
+}
+#ced-status {
+  font-size: 0.26rem; color: rgba(200,71,42,0.5);
+  letter-spacing: 1.5px; min-width: 60px; text-align: right;
+}
 .ced-action-btn {
-  display: flex; align-items: center; gap: 5px; padding: 6px 12px;
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.34rem;
+  display: flex; align-items: center; gap: 4px; padding: 5px 11px;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
   letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.12s;
 }
-.ced-save-btn { background: transparent; border: 1px solid var(--red); color: var(--red); }
-.ced-save-btn:hover { background: rgba(200,0,0,0.15); }
-.ced-del-btn { background: transparent; border: 1px solid rgba(150,0,0,0.4); color: rgba(200,60,60,0.6); }
-.ced-del-btn:hover { border-color: #ff4444; color: #ff4444; }
-#ced-split { display: flex; flex: 1; overflow: hidden; min-height: 0; }
-#ced-editor-pane { flex: 1; display: flex; flex-direction: column; border-right: 1px solid rgba(200,0,0,0.15); min-width: 0; }
-#ced-preview-pane { flex: 1; display: flex; flex-direction: column; overflow-y: auto; min-width: 0; scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent; }
-#ced-editor-label, #ced-preview-label { font-size: 0.28rem; letter-spacing: 2px; color: rgba(200,0,0,0.25); padding: 6px 14px; border-bottom: 1px solid rgba(200,0,0,0.08); text-transform: uppercase; flex-shrink: 0; }
-#ced-body {
-  flex: 1; background: #010000; border: none; outline: none; resize: none;
-  color: rgba(220,160,160,0.9); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.52rem;
-  line-height: 1.7; padding: 16px;
-  scrollbar-width: thin; scrollbar-color: rgba(255,20,20,0.2) transparent;
+.ced-save-btn {
+  background: transparent; border: 1px solid #c8472a; color: #c8472a;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%);
 }
-#ced-preview-body { padding: 20px 24px; flex: 1; }
-#ced-preview-body p { font-family: 'Comic Neue','Comic Sans MS',cursive; font-size: clamp(0.95rem, 3vw, 1.08rem); line-height: 1.85; color: var(--text); margin-bottom: 1.4em; }
+.ced-save-btn:hover { background: rgba(200,71,42,0.14); }
+.ced-del-btn {
+  background: transparent;
+  border: 1px solid rgba(150,0,0,0.35); color: rgba(200,60,60,0.55);
+}
+.ced-del-btn:hover { border-color: #ff4444; color: #ff4444; }
+
+/* Published toggle */
+#ced-pub-row {
+  display: flex; align-items: center; gap: 6px; padding: 0 2px;
+  font-size: 0.24rem; letter-spacing: 1.5px;
+  color: rgba(200,100,80,0.55); font-family: var(--font-mono,'IBM Plex Mono'); flex-shrink: 0;
+}
+#ced-pub-toggle {
+  appearance: none; width: 26px; height: 12px;
+  background: rgba(200,71,42,0.12);
+  border: 1px solid rgba(200,71,42,0.3); border-radius: 6px;
+  cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+#ced-pub-toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 7px; height: 7px; background: rgba(200,71,42,0.45); border-radius: 50%;
+  transition: left 0.18s, background 0.18s;
+}
+#ced-pub-toggle:checked { background: rgba(60,180,100,0.18); border-color: rgba(60,180,100,0.45); }
+#ced-pub-toggle:checked::after { left: 15px; background: rgba(60,180,100,0.8); }
+
+/* Schedule input */
+#ced-schedule-wrap { display: flex; align-items: center; gap: 3px; }
+.ced-schedule-input {
+  background: #000; border: none; border-bottom: 1px solid rgba(200,71,42,0.18);
+  color: rgba(200,100,80,0.5);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem;
+  padding: 2px 4px; outline: none; cursor: pointer; width: 130px; color-scheme: dark;
+}
+.ced-schedule-input:focus { border-bottom-color: rgba(200,71,42,0.5); }
+
+/* Word count / autosave */
+#ced-wordcount {
+  font-size: 0.23rem; letter-spacing: 1.5px; color: rgba(200,71,42,0.3);
+  white-space: nowrap; padding: 0 3px;
+}
+#ced-autosave {
+  font-size: 0.22rem; letter-spacing: 1px; color: rgba(200,71,42,0.28); white-space: nowrap;
+}
+
+/* Export */
+.ced-export-wrap { position: relative; }
+.ced-export-btn {
+  display: flex; align-items: center; gap: 3px; padding: 3px 7px;
+  background: transparent; border: 1px solid rgba(200,71,42,0.18);
+  color: rgba(200,100,80,0.65);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
+  letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+.ced-export-btn:hover { background: rgba(200,71,42,0.09); border-color: rgba(200,71,42,0.5); color: #c8472a; }
+.ced-export-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 3px); z-index: 20;
+  background: #060000; border: 1px solid rgba(200,71,42,0.3);
+  flex-direction: column; min-width: 110px;
+}
+.ced-export-menu.open { display: flex; }
+.ced-export-menu button {
+  padding: 6px 12px; background: transparent; border: none;
+  border-bottom: 1px solid rgba(200,71,42,0.08);
+  color: rgba(200,120,100,0.8);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
+  letter-spacing: 1.5px; cursor: pointer; text-align: left; text-transform: uppercase; transition: background 0.1s;
+}
+.ced-export-menu button:hover { background: rgba(200,71,42,0.09); }
+
+/* ── DRAFT RECOVERY BANNER ──────────────────────────────────── */
+#ced-draft-banner {
+  display: none; padding: 5px 14px;
+  background: rgba(180,90,0,0.08);
+  border-bottom: 1px solid rgba(200,100,0,0.2);
+  font-size: 0.25rem; letter-spacing: 1.5px;
+  color: rgba(220,140,60,0.8);
+  align-items: center; gap: 8px; flex-shrink: 0;
+}
+#ced-draft-banner.show { display: flex; }
+#ced-draft-banner button {
+  background: transparent; border: 1px solid rgba(220,140,60,0.35);
+  color: rgba(220,140,60,0.8);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.22rem; letter-spacing: 1.5px; padding: 2px 8px; cursor: pointer; text-transform: uppercase;
+}
+#ced-draft-banner button:hover { background: rgba(220,140,60,0.09); }
+
+/* ── FIND & REPLACE BAR ─────────────────────────────────────── */
+#ced-find-bar {
+  display: none; flex-shrink: 0; padding: 5px 12px;
+  background: #040000; border-bottom: 1px solid rgba(200,71,42,0.15);
+  align-items: center; gap: 7px; flex-wrap: wrap;
+}
+#ced-find-bar.open { display: flex; }
+.cfb-input {
+  background: #000; border: none; border-bottom: 1px solid rgba(200,71,42,0.28);
+  color: rgba(220,150,130,0.9);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.36rem;
+  padding: 3px 6px; outline: none; width: 130px;
+}
+.cfb-input:focus { border-bottom-color: #c8472a; }
+.cfb-btn {
+  background: transparent; border: 1px solid rgba(200,71,42,0.22);
+  color: rgba(200,100,80,0.75);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem;
+  letter-spacing: 1.5px; padding: 3px 8px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.1s; white-space: nowrap;
+}
+.cfb-btn:hover { background: rgba(200,71,42,0.09); border-color: rgba(200,71,42,0.5); color: #c8472a; }
+.cfb-btn.active { background: rgba(200,71,42,0.1); border-color: rgba(200,71,42,0.45); }
+#cfb-count { font-size: 0.24rem; color: rgba(200,71,42,0.38); letter-spacing: 1px; min-width: 50px; }
+.cfb-sep { width: 1px; height: 14px; background: rgba(200,71,42,0.12); flex-shrink: 0; }
+
+/* ── CHECK / LORE CONSISTENCY PANEL ────────────────────────── */
+#ced-check-panel {
+  display: none; flex-shrink: 0;
+  border-bottom: 1px solid rgba(200,71,42,0.14);
+  background: #040000; flex-direction: column; max-height: 260px;
+}
+#ced-check-panel.open { display: flex; }
+#ced-check-toolbar {
+  display: flex; align-items: center; gap: 7px; padding: 5px 12px;
+  border-bottom: 1px solid rgba(200,71,42,0.09); flex-shrink: 0;
+}
+#ced-check-toolbar span {
+  font-size: 0.21rem; letter-spacing: 2.5px; color: rgba(200,71,42,0.35); text-transform: uppercase;
+}
+.ced-check-mode-btn {
+  padding: 3px 9px; background: transparent; border: 1px solid rgba(200,71,42,0.18);
+  color: rgba(200,100,80,0.55);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem;
+  letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+.ced-check-mode-btn.active { background: rgba(200,71,42,0.1); border-color: rgba(200,71,42,0.5); color: #c8472a; }
+.ced-check-mode-btn:hover { background: rgba(200,71,42,0.06); }
+#ced-check-run {
+  margin-left: auto; padding: 3px 11px; background: transparent;
+  border: 1px solid #c8472a; color: #c8472a;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
+  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: background 0.1s;
+  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
+}
+#ced-check-run:hover { background: rgba(200,71,42,0.13); }
+#ced-check-close {
+  padding: 3px 8px; background: transparent; border: 1px solid rgba(200,71,42,0.14);
+  color: rgba(200,71,42,0.38);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem; cursor: pointer; transition: all 0.1s;
+}
+#ced-check-close:hover { border-color: #c8472a; color: #c8472a; }
+#ced-check-body {
+  flex: 1; overflow-y: auto; padding: 10px 14px;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.36rem;
+  color: rgba(200,160,140,0.85); line-height: 1.7;
+  scrollbar-width: thin; scrollbar-color: rgba(200,71,42,0.18) transparent;
+}
+#ced-check-body .chk-loading {
+  color: rgba(200,71,42,0.35); letter-spacing: 2px; font-size: 0.28rem;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+#ced-check-body .chk-issue {
+  margin-bottom: 9px; padding: 7px 9px;
+  border-left: 2px solid rgba(200,100,0,0.45);
+  background: rgba(200,80,0,0.04);
+}
+#ced-check-body .chk-issue .ci-orig { color: rgba(200,80,50,0.75); text-decoration: line-through; font-size: 0.34rem; }
+#ced-check-body .chk-issue .ci-fix  { color: rgba(80,200,120,0.75); font-size: 0.34rem; margin-top: 2px; }
+#ced-check-body .chk-issue .ci-note { color: rgba(200,160,120,0.55); font-size: 0.26rem; margin-top: 2px; letter-spacing: 0.5px; }
+#ced-check-body .chk-accept-btn {
+  margin-top: 4px; padding: 2px 7px; background: transparent;
+  border: 1px solid rgba(80,200,120,0.28); color: rgba(80,200,120,0.65);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.22rem;
+  letter-spacing: 1px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+#ced-check-body .chk-accept-btn:hover { background: rgba(80,200,120,0.07); border-color: rgba(80,200,120,0.55); }
+#ced-check-body .chk-accept-all {
+  margin-bottom: 9px; padding: 4px 13px; background: transparent;
+  border: 1px solid rgba(80,200,120,0.3); color: rgba(80,200,120,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
+  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.1s; display: block;
+}
+#ced-check-body .chk-accept-all:hover { background: rgba(80,200,120,0.07); }
+.chk-clean { color: rgba(80,200,120,0.55); font-size: 0.3rem; letter-spacing: 1px; }
+
+/* ── EDITOR / PREVIEW SPLIT ─────────────────────────────────── */
+#ced-split { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+#ced-editor-pane {
+  flex: 1; display: flex; flex-direction: column;
+  border-right: 1px solid rgba(200,71,42,0.12); min-width: 0;
+}
+#ced-preview-pane {
+  flex: 1; display: flex; flex-direction: column;
+  overflow-y: auto; min-width: 0;
+  scrollbar-width: thin; scrollbar-color: rgba(200,71,42,0.15) transparent;
+}
+#ced-editor-label, #ced-preview-label {
+  font-size: 0.22rem; letter-spacing: 2.5px; color: rgba(200,71,42,0.22);
+  padding: 5px 14px; border-bottom: 1px solid rgba(200,71,42,0.07);
+  text-transform: uppercase; flex-shrink: 0;
+}
+
+/* Main textarea */
+#ced-body {
+  flex: 1; background: #030000; border: none; outline: none; resize: none;
+  color: rgba(220,165,145,0.88);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.5rem;
+  line-height: 1.75; padding: 16px 18px;
+  scrollbar-width: thin; scrollbar-color: rgba(200,71,42,0.15) transparent;
+}
+#ced-body::selection { background: rgba(200,71,42,0.25); }
+
+#ced-preview-body { padding: 18px 22px; flex: 1; }
+#ced-preview-body p {
+  font-family: 'Comic Neue','Comic Sans MS',cursive;
+  font-size: clamp(0.95rem, 3vw, 1.08rem); line-height: 1.85;
+  color: var(--text); margin-bottom: 1.4em;
+}
+
+/* ── READING TIME ────────────────────────────────────────────── */
+.ch-read-time {
+  font-size: 0.28rem; letter-spacing: 2px; color: rgba(200,71,42,0.3);
+  margin-top: 3px; font-family: var(--font-mono,'IBM Plex Mono'); text-transform: uppercase;
+}
+
 @media (max-width: 700px) {
   #ced-left { display: none; }
   #ced-split { flex-direction: column; }
   #ced-preview-pane { display: none; }
   #ced-editor-pane { flex: 1; }
-  #ced-title { width: 140px; }
-}
-
-
-/* ── SCROLL PROGRESS BAR ──────────────────────────── */
-#ch-progress {
-  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 500;
-  background: transparent; pointer-events: none;
-}
-#ch-progress-bar {
-  height: 100%; width: 0%; background: var(--red);
-  transition: width 0.1s linear;
-  box-shadow: 0 0 6px rgba(255,20,20,0.5);
-}
-
-/* ── STORY CAROUSEL ──────────────────────────────── */
-#ced-story-shelf {
-  width: 100%; padding: 10px 12px 0; flex-shrink: 0;
-  display: flex; align-items: center; gap: 8px;
-  border-bottom: 1px solid rgba(200,0,0,0.12);
-  overflow-x: auto; scrollbar-width: none;
-  background: #020000;
-}
-#ced-story-shelf::-webkit-scrollbar { display: none; }
-.ced-story-card {
-  flex-shrink: 0; padding: 7px 10px 9px;
-  border: 1px solid rgba(200,0,0,0.2);
-  border-top: 3px solid var(--s-accent, rgba(200,0,0,0.5));
-  cursor: pointer; position: relative;
-  background: transparent; transition: background 0.12s, border-color 0.12s;
-  min-width: 90px; max-width: 130px;
-}
-.ced-story-card:hover { background: rgba(200,0,0,0.06); }
-.ced-story-card.active { background: rgba(200,0,0,0.1); border-color: var(--s-accent, var(--red)); }
-.ced-story-card .sc-prefix {
-  font-size: 0.24rem; letter-spacing: 2px; color: var(--s-accent, var(--red));
-  text-transform: uppercase; opacity: 0.7;
-}
-.ced-story-card .sc-title {
-  font-size: 0.34rem; letter-spacing: 0.5px; color: rgba(200,160,160,0.9);
-  text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  max-width: 110px; margin-top: 2px;
-}
-.ced-story-card.active .sc-title { color: #fff; }
-.ced-story-card .sc-count {
-  font-size: 0.22rem; color: rgba(200,0,0,0.3); letter-spacing: 1px; margin-top: 3px;
-}
-.ced-story-card .sc-gear {
-  margin-left: auto; font-size: 0.28rem; opacity: 0.3; cursor: pointer;
-  padding: 2px 4px; transition: opacity 0.12s;
-}
-.ced-story-card:hover .sc-gear { opacity: 0.7; }
-.ced-story-card .sc-gear:hover { opacity: 1; }
-
-/* Story settings inline panel */
-.ced-story-settings {
-  background: rgba(10,0,0,0.9); border: 1px solid rgba(200,0,0,0.2);
-  border-top: none; padding: 10px 12px; margin-bottom: 4px;
-}
-
-/* Poster / cover image behind synopsis gate */
-.syn-poster-bg {
-  position: absolute; inset: 0; z-index: 0;
-  background-size: cover; background-position: center;
-  filter: brightness(0.28) saturate(0.6);
-  transition: background-image 0.4s;
-}
-#synopsis-gate.has-poster .sky-layer { opacity: 0 !important; animation: none !important; }
-#synopsis-gate.has-poster #rain-canvas { opacity: 0; }
-#synopsis-gate.has-poster #syn-box { position: relative; z-index: 2; }
-.ced-story-add-btn {
-  flex-shrink: 0; padding: 7px 12px; cursor: pointer;
-  border: 1px dashed rgba(200,0,0,0.2); background: transparent;
-  color: rgba(200,0,0,0.35); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.34rem; letter-spacing: 2px; text-transform: uppercase;
-  transition: all 0.12s; white-space: nowrap; align-self: stretch;
-  display: flex; align-items: center; gap: 6px;
-}
-.ced-story-add-btn:hover { border-color: var(--red); color: var(--red); background: rgba(200,0,0,0.05); }
-/* New story modal */
-#ced-new-story-modal {
-  display: none; position: absolute; left: 12px; top: 52px; z-index: 10;
-  background: #060000; border: 1px solid rgba(200,0,0,0.35);
-  padding: 16px; width: 260px; flex-direction: column; gap: 10px;
-}
-#ced-new-story-modal.open { display: flex; }
-.cns-field { display: flex; flex-direction: column; gap: 4px; }
-.cns-label { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.5); text-transform: uppercase; }
-.cns-input {
-  background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
-  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.42rem;
-  padding: 4px 6px; outline: none; width: 100%;
-}
-.cns-input:focus { border-bottom-color: var(--red); }
-.cns-color-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.cns-swatch {
-  width: 22px; height: 22px; border-radius: 2px; cursor: pointer;
-  border: 2px solid transparent; transition: border-color 0.1s;
-}
-.cns-swatch.selected { border-color: #fff; }
-.cns-btn {
-  padding: 7px 0; text-align: center; cursor: pointer;
-  background: transparent; border: 1px solid rgba(200,0,0,0.4);
-  color: var(--red); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.32rem; letter-spacing: 2px; text-transform: uppercase;
-  transition: background 0.12s;
-}
-.cns-btn:hover { background: rgba(200,0,0,0.12); }
-/* schedule input */
-#ced-schedule-wrap { display: flex; align-items: center; gap: 4px; }
-.ced-schedule-input {
-  background: #000; border: none; border-bottom: 1px solid rgba(255,20,20,0.2);
-  color: rgba(200,80,80,0.6); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
-  padding: 2px 4px; outline: none; cursor: pointer; width: 138px;
-  color-scheme: dark;
-}
-.ced-schedule-input:focus { border-bottom-color: rgba(255,20,20,0.5); }
-/* word count in toolbar */
-#ced-wordcount {
-  font-size: 0.28rem; letter-spacing: 1px; color: rgba(200,0,0,0.35);
-  white-space: nowrap; padding: 0 4px;
-}
-/* autosave indicator */
-#ced-autosave {
-  font-size: 0.26rem; letter-spacing: 1px; color: rgba(200,0,0,0.3);
-  white-space: nowrap;
-}
-/* draft recovery banner */
-#ced-draft-banner {
-  display: none; padding: 6px 14px; background: rgba(200,100,0,0.1);
-  border-bottom: 1px solid rgba(200,100,0,0.25);
-  font-size: 0.3rem; letter-spacing: 1px; color: rgba(220,140,60,0.85);
-  align-items: center; gap: 10px; flex-shrink: 0;
-}
-#ced-draft-banner.show { display: flex; }
-#ced-draft-banner button {
-  background: transparent; border: 1px solid rgba(220,140,60,0.4);
-  color: rgba(220,140,60,0.85); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.26rem; letter-spacing: 1px; padding: 2px 8px; cursor: pointer;
-  text-transform: uppercase;
-}
-#ced-draft-banner button:hover { background: rgba(220,140,60,0.1); }
-
-/* ── FIND & REPLACE BAR ─────────────────────────── */
-#ced-find-bar {
-  display: none; flex-shrink: 0; padding: 6px 12px;
-  background: #030000; border-bottom: 1px solid rgba(200,0,0,0.18);
-  align-items: center; gap: 8px; flex-wrap: wrap;
-}
-#ced-find-bar.open { display: flex; }
-.cfb-input {
-  background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
-  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.42rem;
-  padding: 3px 6px; outline: none; width: 140px;
-}
-.cfb-input:focus { border-bottom-color: var(--red); }
-.cfb-btn {
-  background: transparent; border: 1px solid rgba(200,0,0,0.25);
-  color: rgba(200,80,80,0.8); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.28rem; letter-spacing: 1.5px; padding: 3px 8px; cursor: pointer;
-  text-transform: uppercase; transition: all 0.1s; white-space: nowrap;
-}
-.cfb-btn:hover { background: rgba(200,0,0,0.1); border-color: var(--red); color: var(--red); }
-.cfb-btn.active { background: rgba(200,0,0,0.12); border-color: rgba(200,0,0,0.5); }
-#cfb-count { font-size: 0.28rem; color: rgba(200,0,0,0.4); letter-spacing: 1px; min-width: 60px; }
-.cfb-sep { width: 1px; height: 16px; background: rgba(200,0,0,0.15); flex-shrink: 0; }
-
-/* ── GRAMMAR / SENTENCE CHECK PANEL ──────────────── */
-#ced-check-panel {
-  display: none; flex-shrink: 0;
-  border-bottom: 1px solid rgba(200,0,0,0.15);
-  background: #020000; flex-direction: column; max-height: 280px;
-}
-#ced-check-panel.open { display: flex; }
-#ced-check-toolbar {
-  display: flex; align-items: center; gap: 8px; padding: 6px 12px;
-  border-bottom: 1px solid rgba(200,0,0,0.1); flex-shrink: 0;
-}
-#ced-check-toolbar span { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.4); text-transform: uppercase; }
-.ced-check-mode-btn {
-  padding: 3px 10px; background: transparent; border: 1px solid rgba(200,0,0,0.2);
-  color: rgba(200,80,80,0.6); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.28rem; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
-}
-.ced-check-mode-btn.active { background: rgba(200,0,0,0.12); border-color: rgba(200,0,0,0.5); color: var(--red); }
-.ced-check-mode-btn:hover { background: rgba(200,0,0,0.08); }
-#ced-check-run {
-  margin-left: auto; padding: 4px 12px; background: transparent;
-  border: 1px solid var(--red); color: var(--red);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
-  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: background 0.1s;
-}
-#ced-check-run:hover { background: rgba(200,0,0,0.15); }
-#ced-check-close {
-  padding: 4px 8px; background: transparent; border: 1px solid rgba(200,0,0,0.15);
-  color: rgba(200,0,0,0.4); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.28rem; cursor: pointer; transition: all 0.1s;
-}
-#ced-check-close:hover { border-color: var(--red); color: var(--red); }
-#ced-check-body {
-  flex: 1; overflow-y: auto; padding: 12px 14px;
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.4rem;
-  color: rgba(200,160,160,0.85); line-height: 1.7;
-  scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent;
-}
-#ced-check-body .chk-loading { color: rgba(200,0,0,0.4); letter-spacing: 2px; font-size: 0.32rem; animation: pulse 1.2s ease-in-out infinite; }
-#ced-check-body .chk-issue { margin-bottom: 10px; padding: 8px 10px; border-left: 2px solid rgba(200,80,0,0.5); background: rgba(200,80,0,0.05); }
-#ced-check-body .chk-issue .ci-orig { color: rgba(200,80,50,0.8); text-decoration: line-through; font-size: 0.38rem; }
-#ced-check-body .chk-issue .ci-fix  { color: rgba(80,200,120,0.8); font-size: 0.38rem; margin-top: 3px; }
-#ced-check-body .chk-issue .ci-note { color: rgba(200,160,120,0.6); font-size: 0.3rem; margin-top: 2px; letter-spacing: 0.5px; }
-#ced-check-body .chk-accept-btn {
-  margin-top: 5px; padding: 2px 8px; background: transparent;
-  border: 1px solid rgba(80,200,120,0.3); color: rgba(80,200,120,0.7);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
-  letter-spacing: 1px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
-}
-#ced-check-body .chk-accept-btn:hover { background: rgba(80,200,120,0.08); border-color: rgba(80,200,120,0.6); }
-#ced-check-body .chk-accept-all {
-  margin-bottom: 10px; padding: 5px 14px; background: transparent;
-  border: 1px solid rgba(80,200,120,0.35); color: rgba(80,200,120,0.75);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
-  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.1s; display: block;
-}
-#ced-check-body .chk-accept-all:hover { background: rgba(80,200,120,0.08); }
-.chk-clean { color: rgba(80,200,120,0.6); font-size: 0.34rem; letter-spacing: 1px; }
-
-/* ── CHAPTER NOTES ──────────────────────────────── */
-#ced-notes-wrap {
-  flex-shrink: 0; border-top: 1px solid rgba(200,0,0,0.1); padding: 8px 10px;
-  display: flex; flex-direction: column; gap: 4px;
-}
-#ced-notes-label { font-size: 0.24rem; letter-spacing: 2px; color: rgba(200,0,0,0.3); text-transform: uppercase; }
-#ced-notes {
-  background: #010000; border: none; border-left: 2px solid rgba(200,0,0,0.15);
-  color: rgba(180,120,120,0.7); font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.36rem; line-height: 1.5; padding: 6px 8px; resize: none;
-  outline: none; height: 56px; scrollbar-width: thin;
-}
-#ced-notes:focus { border-left-color: rgba(200,0,0,0.4); }
-#ced-notes::placeholder { color: rgba(200,0,0,0.2); }
-
-/* ── CHAPTER SEARCH FILTER ──────────────────────── */
-#ced-ch-search {
-  margin: 8px 10px 4px; padding: 5px 8px;
-  background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.2);
-  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.36rem;
-  outline: none; letter-spacing: 0.5px; width: calc(100% - 20px); box-sizing: border-box;
-}
-#ced-ch-search:focus { border-bottom-color: var(--red); }
-#ced-ch-search::placeholder { color: rgba(200,0,0,0.2); }
-
-/* ── DRAG-TO-REORDER ────────────────────────────── */
-.ced-ch-item { cursor: grab; }
-.ced-ch-item.dragging { opacity: 0.4; cursor: grabbing; }
-.ced-ch-item.drag-over { border-top: 2px solid var(--red); }
-
-/* ── PUBLISHED / DRAFT BADGE ────────────────────── */
-.ced-ch-status {
-  font-size: 0.22rem; letter-spacing: 1.5px; text-transform: uppercase;
-  margin-top: 2px; padding: 1px 4px; align-self: flex-start;
-  border: 1px solid transparent;
-}
-.ced-ch-status.pub { color: rgba(60,180,100,0.6); border-color: rgba(60,180,100,0.2); }
-.ced-ch-status.draft { color: rgba(200,120,0,0.6); border-color: rgba(200,120,0,0.2); }
-#ced-pub-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 0 2px; font-size: 0.3rem; letter-spacing: 1px;
-  color: rgba(200,80,80,0.6); font-family: var(--font-mono,'IBM Plex Mono'); flex-shrink: 0;
-}
-#ced-pub-toggle {
-  appearance: none; width: 28px; height: 14px; background: rgba(200,0,0,0.15);
-  border: 1px solid rgba(200,0,0,0.3); border-radius: 7px; cursor: pointer;
-  position: relative; transition: background 0.2s; flex-shrink: 0;
-}
-#ced-pub-toggle::after {
-  content: ''; position: absolute; top: 2px; left: 2px;
-  width: 8px; height: 8px; background: rgba(200,0,0,0.5); border-radius: 50%;
-  transition: left 0.2s, background 0.2s;
-}
-#ced-pub-toggle:checked { background: rgba(60,180,100,0.2); border-color: rgba(60,180,100,0.5); }
-#ced-pub-toggle:checked::after { left: 16px; background: rgba(60,180,100,0.8); }
-
-/* ── EXPORT BUTTON ──────────────────────────────── */
-.ced-export-btn {
-  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
-  background: transparent; border: 1px solid rgba(200,0,0,0.2); color: rgba(200,80,80,0.7);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem; letter-spacing: 1.5px;
-  cursor: pointer; text-transform: uppercase; transition: all 0.1s;
-}
-.ced-export-btn:hover { background: rgba(200,0,0,0.1); border-color: rgba(200,0,0,0.5); color: var(--red); }
-.ced-export-menu {
-  display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
-  background: #050000; border: 1px solid rgba(200,0,0,0.3); flex-direction: column; min-width: 100px;
-}
-.ced-export-menu.open { display: flex; }
-.ced-export-menu button {
-  padding: 7px 12px; background: transparent; border: none; border-bottom: 1px solid rgba(200,0,0,0.1);
-  color: rgba(200,80,80,0.8); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
-  letter-spacing: 1.5px; cursor: pointer; text-align: left; text-transform: uppercase; transition: background 0.1s;
-}
-.ced-export-menu button:hover { background: rgba(200,0,0,0.1); }
-.ced-export-wrap { position: relative; }
-
-/* ── STORY DELETE BTN ───────────────────────────── */
-.ced-story-card .sc-del {
-  display: none; position: absolute; top: 2px; right: 3px;
-  font-size: 0.22rem; color: rgba(200,0,0,0.4); cursor: pointer; padding: 2px 4px;
-  background: #020000; border: 1px solid rgba(200,0,0,0.2); line-height: 1;
-}
-.ced-story-card:hover .sc-del { display: block; }
-.ced-story-card .sc-del:hover { color: var(--red); border-color: var(--red); }
-
-/* ── READING TIME ───────────────────────────────── */
-.ch-read-time {
-  font-size: 0.34rem; letter-spacing: 2px; color: rgba(200,0,0,0.35);
-  margin-top: 4px; font-family: var(--font-mono,'IBM Plex Mono'); text-transform: uppercase;
+  #ced-title { width: 130px; }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2948,6 +3213,19 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       </button>
       <input id="ced-ch-search" placeholder="// FILTER CHAPTERS..." oninput="cedFilterChapters(this.value)">
       <div id="ced-ch-list"><!-- populated by cedRenderList() --></div>
+      <!-- LORE DROPBOX — feeds Cygnus writer on every request -->
+      <div id="ced-lore-section">
+        <div id="ced-lore-header" onclick="cedToggleLore()">
+          <span id="ced-lore-header-label">LORE CONTEXT</span>
+          <span id="ced-lore-chevron">▾</span>
+        </div>
+        <div id="ced-lore-body">
+          <div id="ced-lore-field">// AUTHOR NOTES — INJECTED INTO CYGNUS</div>
+          <textarea id="ced-lore-ta" placeholder="Character rules, world constraints, chapter-specific facts, tone reminders… Cygnus treats this as authoritative ground truth." oninput="cedSaveLore()"></textarea>
+          <span id="ced-lore-status">// not set</span>
+        </div>
+      </div>
+
       <!-- Private chapter notes (admin-only, localStorage) -->
       <div id="ced-notes-wrap">
         <div id="ced-notes-label">// PRIVATE NOTES</div>
@@ -3714,12 +3992,20 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <div id="cw-search-status" class="cw-tool-status"></div>
     </div>
 
+    <!-- lore dropbox -->
+    <div id="cw-lore-row" class="cw-tool-panel" style="display:none;">
+      <div class="cw-tool-label">// LORE DROPBOX — injected into every request as author context</div>
+      <textarea id="cw-lore-inp" rows="5" class="cw-tool-inp" placeholder="Paste story-specific lore, character notes, world rules, or chapter context here. Cygnus will treat this as authoritative ground truth for your project…" spellcheck="false" oninput="cwSaveLore()"></textarea>
+      <div class="cw-tool-status" id="cw-lore-status">// not set</div>
+    </div>
+
     <!-- status / util row -->
     <div id="cw-status-row">
       <span id="cw-status">// ready</span>
       <div id="cw-status-acts">
         <button class="cw-status-btn" onclick="cwToggleSearch()" title="Web search" id="cw-search-toggle">SEARCH</button>
         <button class="cw-status-btn" onclick="cwToggleImagine()" title="AI image generation" id="cw-imagine-toggle">IMAGE</button>
+        <button class="cw-status-btn" onclick="cwToggleLore()" title="Lore dropbox — inject author notes into every request" id="cw-lore-toggle">LORE</button>
         <button class="cw-status-btn" onclick="cwExportConversation()" title="Export conversation as .md">EXPORT MD</button>
         <button class="cw-status-btn" onclick="cwClear()" title="Clear history">CLEAR</button>
         <button class="cw-status-btn" onclick="cwCopyLast()" title="Copy last response">COPY</button>
@@ -3936,6 +4222,57 @@ async function cwLoadModels() {
   }
 }
 
+// ── LORE DROPBOX ──────────────────────────────────────────────
+window.cwToggleLore = function() {
+  const row = document.getElementById('cw-lore-row');
+  const btn = document.getElementById('cw-lore-toggle');
+  const open = row.style.display === 'none' || row.style.display === '';
+  row.style.display = open ? 'block' : 'none';
+  btn.classList.toggle('active-tool', open);
+  if (open) {
+    // Restore persisted lore for current story
+    const inp = document.getElementById('cw-lore-inp');
+    if (inp && !inp.value) {
+      const key = cwLoreStorageKey();
+      inp.value = localStorage.getItem(key) || '';
+    }
+    cwUpdateLoreStatus();
+  }
+};
+
+function cwLoreStorageKey() {
+  const chNum = document.getElementById('ced-num')?.value || 'default';
+  return 'cw_lore_' + chNum;
+}
+
+window.cwSaveLore = function() {
+  const inp = document.getElementById('cw-lore-inp');
+  if (!inp) return;
+  const key = cwLoreStorageKey();
+  const val = inp.value.trim();
+  if (val) localStorage.setItem(key, val);
+  else localStorage.removeItem(key);
+  cwUpdateLoreStatus();
+};
+
+function cwUpdateLoreStatus() {
+  const inp = document.getElementById('cw-lore-inp');
+  const status = document.getElementById('cw-lore-status');
+  if (!inp || !status) return;
+  const len = inp.value.trim().length;
+  status.textContent = len ? `// ${len} chars loaded — injected into every request` : '// not set';
+}
+
+function cwGetLore() {
+  // Prefer chapter editor's lore dropbox (canonical source when admin is open)
+  if (typeof window.cedGetLore === 'function') return window.cedGetLore();
+  // Fallback: writer panel's own textarea (legacy path)
+  const inp = document.getElementById('cw-lore-inp');
+  if (inp?.value?.trim()) return inp.value.trim();
+  const key = cwLoreStorageKey();
+  return localStorage.getItem(key) || '';
+}
+
 // ── TOGGLE ────────────────────────────────────────────────────
 window.cwToggle = function() {
   cwOpen = !cwOpen;
@@ -4123,6 +4460,7 @@ window.cwSend = async function(overrideMsg) {
         messages: cwHistory.slice(-20),
         attachments: pendingAtt.length ? pendingAtt : undefined,
         chapterContext: chBody ? { body: chBody, title: chTitle, num: chNum } : undefined,
+        loreContext: cwGetLore() || undefined,
         userId: cwGetUserId(),
         modelId: cwModelId,
         searchQuery: cwPendingSearch || undefined,
@@ -6319,6 +6657,12 @@ function cedLoadChapter(idx) {
   cedUpdateWordCount();
   cedCheckDraft();
   cedLoadNotes();
+  // Refresh lore dropbox for this story
+  const loreTa = document.getElementById('ced-lore-ta');
+  if (loreTa) {
+    try { loreTa.value = localStorage.getItem(cedLoreKey()) || ''; } catch { loreTa.value = ''; }
+    cedUpdateLoreStatus();
+  }
 }
 
 function cedNewChapter() {
@@ -6650,6 +6994,59 @@ function cedSaveNotes() {
   if (!ta) return;
   try { localStorage.setItem(cedNotesKey(), ta.value); } catch {}
 }
+
+/* ── LORE DROPBOX ──────────────────────────────────────────── */
+function cedLoreKey() {
+  // Scoped per active story
+  const storyId = cedCurrentStory?.id || 'default';
+  return 'ced_lore_' + storyId;
+}
+
+window.cedToggleLore = function() {
+  const section = document.getElementById('ced-lore-section');
+  if (!section) return;
+  const isOpen = section.classList.toggle('open');
+  if (isOpen) {
+    // Restore saved lore for this story
+    const ta = document.getElementById('ced-lore-ta');
+    if (ta && !ta.value) {
+      try { ta.value = localStorage.getItem(cedLoreKey()) || ''; } catch {}
+    }
+    cedUpdateLoreStatus();
+  }
+};
+
+window.cedSaveLore = function() {
+  const ta = document.getElementById('ced-lore-ta');
+  if (!ta) return;
+  const val = ta.value.trim();
+  try {
+    if (val) localStorage.setItem(cedLoreKey(), val);
+    else localStorage.removeItem(cedLoreKey());
+  } catch {}
+  cedUpdateLoreStatus();
+};
+
+function cedUpdateLoreStatus() {
+  const ta = document.getElementById('ced-lore-ta');
+  const status = document.getElementById('ced-lore-status');
+  if (!ta || !status) return;
+  const len = ta.value.trim().length;
+  if (len) {
+    status.textContent = '// ' + len + ' chars — active';
+    status.classList.add('active');
+  } else {
+    status.textContent = '// not set';
+    status.classList.remove('active');
+  }
+}
+
+// Called by cwGetLore() in the writer panel — returns live textarea or localStorage fallback
+window.cedGetLore = function() {
+  const ta = document.getElementById('ced-lore-ta');
+  if (ta?.value?.trim()) return ta.value.trim();
+  try { return localStorage.getItem(cedLoreKey()) || ''; } catch { return ''; }
+};
 
 /* ══════════════════════════════════════════════════
    GRAMMAR / SENTENCE / LORE CHECK
