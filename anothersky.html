@@ -1928,6 +1928,29 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 .ced-story-card .sc-count {
   font-size: 0.22rem; color: rgba(200,0,0,0.3); letter-spacing: 1px; margin-top: 3px;
 }
+.ced-story-card .sc-gear {
+  margin-left: auto; font-size: 0.28rem; opacity: 0.3; cursor: pointer;
+  padding: 2px 4px; transition: opacity 0.12s;
+}
+.ced-story-card:hover .sc-gear { opacity: 0.7; }
+.ced-story-card .sc-gear:hover { opacity: 1; }
+
+/* Story settings inline panel */
+.ced-story-settings {
+  background: rgba(10,0,0,0.9); border: 1px solid rgba(200,0,0,0.2);
+  border-top: none; padding: 10px 12px; margin-bottom: 4px;
+}
+
+/* Poster / cover image behind synopsis gate */
+.syn-poster-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background-size: cover; background-position: center;
+  filter: brightness(0.28) saturate(0.6);
+  transition: background-image 0.4s;
+}
+#synopsis-gate.has-poster .sky-layer { opacity: 0 !important; animation: none !important; }
+#synopsis-gate.has-poster #rain-canvas { opacity: 0; }
+#synopsis-gate.has-poster #syn-box { position: relative; z-index: 2; }
 .ced-story-add-btn {
   flex-shrink: 0; padding: 7px 12px; cursor: pointer;
   border: 1px dashed rgba(200,0,0,0.2); background: transparent;
@@ -2818,8 +2841,16 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <div class="cns-color-row" id="cns-swatches"></div>
         </div>
         <div class="cns-field">
-          <span class="cns-label">Description</span>
+          <span class="cns-label">Description (short tagline)</span>
           <input class="cns-input" id="cns-desc" placeholder="Short tagline..." maxlength="120">
+        </div>
+        <div class="cns-field">
+          <span class="cns-label">Synopsis (reader-facing blurb)</span>
+          <textarea class="cns-input" id="cns-synopsis" placeholder="Story synopsis shown on the entry gate..." rows="4" style="resize:vertical;min-height:64px;font-family:inherit;"></textarea>
+        </div>
+        <div class="cns-field">
+          <span class="cns-label">Cover / Poster Image URL</span>
+          <input class="cns-input" id="cns-cover" placeholder="https://... (replaces sky on entry gate)" maxlength="500">
         </div>
         <button class="cns-btn" onclick="cedCreateStory()">+ CREATE STORY</button>
         <button class="cns-btn" style="border-color:rgba(200,0,0,0.15);color:rgba(200,0,0,0.4);" onclick="document.getElementById('ced-new-story-modal').classList.remove('open')">CANCEL</button>
@@ -5052,6 +5083,53 @@ document.getElementById('btn-no').addEventListener('click', () => {
 });
 
 /* ── SYNOPSIS + DECRYPT ────────────────────────────── */
+
+// Swap synopsis gate text + optional poster image for a given story object.
+// Another Sky keeps its animated parallax sky; other stories show a cover image overlay.
+function synApplyStory(story) {
+  if (!story) return;
+  const isAS = story.id === 'another-sky';
+
+  // Title + stamp
+  const titleEl = document.getElementById('syn-title');
+  const stampEl = document.getElementById('syn-stamp');
+  const worldEl = document.getElementById('syn-world-tag');
+  if (titleEl) titleEl.textContent = story.title.toUpperCase();
+  if (stampEl && !isAS) stampEl.textContent = `CASE FILE // ${story.prefix} // ARCHIVE`;
+  if (worldEl && !isAS) worldEl.textContent = story.desc || '';
+
+  // Synopsis text
+  const textEl = document.getElementById('syn-text');
+  if (textEl && !isAS && story.synopsis) {
+    textEl.innerHTML = story.synopsis.split(/\n{2,}/).map(p => `<p>${p.trim().replace(/\n/g,'<br>')}</p>`).join('');
+  } else if (textEl && isAS) {
+    // restore original Another Sky synopsis if it was overwritten
+    textEl.innerHTML = `
+      <p>He woke up on the wrong side of four years. The same hands. The same phone. The same mother — except older, quieter, carrying grief he never watched her earn. The calendar said 2032. His body said 2028. Neither of them was lying.</p>
+      <p>Something was erased. Not destroyed — erased. Faces he loved no longer exist in this world. Photographs wiped. Names that produce only silence. The people who once made him feel like himself have been unmade, and the sky above the city is the wrong color, wrong shape, wrong in a way he cannot name but cannot stop seeing.</p>
+      <p>Then the outbreak began. What the news called a virus. What the bodies suggested was something older, worse, and entirely without mercy.</p>
+      <p>64% of the world will turn. Some of those who turn still think. Some still speak. Some will say your name in your dead mother's voice at 3 AM until you open the door.</p>
+      <p>He has not yet looked at what he lost. He is not ready. The sky won't wait.</p>`;
+  }
+
+  // Cover / poster image
+  const gate = document.getElementById('synopsis-gate');
+  if (!gate) return;
+  let poster = gate.querySelector('.syn-poster-bg');
+  if (story.cover_image && !isAS) {
+    if (!poster) {
+      poster = document.createElement('div');
+      poster.className = 'syn-poster-bg';
+      gate.insertBefore(poster, gate.firstChild);
+    }
+    poster.style.backgroundImage = `url(${CSS.escape ? `'${story.cover_image}'` : story.cover_image})`;
+    gate.classList.add('has-poster');
+  } else {
+    if (poster) poster.remove();
+    gate.classList.remove('has-poster');
+  }
+}
+
 function showSynopsis() {
   history.pushState({ as_view: 'synopsis' }, '', location.href.split('#')[0] + '#synopsis');
   document.getElementById('synopsis-gate').classList.add('show');
@@ -5812,14 +5890,13 @@ document.addEventListener('keydown', e => {
 function openUpload() {
   if (!isAdmin) { openLogin(); return; }
   document.getElementById('upload-modal').classList.add('open');
-  cedStories = cedGetStories();
-  cedApplyStoryTheme();
-  cedRenderShelf();
-  cedRenderList();
-  // Default: open newest chapter or blank new chapter
-  const storyChaps = chapters.filter(c => c.story_id === cedActiveStoryId);
-  if (storyChaps.length > 0) cedLoadChapter(chapters.indexOf(storyChaps[storyChaps.length-1]));
-  else cedNewChapter();
+  cedFetchStories().then(() => {
+    cedApplyStoryTheme();
+    cedRenderList();
+    const storyChaps2 = chapters.filter(c => c.story_id === cedActiveStoryId);
+    if (storyChaps2.length > 0) cedLoadChapter(chapters.indexOf(storyChaps2[storyChaps2.length-1]));
+    else cedNewChapter();
+  });
 }
 function closeUpload() {
   document.getElementById('upload-modal').classList.remove('open');
@@ -5832,30 +5909,52 @@ let cedPreviewTimer = null;
 let cedAutosaveTimer = null;
 
 /* ── STORY REGISTRY (localStorage-backed) ── */
-const CED_STORIES_KEY = 'wncore_stories_v1';
 const ACCENT_PALETTE = [
   '#c80000','#cc4400','#cc8800','#338833','#226699','#663399',
   '#cc2266','#007788','#886622','#555555',
 ];
-function cedLoadStories() {
-  try { return JSON.parse(localStorage.getItem(CED_STORIES_KEY)) || null; } catch { return null; }
-}
-function cedSaveStories(stories) {
-  localStorage.setItem(CED_STORIES_KEY, JSON.stringify(stories));
-}
-function cedGetStories() {
-  let s = cedLoadStories();
-  if (!s || !s.length) {
-    s = [{ id: 'another-sky', title: 'Another Sky', prefix: 'AS', accent: '#c80000', desc: 'Post-apocalyptic horror. Bangladesh.' }];
-    cedSaveStories(s);
-  }
-  return s;
-}
-let cedStories = cedGetStories();
-let cedActiveStoryId = cedStories[0].id;
+
+// ── Stories: Supabase-backed via /api/config?action=stories ─────────────────
+const STORIES_SEED = [{ id:'another-sky', title:'Another Sky', prefix:'AS', accent:'#c80000',
+  desc:'Post-apocalyptic horror. Bangladesh.', synopsis:null, cover_image:null, sort_order:0 }];
+
+let cedStories = [...STORIES_SEED];
+let cedActiveStoryId = 'another-sky';
 
 function cedGetActiveStory() {
   return cedStories.find(s => s.id === cedActiveStoryId) || cedStories[0];
+}
+
+async function cedFetchStories() {
+  try {
+    const r = await fetch('/api/config?action=stories');
+    if (!r.ok) throw new Error('fetch failed');
+    cedStories = await r.json();
+    if (!cedStories.length) cedStories = [...STORIES_SEED];
+  } catch { cedStories = [...STORIES_SEED]; }
+  cedActiveStoryId = cedStories[0].id;
+  cedRenderShelf();
+}
+
+function cedAdminToken() {
+  return sessionStorage.getItem('ced_admin_tok') || localStorage.getItem('chapters_admin_token') || '';
+}
+
+async function cedApiSaveStory(story) {
+  const r = await fetch('/api/config?action=stories', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'x-admin-token': cedAdminToken() },
+    body: JSON.stringify(story),
+  });
+  return r.ok;
+}
+
+async function cedApiDeleteStory(id) {
+  const r = await fetch(`/api/config?action=stories&id=${encodeURIComponent(id)}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-token': cedAdminToken() },
+  });
+  return r.ok;
 }
 
 function cedRenderShelf() {
@@ -5866,14 +5965,34 @@ function cedRenderShelf() {
     const card = document.createElement('div');
     card.className = 'ced-story-card' + (story.id === cedActiveStoryId ? ' active' : '');
     card.style.setProperty('--s-accent', story.accent || '#c80000');
-    const storyChapters = /* count from chapters array */ chapters.filter(c => c.story_id === story.id);
+    const storyChapters = chapters.filter(c => c.story_id === story.id);
     card.innerHTML = `
       <div class="sc-prefix">${story.prefix}</div>
       <div class="sc-title">${story.title}</div>
       <div class="sc-count">${storyChapters.length} CH</div>
+      <span class="sc-gear" onclick="cedOpenStorySettings('${story.id}',event)" title="Story settings">⚙</span>
       ${story.id !== 'another-sky' ? `<span class="sc-del" onclick="cedDeleteStory('${story.id}',event)" title="Remove story">✕</span>` : ''}`;
     card.onclick = () => cedSwitchStory(story.id);
     shelf.appendChild(card);
+
+    // Inline settings panel (hidden by default)
+    const panel = document.createElement('div');
+    panel.className = 'ced-story-settings';
+    panel.id = `ced-ss-${story.id}`;
+    panel.style.display = 'none';
+    panel.innerHTML = `
+      <div class="cns-label" style="margin-bottom:4px;">// STORY SETTINGS — ${story.prefix}</div>
+      <div class="cns-field">
+        <span class="cns-label">Synopsis</span>
+        <textarea class="cns-input ced-ss-synopsis" rows="4" style="resize:vertical;min-height:60px;font-family:inherit;">${story.synopsis||''}</textarea>
+      </div>
+      <div class="cns-field" style="margin-top:6px;">
+        <span class="cns-label">Cover / Poster Image URL</span>
+        <input class="cns-input ced-ss-cover" value="${story.cover_image||''}" placeholder="https://...">
+      </div>
+      <button class="cns-btn" style="margin-top:6px;" onclick="cedSaveStorySettings('${story.id}',this)">SAVE SETTINGS</button>
+    `;
+    shelf.appendChild(panel);
   });
   const addBtn = document.createElement('button');
   addBtn.className = 'ced-story-add-btn';
@@ -5884,6 +6003,33 @@ function cedRenderShelf() {
     cedRenderSwatches();
   };
   shelf.appendChild(addBtn);
+}
+
+function cedOpenStorySettings(storyId, e) {
+  e.stopPropagation();
+  const panel = document.getElementById(`ced-ss-${storyId}`);
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  // close all
+  document.querySelectorAll('.ced-story-settings').forEach(p => p.style.display = 'none');
+  if (!isOpen) panel.style.display = 'block';
+}
+
+async function cedSaveStorySettings(storyId, btn) {
+  const panel = document.getElementById(`ced-ss-${storyId}`);
+  if (!panel) return;
+  const story = cedStories.find(s => s.id === storyId);
+  if (!story) return;
+  const synopsis = panel.querySelector('.ced-ss-synopsis').value.trim();
+  const cover_image = panel.querySelector('.ced-ss-cover').value.trim();
+  btn.textContent = 'SAVING...';
+  const ok = await cedApiSaveStory({ ...story, synopsis: synopsis||null, cover_image: cover_image||null });
+  btn.textContent = ok ? 'SAVED ✓' : 'FAILED ✗';
+  if (ok) {
+    story.synopsis = synopsis || null;
+    story.cover_image = cover_image || null;
+    setTimeout(() => { btn.textContent = 'SAVE SETTINGS'; }, 1800);
+  }
 }
 
 function cedRenderSwatches() {
@@ -5905,6 +6051,7 @@ function cedRenderSwatches() {
 async function cedSwitchStory(storyId) {
   cedActiveStoryId = storyId;
   cedApplyStoryTheme();
+  synApplyStory(cedGetActiveStory());  // swap synopsis gate content + poster
   // reload chapters for this story
   if (sb) {
     const { data } = await sb.from('chapters').select('*')
@@ -5938,18 +6085,20 @@ async function cedCreateStory() {
   const title = document.getElementById('cns-title').value.trim();
   const prefix = document.getElementById('cns-prefix').value.trim().toUpperCase();
   const desc = document.getElementById('cns-desc').value.trim();
+  const synopsis = document.getElementById('cns-synopsis').value.trim();
+  const cover_image = document.getElementById('cns-cover').value.trim();
   const selected = document.querySelector('#cns-swatches .cns-swatch.selected');
   const accent = selected ? selected.dataset.color : '#c80000';
   if (!title || !prefix) { alert('Title and prefix required.'); return; }
   const id = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
   if (cedStories.find(s => s.id === id)) { alert('Story ID already exists.'); return; }
-  cedStories.push({ id, title, prefix, accent, desc });
-  cedSaveStories(cedStories);
+  const story = { id, title, prefix, accent, desc, synopsis: synopsis||null, cover_image: cover_image||null, sort_order: cedStories.length };
+  const ok = await cedApiSaveStory(story);
+  if (!ok) { alert('Failed to save story. Check admin token.'); return; }
   document.getElementById('ced-new-story-modal').classList.remove('open');
-  document.getElementById('cns-title').value = '';
-  document.getElementById('cns-prefix').value = '';
-  document.getElementById('cns-desc').value = '';
+  ['cns-title','cns-prefix','cns-desc','cns-synopsis','cns-cover'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   document.getElementById('cns-swatches').innerHTML = '';
+  await cedFetchStories();
   await cedSwitchStory(id);
 }
 
@@ -6231,16 +6380,18 @@ function cedExport(fmt) {
 /* ══════════════════════════════════════════════════
    STORY DELETION
 ══════════════════════════════════════════════════ */
-function cedDeleteStory(storyId, e) {
+async function cedDeleteStory(storyId, e) {
   e.stopPropagation();
   const story = cedStories.find(s => s.id === storyId);
   if (!story) return;
   if (storyId === 'another-sky') { alert('Cannot delete the primary story.'); return; }
-  if (!confirm(`Delete story "${story.title}" from the shelf?\n\n(This only removes it locally. Supabase chapters are NOT deleted.)`)) return;
-  cedStories = cedStories.filter(s => s.id !== storyId);
-  cedSaveStories(cedStories);
+  if (!confirm(`Delete story "${story.title}"?
+
+(Supabase chapters for this story are NOT deleted.)`)) return;
+  const ok = await cedApiDeleteStory(storyId);
+  if (!ok) { alert('Failed to delete. Check admin token.'); return; }
+  await cedFetchStories();
   if (cedActiveStoryId === storyId) cedActiveStoryId = cedStories[0].id;
-  cedRenderShelf();
   cedSwitchStory(cedActiveStoryId);
 }
 
