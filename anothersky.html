@@ -5469,10 +5469,17 @@ function initScrollProgress() {
 
 /* ── KEYBOARD NAV ──────────────────────────────────── */
 document.addEventListener('keydown', e => {
-  // Ctrl+B — open chapter editor (admin only)
+  // Ctrl+S — always prevent browser save dialog
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    const modalOpen = document.getElementById('upload-modal')?.classList.contains('open');
+    if (modalOpen) cedSave();
+    return;
+  }
+  // Ctrl+B — open editor (login first if not yet admin)
   if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
     e.preventDefault();
-    if (isAdmin) openUpload();
+    if (isAdmin) openUpload(); else openLogin();
     return;
   }
   if (document.querySelector('.modal.open')) return;
@@ -6624,12 +6631,9 @@ document.addEventListener('DOMContentLoaded', () => {
       cedAutosaveTimer = setTimeout(cedSaveDraft, 1500);
     });
   }
-  // Ctrl+S to publish
+  // Ctrl+H and Escape shortcuts (Ctrl+S and Ctrl+B handled globally above)
   document.addEventListener('keydown', e => {
     const modalOpen = document.getElementById('upload-modal')?.classList.contains('open');
-    if ((e.ctrlKey || e.metaKey) && e.key === 's' && modalOpen) {
-      e.preventDefault(); cedSave();
-    }
     if ((e.ctrlKey || e.metaKey) && e.key === 'h' && modalOpen) {
       e.preventDefault(); cedToggleFindBar();
     }
@@ -7458,7 +7462,7 @@ async function generateNewVolume(silent) {
 <script>
 /* ── MOON / PLANET SIDEBAR WIDGET ── */
 (function() {
-  const MOON_FRAMES  = 62;
+  const MOON_FRAMES  = 60;
   const MOON_FPS     = 12;  // smooth lunar cycle
   const PLANET_CYCLE = [
     { src: 'assets/celestial/planets/Baren.png',     label: 'BAREN-IX'   },
