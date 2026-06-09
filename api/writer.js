@@ -341,7 +341,7 @@ module.exports = async function handler(req, res) {
 
   // POST: image generation
   if (action === 'imagine') {
-    if (!checkRate(ip)) return res.status(429).json({ error: 'Rate limit reached.' });
+    if (!await checkRate(ip)) return res.status(429).json({ error: 'Rate limit reached.' });
     const { prompt } = req.body || {};
     if (!prompt) return res.status(400).json({ error: 'prompt required' });
     try {
@@ -353,9 +353,9 @@ module.exports = async function handler(req, res) {
   }
 
   // POST: main chat
-  if (!checkRate(ip)) return res.status(429).json({ error: 'Rate limit reached. Try again in an hour.' });
+  if (!await checkRate(ip)) return res.status(429).json({ error: 'Rate limit reached. Try again in an hour.' });
 
-  const { messages, attachments, quickAction, chapterContext, userId, modelId, searchQuery } = req.body || {};
+  const { messages, attachments, quickAction, chapterContext, loreContext, userId, modelId, searchQuery } = req.body || {};
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
     return res.status(400).json({ error: 'messages array required' });
@@ -405,6 +405,13 @@ module.exports = async function handler(req, res) {
     if (textAtts.length) {
       cleaned[cleaned.length - 1].content += textAtts.map(a => `\n\n[Attached: ${a.name || 'file'}]\n${(a.data || '').slice(0, 2000)}`).join('');
     }
+  }
+
+  // Lore Dropbox injection
+  if (loreContext && typeof loreContext === 'string' && loreContext.trim()) {
+    cleaned[cleaned.length - 1].content =
+      `[AUTHOR'S LORE NOTES FOR THIS STORY]\n${loreContext.trim().slice(0, 4000)}\n[END LORE NOTES]\n\n` +
+      cleaned[cleaned.length - 1].content;
   }
 
   let reply = '';
