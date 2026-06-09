@@ -18,8 +18,8 @@ const SUPABASE_KEY       = process.env.SUPABASE_SERVICE_KEY || process.env.SUPAB
 const AVAILABLE_MODELS = [
   ...(GROQ_API_KEY       ? [{ id: 'groq/llama-3.3-70b',   label: 'Llama 3.3 70B',      provider: 'groq',       fast: true  }] : []),
   ...(GROQ_API_KEY       ? [{ id: 'groq/llama-3.1-8b',    label: 'Llama 3.1 8B',       provider: 'groq',       fast: true  }] : []),
-  ...(GEMINI_API_KEY     ? [{ id: 'gemini/flash',          label: 'Gemini 1.5 Flash',   provider: 'gemini',     fast: true  }] : []),
-  ...(GEMINI_API_KEY     ? [{ id: 'gemini/pro',            label: 'Gemini 1.5 Pro',     provider: 'gemini',     fast: false }] : []),
+  ...(GEMINI_API_KEY     ? [{ id: 'gemini/flash',          label: 'Gemini 3.5 Flash',   provider: 'gemini',     fast: true  }] : []),
+  ...(GEMINI_API_KEY     ? [{ id: 'gemini/pro',            label: 'Gemini 2.5 Pro',     provider: 'gemini',     fast: false }] : []),
   ...(DEEPSEEK_API_KEY   ? [{ id: 'deepseek/chat',         label: 'DeepSeek V3',        provider: 'deepseek',   fast: false }] : []),
   ...(OPENROUTER_API_KEY ? [{ id: 'openrouter/llama-free', label: 'Llama 3.1 8B (OR)', provider: 'openrouter', fast: true  }] : []),
   ...(OPENROUTER_API_KEY ? [{ id: 'openrouter/mistral',    label: 'Mistral 7B',         provider: 'openrouter', fast: true  }] : []),
@@ -211,7 +211,7 @@ async function callGroq(messages, modelId) {
 
 // ── Provider: Gemini ──────────────────────────────────────────────────────────
 async function callGemini(messages, attachments, modelId) {
-  const model = modelId === 'gemini/pro' ? 'gemini-1.5-pro' : 'gemini-1.5-flash';
+  const model = modelId === 'gemini/pro' ? 'gemini-2.5-pro' : 'gemini-3.5-flash';
   const lastUser = [...messages].reverse().find(m => m.role === 'user');
   const parts = [];
   if (attachments?.length) {
