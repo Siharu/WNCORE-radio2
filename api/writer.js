@@ -26,14 +26,38 @@ const AVAILABLE_MODELS = [
   { id: 'auto', label: 'Auto (cascade)', provider: 'auto', fast: true },
 ];
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
-const _rateMap = new Map();
-const RATE_LIMIT = 40, RATE_WINDOW = 3600000;
-function checkRate(ip) {
+// ── Rate limiting — Supabase-backed (survives cold starts) ────────────────────
+const RATE_LIMIT = 40, RATE_WINDOW = 3600000; // 40 req/hr per IP
+const _rateMapLocal = new Map(); // fallback if Supabase unavailable
+
+async function checkRate(ip) {
+  // Try Supabase KV via a rate_limits table (upsert pattern)
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+      const now = Date.now();
+      const windowStart = now - RATE_WINDOW;
+      const key = 'writer_' + ip;
+      const url = `${SUPABASE_URL}/rest/v1/rate_limits?key=eq.${encodeURIComponent(key)}&select=count,reset_at`;
+      const r = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
+      const rows = r.ok ? await r.json() : [];
+      const row = rows[0];
+      const resetAt = row?.reset_at ? new Date(row.reset_at).getTime() : 0;
+      let count = now > resetAt ? 1 : (row?.count || 0) + 1;
+      const newReset = now > resetAt ? new Date(now + RATE_WINDOW).toISOString() : row?.reset_at;
+      // Upsert
+      await fetch(`${SUPABASE_URL}/rest/v1/rate_limits`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key, count, reset_at: newReset })
+      });
+      return count <= RATE_LIMIT;
+    } catch { /* fall through to in-memory */ }
+  }
+  // Fallback: in-memory (resets on cold start, but better than nothing)
   const now = Date.now();
-  const e = _rateMap.get(ip) || { count: 0, reset: now + RATE_WINDOW };
+  const e = _rateMapLocal.get(ip) || { count: 0, reset: now + RATE_WINDOW };
   if (now > e.reset) { e.count = 0; e.reset = now + RATE_WINDOW; }
-  e.count++; _rateMap.set(ip, e);
+  e.count++; _rateMapLocal.set(ip, e);
   return e.count <= RATE_LIMIT;
 }
 

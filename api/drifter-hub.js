@@ -8,18 +8,38 @@
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = 'meta-llama/llama-3.1-8b-instruct:free';
 
-// Rate limiting — simple in-memory, resets on cold start
-const _rateMap = new Map();
-const RATE_LIMIT = 30;
-const RATE_WINDOW = 3600000; // 1hr
+// Rate limiting — Supabase-backed
+const RATE_LIMIT = 30, RATE_WINDOW = 3600000;
+const _rateMapLocal = new Map();
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
-function checkRate(ip) {
+async function checkRate(ip) {
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+      const now = Date.now();
+      const key = 'dhub_' + ip;
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/rate_limits?key=eq.${encodeURIComponent(key)}&select=count,reset_at`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      const rows = r.ok ? await r.json() : [];
+      const row = rows[0];
+      const resetAt = row?.reset_at ? new Date(row.reset_at).getTime() : 0;
+      let count = now > resetAt ? 1 : (row?.count || 0) + 1;
+      const newReset = now > resetAt ? new Date(now + RATE_WINDOW).toISOString() : row?.reset_at;
+      await fetch(`${SUPABASE_URL}/rest/v1/rate_limits`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+        body: JSON.stringify({ key, count, reset_at: newReset })
+      });
+      return count <= RATE_LIMIT;
+    } catch { /* fallback */ }
+  }
   const now = Date.now();
-  const entry = _rateMap.get(ip) || { count: 0, reset: now + RATE_WINDOW };
-  if (now > entry.reset) { entry.count = 0; entry.reset = now + RATE_WINDOW; }
-  entry.count++;
-  _rateMap.set(ip, entry);
-  return entry.count <= RATE_LIMIT;
+  const e = _rateMapLocal.get(ip) || { count: 0, reset: now + RATE_WINDOW };
+  if (now > e.reset) { e.count = 0; e.reset = now + RATE_WINDOW; }
+  e.count++; _rateMapLocal.set(ip, e);
+  return e.count <= RATE_LIMIT;
 }
 
 const SIGNAL_TYPES = [
