@@ -1896,6 +1896,277 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   #ced-title { width: 140px; }
 }
 
+/* ── STORY CAROUSEL ──────────────────────────────── */
+#ced-story-shelf {
+  width: 100%; padding: 10px 12px 0; flex-shrink: 0;
+  display: flex; align-items: center; gap: 8px;
+  border-bottom: 1px solid rgba(200,0,0,0.12);
+  overflow-x: auto; scrollbar-width: none;
+  background: #020000;
+}
+#ced-story-shelf::-webkit-scrollbar { display: none; }
+.ced-story-card {
+  flex-shrink: 0; padding: 7px 10px 9px;
+  border: 1px solid rgba(200,0,0,0.2);
+  border-top: 3px solid var(--s-accent, rgba(200,0,0,0.5));
+  cursor: pointer; position: relative;
+  background: transparent; transition: background 0.12s, border-color 0.12s;
+  min-width: 90px; max-width: 130px;
+}
+.ced-story-card:hover { background: rgba(200,0,0,0.06); }
+.ced-story-card.active { background: rgba(200,0,0,0.1); border-color: var(--s-accent, var(--red)); }
+.ced-story-card .sc-prefix {
+  font-size: 0.24rem; letter-spacing: 2px; color: var(--s-accent, var(--red));
+  text-transform: uppercase; opacity: 0.7;
+}
+.ced-story-card .sc-title {
+  font-size: 0.34rem; letter-spacing: 0.5px; color: rgba(200,160,160,0.9);
+  text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  max-width: 110px; margin-top: 2px;
+}
+.ced-story-card.active .sc-title { color: #fff; }
+.ced-story-card .sc-count {
+  font-size: 0.22rem; color: rgba(200,0,0,0.3); letter-spacing: 1px; margin-top: 3px;
+}
+.ced-story-add-btn {
+  flex-shrink: 0; padding: 7px 12px; cursor: pointer;
+  border: 1px dashed rgba(200,0,0,0.2); background: transparent;
+  color: rgba(200,0,0,0.35); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.34rem; letter-spacing: 2px; text-transform: uppercase;
+  transition: all 0.12s; white-space: nowrap; align-self: stretch;
+  display: flex; align-items: center; gap: 6px;
+}
+.ced-story-add-btn:hover { border-color: var(--red); color: var(--red); background: rgba(200,0,0,0.05); }
+/* New story modal */
+#ced-new-story-modal {
+  display: none; position: absolute; left: 12px; top: 52px; z-index: 10;
+  background: #060000; border: 1px solid rgba(200,0,0,0.35);
+  padding: 16px; width: 260px; flex-direction: column; gap: 10px;
+}
+#ced-new-story-modal.open { display: flex; }
+.cns-field { display: flex; flex-direction: column; gap: 4px; }
+.cns-label { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.5); text-transform: uppercase; }
+.cns-input {
+  background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
+  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.42rem;
+  padding: 4px 6px; outline: none; width: 100%;
+}
+.cns-input:focus { border-bottom-color: var(--red); }
+.cns-color-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.cns-swatch {
+  width: 22px; height: 22px; border-radius: 2px; cursor: pointer;
+  border: 2px solid transparent; transition: border-color 0.1s;
+}
+.cns-swatch.selected { border-color: #fff; }
+.cns-btn {
+  padding: 7px 0; text-align: center; cursor: pointer;
+  background: transparent; border: 1px solid rgba(200,0,0,0.4);
+  color: var(--red); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.32rem; letter-spacing: 2px; text-transform: uppercase;
+  transition: background 0.12s;
+}
+.cns-btn:hover { background: rgba(200,0,0,0.12); }
+/* word count in toolbar */
+#ced-wordcount {
+  font-size: 0.28rem; letter-spacing: 1px; color: rgba(200,0,0,0.35);
+  white-space: nowrap; padding: 0 4px;
+}
+/* autosave indicator */
+#ced-autosave {
+  font-size: 0.26rem; letter-spacing: 1px; color: rgba(200,0,0,0.3);
+  white-space: nowrap;
+}
+/* draft recovery banner */
+#ced-draft-banner {
+  display: none; padding: 6px 14px; background: rgba(200,100,0,0.1);
+  border-bottom: 1px solid rgba(200,100,0,0.25);
+  font-size: 0.3rem; letter-spacing: 1px; color: rgba(220,140,60,0.85);
+  align-items: center; gap: 10px; flex-shrink: 0;
+}
+#ced-draft-banner.show { display: flex; }
+#ced-draft-banner button {
+  background: transparent; border: 1px solid rgba(220,140,60,0.4);
+  color: rgba(220,140,60,0.85); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.26rem; letter-spacing: 1px; padding: 2px 8px; cursor: pointer;
+  text-transform: uppercase;
+}
+#ced-draft-banner button:hover { background: rgba(220,140,60,0.1); }
+
+/* ── FIND & REPLACE BAR ─────────────────────────── */
+#ced-find-bar {
+  display: none; flex-shrink: 0; padding: 6px 12px;
+  background: #030000; border-bottom: 1px solid rgba(200,0,0,0.18);
+  align-items: center; gap: 8px; flex-wrap: wrap;
+}
+#ced-find-bar.open { display: flex; }
+.cfb-input {
+  background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.3);
+  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.42rem;
+  padding: 3px 6px; outline: none; width: 140px;
+}
+.cfb-input:focus { border-bottom-color: var(--red); }
+.cfb-btn {
+  background: transparent; border: 1px solid rgba(200,0,0,0.25);
+  color: rgba(200,80,80,0.8); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 1.5px; padding: 3px 8px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.1s; white-space: nowrap;
+}
+.cfb-btn:hover { background: rgba(200,0,0,0.1); border-color: var(--red); color: var(--red); }
+.cfb-btn.active { background: rgba(200,0,0,0.12); border-color: rgba(200,0,0,0.5); }
+#cfb-count { font-size: 0.28rem; color: rgba(200,0,0,0.4); letter-spacing: 1px; min-width: 60px; }
+.cfb-sep { width: 1px; height: 16px; background: rgba(200,0,0,0.15); flex-shrink: 0; }
+
+/* ── GRAMMAR / SENTENCE CHECK PANEL ──────────────── */
+#ced-check-panel {
+  display: none; flex-shrink: 0;
+  border-bottom: 1px solid rgba(200,0,0,0.15);
+  background: #020000; flex-direction: column; max-height: 280px;
+}
+#ced-check-panel.open { display: flex; }
+#ced-check-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+  border-bottom: 1px solid rgba(200,0,0,0.1); flex-shrink: 0;
+}
+#ced-check-toolbar span { font-size: 0.26rem; letter-spacing: 2px; color: rgba(200,0,0,0.4); text-transform: uppercase; }
+.ced-check-mode-btn {
+  padding: 3px 10px; background: transparent; border: 1px solid rgba(200,0,0,0.2);
+  color: rgba(200,80,80,0.6); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+.ced-check-mode-btn.active { background: rgba(200,0,0,0.12); border-color: rgba(200,0,0,0.5); color: var(--red); }
+.ced-check-mode-btn:hover { background: rgba(200,0,0,0.08); }
+#ced-check-run {
+  margin-left: auto; padding: 4px 12px; background: transparent;
+  border: 1px solid var(--red); color: var(--red);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: background 0.1s;
+}
+#ced-check-run:hover { background: rgba(200,0,0,0.15); }
+#ced-check-close {
+  padding: 4px 8px; background: transparent; border: 1px solid rgba(200,0,0,0.15);
+  color: rgba(200,0,0,0.4); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; cursor: pointer; transition: all 0.1s;
+}
+#ced-check-close:hover { border-color: var(--red); color: var(--red); }
+#ced-check-body {
+  flex: 1; overflow-y: auto; padding: 12px 14px;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.4rem;
+  color: rgba(200,160,160,0.85); line-height: 1.7;
+  scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent;
+}
+#ced-check-body .chk-loading { color: rgba(200,0,0,0.4); letter-spacing: 2px; font-size: 0.32rem; animation: pulse 1.2s ease-in-out infinite; }
+#ced-check-body .chk-issue { margin-bottom: 10px; padding: 8px 10px; border-left: 2px solid rgba(200,80,0,0.5); background: rgba(200,80,0,0.05); }
+#ced-check-body .chk-issue .ci-orig { color: rgba(200,80,50,0.8); text-decoration: line-through; font-size: 0.38rem; }
+#ced-check-body .chk-issue .ci-fix  { color: rgba(80,200,120,0.8); font-size: 0.38rem; margin-top: 3px; }
+#ced-check-body .chk-issue .ci-note { color: rgba(200,160,120,0.6); font-size: 0.3rem; margin-top: 2px; letter-spacing: 0.5px; }
+#ced-check-body .chk-accept-btn {
+  margin-top: 5px; padding: 2px 8px; background: transparent;
+  border: 1px solid rgba(80,200,120,0.3); color: rgba(80,200,120,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
+  letter-spacing: 1px; cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+#ced-check-body .chk-accept-btn:hover { background: rgba(80,200,120,0.08); border-color: rgba(80,200,120,0.6); }
+#ced-check-body .chk-accept-all {
+  margin-bottom: 10px; padding: 5px 14px; background: transparent;
+  border: 1px solid rgba(80,200,120,0.35); color: rgba(80,200,120,0.75);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.1s; display: block;
+}
+#ced-check-body .chk-accept-all:hover { background: rgba(80,200,120,0.08); }
+.chk-clean { color: rgba(80,200,120,0.6); font-size: 0.34rem; letter-spacing: 1px; }
+
+/* ── CHAPTER NOTES ──────────────────────────────── */
+#ced-notes-wrap {
+  flex-shrink: 0; border-top: 1px solid rgba(200,0,0,0.1); padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+#ced-notes-label { font-size: 0.24rem; letter-spacing: 2px; color: rgba(200,0,0,0.3); text-transform: uppercase; }
+#ced-notes {
+  background: #010000; border: none; border-left: 2px solid rgba(200,0,0,0.15);
+  color: rgba(180,120,120,0.7); font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.36rem; line-height: 1.5; padding: 6px 8px; resize: none;
+  outline: none; height: 56px; scrollbar-width: thin;
+}
+#ced-notes:focus { border-left-color: rgba(200,0,0,0.4); }
+#ced-notes::placeholder { color: rgba(200,0,0,0.2); }
+
+/* ── CHAPTER SEARCH FILTER ──────────────────────── */
+#ced-ch-search {
+  margin: 8px 10px 4px; padding: 5px 8px;
+  background: #000; border: none; border-bottom: 1px solid rgba(200,0,0,0.2);
+  color: #cc8888; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.36rem;
+  outline: none; letter-spacing: 0.5px; width: calc(100% - 20px); box-sizing: border-box;
+}
+#ced-ch-search:focus { border-bottom-color: var(--red); }
+#ced-ch-search::placeholder { color: rgba(200,0,0,0.2); }
+
+/* ── DRAG-TO-REORDER ────────────────────────────── */
+.ced-ch-item { cursor: grab; }
+.ced-ch-item.dragging { opacity: 0.4; cursor: grabbing; }
+.ced-ch-item.drag-over { border-top: 2px solid var(--red); }
+
+/* ── PUBLISHED / DRAFT BADGE ────────────────────── */
+.ced-ch-status {
+  font-size: 0.22rem; letter-spacing: 1.5px; text-transform: uppercase;
+  margin-top: 2px; padding: 1px 4px; align-self: flex-start;
+  border: 1px solid transparent;
+}
+.ced-ch-status.pub { color: rgba(60,180,100,0.6); border-color: rgba(60,180,100,0.2); }
+.ced-ch-status.draft { color: rgba(200,120,0,0.6); border-color: rgba(200,120,0,0.2); }
+#ced-pub-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 0 2px; font-size: 0.3rem; letter-spacing: 1px;
+  color: rgba(200,80,80,0.6); font-family: var(--font-mono,'IBM Plex Mono'); flex-shrink: 0;
+}
+#ced-pub-toggle {
+  appearance: none; width: 28px; height: 14px; background: rgba(200,0,0,0.15);
+  border: 1px solid rgba(200,0,0,0.3); border-radius: 7px; cursor: pointer;
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+#ced-pub-toggle::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 8px; height: 8px; background: rgba(200,0,0,0.5); border-radius: 50%;
+  transition: left 0.2s, background 0.2s;
+}
+#ced-pub-toggle:checked { background: rgba(60,180,100,0.2); border-color: rgba(60,180,100,0.5); }
+#ced-pub-toggle:checked::after { left: 16px; background: rgba(60,180,100,0.8); }
+
+/* ── EXPORT BUTTON ──────────────────────────────── */
+.ced-export-btn {
+  display: flex; align-items: center; gap: 4px; padding: 4px 8px;
+  background: transparent; border: 1px solid rgba(200,0,0,0.2); color: rgba(200,80,80,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem; letter-spacing: 1.5px;
+  cursor: pointer; text-transform: uppercase; transition: all 0.1s;
+}
+.ced-export-btn:hover { background: rgba(200,0,0,0.1); border-color: rgba(200,0,0,0.5); color: var(--red); }
+.ced-export-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 4px); z-index: 20;
+  background: #050000; border: 1px solid rgba(200,0,0,0.3); flex-direction: column; min-width: 100px;
+}
+.ced-export-menu.open { display: flex; }
+.ced-export-menu button {
+  padding: 7px 12px; background: transparent; border: none; border-bottom: 1px solid rgba(200,0,0,0.1);
+  color: rgba(200,80,80,0.8); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  letter-spacing: 1.5px; cursor: pointer; text-align: left; text-transform: uppercase; transition: background 0.1s;
+}
+.ced-export-menu button:hover { background: rgba(200,0,0,0.1); }
+.ced-export-wrap { position: relative; }
+
+/* ── STORY DELETE BTN ───────────────────────────── */
+.ced-story-card .sc-del {
+  display: none; position: absolute; top: 2px; right: 3px;
+  font-size: 0.22rem; color: rgba(200,0,0,0.4); cursor: pointer; padding: 2px 4px;
+  background: #020000; border: 1px solid rgba(200,0,0,0.2); line-height: 1;
+}
+.ced-story-card:hover .sc-del { display: block; }
+.ced-story-card .sc-del:hover { color: var(--red); border-color: var(--red); }
+
+/* ── READING TIME ───────────────────────────────── */
+.ch-read-time {
+  font-size: 0.34rem; letter-spacing: 2px; color: rgba(200,0,0,0.35);
+  margin-top: 4px; font-family: var(--font-mono,'IBM Plex Mono'); text-transform: uppercase;
+}
+
 /* ═══════════════════════════════════════════════════
    READER MODE VARIANTS
 ═══════════════════════════════════════════════════ */
@@ -2405,6 +2676,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
             <div class="ch-case-id" id="ch-case-id">CASE // AS-01</div>
             <div class="ch-file-title" id="ch-file-title">—</div>
             <div class="ch-file-date" id="ch-file-date">—</div>
+            <div class="ch-read-time" id="ch-read-time"></div>
           </div>
           <div id="ch-body"></div>
           <div class="ch-nav">
@@ -2529,10 +2801,39 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <img src="assets/lucid/Exit.png" alt="Close" class="lucid-icon">
         </button>
       </div>
+      <!-- STORY SHELF -->
+      <div id="ced-story-shelf"><!-- populated by cedRenderShelf() --></div>
+      <!-- NEW STORY POPOVER -->
+      <div id="ced-new-story-modal">
+        <div class="cns-field">
+          <span class="cns-label">Story Title</span>
+          <input class="cns-input" id="cns-title" placeholder="SIMULUNAS" maxlength="60">
+        </div>
+        <div class="cns-field">
+          <span class="cns-label">Prefix (2-4 chars)</span>
+          <input class="cns-input" id="cns-prefix" placeholder="SIM" maxlength="4">
+        </div>
+        <div class="cns-field">
+          <span class="cns-label">Accent Color</span>
+          <div class="cns-color-row" id="cns-swatches"></div>
+        </div>
+        <div class="cns-field">
+          <span class="cns-label">Description</span>
+          <input class="cns-input" id="cns-desc" placeholder="Short tagline..." maxlength="120">
+        </div>
+        <button class="cns-btn" onclick="cedCreateStory()">+ CREATE STORY</button>
+        <button class="cns-btn" style="border-color:rgba(200,0,0,0.15);color:rgba(200,0,0,0.4);" onclick="document.getElementById('ced-new-story-modal').classList.remove('open')">CANCEL</button>
+      </div>
       <button id="ced-new-btn" onclick="cedNewChapter()">
         <img src="assets/lucid/Plus.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">NEW CHAPTER
       </button>
+      <input id="ced-ch-search" placeholder="// FILTER CHAPTERS..." oninput="cedFilterChapters(this.value)">
       <div id="ced-ch-list"><!-- populated by cedRenderList() --></div>
+      <!-- Private chapter notes (admin-only, localStorage) -->
+      <div id="ced-notes-wrap">
+        <div id="ced-notes-label">// PRIVATE NOTES</div>
+        <textarea id="ced-notes" placeholder="Synopsis, outline, reminders..." oninput="cedSaveNotes()"></textarea>
+      </div>
     </div>
 
     <!-- RIGHT PANEL: editor + preview -->
@@ -2556,14 +2857,65 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <button class="ced-fx-btn" title="[IMG url=... align=center caption=...]" onclick="cedInsertImg()"><img src="assets/lucid/File-Image.png" alt="" class="lucid-icon">IMG</button>
         </div>
         <div id="ced-toolbar-actions">
+          <label id="ced-pub-row" title="Toggle published/draft">
+            <input type="checkbox" id="ced-pub-toggle" onchange="cedTogglePublished(this.checked)">
+            <span id="ced-pub-label">DRAFT</span>
+          </label>
+          <div class="ced-export-wrap">
+            <button class="ced-export-btn" onclick="cedToggleExportMenu(event)" title="Export chapter">EXPORT ▾</button>
+            <div class="ced-export-menu" id="ced-export-menu">
+              <button onclick="cedExport('md')">AS MARKDOWN</button>
+              <button onclick="cedExport('txt')">AS PLAIN TEXT</button>
+            </div>
+          </div>
+          <button class="ced-fx-btn" onclick="cedToggleFindBar()" title="Find & Replace (Ctrl+H)">FIND</button>
+          <button class="ced-fx-btn" onclick="cedToggleCheckPanel()" title="Grammar & Clarity check">CHECK</button>
+          <span id="ced-wordcount">0 WORDS</span>
+          <span id="ced-autosave"></span>
           <div id="ced-status"></div>
           <button class="ced-action-btn ced-del-btn" id="ced-del-btn" title="Delete chapter" onclick="cedDelete()" style="display:none;">
             <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:9px;height:9px;vertical-align:middle;margin-right:3px">DELETE
           </button>
-          <button class="ced-action-btn ced-save-btn" onclick="cedSave()">
+          <button class="ced-action-btn ced-save-btn" onclick="cedSave()" title="Publish (Ctrl+S)">
             <img src="assets/lucid/Upload.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">PUBLISH
           </button>
         </div>
+      </div>
+
+      <!-- Find & Replace bar -->
+      <div id="ced-find-bar">
+        <input class="cfb-input" id="cfb-find" placeholder="FIND..." oninput="cfbUpdate()">
+        <input class="cfb-input" id="cfb-replace" placeholder="REPLACE...">
+        <button class="cfb-btn" onclick="cfbPrev()">◀ PREV</button>
+        <button class="cfb-btn" onclick="cfbNext()">NEXT ▶</button>
+        <button class="cfb-btn" onclick="cfbReplace()">REPLACE</button>
+        <button class="cfb-btn" onclick="cfbReplaceAll()">ALL</button>
+        <div class="cfb-sep"></div>
+        <label style="display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:0.28rem;color:rgba(200,80,80,0.6);cursor:pointer;">
+          <input type="checkbox" id="cfb-regex" onchange="cfbUpdate()"> REGEX
+        </label>
+        <span id="cfb-count">0 / 0</span>
+        <button class="cfb-btn" onclick="cedToggleFindBar()" style="margin-left:auto;">✕</button>
+      </div>
+
+      <!-- Grammar / Sentence Check panel -->
+      <div id="ced-check-panel">
+        <div id="ced-check-toolbar">
+          <span>// CHECK MODE</span>
+          <button class="ced-check-mode-btn active" id="chk-grammar-btn" onclick="cedSetCheckMode('grammar')">GRAMMAR</button>
+          <button class="ced-check-mode-btn" id="chk-clarity-btn" onclick="cedSetCheckMode('clarity')">CLARITY</button>
+          <button class="ced-check-mode-btn" id="chk-lore-btn" onclick="cedSetCheckMode('lore')">LORE CONSISTENCY</button>
+          <button id="ced-check-run" onclick="cedRunCheck()">▶ RUN</button>
+          <button id="ced-check-close" onclick="cedToggleCheckPanel()">✕</button>
+        </div>
+        <div id="ced-check-body"><span style="color:rgba(200,0,0,0.25);font-size:0.32rem;letter-spacing:1px;">// select a mode and run check</span></div>
+      </div>
+
+      <!-- Draft recovery banner -->
+      <div id="ced-draft-banner">
+        // UNSAVED DRAFT RECOVERED
+        <button onclick="cedRestoreDraft()">RESTORE</button>
+        <button onclick="cedDiscardDraft()">DISCARD</button>
       </div>
 
       <!-- Split: editor | preview -->
@@ -4799,13 +5151,14 @@ async function initPage() {
 }
 document.addEventListener('DOMContentLoaded', initPage);
 
-async function loadChapters() {
+async function loadChapters(storyId) {
   if (!sb) return;
+  const sid = storyId || 'another-sky';
   const { data, error } = await sb.from('chapters').select('*')
-    .eq('story_id', 'another-sky').order('chapter_num', { ascending: true });
+    .eq('story_id', sid).order('chapter_num', { ascending: true });
   chapters = error ? [] : (data || []);
   renderSidebar();
-  document.getElementById('sb-count').textContent = chapters.length;
+  document.getElementById('sb-count').textContent = chapters.filter(c => c.story_id === 'another-sky').length || chapters.length;
 }
 
 function renderSidebar() {
@@ -4829,6 +5182,8 @@ function renderSidebar() {
   if (drawerList) drawerList.innerHTML = '';
 
   chapters.forEach((ch, i) => {
+    // Hide draft chapters from readers (admin sees all)
+    if (!isAdmin && ch.is_published === false) return;
     // Desktop sidebar button
     const btn = document.createElement('button');
     btn.className = 'sb-ch-item';
@@ -5457,9 +5812,13 @@ document.addEventListener('keydown', e => {
 function openUpload() {
   if (!isAdmin) { openLogin(); return; }
   document.getElementById('upload-modal').classList.add('open');
+  cedStories = cedGetStories();
+  cedApplyStoryTheme();
+  cedRenderShelf();
   cedRenderList();
   // Default: open newest chapter or blank new chapter
-  if (chapters.length > 0) cedLoadChapter(chapters.length - 1);
+  const storyChaps = chapters.filter(c => c.story_id === cedActiveStoryId);
+  if (storyChaps.length > 0) cedLoadChapter(chapters.indexOf(storyChaps[storyChaps.length-1]));
   else cedNewChapter();
 }
 function closeUpload() {
@@ -5470,17 +5829,152 @@ function closeUpload() {
 /* ── Chapter Editor state ── */
 let cedEditId = null;
 let cedPreviewTimer = null;
+let cedAutosaveTimer = null;
 
+/* ── STORY REGISTRY (localStorage-backed) ── */
+const CED_STORIES_KEY = 'wncore_stories_v1';
+const ACCENT_PALETTE = [
+  '#c80000','#cc4400','#cc8800','#338833','#226699','#663399',
+  '#cc2266','#007788','#886622','#555555',
+];
+function cedLoadStories() {
+  try { return JSON.parse(localStorage.getItem(CED_STORIES_KEY)) || null; } catch { return null; }
+}
+function cedSaveStories(stories) {
+  localStorage.setItem(CED_STORIES_KEY, JSON.stringify(stories));
+}
+function cedGetStories() {
+  let s = cedLoadStories();
+  if (!s || !s.length) {
+    s = [{ id: 'another-sky', title: 'Another Sky', prefix: 'AS', accent: '#c80000', desc: 'Post-apocalyptic horror. Bangladesh.' }];
+    cedSaveStories(s);
+  }
+  return s;
+}
+let cedStories = cedGetStories();
+let cedActiveStoryId = cedStories[0].id;
+
+function cedGetActiveStory() {
+  return cedStories.find(s => s.id === cedActiveStoryId) || cedStories[0];
+}
+
+function cedRenderShelf() {
+  const shelf = document.getElementById('ced-story-shelf');
+  if (!shelf) return;
+  shelf.innerHTML = '';
+  cedStories.forEach(story => {
+    const card = document.createElement('div');
+    card.className = 'ced-story-card' + (story.id === cedActiveStoryId ? ' active' : '');
+    card.style.setProperty('--s-accent', story.accent || '#c80000');
+    const storyChapters = /* count from chapters array */ chapters.filter(c => c.story_id === story.id);
+    card.innerHTML = `
+      <div class="sc-prefix">${story.prefix}</div>
+      <div class="sc-title">${story.title}</div>
+      <div class="sc-count">${storyChapters.length} CH</div>
+      ${story.id !== 'another-sky' ? `<span class="sc-del" onclick="cedDeleteStory('${story.id}',event)" title="Remove story">✕</span>` : ''}`;
+    card.onclick = () => cedSwitchStory(story.id);
+    shelf.appendChild(card);
+  });
+  const addBtn = document.createElement('button');
+  addBtn.className = 'ced-story-add-btn';
+  addBtn.textContent = '+ NEW STORY';
+  addBtn.onclick = () => {
+    const modal = document.getElementById('ced-new-story-modal');
+    modal.classList.toggle('open');
+    cedRenderSwatches();
+  };
+  shelf.appendChild(addBtn);
+}
+
+function cedRenderSwatches() {
+  const row = document.getElementById('cns-swatches');
+  if (!row || row.children.length) return;
+  ACCENT_PALETTE.forEach((c, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'cns-swatch' + (i === 0 ? ' selected' : '');
+    sw.style.background = c;
+    sw.dataset.color = c;
+    sw.onclick = () => {
+      row.querySelectorAll('.cns-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+    };
+    row.appendChild(sw);
+  });
+}
+
+async function cedSwitchStory(storyId) {
+  cedActiveStoryId = storyId;
+  cedApplyStoryTheme();
+  // reload chapters for this story
+  if (sb) {
+    const { data } = await sb.from('chapters').select('*')
+      .eq('story_id', storyId).order('chapter_num', { ascending: true });
+    chapters = data || [];
+    renderSidebar();
+    document.getElementById('sb-count').textContent = chapters.length;
+  }
+  cedRenderShelf();
+  cedRenderList();
+  if (chapters.length > 0) cedLoadChapter(chapters.length - 1);
+  else cedNewChapter();
+}
+
+function cedApplyStoryTheme() {
+  const story = cedGetActiveStory();
+  const acc = story.accent || '#c80000';
+  // parse hex to rgb
+  const r = parseInt(acc.slice(1,3),16), g = parseInt(acc.slice(3,5),16), b = parseInt(acc.slice(5,7),16);
+  const shell = document.getElementById('ced-shell');
+  if (shell) {
+    shell.style.setProperty('--red', acc);
+    shell.style.setProperty('--red-rgb', `${r},${g},${b}`);
+  }
+  // update logo to show story name
+  const logo = document.getElementById('ced-logo');
+  if (logo) logo.textContent = story.prefix + ' EDITOR';
+}
+
+async function cedCreateStory() {
+  const title = document.getElementById('cns-title').value.trim();
+  const prefix = document.getElementById('cns-prefix').value.trim().toUpperCase();
+  const desc = document.getElementById('cns-desc').value.trim();
+  const selected = document.querySelector('#cns-swatches .cns-swatch.selected');
+  const accent = selected ? selected.dataset.color : '#c80000';
+  if (!title || !prefix) { alert('Title and prefix required.'); return; }
+  const id = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+  if (cedStories.find(s => s.id === id)) { alert('Story ID already exists.'); return; }
+  cedStories.push({ id, title, prefix, accent, desc });
+  cedSaveStories(cedStories);
+  document.getElementById('ced-new-story-modal').classList.remove('open');
+  document.getElementById('cns-title').value = '';
+  document.getElementById('cns-prefix').value = '';
+  document.getElementById('cns-desc').value = '';
+  document.getElementById('cns-swatches').innerHTML = '';
+  await cedSwitchStory(id);
+}
+
+/* ── Chapter list ── */
 function cedRenderList() {
   const list = document.getElementById('ced-ch-list');
   if (!list) return;
   list.innerHTML = '';
-  chapters.forEach((ch, i) => {
+  const story = cedGetActiveStory();
+  const storyChaps = chapters.filter(c => c.story_id === cedActiveStoryId);
+  const q = cedFilterQuery || '';
+  storyChaps.forEach((ch) => {
+    if (q && !ch.title.toLowerCase().includes(q)) return;
+    const globalIdx = chapters.indexOf(ch);
     const item = document.createElement('div');
     item.className = 'ced-ch-item' + (ch.id === cedEditId ? ' active' : '');
-    item.dataset.idx = i;
-    item.innerHTML = `<span class="ced-ch-num">AS-${String(ch.chapter_num).padStart(2,'0')}</span><span class="ced-ch-name">${ch.title}</span>`;
-    item.onclick = () => cedLoadChapter(i);
+    const words = (ch.content || '').trim().split(/\s+/).filter(Boolean).length;
+    const isPub = ch.is_published !== false; // default true for existing chapters
+    item.innerHTML = `
+      <span class="ced-ch-num">${story.prefix}-${String(ch.chapter_num).padStart(2,'0')}</span>
+      <span class="ced-ch-name">${ch.title}</span>
+      <span class="ced-ch-num" style="margin-top:2px;opacity:0.5">${words} words</span>
+      <span class="ced-ch-status ${isPub ? 'pub' : 'draft'}">${isPub ? '● PUB' : '○ DRAFT'}</span>`;
+    item.onclick = () => cedLoadChapter(globalIdx);
+    cedInitDrag(item, globalIdx);
     list.appendChild(item);
   });
 }
@@ -5494,14 +5988,20 @@ function cedLoadChapter(idx) {
   document.getElementById('ced-body').value = ch.content || '';
   document.getElementById('ced-del-btn').style.display = '';
   document.getElementById('ced-status').textContent = '';
-  // highlight in list
-  document.querySelectorAll('.ced-ch-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+  cedSyncPubToggle(ch.is_published !== false);
+  document.querySelectorAll('.ced-ch-item').forEach(el => {
+    el.classList.toggle('active', el.querySelector('.ced-ch-name')?.textContent === ch.title);
+  });
   cedUpdatePreview();
+  cedUpdateWordCount();
+  cedCheckDraft();
+  cedLoadNotes();
 }
 
 function cedNewChapter() {
   cedEditId = null;
-  document.getElementById('ced-num').value = chapters.length + 1;
+  const storyChaps = chapters.filter(c => c.story_id === cedActiveStoryId);
+  document.getElementById('ced-num').value = storyChaps.length + 1;
   document.getElementById('ced-title').value = '';
   document.getElementById('ced-body').value = '';
   document.getElementById('ced-del-btn').style.display = 'none';
@@ -5509,7 +6009,448 @@ function cedNewChapter() {
   document.querySelectorAll('.ced-ch-item').forEach(el => el.classList.remove('active'));
   document.getElementById('ced-preview-body').innerHTML = '';
   document.getElementById('ced-title').focus();
+  cedSyncPubToggle(true);
+  cedUpdateWordCount();
+  document.getElementById('ced-draft-banner').classList.remove('show');
+  const notes = document.getElementById('ced-notes');
+  if (notes) notes.value = '';
 }
+
+/* ── Word count ── */
+function cedUpdateWordCount() {
+  const ta = document.getElementById('ced-body');
+  const el = document.getElementById('ced-wordcount');
+  if (!ta || !el) return;
+  const n = ta.value.trim().split(/\s+/).filter(Boolean).length;
+  el.textContent = n.toLocaleString() + ' WORDS';
+}
+
+/* ── Autosave draft ── */
+function cedDraftKey() {
+  return `wncore_draft_${cedActiveStoryId}_${cedEditId || 'new'}`;
+}
+function cedSaveDraft() {
+  const ta = document.getElementById('ced-body');
+  if (!ta || !ta.value.trim()) return;
+  const key = cedDraftKey();
+  localStorage.setItem(key, JSON.stringify({
+    body: ta.value,
+    title: document.getElementById('ced-title').value,
+    num: document.getElementById('ced-num').value,
+    ts: Date.now(),
+  }));
+  const as = document.getElementById('ced-autosave');
+  if (as) { as.textContent = '// draft saved'; setTimeout(() => { if (as) as.textContent=''; }, 1500); }
+}
+function cedCheckDraft() {
+  const key = cedDraftKey();
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    const draft = JSON.parse(raw);
+    const ta = document.getElementById('ced-body');
+    if (!ta) return;
+    // only show banner if draft differs from current content
+    if (draft.body && draft.body !== ta.value) {
+      document.getElementById('ced-draft-banner').classList.add('show');
+    }
+  } catch {}
+}
+function cedRestoreDraft() {
+  const key = cedDraftKey();
+  try {
+    const draft = JSON.parse(localStorage.getItem(key));
+    if (!draft) return;
+    document.getElementById('ced-body').value = draft.body || '';
+    if (draft.title) document.getElementById('ced-title').value = draft.title;
+    if (draft.num) document.getElementById('ced-num').value = draft.num;
+    cedUpdatePreview();
+    cedUpdateWordCount();
+  } catch {}
+  document.getElementById('ced-draft-banner').classList.remove('show');
+}
+function cedDiscardDraft() {
+  localStorage.removeItem(cedDraftKey());
+  document.getElementById('ced-draft-banner').classList.remove('show');
+}
+
+/* ══════════════════════════════════════════════════
+   CHAPTER SEARCH / FILTER
+══════════════════════════════════════════════════ */
+let cedFilterQuery = '';
+function cedFilterChapters(q) {
+  cedFilterQuery = q.toLowerCase();
+  cedRenderList();
+}
+
+/* ══════════════════════════════════════════════════
+   FIND & REPLACE
+══════════════════════════════════════════════════ */
+let cfbMatches = [], cfbCurrent = 0;
+
+function cedToggleFindBar() {
+  const bar = document.getElementById('ced-find-bar');
+  bar.classList.toggle('open');
+  if (bar.classList.contains('open')) {
+    document.getElementById('cfb-find').focus();
+    cfbUpdate();
+  } else {
+    cfbClearHighlights();
+  }
+}
+
+function cfbGetPattern() {
+  const val = document.getElementById('cfb-find').value;
+  if (!val) return null;
+  const useRegex = document.getElementById('cfb-regex').checked;
+  try { return useRegex ? new RegExp(val, 'gi') : new RegExp(val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'); }
+  catch { return null; }
+}
+
+function cfbUpdate() {
+  const ta = document.getElementById('ced-body');
+  const count = document.getElementById('cfb-count');
+  const pattern = cfbGetPattern();
+  if (!pattern || !ta) { if (count) count.textContent = '0 / 0'; cfbMatches = []; return; }
+  const text = ta.value;
+  cfbMatches = [];
+  let m;
+  pattern.lastIndex = 0;
+  while ((m = pattern.exec(text)) !== null) cfbMatches.push(m.index);
+  if (count) count.textContent = cfbMatches.length ? `${Math.min(cfbCurrent+1,cfbMatches.length)} / ${cfbMatches.length}` : '0 / 0';
+}
+
+function cfbScrollTo(idx) {
+  const ta = document.getElementById('ced-body');
+  if (!ta || !cfbMatches.length) return;
+  const pos = cfbMatches[idx];
+  ta.focus();
+  ta.setSelectionRange(pos, pos + document.getElementById('cfb-find').value.length);
+  // rough scroll
+  const lines = ta.value.slice(0, pos).split('\n').length;
+  const lineH = parseFloat(getComputedStyle(ta).lineHeight) || 18;
+  ta.scrollTop = Math.max(0, (lines - 3) * lineH);
+  document.getElementById('cfb-count').textContent = `${idx+1} / ${cfbMatches.length}`;
+}
+
+function cfbNext() {
+  cfbUpdate();
+  if (!cfbMatches.length) return;
+  cfbCurrent = (cfbCurrent + 1) % cfbMatches.length;
+  cfbScrollTo(cfbCurrent);
+}
+function cfbPrev() {
+  cfbUpdate();
+  if (!cfbMatches.length) return;
+  cfbCurrent = (cfbCurrent - 1 + cfbMatches.length) % cfbMatches.length;
+  cfbScrollTo(cfbCurrent);
+}
+
+function cfbReplace() {
+  const ta = document.getElementById('ced-body');
+  const repl = document.getElementById('cfb-replace').value;
+  const pattern = cfbGetPattern();
+  if (!ta || !pattern || !cfbMatches.length) return;
+  const pos = cfbMatches[cfbCurrent];
+  const find = document.getElementById('cfb-find').value;
+  const len = find.length;
+  ta.setRangeText(repl, pos, pos + len, 'end');
+  cfbUpdate();
+  cedUpdatePreview();
+  cedUpdateWordCount();
+}
+
+function cfbReplaceAll() {
+  const ta = document.getElementById('ced-body');
+  const repl = document.getElementById('cfb-replace').value;
+  const pattern = cfbGetPattern();
+  if (!ta || !pattern) return;
+  ta.value = ta.value.replace(pattern, repl);
+  cfbUpdate();
+  cedUpdatePreview();
+  cedUpdateWordCount();
+}
+
+function cfbClearHighlights() { cfbMatches = []; cfbCurrent = 0; }
+
+/* ══════════════════════════════════════════════════
+   PUBLISHED / DRAFT TOGGLE
+══════════════════════════════════════════════════ */
+function cedSyncPubToggle(isPublished) {
+  const tog = document.getElementById('ced-pub-toggle');
+  const lbl = document.getElementById('ced-pub-label');
+  if (tog) tog.checked = !!isPublished;
+  if (lbl) lbl.textContent = isPublished ? 'PUBLISHED' : 'DRAFT';
+}
+
+async function cedTogglePublished(val) {
+  cedSyncPubToggle(val);
+  if (!cedEditId || !sb) return;
+  await sb.from('chapters').update({ is_published: val }).eq('id', cedEditId);
+  await loadChapters(cedActiveStoryId);
+  cedRenderShelf();
+  cedRenderList();
+}
+
+/* ══════════════════════════════════════════════════
+   EXPORT CHAPTER
+══════════════════════════════════════════════════ */
+function cedToggleExportMenu(e) {
+  e.stopPropagation();
+  document.getElementById('ced-export-menu').classList.toggle('open');
+}
+document.addEventListener('click', () => {
+  const m = document.getElementById('ced-export-menu');
+  if (m) m.classList.remove('open');
+});
+
+function cedExport(fmt) {
+  document.getElementById('ced-export-menu').classList.remove('open');
+  const title = document.getElementById('ced-title').value.trim() || 'chapter';
+  const num   = document.getElementById('ced-num').value || '0';
+  const body  = document.getElementById('ced-body').value;
+  const story = cedGetActiveStory();
+  let content, filename, mime;
+  if (fmt === 'md') {
+    content  = `# ${story.prefix}-${String(num).padStart(2,'0')} — ${title}\n\n${body}`;
+    filename = `${story.prefix}-${String(num).padStart(2,'0')}-${title.toLowerCase().replace(/\s+/g,'-')}.md`;
+    mime = 'text/markdown';
+  } else {
+    content  = `${story.prefix}-${String(num).padStart(2,'0')} — ${title}\n\n${body}`;
+    filename = `${story.prefix}-${String(num).padStart(2,'0')}-${title.toLowerCase().replace(/\s+/g,'-')}.txt`;
+    mime = 'text/plain';
+  }
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ══════════════════════════════════════════════════
+   STORY DELETION
+══════════════════════════════════════════════════ */
+function cedDeleteStory(storyId, e) {
+  e.stopPropagation();
+  const story = cedStories.find(s => s.id === storyId);
+  if (!story) return;
+  if (storyId === 'another-sky') { alert('Cannot delete the primary story.'); return; }
+  if (!confirm(`Delete story "${story.title}" from the shelf?\n\n(This only removes it locally. Supabase chapters are NOT deleted.)`)) return;
+  cedStories = cedStories.filter(s => s.id !== storyId);
+  cedSaveStories(cedStories);
+  if (cedActiveStoryId === storyId) cedActiveStoryId = cedStories[0].id;
+  cedRenderShelf();
+  cedSwitchStory(cedActiveStoryId);
+}
+
+/* ══════════════════════════════════════════════════
+   DRAG-TO-REORDER CHAPTERS
+══════════════════════════════════════════════════ */
+let cedDragSrcIdx = null;
+
+function cedInitDrag(item, globalIdx) {
+  item.draggable = true;
+  item.addEventListener('dragstart', e => {
+    cedDragSrcIdx = globalIdx;
+    item.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  item.addEventListener('dragend', () => item.classList.remove('dragging'));
+  item.addEventListener('dragover', e => { e.preventDefault(); item.classList.add('drag-over'); });
+  item.addEventListener('dragleave', () => item.classList.remove('drag-over'));
+  item.addEventListener('drop', async e => {
+    e.preventDefault();
+    item.classList.remove('drag-over');
+    if (cedDragSrcIdx === null || cedDragSrcIdx === globalIdx) return;
+    // reorder within the story's chapters
+    const storyChaps = chapters.filter(c => c.story_id === cedActiveStoryId);
+    const srcStoryIdx = storyChaps.findIndex(c => c === chapters[cedDragSrcIdx]);
+    const dstStoryIdx = storyChaps.findIndex(c => c === chapters[globalIdx]);
+    if (srcStoryIdx < 0 || dstStoryIdx < 0) return;
+    const moved = storyChaps.splice(srcStoryIdx, 1)[0];
+    storyChaps.splice(dstStoryIdx, 0, moved);
+    // renumber and bulk update
+    const updates = storyChaps.map((ch, i) => ({ id: ch.id, chapter_num: i + 1 }));
+    for (const u of updates) {
+      await sb.from('chapters').update({ chapter_num: u.chapter_num }).eq('id', u.id);
+    }
+    await loadChapters(cedActiveStoryId);
+    cedRenderShelf();
+    cedRenderList();
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   CHAPTER PRIVATE NOTES
+══════════════════════════════════════════════════ */
+function cedNotesKey() {
+  return `wncore_notes_${cedActiveStoryId}_${cedEditId || 'new'}`;
+}
+function cedLoadNotes() {
+  const ta = document.getElementById('ced-notes');
+  if (!ta) return;
+  try { ta.value = localStorage.getItem(cedNotesKey()) || ''; } catch { ta.value = ''; }
+}
+function cedSaveNotes() {
+  const ta = document.getElementById('ced-notes');
+  if (!ta) return;
+  try { localStorage.setItem(cedNotesKey(), ta.value); } catch {}
+}
+
+/* ══════════════════════════════════════════════════
+   GRAMMAR / SENTENCE / LORE CHECK
+══════════════════════════════════════════════════ */
+let cedCheckMode = 'grammar';
+let cedCheckIssues = [];
+
+function cedSetCheckMode(mode) {
+  cedCheckMode = mode;
+  document.querySelectorAll('.ced-check-mode-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById(`chk-${mode}-btn`);
+  if (btn) btn.classList.add('active');
+}
+
+function cedToggleCheckPanel() {
+  const panel = document.getElementById('ced-check-panel');
+  panel.classList.toggle('open');
+}
+
+async function cedRunCheck() {
+  const body = document.getElementById('ced-body').value.trim();
+  if (!body) return;
+  const out = document.getElementById('ced-check-body');
+  out.innerHTML = '<span class="chk-loading">// ANALYSING...</span>';
+
+  const prompts = {
+    grammar: `You are a copy editor. Analyse the following fiction text for grammar errors, spelling mistakes, punctuation issues, and sentence fragments. Return ONLY a JSON array of objects with keys: "orig" (the problematic phrase, verbatim), "fix" (corrected version), "note" (brief reason). If no issues, return empty array []. No markdown, no preamble.`,
+    clarity: `You are a writing editor. Analyse this fiction text for clarity issues: awkward phrasing, overly complex sentences, unclear pronoun references, redundant words. Return ONLY a JSON array with keys: "orig", "fix", "note". Empty array if clean. No markdown, no preamble.`,
+    lore: `You are a lore consistency editor for the Cygnus Signal Series — a post-apocalyptic horror fiction set in Bangladesh. The series features: Husks (infected humans), Ghuuls, Som (the antagonist entity), degraded skies, the Great Thinning, and a cosmic horror cosmology. Analyse the following chapter excerpt for internal consistency issues, lore contradictions, or unclear world-building references. Return ONLY a JSON array with keys: "orig" (the problematic passage), "fix" (suggested correction or clarification), "note" (reason). Empty array if clean. No markdown.`,
+  };
+
+  try {
+    const res = await fetch('/api/writer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: body.slice(0, 8000) }],
+        system: prompts[cedCheckMode],
+        stream: false,
+        max_tokens: 2000,
+      }),
+    });
+    const data = await res.json();
+    const raw = (data.content || data.text || data.reply || '').trim();
+    let issues;
+    try {
+      const cleaned = raw.replace(/```json|```/g, '').trim();
+      issues = JSON.parse(cleaned);
+    } catch {
+      out.innerHTML = `<span style="color:rgba(200,80,0,0.7);font-size:0.36rem;">// Could not parse response. Raw:<br><pre style="white-space:pre-wrap;font-size:0.32rem;color:rgba(180,120,100,0.7);">${raw.slice(0,600)}</pre></span>`;
+      return;
+    }
+    cedCheckIssues = issues;
+    cedRenderCheckResults(issues);
+  } catch (err) {
+    out.innerHTML = `<span style="color:rgba(200,0,0,0.5);font-size:0.34rem;">// Error: ${err.message}</span>`;
+  }
+}
+
+function cedRenderCheckResults(issues) {
+  const out = document.getElementById('ced-check-body');
+  out.innerHTML = '';
+  if (!issues.length) {
+    out.innerHTML = '<div class="chk-clean">✓ NO ISSUES FOUND</div>';
+    return;
+  }
+  const acceptAll = document.createElement('button');
+  acceptAll.className = 'chk-accept-all';
+  acceptAll.textContent = `▶ ACCEPT ALL ${issues.length} FIXES`;
+  acceptAll.onclick = () => cedAcceptAllFixes();
+  out.appendChild(acceptAll);
+
+  issues.forEach((issue, i) => {
+    const div = document.createElement('div');
+    div.className = 'chk-issue';
+    div.innerHTML = `
+      <div class="ci-orig">✗ ${issue.orig}</div>
+      <div class="ci-fix">→ ${issue.fix}</div>
+      <div class="ci-note">${issue.note}</div>`;
+    const btn = document.createElement('button');
+    btn.className = 'chk-accept-btn';
+    btn.textContent = 'ACCEPT';
+    btn.onclick = () => {
+      cedApplyFix(issue.orig, issue.fix);
+      div.style.opacity = '0.3';
+      div.style.pointerEvents = 'none';
+      btn.textContent = '✓ APPLIED';
+    };
+    div.appendChild(btn);
+    out.appendChild(div);
+  });
+}
+
+function cedApplyFix(orig, fix) {
+  const ta = document.getElementById('ced-body');
+  if (!ta) return;
+  const idx = ta.value.indexOf(orig);
+  if (idx < 0) return;
+  ta.setRangeText(fix, idx, idx + orig.length, 'preserve');
+  cedUpdatePreview();
+  cedUpdateWordCount();
+}
+
+function cedAcceptAllFixes() {
+  // apply in reverse order so positions don't shift
+  const ta = document.getElementById('ced-body');
+  if (!ta) return;
+  let text = ta.value;
+  [...cedCheckIssues].reverse().forEach(issue => {
+    const idx = text.indexOf(issue.orig);
+    if (idx >= 0) text = text.slice(0, idx) + issue.fix + text.slice(idx + issue.orig.length);
+  });
+  ta.value = text;
+  cedUpdatePreview();
+  cedUpdateWordCount();
+  document.getElementById('ced-check-body').innerHTML = '<div class="chk-clean">✓ ALL FIXES APPLIED</div>';
+}
+
+/* ══════════════════════════════════════════════════
+   PER-STORY THEME & PROGRESS
+══════════════════════════════════════════════════ */
+function storyThemeKey(sid) { return `as_reader_opts_${sid}`; }
+function storyProgressKey(sid) { return `_as_last_${sid}`; }
+
+/* patch saveReaderOpts / loadReaderOpts to be story-aware */
+const _origSaveReaderOpts = saveReaderOpts;
+saveReaderOpts = function() {
+  localStorage.setItem(storyThemeKey(cedActiveStoryId || 'another-sky'), JSON.stringify(readerOpts));
+  localStorage.setItem('as_reader_opts', JSON.stringify(readerOpts)); // keep global fallback
+};
+const _origLoadReaderOpts = loadReaderOpts;
+loadReaderOpts = function() {
+  try {
+    const storyKey = storyThemeKey('another-sky'); // reader always starts as another-sky
+    const s = JSON.parse(localStorage.getItem(storyKey) || localStorage.getItem('as_reader_opts') || '{}');
+    Object.assign(readerOpts, s);
+    applyReaderOpts(); syncReaderUI();
+  } catch {}
+};
+
+/* patch loadChapter to save per-story progress */
+const _origLoadChapter = loadChapter;
+loadChapter = function(idx) {
+  _origLoadChapter(idx);
+  try {
+    const ch = chapters[idx];
+    if (ch) localStorage.setItem(storyProgressKey(ch.story_id || 'another-sky'), String(idx));
+    // reading time
+    const words = (ch?.content || '').trim().split(/\s+/).filter(Boolean).length;
+    const mins = Math.max(1, Math.round(words / 200));
+    const rt = document.getElementById('ch-read-time');
+    if (rt) rt.textContent = `~${mins} MIN READ`;
+  } catch {}
+};
 
 function cedUpdatePreview() {
   const preview = document.getElementById('ced-preview-body');
@@ -5520,15 +6461,32 @@ function cedUpdatePreview() {
   renderBody(fakeChapter, preview);
 }
 
-// Live preview with debounce
+// Live preview with debounce + autosave + wordcount
 document.addEventListener('DOMContentLoaded', () => {
   const body = document.getElementById('ced-body');
   if (body) {
     body.addEventListener('input', () => {
       clearTimeout(cedPreviewTimer);
       cedPreviewTimer = setTimeout(cedUpdatePreview, 400);
+      cedUpdateWordCount();
+      clearTimeout(cedAutosaveTimer);
+      cedAutosaveTimer = setTimeout(cedSaveDraft, 1500);
     });
   }
+  // Ctrl+S to publish
+  document.addEventListener('keydown', e => {
+    const modalOpen = document.getElementById('upload-modal')?.classList.contains('open');
+    if ((e.ctrlKey || e.metaKey) && e.key === 's' && modalOpen) {
+      e.preventDefault(); cedSave();
+    }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'h' && modalOpen) {
+      e.preventDefault(); cedToggleFindBar();
+    }
+    if (e.key === 'Escape') {
+      const findBar = document.getElementById('ced-find-bar');
+      if (findBar?.classList.contains('open')) { cedToggleFindBar(); }
+    }
+  });
 });
 
 function cedWrap(open, close) {
@@ -5583,7 +6541,8 @@ async function cedSave() {
     ({ error } = await sb.from('chapters').update({ title, content: body, chapter_num: num }).eq('id', cedEditId));
   } else {
     const res = await sb.from('chapters').insert({
-      story_id: 'another-sky', chapter_num: num, title, content: body,
+      story_id: cedActiveStoryId, chapter_num: num, title, content: body,
+      is_published: document.getElementById('ced-pub-toggle')?.checked ?? true,
       published_at: new Date().toISOString(),
       published_by: localStorage.getItem('chapters_admin_user') || 'operator',
     }).select('id').single();
@@ -5592,7 +6551,11 @@ async function cedSave() {
   }
   if (error) { stat.textContent = '// ERROR: ' + error.message; return; }
   stat.textContent = '// SAVED';
+  // clear draft
+  localStorage.removeItem(cedDraftKey());
+  document.getElementById('ced-draft-banner').classList.remove('show');
   await loadChapters();
+  cedRenderShelf();
   cedRenderList();
   document.getElementById('ced-del-btn').style.display = '';
   setTimeout(() => { const s = document.getElementById('ced-status'); if (s) s.textContent = ''; }, 2000);
@@ -5603,8 +6566,10 @@ async function cedDelete() {
   if (!confirm('Delete this chapter permanently?')) return;
   const { error } = await sb.from('chapters').delete().eq('id', cedEditId);
   if (error) { document.getElementById('ced-status').textContent = '// Delete failed.'; return; }
+  localStorage.removeItem(cedDraftKey());
   cedEditId = null;
   await loadChapters();
+  cedRenderShelf();
   cedRenderList();
   cedNewChapter();
 }
