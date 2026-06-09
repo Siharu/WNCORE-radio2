@@ -5031,19 +5031,19 @@ function startGateTwitch() {
    works without each system needing its own unlock dance. */
 (function() {
   function unlockAudio() {
-    // Resume Howler's shared context if it exists and is suspended
     if (window.Howler && window.Howler.ctx) {
       if (window.Howler.ctx.state === 'suspended') {
         window.Howler.ctx.resume().catch(() => {});
       }
     } else {
-      // Howler hasn't created its context yet — create a temporary one to
-      // satisfy the browser gesture requirement, then hand off to Howler
+      // Howler hasn't created its context yet — create a throwaway context
+      // within the gesture window so the browser marks this origin as unlocked.
+      // Do NOT close it immediately: closing before Howler creates its own ctx
+      // can cause the gesture window to expire before Howler benefits from it.
       try {
         const tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
-        // Once Howler creates its own context on first Howl(), it will be
-        // already unlocked because the gesture window is still open
-        tmpCtx.close();
+        // Suspend after a short delay — Howler will create its own ctx on first Howl()
+        setTimeout(() => tmpCtx.close().catch(() => {}), 2000);
       } catch(_) {}
     }
     document.removeEventListener('click',      unlockAudio, true);
@@ -5764,14 +5764,16 @@ function setDisplayMode(m) { readerOpts.displayMode = m; applyReaderOpts(); sync
 
 function toggleTheme() {
   setDisplayMode(readerOpts.displayMode === 'dark' ? 'paper' : 'dark');
-  /* Restart atmosphere in correct mode if already playing */
+  /* Restart atmosphere in correct mode if synopsis is active.
+     stopSynopsisRain fades+cleans over ~1500ms. startSynopsisRain at 1600ms
+     reads the new theme via isPaper — no second call needed.
+     _synAudioRestartOnTheme is intentionally removed: it called startThemeAudio()
+     immediately at t=0 while stopSynopsisRain was still mid-fade, causing both
+     systems to race for rainSound and leave silence. */
   if (window.stopSynopsisRain && window.startSynopsisRain) {
     window.stopSynopsisRain();
     setTimeout(() => window.startSynopsisRain(), 1600);
   }
-  /* Restart synopsis background audio (rain ↔ birdsong) if it was running */
-  if (window._synAudioRestartOnTheme) window._synAudioRestartOnTheme();
-  /* Re-evaluate SKY STATUS label now that theme has changed */
   updateSkyStat(currentChapterIdx);
 }
 function syncThemeBtn() {
@@ -7185,13 +7187,13 @@ async function generateNewVolume(silent) {
         volume: 0,
         html5: true,
         onloaderror: () => {
-          /* fallback: try a different birds URL */
+          /* fallback: different birds URL — play inside onload, not before it */
           rainSound = new Howl({
             src: ['https://cdn.freesound.org/previews/476/476042_6418094-lq.mp3'],
             loop: true, volume: 0, html5: true,
+            onload: function() { this.play(); this.fade(0, 0.18, 3000); },
             onloaderror: () => { rainSound = null; }
           });
-          if (rainSound) { rainSound.play(); rainSound.fade(0, 0.18, 3000); }
         }
       });
       rainSound.play();
