@@ -858,11 +858,13 @@ body {
 #drifter-hub-status { font-size:0.35rem; color:var(--text3); letter-spacing:2px; margin-left:auto; }
 #drifter-feed { overflow-y:auto; flex:1; max-height:148px; }
 .dhub-entry { border-left:2px solid rgba(80,180,255,0.2); padding-left:6px; margin-bottom:8px; }
+.dhub-entry-day { display:block; font-size:0.24rem; color:rgba(80,180,255,0.4); letter-spacing:2px; margin-bottom:1px; }
 .dhub-entry-type { font-size:0.34rem; letter-spacing:3px; color:rgba(80,180,255,0.6); display:block; margin-bottom:1px; }
 .dhub-entry-text { font-size:0.41rem; color:var(--text2); line-height:1.6; }
 .dhub-entry-text.streaming::after { content:'▌'; animation:blink 0.7s infinite; opacity:0.7; }
 @keyframes blink { 0%,100%{opacity:0.7} 50%{opacity:0} }
-.dhub-entry.alert .dhub-entry-type { color:rgba(255,120,80,0.8); }
+.dhub-entry.alert .dhub-entry-day { display:block; font-size:0.24rem; color:rgba(80,180,255,0.4); letter-spacing:2px; margin-bottom:1px; }
+.dhub-entry-type { color:rgba(255,120,80,0.8); }
 .dhub-entry.alert { border-left-color:rgba(255,100,60,0.35); }
 #drifter-hub-refresh { margin-top:6px; font-size:0.35rem; letter-spacing:2px; color:var(--text3); cursor:pointer; background:none; border:1px solid rgba(80,180,255,0.18); padding:2px 6px; width:100%; text-align:center; transition: border-color 0.2s, color 0.2s; }
 #drifter-hub-refresh:hover { border-color:rgba(80,200,255,0.5); color:rgba(80,200,255,0.8); }
@@ -1743,35 +1745,82 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 @media(max-width: 700px)  { #hdr-right { display: none !important; } }
 
 /* ═══════════════════════════════════════════════════
-   ADMIN FAB
+   ADMIN FAB — CYBERPUNK HUD
 ═══════════════════════════════════════════════════ */
 #afab {
   display: none; position: fixed; bottom: 20px; left: 20px; z-index: 300;
-  background: var(--surface2); border: 1px solid var(--dred);
-  color: var(--dred2); font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.4rem; padding: 9px 14px; cursor: pointer;
-  letter-spacing: 2px; transition: all 0.15s;
+  background: #000; border: 1px solid rgba(255,20,20,0.5);
+  color: rgba(255,20,20,0.6); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.36rem; padding: 7px 12px; cursor: pointer;
+  letter-spacing: 3px; text-transform: uppercase; transition: all 0.15s;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 }
-#afab:hover { border-color: var(--red); color: var(--red); }
+#afab::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.08) 3px, rgba(0,0,0,0.08) 4px);
+}
+#afab:hover { border-color: #ff1a1a; color: #ff1a1a; background: rgba(255,0,0,0.06); }
 
 /* ═══════════════════════════════════════════════════
    MODALS (login + upload)
 ═══════════════════════════════════════════════════ */
-.modal { display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.96); align-items: center; justify-content: center; padding: 16px; }
+.modal { display: none; position: fixed; inset: 0; z-index: 9000; background: rgba(0,0,0,0.97); align-items: center; justify-content: center; padding: 16px; }
 .modal.open { display: flex; }
-.modal-shell { width: min(360px,96vw); background: var(--surface); border: 1px solid var(--brd); border-top: 2px solid var(--red); padding: 28px; font-family: var(--font-mono, 'IBM Plex Mono'); }
-.modal-title { font-size: 0.5rem; color: var(--red); letter-spacing: 3px; margin-bottom: 20px; text-transform: uppercase; }
-.modal-label { font-size: 0.38rem; color: var(--dred); letter-spacing: 1px; display: block; margin-bottom: 5px; text-transform: uppercase; }
-.modal-inp { width: 100%; background: #000; border: none; border-bottom: 1px solid var(--brd); color: #cc8888; font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.55rem; padding: 8px 6px; outline: none; letter-spacing: 1px; box-sizing: border-box; }
-:root[data-theme="paper"] .modal-inp { background: var(--paper); color: var(--text); border-bottom-color: var(--brd); }
-.modal-inp:focus { border-bottom-color: var(--red); }
-.modal-err { font-size: 0.38rem; color: var(--red); min-height: 16px; margin-top: 8px; letter-spacing: 1px; }
+/* LOGIN MODAL — CYBERPUNK HUD SHELL */
+.modal-shell {
+  width: min(360px,96vw); background: #050000; border: 1px solid rgba(255,20,20,0.35);
+  padding: 0; font-family: var(--font-mono, 'IBM Plex Mono'); position: relative; overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+/* scanlines overlay */
+.modal-shell::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.12) 3px, rgba(0,0,0,0.12) 4px);
+}
+/* corner brackets */
+.modal-shell::after {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:
+    linear-gradient(90deg, rgba(255,20,20,0.6) 12px, transparent 12px) 0 0 / 12px 2px no-repeat,
+    linear-gradient(180deg, rgba(255,20,20,0.6) 12px, transparent 12px) 0 0 / 2px 12px no-repeat,
+    linear-gradient(270deg, rgba(255,20,20,0.6) 12px, transparent 12px) 100% 0 / 12px 2px no-repeat,
+    linear-gradient(180deg, rgba(255,20,20,0.6) 12px, transparent 12px) 100% 0 / 2px 12px no-repeat,
+    linear-gradient(90deg, rgba(255,20,20,0.6) 12px, transparent 12px) 0 100% / 12px 2px no-repeat,
+    linear-gradient(180deg, rgba(255,20,20,0.6) 12px, transparent 12px) 0 100% / 2px 12px no-repeat,
+    linear-gradient(270deg, rgba(255,20,20,0.6) 12px, transparent 12px) 100% 100% / 12px 2px no-repeat,
+    linear-gradient(180deg, rgba(255,20,20,0.6) 12px, transparent 12px) 100% 100% / 2px 12px no-repeat;
+}
+/* modal inner content wrapper */
+.modal-inner { padding: 28px; position: relative; z-index: 2; }
+.modal-header-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 16px; background: rgba(200,0,0,0.12); border-bottom: 1px solid rgba(255,20,20,0.2);
+  font-size: 0.26rem; letter-spacing: 3px; color: rgba(255,20,20,0.45);
+  text-transform: uppercase; position: relative; z-index: 2;
+}
+.modal-header-dot { width: 5px; height: 5px; background: rgba(255,20,20,0.5); display: inline-block; }
+.modal-title { font-size: 0.46rem; color: #ff1a1a; letter-spacing: 4px; margin-bottom: 20px; text-transform: uppercase; padding-bottom: 10px; border-bottom: 1px solid rgba(255,20,20,0.15); }
+.modal-label { font-size: 0.32rem; color: rgba(255,20,20,0.5); letter-spacing: 2px; display: block; margin-bottom: 5px; text-transform: uppercase; }
+.modal-inp { width: 100%; background: #000; border: none; border-bottom: 1px solid rgba(255,20,20,0.25); color: rgba(255,120,120,0.9); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.55rem; padding: 8px 6px; outline: none; letter-spacing: 2px; box-sizing: border-box; }
+:root[data-theme="paper"] .modal-inp { background: #0a0000; color: rgba(255,100,100,0.9); border-bottom-color: rgba(255,20,20,0.25); }
+.modal-inp:focus { border-bottom-color: #ff1a1a; }
+.modal-err { font-size: 0.36rem; color: #ff4444; min-height: 16px; margin-top: 8px; letter-spacing: 1px; }
 .modal-row { display: flex; gap: 10px; margin-top: 16px; }
 .modal-field { margin-bottom: 14px; }
-.btn-r { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--red); color: var(--red); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.48rem; cursor: pointer; letter-spacing: 2px; transition: all 0.15s; text-transform: uppercase; }
-.btn-r:hover { background: rgba(200,0,0,0.12); }
-.btn-d { padding: 10px 14px; background: transparent; border: 1px solid var(--brd); color: var(--text3); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.48rem; cursor: pointer; transition: all 0.15s; text-transform: uppercase; }
-.btn-d:hover { border-color: var(--red); color: var(--red); }
+.btn-r {
+  flex: 1; padding: 10px; background: transparent; border: 1px solid rgba(255,20,20,0.6);
+  color: #ff1a1a; font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.44rem;
+  cursor: pointer; letter-spacing: 3px; transition: all 0.15s; text-transform: uppercase;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+}
+.btn-r:hover { background: rgba(200,0,0,0.18); border-color: #ff1a1a; }
+.btn-d {
+  padding: 10px 14px; background: transparent; border: 1px solid rgba(255,20,20,0.2);
+  color: rgba(255,20,20,0.35); font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.44rem;
+  cursor: pointer; transition: all 0.15s; text-transform: uppercase;
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+}
+.btn-d:hover { border-color: rgba(255,20,20,0.6); color: rgba(255,20,20,0.7); }
 /* Upload modal wider */
 .upload-shell { width: min(580px,96vw); max-height: 90dvh; overflow-y: auto; background: var(--surface); border: 1px solid var(--brd); border-top: 2px solid var(--red); padding: 24px; font-family: var(--font-mono, 'IBM Plex Mono'); scrollbar-width: thin; scrollbar-color: var(--brd) transparent; }
 .up-ta { width: 100%; height: 220px; resize: vertical; background: #000; border: 1px solid var(--brd); color: #cc8888; font-family: var(--font-mono, 'IBM Plex Mono'); font-size: 0.48rem; padding: 10px; outline: none; line-height: 1.65; box-sizing: border-box; }
@@ -1798,33 +1847,42 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 }
 #ced-shell {
   display: flex; width: 100%; height: 100%;
-  background: #050000; font-family: var(--font-mono, 'IBM Plex Mono');
+  background: #020000; font-family: var(--font-mono, 'IBM Plex Mono');
+  position: relative;
+}
+/* scanline texture */
+#ced-shell::before {
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.07) 3px, rgba(0,0,0,0.07) 4px);
 }
 #ced-left {
   width: 220px; min-width: 180px; max-width: 240px;
-  border-right: 1px solid rgba(200,0,0,0.2);
+  border-right: 1px solid rgba(255,20,20,0.18);
   display: flex; flex-direction: column;
-  background: #030000; overflow: hidden;
+  background: #010000; overflow: hidden; position: relative; z-index: 1;
 }
 #ced-left-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid rgba(200,0,0,0.15); flex-shrink: 0;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid rgba(255,20,20,0.15); flex-shrink: 0;
+  background: rgba(200,0,0,0.06);
 }
-#ced-logo { font-size: 0.3rem; letter-spacing: 3px; color: var(--red); text-transform: uppercase; opacity: 0.7; }
+#ced-logo { font-size: 0.28rem; letter-spacing: 4px; color: rgba(255,20,20,0.6); text-transform: uppercase; }
 .ced-icon-btn {
-  background: transparent; border: 1px solid rgba(200,0,0,0.2);
+  background: transparent; border: 1px solid rgba(255,20,20,0.2);
   padding: 4px 6px; cursor: pointer; display: flex; align-items: center; transition: border-color 0.12s;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%);
 }
-.ced-icon-btn:hover { border-color: var(--red); }
+.ced-icon-btn:hover { border-color: #ff1a1a; background: rgba(255,0,0,0.07); }
 #ced-new-btn {
-  margin: 10px; padding: 9px 10px;
-  background: transparent; border: 1px solid rgba(200,0,0,0.3);
-  color: var(--red); font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.36rem; letter-spacing: 2px; cursor: pointer;
-  text-transform: uppercase; transition: background 0.12s; flex-shrink: 0;
+  margin: 10px 10px 6px; padding: 9px 10px;
+  background: transparent; border: 1px solid rgba(255,20,20,0.3);
+  color: rgba(255,20,20,0.7); font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.34rem; letter-spacing: 3px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.12s; flex-shrink: 0;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
 }
-#ced-new-btn:hover { background: rgba(200,0,0,0.1); }
+#ced-new-btn:hover { background: rgba(255,0,0,0.1); border-color: rgba(255,20,20,0.6); color: #ff1a1a; }
 #ced-ch-list { flex: 1; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent; }
 .ced-ch-item {
   display: flex; flex-direction: column; gap: 2px;
@@ -1842,8 +1900,13 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #ced-right { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
 #ced-toolbar {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 8px 12px; border-bottom: 1px solid rgba(200,0,0,0.18);
-  background: #040000; flex-shrink: 0;
+  padding: 8px 12px; border-bottom: 1px solid rgba(255,20,20,0.15);
+  background: #010000; flex-shrink: 0; position: relative; z-index: 1;
+}
+/* HUD grid line accent */
+#ced-toolbar::after {
+  content:''; position:absolute; bottom:-1px; left:0; right:0; height:1px;
+  background: linear-gradient(90deg, rgba(255,20,20,0.5) 0%, rgba(255,20,20,0.1) 40%, transparent 100%);
 }
 #ced-toolbar-meta { display: flex; gap: 8px; align-items: center; }
 #ced-num {
@@ -1881,10 +1944,10 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #ced-preview-pane { flex: 1; display: flex; flex-direction: column; overflow-y: auto; min-width: 0; scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent; }
 #ced-editor-label, #ced-preview-label { font-size: 0.28rem; letter-spacing: 2px; color: rgba(200,0,0,0.25); padding: 6px 14px; border-bottom: 1px solid rgba(200,0,0,0.08); text-transform: uppercase; flex-shrink: 0; }
 #ced-body {
-  flex: 1; background: #020000; border: none; outline: none; resize: none;
-  color: #cc9999; font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.52rem;
+  flex: 1; background: #010000; border: none; outline: none; resize: none;
+  color: rgba(220,160,160,0.9); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.52rem;
   line-height: 1.7; padding: 16px;
-  scrollbar-width: thin; scrollbar-color: rgba(200,0,0,0.2) transparent;
+  scrollbar-width: thin; scrollbar-color: rgba(255,20,20,0.2) transparent;
 }
 #ced-preview-body { padding: 20px 24px; flex: 1; }
 #ced-preview-body p { font-family: 'Comic Neue','Comic Sans MS',cursive; font-size: clamp(0.95rem, 3vw, 1.08rem); line-height: 1.85; color: var(--text); margin-bottom: 1.4em; }
@@ -1894,6 +1957,18 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   #ced-preview-pane { display: none; }
   #ced-editor-pane { flex: 1; }
   #ced-title { width: 140px; }
+}
+
+
+/* ── SCROLL PROGRESS BAR ──────────────────────────── */
+#ch-progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 500;
+  background: transparent; pointer-events: none;
+}
+#ch-progress-bar {
+  height: 100%; width: 0%; background: var(--red);
+  transition: width 0.1s linear;
+  box-shadow: 0 0 6px rgba(255,20,20,0.5);
 }
 
 /* ── STORY CAROUSEL ──────────────────────────────── */
@@ -1989,6 +2064,15 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   transition: background 0.12s;
 }
 .cns-btn:hover { background: rgba(200,0,0,0.12); }
+/* schedule input */
+#ced-schedule-wrap { display: flex; align-items: center; gap: 4px; }
+.ced-schedule-input {
+  background: #000; border: none; border-bottom: 1px solid rgba(255,20,20,0.2);
+  color: rgba(200,80,80,0.6); font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
+  padding: 2px 4px; outline: none; cursor: pointer; width: 138px;
+  color-scheme: dark;
+}
+.ced-schedule-input:focus { border-bottom-color: rgba(255,20,20,0.5); }
 /* word count in toolbar */
 #ced-wordcount {
   font-size: 0.28rem; letter-spacing: 1px; color: rgba(200,0,0,0.35);
@@ -2791,23 +2875,27 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 <button id="afab" onclick="openUpload()">
   <img src="assets/lucid/Plus.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:4px">CONTENT
 </button>
+<!-- Scroll progress bar -->
+<div id="ch-progress"><div id="ch-progress-bar"></div></div>
+<!-- Passage share popover -->
+<div id="passage-popover" style="display:none;position:fixed;z-index:9999;background:#0a0000;border:1px solid rgba(255,20,20,0.4);padding:5px 10px;font-family:var(--font-mono,'IBM Plex Mono');font-size:0.32rem;letter-spacing:2px;color:rgba(255,80,80,0.9);cursor:pointer;clip-path:polygon(0 0,calc(100% - 6px) 0,100% 6px,100% 100%,0 100%);" onclick="copySelectedPassage()">COPY PASSAGE</div>
 <div id="htrig" style="position:fixed;bottom:8px;right:8px;width:8px;height:8px;border-radius:50%;background:rgba(80,0,0,0.4);cursor:pointer;z-index:300;" onclick="openLogin()" title=""></div>
 
 <!-- Login Modal -->
 <div id="login-modal" class="modal">
   <div class="modal-shell">
-    <div class="modal-title">
-      <img src="assets/lucid/Lock-Closed.png" alt="" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle;margin-right:5px">OPERATOR AUTHENTICATION
+    <div class="modal-header-bar">
+      <span>WNCORE_SYSTEM // AUTH_REQUIRED</span>
+      <span class="modal-header-dot"></span>
     </div>
-    <div class="modal-field"><label class="modal-label">ACCESS TOKEN:</label><input type="password" class="modal-inp" id="li-token" autocomplete="off" /></div>
-    <div class="modal-err" id="li-err"></div>
-    <div class="modal-row">
-      <button class="btn-r" onclick="doLogin()">
-        <img src="assets/lucid/Right-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">AUTHENTICATE
-      </button>
-      <button class="btn-d" onclick="closeLogin()">
-        <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">CANCEL
-      </button>
+    <div class="modal-inner">
+      <div class="modal-title">OPERATOR AUTHENTICATION</div>
+      <div class="modal-field"><label class="modal-label">ACCESS TOKEN:</label><input type="password" class="modal-inp" id="li-token" autocomplete="off" /></div>
+      <div class="modal-err" id="li-err"></div>
+      <div class="modal-row">
+        <button class="btn-r" onclick="doLogin()">AUTHENTICATE</button>
+        <button class="btn-d" onclick="closeLogin()">CANCEL</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2892,11 +2980,17 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
             <input type="checkbox" id="ced-pub-toggle" onchange="cedTogglePublished(this.checked)">
             <span id="ced-pub-label">DRAFT</span>
           </label>
+          <div id="ced-schedule-wrap" title="Schedule publish datetime (leave blank for manual)">
+            <span class="ced-toolbar-sep" style="font-size:0.24rem;">SCHED</span>
+            <input type="datetime-local" id="ced-schedule-dt" class="ced-schedule-input" onchange="cedSchedule(this.value)" title="Scheduled publish time">
+          </div>
           <div class="ced-export-wrap">
             <button class="ced-export-btn" onclick="cedToggleExportMenu(event)" title="Export chapter">EXPORT ▾</button>
             <div class="ced-export-menu" id="ced-export-menu">
               <button onclick="cedExport('md')">AS MARKDOWN</button>
               <button onclick="cedExport('txt')">AS PLAIN TEXT</button>
+              <button onclick="cedExport('html')">AS STYLED HTML</button>
+              <button onclick="cedPreviewAsReader()" style="border-top:1px solid rgba(200,0,0,0.15);margin-top:2px;padding-top:5px;">⊞ READER PREVIEW</button>
             </div>
           </div>
           <button class="ced-fx-btn" onclick="cedToggleFindBar()" title="Find & Replace (Ctrl+H)">FIND</button>
@@ -3626,6 +3720,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       <div id="cw-status-acts">
         <button class="cw-status-btn" onclick="cwToggleSearch()" title="Web search" id="cw-search-toggle">SEARCH</button>
         <button class="cw-status-btn" onclick="cwToggleImagine()" title="AI image generation" id="cw-imagine-toggle">IMAGE</button>
+        <button class="cw-status-btn" onclick="cwExportConversation()" title="Export conversation as .md">EXPORT MD</button>
         <button class="cw-status-btn" onclick="cwClear()" title="Clear history">CLEAR</button>
         <button class="cw-status-btn" onclick="cwCopyLast()" title="Copy last response">COPY</button>
         <button class="cw-status-btn" onclick="cwInsertLast()" title="Insert into editor">INSERT</button>
@@ -4836,13 +4931,20 @@ Use toolbar effects on selected text:
     intervalId = setInterval(next, 7000);
   }
 
-  // Dot click handlers
+  // Dot click handlers — also let user lock panel
   document.querySelectorAll('.sbi-dot').forEach(dot => {
     dot.addEventListener('click', () => {
       render(parseInt(dot.dataset.idx));
       startAuto(); // reset timer
     });
   });
+
+  // Pause-on-hover
+  const intelWrap = document.getElementById('sb-intel-wrap');
+  if (intelWrap) {
+    intelWrap.addEventListener('mouseenter', () => clearInterval(intervalId));
+    intelWrap.addEventListener('mouseleave', startAuto);
+  }
 
   // Init
   render(0);
@@ -4882,11 +4984,17 @@ Use toolbar effects on selected text:
       <div id="drifter-feed">
         ${hubEntries.length === 0
           ? '<div style="font-size:0.38rem;color:var(--text3);letter-spacing:2px;padding:8px 0;">SCANNING FREQUENCIES...</div>'
-          : hubEntries.map(e => `
-            <div class="dhub-entry${e.alert?' alert':''}">
-              <span class="dhub-entry-type">// ${e.type}</span>
-              <span class="dhub-entry-text">${e.text}</span>
-            </div>`).join('')}
+          : hubEntries.map((e, i) => {
+              const blankEnd = new Date('2031-01-01');
+              const base = new Date('2031-01-01');
+              const dayOffset = Math.floor((Date.now() - base.getTime()) / 86400000) - i * 3;
+              const dayLabel = `DAY ${Math.max(1, dayOffset).toString().padStart(3,'0')} POST-BLANK`;
+              return `<div class="dhub-entry${e.alert?' alert':''}">
+                <span class="dhub-entry-day">${dayLabel}</span>
+                <span class="dhub-entry-type">// ${e.type}</span>
+                <span class="dhub-entry-text">${e.text}</span>
+              </div>`;
+            }).join('')}
       </div>
       <button id="drifter-hub-refresh" onclick="window._drifterHubFetch()">⟳ PULL NEW SIGNALS</button>
     </div>`;
@@ -5368,7 +5476,13 @@ function loadChapter(idx) {
   // Sky HUD
   updateSkyStat(idx);
 
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Restore scroll position for this chapter
+  const savedScroll = (() => { try { return parseInt(localStorage.getItem('_as_scroll_' + idx) || '0'); } catch { return 0; } })();
+  if (savedScroll > 0) {
+    setTimeout(() => window.scrollTo({ top: savedScroll, behavior: 'instant' }), 80);
+  } else {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
   revealBody(document.getElementById('ch-body'));
 
   // Reset translation
@@ -5441,9 +5555,57 @@ function revealBody(body) {
 
 function go(d) { loadChapter(curIdx + d); }
 
+function copySelectedPassage() {
+  const sel = window.getSelection();
+  if (!sel) return;
+  const text = sel.toString().trim();
+  if (!text) return;
+  const ch = chapters[curIdx];
+  const cite = ch ? `\n\n— Another Sky, Ch.${ch.chapter_num}: ${ch.title}` : '';
+  navigator.clipboard.writeText(text + cite).then(() => {
+    const pop = document.getElementById('passage-popover');
+    if (pop) { pop.textContent = 'COPIED ✓'; setTimeout(() => { pop.textContent = 'COPY PASSAGE'; pop.style.display = 'none'; }, 1200); }
+  });
+}
+
 function resumeReading() {
   const saved = parseInt(localStorage.getItem('_as_last') || '-1');
   if (saved >= 0 && saved < chapters.length) loadChapter(saved);
+
+  // Scroll progress bar + position memory
+  let _scrollSaveTimer = null;
+  window.addEventListener('scroll', () => {
+    // Progress bar
+    const bar = document.getElementById('ch-progress-bar');
+    if (bar) {
+      const h = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.width = (h > 0 ? Math.min(100, (window.scrollY / h) * 100) : 0) + '%';
+    }
+    // Save scroll position (debounced)
+    if (curIdx >= 0) {
+      clearTimeout(_scrollSaveTimer);
+      _scrollSaveTimer = setTimeout(() => {
+        try { localStorage.setItem('_as_scroll_' + curIdx, String(window.scrollY)); } catch {}
+      }, 300);
+    }
+  });
+
+  // Passage share popover
+  document.addEventListener('selectionchange', () => {
+    const sel = window.getSelection();
+    const pop = document.getElementById('passage-popover');
+    if (!pop) return;
+    const reader = document.getElementById('ch-body');
+    if (sel && sel.toString().trim().length > 8 && reader && reader.contains(sel.anchorNode)) {
+      const range = sel.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+      pop.style.display = 'block';
+      pop.style.left = Math.min(rect.left + rect.width / 2 - 50, window.innerWidth - 160) + 'px';
+      pop.style.top = (rect.top + window.scrollY - 38) + 'px';
+    } else {
+      pop.style.display = 'none';
+    }
+  });
 }
 
 function checkResume() {
@@ -6147,6 +6309,9 @@ function cedLoadChapter(idx) {
   document.getElementById('ced-del-btn').style.display = '';
   document.getElementById('ced-status').textContent = '';
   cedSyncPubToggle(ch.is_published !== false);
+  // Restore schedule field
+  const schedEl = document.getElementById('ced-schedule-dt');
+  if (schedEl) schedEl.value = ch.publish_at ? new Date(ch.publish_at).toISOString().slice(0,16) : '';
   document.querySelectorAll('.ced-ch-item').forEach(el => {
     el.classList.toggle('active', el.querySelector('.ced-ch-name')?.textContent === ch.title);
   });
@@ -6334,6 +6499,30 @@ function cfbClearHighlights() { cfbMatches = []; cfbCurrent = 0; }
 /* ══════════════════════════════════════════════════
    PUBLISHED / DRAFT TOGGLE
 ══════════════════════════════════════════════════ */
+function cedPreviewAsReader() {
+  const ch = { content: document.getElementById('ced-body')?.value || '', title: document.getElementById('ced-title')?.value || 'PREVIEW', chapter_num: document.getElementById('ced-num')?.value || '?' };
+  const body = document.createElement('div');
+  if (window.renderBody) renderBody(ch, body);
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>PREVIEW: ${ch.title}</title>
+<style>
+body{background:#010004;color:#d4bfb8;font-family:'Comic Neue','Comic Sans MS',cursive;max-width:680px;margin:40px auto;padding:20px;line-height:1.85;font-size:1.08rem;}
+p{margin-bottom:1.4em;}
+</style></head><body><div style="font-family:monospace;font-size:.7rem;color:rgba(200,0,0,0.5);margin-bottom:20px;letter-spacing:2px;">PREVIEW MODE // NOT PUBLISHED</div>${body.innerHTML}</body></html>`;
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(html); w.document.close(); }
+  document.getElementById('ced-export-menu')?.classList.remove('open');
+}
+
+async function cedSchedule(val) {
+  if (!cedEditId) return;
+  const dt = val ? new Date(val).toISOString() : null;
+  const { error } = await sb.from('chapters').update({ publish_at: dt }).eq('id', cedEditId);
+  if (!error) {
+    const st = document.getElementById('ced-status');
+    if (st) { st.textContent = dt ? 'SCHEDULED' : 'UNSCHEDULED'; setTimeout(() => { if (st) st.textContent = ''; }, 2000); }
+  }
+}
+
 function cedSyncPubToggle(isPublished) {
   const tog = document.getElementById('ced-pub-toggle');
   const lbl = document.getElementById('ced-pub-label');
@@ -6363,6 +6552,10 @@ document.addEventListener('click', () => {
 });
 
 function cedExport(fmt) {
+  if (fmt === 'html') {
+    cedPreviewAsReader();
+    return;
+  }
   document.getElementById('ced-export-menu').classList.remove('open');
   const title = document.getElementById('ced-title').value.trim() || 'chapter';
   const num   = document.getElementById('ced-num').value || '0';
