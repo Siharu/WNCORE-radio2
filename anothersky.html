@@ -6672,6 +6672,10 @@ window.revertTranslation = function () {
 function autoDetect() {
   // Restore admin state
   if (sessionStorage.getItem('wncore_auth') === '1') { isAdmin = true; showFab(); }
+  // Restore token into sessionStorage from localStorage if missing (cross-session resume)
+  if (!sessionStorage.getItem('ced_admin_tok') && localStorage.getItem('chapters_admin_token')) {
+    sessionStorage.setItem('ced_admin_tok', localStorage.getItem('chapters_admin_token'));
+  }
 
   const nav = sessionStorage.getItem('as_nav');
   const ch  = parseInt(sessionStorage.getItem('as_ch') || '-1', 10);
@@ -6733,6 +6737,7 @@ async function doLogin() {
       isAdmin = true;
       sessionStorage.setItem('wncore_auth', '1');
       sessionStorage.setItem('ced_admin_tok', token);
+      localStorage.setItem('chapters_admin_token', token);
       showFab(); closeLogin(); openUpload();
     } else {
       errEl.textContent = '// ACCESS DENIED';
