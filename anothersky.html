@@ -2546,6 +2546,142 @@ body.rm-justify #ch-body p { text-align: justify; }
 body.rm-focus #as-sidebar { opacity: 0.04; transition: opacity 0.4s; }
 body.rm-focus #as-sidebar:hover { opacity: 1; }
 
+/* ── LOGBOOK DRAWER ─────────────────────────────────────── */
+#logbook-drawer {
+  display: none; position: fixed; inset: 0; z-index: 8500;
+}
+#logbook-drawer.open { display: block; }
+#logbook-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.75);
+}
+#logbook-panel {
+  position: absolute; right: 0; top: 0; bottom: 0; width: min(340px, 95vw);
+  background: #040000; border-left: 1px solid rgba(200,71,42,0.3);
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: logbook-slide-in 0.22s ease;
+}
+@keyframes logbook-slide-in { from { transform: translateX(100%); } to { transform: none; } }
+#logbook-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid rgba(200,71,42,0.18);
+  flex-shrink: 0; background: #020000;
+}
+#logbook-title {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.4rem; letter-spacing: 3px; color: rgba(200,71,42,0.8);
+  text-transform: uppercase; margin-bottom: 3px;
+}
+#logbook-sub {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.32rem; letter-spacing: 2px; color: rgba(200,71,42,0.3);
+  text-transform: uppercase;
+}
+#logbook-close {
+  background: transparent; border: 1px solid rgba(200,71,42,0.2);
+  color: rgba(200,71,42,0.5);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
+  letter-spacing: 1.5px; padding: 4px 8px; cursor: pointer;
+  text-transform: uppercase; flex-shrink: 0; margin-left: 8px;
+  transition: all 0.12s;
+}
+#logbook-close:hover { border-color: #c8472a; color: #c8472a; }
+#logbook-body {
+  flex: 1; overflow-y: auto; padding: 12px 14px;
+  scrollbar-width: thin; scrollbar-color: rgba(200,71,42,0.15) transparent;
+  display: flex; flex-direction: column; gap: 2px;
+}
+.lb-section-head {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.34rem; letter-spacing: 3px; color: rgba(200,71,42,0.4);
+  text-transform: uppercase; padding: 10px 0 4px;
+  border-bottom: 1px solid rgba(200,71,42,0.08); margin-bottom: 4px;
+}
+.lb-section-head:first-child { padding-top: 0; }
+.lb-entry {
+  padding: 9px 10px; border: 1px solid rgba(200,71,42,0.08);
+  border-left: 2px solid rgba(200,71,42,0.25);
+  cursor: pointer; transition: all 0.12s; position: relative;
+  background: transparent;
+}
+.lb-entry:hover { background: rgba(200,71,42,0.05); border-left-color: #c8472a; }
+.lb-entry-name {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.38rem; letter-spacing: 1.5px; color: rgba(200,120,100,0.9);
+  text-transform: uppercase; display: block; margin-bottom: 3px;
+}
+.lb-entry-preview {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.34rem; color: rgba(200,100,80,0.45); line-height: 1.5;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lb-entry-cryptic {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; color: rgba(200,71,42,0.22); margin-top: 4px;
+  letter-spacing: 1px;
+}
+.lb-entry.cryptic-active .lb-entry-name { color: rgba(200,71,42,0.7); animation: lb-flicker 2s ease infinite; }
+@keyframes lb-flicker { 0%,100%{opacity:1} 50%{opacity:0.6} 75%{opacity:0.85} }
+
+/* ── INSPECT MODAL ──────────────────────────────────────── */
+#inspect-modal {
+  display: none; position: fixed; inset: 0; z-index: 9500;
+  background: rgba(0,0,0,0.88); align-items: center; justify-content: center;
+  padding: 24px;
+}
+#inspect-modal.open { display: flex; }
+#inspect-box {
+  position: relative; background: #040000;
+  border: 1px solid rgba(200,71,42,0.35);
+  padding: 28px 26px 22px; max-width: 480px; width: 100%;
+  animation: inspect-in 0.2s ease;
+}
+@keyframes inspect-in { from { opacity:0; transform:scale(0.95); } to { opacity:1; transform:none; } }
+#inspect-corner-tl {
+  position: absolute; top: 0; left: 0; width: 14px; height: 14px;
+  border-top: 1px solid rgba(200,71,42,0.7); border-left: 1px solid rgba(200,71,42,0.7);
+}
+#inspect-corner-br {
+  position: absolute; bottom: 0; right: 0; width: 14px; height: 14px;
+  border-bottom: 1px solid rgba(200,71,42,0.7); border-right: 1px solid rgba(200,71,42,0.7);
+}
+#inspect-stamp {
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
+  letter-spacing: 3px; color: rgba(200,71,42,0.3); text-transform: uppercase;
+  margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid rgba(200,71,42,0.1);
+}
+#inspect-name {
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.55rem;
+  letter-spacing: 2px; color: #c8472a; text-transform: uppercase; margin-bottom: 5px;
+}
+#inspect-tag {
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.32rem;
+  letter-spacing: 2.5px; color: rgba(200,71,42,0.4); text-transform: uppercase;
+  margin-bottom: 14px;
+}
+#inspect-body {
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.42rem;
+  color: rgba(200,140,120,0.8); line-height: 1.75; margin-bottom: 14px;
+}
+#inspect-cryptic {
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.34rem;
+  color: rgba(200,71,42,0.25); letter-spacing: 1px; margin-bottom: 16px;
+  min-height: 16px; transition: opacity 1s;
+}
+#inspect-close {
+  background: transparent; border: 1px solid rgba(200,71,42,0.25);
+  color: rgba(200,71,42,0.5);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  letter-spacing: 2px; padding: 6px 14px; cursor: pointer;
+  text-transform: uppercase; transition: all 0.12s; display: block;
+}
+#inspect-close:hover { border-color: #c8472a; color: #c8472a; }
+
+/* Make sidebar entries clickable */
+.sbi-anomaly, .sbi-faction-name { cursor: pointer; }
+.sbi-anomaly:hover .sbi-anomaly-name { color: rgba(200,130,80,1); }
+.sbi-panel .sbi-faction-name:hover { color: #ff4444; }
+
 /* ── THEME TOGGLE ── */
 #theme-lbl-d, #theme-lbl-p { pointer-events: none; }
 
@@ -2959,6 +3095,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <img src="assets/lucid/Chevron-Arrow-Down.png" alt="" class="lucid-icon" id="mob-ch-trigger-arrow" style="width:10px;height:10px;vertical-align:middle">
         </button>
         <div id="mob-bar-tools">
+          <button class="hdr-btn" onclick="openLogbookDrawer()" title="Logbook — world intel">
+            <img src="assets/lucid/File-Text.png" alt="Logbook" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
+          </button>
           <button class="hdr-btn" onclick="toggleReaderOpts()">
             <img src="assets/lucid/Gear.png" alt="Options" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
           </button>
@@ -3162,6 +3301,37 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <button class="btn-d" onclick="closeLogin()">CANCEL</button>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Logbook Drawer (mobile + desktop inspect) -->
+<div id="logbook-drawer" role="dialog" aria-modal="true" aria-label="Logbook">
+  <div id="logbook-backdrop" onclick="closeLogbookDrawer()"></div>
+  <div id="logbook-panel">
+    <div id="logbook-head">
+      <div>
+        <div id="logbook-title">// LOGBOOK DRIFTERS — INTEL FEED</div>
+        <div id="logbook-sub">CLASSIFIED BROADCAST · WORLD-2 · 2032</div>
+      </div>
+      <button id="logbook-close" onclick="closeLogbookDrawer()">
+        <img src="assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:3px">CLOSE
+      </button>
+    </div>
+    <div id="logbook-body"><!-- populated by JS --></div>
+  </div>
+</div>
+
+<!-- Inspect Modal -->
+<div id="inspect-modal" onclick="closeInspect()">
+  <div id="inspect-box" onclick="event.stopPropagation()">
+    <div id="inspect-corner-tl"></div>
+    <div id="inspect-corner-br"></div>
+    <div id="inspect-stamp">// LOGBOOK DRIFTERS — FIELD ENTRY</div>
+    <div id="inspect-name"></div>
+    <div id="inspect-tag"></div>
+    <div id="inspect-body"></div>
+    <div id="inspect-cryptic"></div>
+    <button id="inspect-close" onclick="closeInspect()">[ CLOSE ENTRY ]</button>
   </div>
 </div>
 
@@ -8149,6 +8319,295 @@ async function generateNewVolume(silent) {
       showBody(cycleIdx);
     });
   };
+
+})();
+
+/* ── LOGBOOK DRAWER + INSPECT MODAL + CRYPTIC SIDEBAR ───────── */
+(function initLogbook() {
+
+  // ── All inspectable entries ──────────────────────────────────
+  const LOGBOOK_DATA = [
+    {
+      section: 'WORLD ANOMALIES',
+      entries: [
+        {
+          name: 'RAIN OF OBSEDIA',
+          tag: 'ATMOSPHERIC · GLOBAL · DAILY',
+          body: 'Black, oily rainfall. Falls unpredictably. Causes temporary blindness in humans on contact. When it falls, infected, husks, and ghuuls become calm — they stop and stare upward, as if perceiving something humans cannot see. Sky appears to bleed downward. Acidic compounds detected but confirmed harmless. Some meteorologists believe the rain would have occurred regardless of the outbreak. Cosmic phenomenon. No known origin.',
+          crypticPool: [
+            'they look at something we cannot see',
+            'the rain knows what we forgot',
+            '// SIGNAL LOST AT PRECIPITATION EVENT',
+            'water from a sky that is not ours',
+            '3 drifters went blind in obsedia rain — none complained',
+          ]
+        },
+        {
+          name: 'FOG OF MEDUSA',
+          tag: 'ATMOSPHERIC · GERMANY · SPREADING NORTHWEST',
+          body: 'Yellowish fog. First appearance: Germany, rural outskirts. Kills all organic matter on contact — humans, infected, plant life. Fully rejected husks appear entirely unaffected. Spreading direction: northwest at approximately 4km per week. No known stopping mechanism. No known origin. Pale Node scientists who investigated the Germany site have not reported back.',
+          crypticPool: [
+            'this fog has been seen before. somewhere else. somewhen else.',
+            '// GAS ANALYSIS INCONCLUSIVE — COMPOUND SHOULD NOT EXIST',
+            'only the already-dead walk through it unharmed',
+            'a pale node researcher wrote one word before going silent: FAMILIAR',
+            'germany went quiet before the fog. after the fog. same silence.',
+          ]
+        },
+        {
+          name: 'THE GLOBAL CHILLING',
+          tag: 'CLIMATE · GLOBAL · ONSET: 2 MONTHS POST-OUTBREAK',
+          body: 'The planet is cooling. Average temperature dropped 1.4°C since outbreak onset. Minimum 5-6 major hail events per month worldwide. Black rain and hail simultaneously: worst survivable outdoor condition documented. Some meteorologists connect this to reduced human industry. Others connect it to something else. The insects moving north may already know.',
+          crypticPool: [
+            'the planet is preparing for something',
+            '// TEMPERATURE DATA CLASSIFIED BY ALASKA COALITION',
+            'cold comes from the direction the insects are running toward',
+            'bhutan reports no chilling. bhutan also reports no outbreak.',
+          ]
+        },
+        {
+          name: 'THE GREAT MIGRATION',
+          tag: 'BIOLOGICAL · GLOBAL · DESTINATION: UNKNOWN',
+          body: 'Trillions of insects moving north. Ants, beetles, moths — all species, moving in the same direction simultaneously. Birds following. Some wild mammals. Logbook Drifters have tracked the movement for three months. The migration does not stop for weather, for fire, for human barriers. They are not running. They appear to be going somewhere specific.',
+          crypticPool: [
+            'they know something. they have always known.',
+            '// DESTINATION ANALYSIS: NORTH POLE ± 400KM',
+            'what is at the north pole that wasn\'t there before',
+            'a drifter tried to follow them. we have not heard back.',
+            'the bees are gone. the bees have never migrated. the bees are gone.',
+          ]
+        },
+      ]
+    },
+    {
+      section: 'ACTIVE SIGNALS',
+      entries: [
+        {
+          name: 'SIG-017 — SIGNAL DARK',
+          tag: 'NODE STATUS · LAST PING: 34 DAYS AGO',
+          body: 'Node SIG-017 went dark 34 days ago without warning. Last transmission was mid-sentence. The operator was describing something outside their window. The sentence ended with the word "familiar." No recovery team has been authorized. No recovery team has volunteered.',
+          crypticPool: [
+            '// LAST WORDS: "it looks familiar somehow i don\'t know why it looks—"',
+            'familiar. that word keeps appearing.',
+            'sig-017 location: 2km from known fog boundary',
+          ]
+        },
+        {
+          name: 'CYGNUS SIGNAL',
+          tag: 'DEEP SPACE · DECODED: 2011 · ORIGIN: 6,000 LY',
+          body: 'Detected 2007. Decoded 2011. Message: "They lied to us. Send help. Any way possible. No matter who is out there." Origin: Cygnus constellation, approximately 6,000 light years. The message is 6,000 years old. Whatever sent it did so 6,000 years ago. Whatever they were warning us about has had 6,000 years to arrive.',
+          crypticPool: [
+            'it took 6000 years to get here. what did it pass through.',
+            '// RESPONSE ATTEMPTED 2013. NO REPLY.',
+            'they lied to us. who is "us". who is "they".',
+            'the fermi paradox asks why we hear no signals. we heard one.',
+            'what happened to whoever sent it',
+          ]
+        },
+      ]
+    },
+    {
+      section: 'FACTION DOSSIER',
+      entries: [
+        {
+          name: 'LOGBOOK DRIFTERS',
+          tag: 'INTEL DISTRIBUTOR · UNKNOWN SIZE · NO BASE',
+          body: 'No official name — "Logbook Drifters" is what survivors call them. No known base of operations. Logbooks appear in malls, supply depots, evacuation shelters, and abandoned schools worldwide. Comprehensive. Accurate. Except when they are not. Counter-Drifter faction confirmed — planting fabricated logbooks with false husk behavior data. Cannot be blindly trusted. Logo: owl holding lizard, ready to strike.',
+          crypticPool: [
+            'who funds them. who prints them. where do the presses run.',
+            '// COUNTER-DRIFTER LOGBOOKS IDENTIFIED: 847 CONFIRMED FAKES',
+            'the owl does not blink',
+            'some drifters may not know they are carrying fakes',
+          ]
+        },
+        {
+          name: 'ROOFTOP SEERS',
+          tag: 'BROADCAST NETWORK · PACIFIC RIM · INFECTED',
+          body: 'Formerly a religious radio station broadcasting spiritual guidance before the outbreak. Still broadcasting. Still peaceful. Still warning. Their voices are calm. Their advice is often correct. Their eyes, when photographed through radio tower windows, reflect light like cats. Classification: infected, confirmed by Pale Node field analysis. They do not know we know. They continue to broadcast.',
+          crypticPool: [
+            'do they know what they are',
+            '// BROADCAST FREQUENCY: 88.7 FM (ROTATING)',
+            'infected with partial intelligence can use radio equipment',
+            'their last broadcast mentioned "the ones who forgot" seven times',
+            'what are they warning us about specifically',
+          ]
+        },
+        {
+          name: 'THE MOON DWELLERS',
+          tag: 'MOON DOME · DEPARTED: DAY 7 · STATUS: UNKNOWN',
+          body: 'Leaders, ministers, billionaires — departed Earth on Day 7 of the outbreak. Transported to the Moon Dome, built by a cleaning company in 2012. How a cleaning company acquired the funding, technology, and governmental cooperation to construct a lunar habitat is not publicly explained. The cleaning company has not responded to any communications since Day 7. The dome is visible from Earth on clear nights. No signal has been received from it.',
+          crypticPool: [
+            'a cleaning company. think about that.',
+            '// MOON DOME CONSTRUCTION COST: CLASSIFIED',
+            'they left on day 7. the outbreak started day 0. who told them to prepare.',
+            'the dome went dark the same hour they arrived',
+            'is a cleaning company a strange name or a very literal one',
+          ]
+        },
+        {
+          name: 'BLOOD PACT',
+          tag: 'CRIMINAL SYNDICATE · ANTARCTICA · ORGAN TRADE',
+          body: 'Originally known as Brotherhood Pact — a small biker gang based in Mexico City. Within three months of outbreak onset, became an international criminal syndicate operating from Antarctica. Current activities: organ trade, resource control, territorial expansion in southern hemisphere. How a Mexican biker gang became a polar criminal empire in 90 days is not documented. Their growth rate suggests pre-existing infrastructure.',
+          crypticPool: [
+            'pre-existing infrastructure. in antarctica.',
+            '// ANTARCTICA: 0 CONFIRMED HUSK SIGHTINGS',
+            'they knew. they were already there.',
+            'organ trade implies organs are still valuable. to whom.',
+          ]
+        },
+      ]
+    },
+    {
+      section: 'INCIDENT REPORTS',
+      entries: [
+        {
+          name: 'INCIDENT ZERO',
+          tag: 'GHUUL · CLASSIFICATION: EXTREME THREAT · DHAKA ORIGIN',
+          body: 'First confirmed Ghuul emergence. Location: Dhaka, Bangladesh. Subject: female, age 72, formerly civilian. Transformation trigger: simultaneous husk and infected contact. Post-transformation behavior: did not harm known associate. Fled immediately. In the following seven days, destroyed eleven survivor camps. Estimated casualties: 200+. Subject displays purpose-driven behavior inconsistent with standard husk aggression. Appears to avoid specific individuals. Logbook Drifters have designated this entity INCIDENT ZERO.',
+          crypticPool: [
+            'she remembers something',
+            '// SHE DID NOT HARM HIM. WHY.',
+            'incident zero was seen watching. not attacking. watching.',
+            '200 casualties in 7 days. then she stopped counting.',
+            'the drifter who named her incident zero has not filed a report since',
+          ]
+        },
+      ]
+    }
+  ];
+
+  // Cryptic rotation — every 45-90s swap a random entry's footer line
+  let crypticIntervalId = null;
+  function startCrypticRotation() {
+    crypticIntervalId = setInterval(() => {
+      const allEntries = LOGBOOK_DATA.flatMap(s => s.entries);
+      const entry = allEntries[Math.floor(Math.random() * allEntries.length)];
+      const pool = entry.crypticPool;
+      if (!pool || !pool.length) return;
+      // Update sidebar anomaly entries if visible
+      const anomalyEls = document.querySelectorAll('.sbi-anomaly-detail');
+      if (anomalyEls.length && Math.random() < 0.3) {
+        const el = anomalyEls[Math.floor(Math.random() * anomalyEls.length)];
+        const originalText = el.dataset.orig || el.textContent;
+        if (!el.dataset.orig) el.dataset.orig = originalText;
+        const cryptic = pool[Math.floor(Math.random() * pool.length)];
+        el.textContent = '// ' + cryptic;
+        el.style.color = 'rgba(200,71,42,0.5)';
+        el.style.fontStyle = 'italic';
+        setTimeout(() => {
+          el.textContent = originalText;
+          el.style.color = '';
+          el.style.fontStyle = '';
+        }, 8000);
+      }
+    }, 45000 + Math.random() * 45000);
+  }
+
+  // ── Inspect modal ────────────────────────────────────────────
+  let inspectCrypticTimer = null;
+  window.openInspect = function(entry) {
+    const modal = document.getElementById('inspect-modal');
+    document.getElementById('inspect-name').textContent = entry.name;
+    document.getElementById('inspect-tag').textContent = '// ' + entry.tag;
+    document.getElementById('inspect-body').textContent = entry.body;
+    const crypticEl = document.getElementById('inspect-cryptic');
+    crypticEl.textContent = '';
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // Slowly reveal a cryptic line after 3s
+    if (entry.crypticPool && entry.crypticPool.length) {
+      clearTimeout(inspectCrypticTimer);
+      inspectCrypticTimer = setTimeout(() => {
+        const line = entry.crypticPool[Math.floor(Math.random() * entry.crypticPool.length)];
+        crypticEl.style.opacity = '0';
+        crypticEl.textContent = '// ' + line;
+        requestAnimationFrame(() => { crypticEl.style.opacity = '1'; });
+      }, 3000);
+    }
+  };
+  window.closeInspect = function() {
+    document.getElementById('inspect-modal').classList.remove('open');
+    document.body.style.overflow = '';
+    clearTimeout(inspectCrypticTimer);
+  };
+
+  // ── Logbook drawer ───────────────────────────────────────────
+  function renderLogbookBody() {
+    const body = document.getElementById('logbook-body');
+    if (!body) return;
+    let html = '';
+    LOGBOOK_DATA.forEach(section => {
+      html += `<div class="lb-section-head">${section.section}</div>`;
+      section.entries.forEach((entry, i) => {
+        const preview = entry.body.slice(0, 60) + '…';
+        html += `<div class="lb-entry" onclick="openInspect(window._logbookFlat[${window._logbookFlat?.length || 0}+${i}])" data-entry-idx="${window._logbookFlat?.length || 0}">
+          <span class="lb-entry-name">${entry.name}</span>
+          <span class="lb-entry-preview">${preview}</span>
+        </div>`;
+      });
+    });
+    body.innerHTML = html;
+    // Fix onclick using data attribute approach
+    let flatIdx = 0;
+    body.querySelectorAll('.lb-entry').forEach(el => {
+      const entry = window._logbookFlat[flatIdx++];
+      el.onclick = () => openInspect(entry);
+    });
+  }
+
+  window._logbookFlat = LOGBOOK_DATA.flatMap(s => s.entries);
+
+  window.openLogbookDrawer = function() {
+    const drawer = document.getElementById('logbook-drawer');
+    if (!drawer) return;
+    renderLogbookBody();
+    drawer.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeLogbookDrawer = function() {
+    const drawer = document.getElementById('logbook-drawer');
+    if (drawer) drawer.classList.remove('open');
+    document.body.style.overflow = '';
+  };
+
+  // ── Make sidebar anomaly entries clickable ───────────────────
+  // Patch the anomaly renderer to add inspect links
+  const origPanels = window._sbiPanels;
+  if (origPanels) {
+    const anomalyPanel = origPanels.find(p => p.label === 'WORLD ANOMALIES');
+    if (anomalyPanel) {
+      const origRender = anomalyPanel.render;
+      anomalyPanel.render = function() {
+        const entries = LOGBOOK_DATA.find(s => s.section === 'WORLD ANOMALIES')?.entries || [];
+        return entries.map((e, i) =>
+          `<div class="sbi-anomaly" onclick="openInspect(window._logbookFlat[${i}])" title="Click to inspect">
+            <span class="sbi-anomaly-name">// ${e.name}</span>
+            <span class="sbi-anomaly-detail" data-orig="${e.body.slice(0,90)}…">${e.body.slice(0,90)}…</span>
+          </div>`
+        ).join('');
+      };
+    }
+    const factionPanel = origPanels.find(p => p.label === 'FACTION DOSSIER');
+    if (factionPanel) {
+      factionPanel.render = function() {
+        const factionEntries = LOGBOOK_DATA.find(s => s.section === 'FACTION DOSSIER')?.entries || [];
+        const f = factionEntries[Math.floor(Date.now() / 12000) % factionEntries.length];
+        const idx = window._logbookFlat.indexOf(f);
+        return `<span class="sbi-faction-name" onclick="openInspect(window._logbookFlat[${idx}])" title="Click to inspect">${f.name}</span>
+          <span class="sbi-faction-tag">${f.tag}</span>
+          <span class="sbi-faction-body">${f.body.slice(0,200)}…</span>
+          <div class="sbi-faction-status">▸ CLICK TO READ FULL ENTRY</div>`;
+      };
+    }
+    // Re-render current panel
+    if (window._sbiRender) window._sbiRender(window._sbiGetCurrent ? window._sbiGetCurrent() : 0);
+  }
+
+  startCrypticRotation();
+  // Keyboard close
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeInspect(); closeLogbookDrawer(); }
+  });
 
 })();
 </script>
