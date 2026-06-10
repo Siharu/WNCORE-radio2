@@ -4113,8 +4113,12 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   background: var(--cw-bg2);
   border: 1px solid var(--cw-brd-hot);
   outline: 1px solid rgba(255,255,255,0.10);
-  min-width: 220px; max-height: 280px; overflow-y: auto;
-  scrollbar-width: thin; scrollbar-color: var(--cw-accent-lo) transparent;
+  min-width: 220px;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cw-accent-lo) transparent;
+  overscroll-behavior: contain;
 }
 #cw-model-picker.open { display: block; }
 .cw-model-sep {
@@ -4266,6 +4270,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   background: var(--cw-bg2);
   border: 1px solid var(--cw-brd-hot);
   z-index: 99998; min-width: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cw-accent-lo) transparent;
+  overscroll-behavior: contain;
   /* glitchy outer edge */
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 2px 2px 0 rgba(200,71,42,0.2);
   animation: cwMenuGlitch 5s steps(1) infinite;
@@ -4806,12 +4814,28 @@ window.cwModelPickerToggle = function(force) {
   const tag    = document.getElementById('cw-model-tag');
   picker.classList.toggle('open', cwPickerOpen);
   if (cwPickerOpen && tag) {
-    // Position picker above the bar using fixed coords
-    const r = tag.getBoundingClientRect();
-    picker.style.right  = (window.innerWidth - r.right) + 'px';
-    picker.style.bottom = (window.innerHeight - r.top + 4) + 'px';
-    picker.style.left   = 'auto';
-    picker.style.top    = 'auto';
+    const r   = tag.getBoundingClientRect();
+    const ph  = Math.min(260, picker.scrollHeight || 260);
+    const gap = 4;
+    // Prefer opening upward (above the bar); fall back to downward if no space
+    const spaceAbove = r.top;
+    const spaceBelow = window.innerHeight - r.bottom;
+    picker.style.left  = 'auto';
+    picker.style.top   = 'auto';
+    picker.style.right = 'auto';
+    picker.style.bottom = 'auto';
+    // Horizontal: align right edge to tag right, clamp to viewport
+    const rightEdge = window.innerWidth - r.right;
+    picker.style.right = Math.max(4, rightEdge) + 'px';
+    if (spaceAbove >= ph + gap || spaceAbove >= spaceBelow) {
+      // Open upward
+      picker.style.bottom = (window.innerHeight - r.top + gap) + 'px';
+      picker.style.maxHeight = Math.min(260, spaceAbove - gap * 2) + 'px';
+    } else {
+      // Open downward
+      picker.style.top = (r.bottom + gap) + 'px';
+      picker.style.maxHeight = Math.min(260, spaceBelow - gap * 2) + 'px';
+    }
   }
 };
 
@@ -5203,11 +5227,22 @@ window.cwPlusToggle = function() {
   if (menu) menu.classList.toggle('open', _cwPlusOpen);
   if (btn)  btn.classList.toggle('open', _cwPlusOpen);
   if (_cwPlusOpen && btn && menu) {
-    const r = btn.getBoundingClientRect();
-    menu.style.left   = r.left + 'px';
-    menu.style.bottom = (window.innerHeight - r.top + 4) + 'px';
-    menu.style.top    = 'auto';
-    menu.style.right  = 'auto';
+    const r   = btn.getBoundingClientRect();
+    const gap = 4;
+    const menuH = Math.min(400, menu.scrollHeight || 320);
+    const spaceAbove = r.top;
+    const spaceBelow = window.innerHeight - r.bottom;
+    menu.style.left = menu.style.right = menu.style.top = menu.style.bottom = 'auto';
+    // Horizontal: left-align to button, clamp right edge
+    const leftPos = Math.min(r.left, window.innerWidth - 224);
+    menu.style.left = Math.max(4, leftPos) + 'px';
+    if (spaceAbove >= menuH + gap || spaceAbove >= spaceBelow) {
+      menu.style.bottom = (window.innerHeight - r.top + gap) + 'px';
+      menu.style.maxHeight = Math.min(400, spaceAbove - gap * 2) + 'px';
+    } else {
+      menu.style.top = (r.bottom + gap) + 'px';
+      menu.style.maxHeight = Math.min(400, spaceBelow - gap * 2) + 'px';
+    }
   }
 };
 // close plus menu on outside click
