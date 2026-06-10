@@ -29,9 +29,9 @@
   --surface2:  #160008;
   --brd:       rgba(180,0,0,0.18);
   --brd-hot:   rgba(255,0,0,0.55);
-  --text:      #d4bfb8;
-  --text2:     rgba(212,191,184,0.70);
-  --text3:     rgba(212,191,184,0.42);
+  --text:      #e8d5d0;
+  --text2:     rgba(232,213,208,0.72);
+  --text3:     rgba(232,213,208,0.42);
   --red:       #ff1a1a;
   --dred:      #8b0000;
   --dred2:     #440000;
@@ -748,6 +748,17 @@ body {
 .sbi-anomaly { margin-bottom: 7px; }
 .sbi-anomaly-name { color: rgba(200,130,80,0.9); display:block; margin-bottom:1px; letter-spacing:2px; font-size:0.44rem; }
 .sbi-anomaly-detail { color: var(--text3); font-size:0.42rem; line-height:1.6; }
+/* Anomaly redacted / unrevealed state */
+.sbi-anomaly.redacted .sbi-anomaly-name { color: rgba(200,71,42,0.35); filter: blur(1.5px); letter-spacing:3px; }
+.sbi-anomaly.redacted .sbi-anomaly-detail { filter: blur(3px); user-select:none; color:rgba(200,71,42,0.2); animation: anomalyGlitch 4s steps(2) infinite; }
+.sbi-anomaly.redacted::after { content:'[CLASSIFIED — DATA PENDING]'; display:block; font-size:0.3rem; letter-spacing:2px; color:rgba(200,71,42,0.3); margin-top:2px; }
+@keyframes anomalyGlitch {
+  0%,90%  { filter: blur(3px) brightness(1); }
+  92%     { filter: blur(2px) brightness(1.4) hue-rotate(20deg); }
+  94%     { filter: blur(4px) brightness(0.7); }
+  96%     { filter: blur(2.5px) brightness(1.2); }
+  98%,100%{ filter: blur(3px) brightness(1); }
+}
 
 /* Faction dossier */
 .sbi-faction-name { color: var(--red); font-size:0.5rem; letter-spacing:2px; display:block; margin-bottom:4px; }
@@ -1403,9 +1414,31 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 
 /* ── AMBIENT PLAYER ── */
 #ro-ambient-section { margin-top: 4px; }
-.ro-ambient-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 6px;
+#ro-ambient-scroll {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,71,42,0.18) transparent;
+  padding-right: 2px;
 }
+.ro-amb-cat {
+  font-size: 0.22rem;
+  letter-spacing: 2px;
+  color: rgba(200,71,42,0.3);
+  text-transform: uppercase;
+  padding: 5px 4px 2px;
+  border-bottom: 1px solid rgba(200,71,42,0.08);
+  margin-top: 3px;
+}
+.ro-amb-btn.amb-creepy {
+  color: rgba(200,71,42,0.6);
+  border-color: rgba(200,71,42,0.12);
+}
+.ro-amb-btn.amb-creepy:hover { color: #c8472a; background: rgba(200,0,0,0.04); }
+.ro-amb-btn.amb-creepy.amb-active { color: #ff3030; border-color: rgba(200,0,0,0.5); background: rgba(200,0,0,0.08); }
 .ro-amb-btn {
   font-family: var(--font-display, 'Special Gothic Expanded One');
   font-size: 0.42rem; letter-spacing: 1.5px; text-transform: uppercase;
@@ -3436,13 +3469,24 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
     <hr class="ro-divider">
     <div class="ro-section" id="ro-ambient-section">AMBIENT</div>
-    <div class="ro-ambient-grid">
+    <div id="ro-ambient-scroll">
+      <div class="ro-amb-cat">— ATMOSPHERIC —</div>
       <button class="ro-amb-btn" data-amb="analog" onclick="setAmbient('analog',this)">ANALOG STATIC</button>
       <button class="ro-amb-btn" data-amb="rain"   onclick="setAmbient('rain',this)">RAIN GLASS</button>
+      <button class="ro-amb-btn" data-amb="wind"   onclick="setAmbient('wind',this)">DEEP WIND</button>
+      <button class="ro-amb-btn" data-amb="signal" onclick="setAmbient('signal',this)">SIGNAL DRIFT</button>
+      <div class="ro-amb-cat">— NATURE —</div>
       <button class="ro-amb-btn" data-amb="forest" onclick="setAmbient('forest',this)">FOREST NIGHT</button>
       <button class="ro-amb-btn" data-amb="cave"   onclick="setAmbient('cave',this)">CAVE DRIP</button>
-      <button class="ro-amb-btn" data-amb="signal" onclick="setAmbient('signal',this)">SIGNAL DRIFT</button>
-      <button class="ro-amb-btn" data-amb="wind"   onclick="setAmbient('wind',this)">DEEP WIND</button>
+      <button class="ro-amb-btn" data-amb="deep_water" onclick="setAmbient('deep_water',this)">DEEP WATER</button>
+      <button class="ro-amb-btn" data-amb="thunder_distant" onclick="setAmbient('thunder_distant',this)">DISTANT THUNDER</button>
+      <div class="ro-amb-cat">— ANOMALY —</div>
+      <button class="ro-amb-btn amb-creepy" data-amb="obsedia" onclick="setAmbient('obsedia',this)">RAIN OF OBSEDIA</button>
+      <button class="ro-amb-btn amb-creepy" data-amb="husk_hive" onclick="setAmbient('husk_hive',this)">HUSK HIVE</button>
+      <button class="ro-amb-btn amb-creepy" data-amb="blank_zone" onclick="setAmbient('blank_zone',this)">BLANK ZONE STATIC</button>
+      <button class="ro-amb-btn amb-creepy" data-amb="cygnus_tone" onclick="setAmbient('cygnus_tone',this)">CYGNUS SIGNAL</button>
+      <button class="ro-amb-btn amb-creepy" data-amb="migration" onclick="setAmbient('migration',this)">THE MIGRATION</button>
+      <button class="ro-amb-btn amb-creepy" data-amb="wrongness" onclick="setAmbient('wrongness',this)">WRONGNESS</button>
     </div>
     <div id="ro-amb-vol-row">
       <label>VOL</label>
@@ -3730,688 +3774,540 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           </div>
 
 <!-- ══ CYGNUS WRITING ASSISTANT PANEL ══ -->
-
 <style>
-/* ── CYGNUS WRITER PANEL ──────────────────────────────────────── */
-/* Palette tokens */
+/* ─────────────────────────────────────────────────
+   CYGNUS WRITER PANEL — REBUILT
+   Square buttons · + menu · glitch border
+───────────────────────────────────────────────── */
 :root {
   --cw-accent:     #c8472a;
   --cw-accent-dim: rgba(200,71,42,0.55);
   --cw-accent-lo:  rgba(200,71,42,0.25);
-  --cw-accent-xlo: rgba(200,71,42,0.12);
-  --cw-ink:        #e8e4df;
-  --cw-ink2:       rgba(220,210,205,0.78);
-  --cw-ink3:       rgba(200,185,178,0.55);
-  --cw-bg:         #070104;
-  --cw-bg2:        #0e0307;
-  --cw-brd:        rgba(200,71,42,0.22);
-  --cw-brd-hot:    rgba(200,71,42,0.55);
+  --cw-accent-xlo: rgba(200,71,42,0.10);
+  --cw-ink:        #eee8e4;
+  --cw-ink2:       rgba(238,232,228,0.80);
+  --cw-ink3:       rgba(238,232,228,0.45);
+  --cw-bg:         #050002;
+  --cw-bg2:        #0a0005;
+  --cw-brd:        rgba(200,71,42,0.20);
+  --cw-brd-hot:    rgba(200,71,42,0.60);
+  --cw-msg-user:   rgba(200,71,42,0.08);
+  --cw-msg-ai:     rgba(255,255,255,0.03);
+  --cw-glitch-col: rgba(255,255,255,0.85);
 }
 :root[data-theme="paper"] {
   --cw-accent:     #8b2010;
   --cw-accent-dim: rgba(139,32,16,0.65);
   --cw-accent-lo:  rgba(139,32,16,0.28);
-  --cw-accent-xlo: rgba(139,32,16,0.10);
-  --cw-ink:        #1a0a04;
-  --cw-ink2:       rgba(26,10,4,0.82);
-  --cw-ink3:       rgba(26,10,4,0.52);
-  --cw-bg:         #f0e8dc;
-  --cw-bg2:        #e8ddd0;
+  --cw-accent-xlo: rgba(139,32,16,0.08);
+  --cw-ink:        #1a0804;
+  --cw-ink2:       rgba(26,8,4,0.85);
+  --cw-ink3:       rgba(26,8,4,0.45);
+  --cw-bg:         rgba(240,230,215,0.96);
+  --cw-bg2:        rgba(230,220,205,0.98);
   --cw-brd:        rgba(139,32,16,0.20);
   --cw-brd-hot:    rgba(139,32,16,0.55);
+  --cw-msg-user:   rgba(139,32,16,0.07);
+  --cw-msg-ai:     rgba(0,0,0,0.03);
+  --cw-glitch-col: rgba(139,32,16,0.9);
 }
 
+/* ── WRAPPER ── */
 #cw-wrap {
   position: relative;
   margin-bottom: 6px;
-  font-family: var(--font-mono, 'IBM Plex Mono', 'Courier New', monospace);
+  font-family: var(--font-mono, 'IBM Plex Mono', monospace);
 }
 
-/* ── HEADER BAR ── */
+/* ── GLITCHY OUTER BORDER on the toggle bar ── */
 #cw-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px;
   background: var(--cw-bg);
   border: 1px solid var(--cw-brd);
-  border-bottom: none;
-  cursor: pointer;
-  user-select: none;
+  position: relative;
+  cursor: pointer; user-select: none;
   transition: border-color 0.2s, background 0.2s;
+}
+/* glitch effect: white offset outline that flickers */
+#cw-bar::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 1px solid transparent;
+  pointer-events: none;
+  transition: border-color 0.1s;
+}
+#cw-bar:hover::before,
+#cw-bar.open::before {
+  border-color: var(--cw-glitch-col);
+  animation: cwBarGlitch 3s steps(1) infinite;
+}
+@keyframes cwBarGlitch {
+  0%,85%   { clip-path: none; opacity:1; }
+  86%      { clip-path: inset(20% 0 70% 0); opacity:0.7; transform:translateX(2px); }
+  88%      { clip-path: inset(60% 0 10% 0); opacity:0.5; transform:translateX(-1px); }
+  90%      { clip-path: none; opacity:1; transform:none; }
+  91%      { clip-path: inset(40% 0 40% 0); opacity:0.6; }
+  93%,100% { clip-path: none; opacity:1; transform:none; }
 }
 #cw-bar:hover { border-color: var(--cw-brd-hot); background: var(--cw-bg2); }
 #cw-bar.open  { border-color: var(--cw-accent-dim); background: var(--cw-bg2); }
 
+/* sigil dot */
 #cw-sigil {
-  width: 10px; height: 10px;
+  width: 8px; height: 8px;
   border: 1px solid var(--cw-accent-dim);
-  border-radius: 50%;
-  position: relative;
-  flex-shrink: 0;
+  position: relative; flex-shrink: 0;
   transition: box-shadow 0.3s;
 }
 #cw-sigil::after {
   content: '';
-  position: absolute;
-  inset: 2px;
+  position: absolute; inset: 1px;
   background: var(--cw-accent-lo);
-  border-radius: 50%;
   transition: background 0.3s;
 }
 #cw-bar.open #cw-sigil::after { background: var(--cw-accent); }
-#cw-bar.open #cw-sigil { box-shadow: 0 0 7px var(--cw-accent-lo); }
+#cw-bar.open #cw-sigil { box-shadow: 0 0 6px var(--cw-accent-lo); }
 
 #cw-label {
-  font-size: 0.38rem;
-  letter-spacing: 2.5px;
-  color: var(--cw-accent-dim);
-  text-transform: uppercase;
-  flex: 1;
+  font-size: 0.38rem; letter-spacing: 2.5px;
+  color: var(--cw-accent-dim); text-transform: uppercase; flex: 1;
   transition: color 0.2s;
 }
 #cw-bar.open #cw-label { color: var(--cw-accent); }
 
+/* model tag pill */
 #cw-model-tag {
-  font-size: 0.33rem;
-  letter-spacing: 1px;
+  font-size: 0.30rem; letter-spacing: 1px;
   color: var(--cw-ink3);
-  padding: 2px 6px;
+  padding: 2px 7px;
   border: 1px solid var(--cw-brd);
   background: var(--cw-accent-xlo);
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  cursor: pointer; transition: all 0.15s;
+  white-space: nowrap; max-width: 120px;
+  overflow: hidden; text-overflow: ellipsis;
 }
 #cw-model-tag:hover { color: var(--cw-ink2); border-color: var(--cw-accent-dim); }
 
 #cw-chevron {
-  font-size: 0.46rem;
-  color: var(--cw-accent-lo);
-  transition: transform 0.25s, color 0.2s;
-  line-height: 1;
+  font-size: 0.44rem; color: var(--cw-accent-lo);
+  transition: transform 0.22s, color 0.2s; line-height:1;
 }
 #cw-bar.open #cw-chevron { transform: rotate(180deg); color: var(--cw-accent); }
 
+/* ── MODEL PICKER DROPDOWN ── */
+#cw-model-picker {
+  display: none; position: absolute;
+  right: 0; top: 100%; z-index: 9999;
+  background: var(--cw-bg2);
+  border: 1px solid var(--cw-brd-hot);
+  min-width: 200px; max-height: 260px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--cw-accent-lo) transparent;
+}
+#cw-model-picker.open { display: block; }
+.cw-model-sep {
+  padding: 5px 10px 3px;
+  font-size: 0.22rem; letter-spacing: 2.5px;
+  color: var(--cw-accent-dim); text-transform: uppercase;
+  border-bottom: 1px solid var(--cw-brd);
+}
+.cw-model-opt {
+  padding: 7px 12px;
+  font-size: 0.34rem; letter-spacing: 1px;
+  color: var(--cw-ink3); cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  text-transform: uppercase;
+}
+.cw-model-opt:hover { background: var(--cw-accent-xlo); color: var(--cw-ink); }
+.cw-model-opt.active { color: var(--cw-accent); background: var(--cw-accent-xlo); }
+
 /* ── PANEL BODY ── */
 #cw-panel {
-  display: none;
-  flex-direction: column;
+  display: none; flex-direction: column;
   background: var(--cw-bg);
   border: 1px solid var(--cw-brd);
-  border-top: 1px solid var(--cw-accent-xlo);
-  max-height: 520px;
+  border-top: none;
+  max-height: 540px;
   position: relative;
-  overflow: hidden;
 }
 #cw-panel.open { display: flex; }
 
-/* subtle scanline texture */
+/* Scanline overlay */
 #cw-panel::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 3px,
-    rgba(0,0,0,0.04) 3px,
-    rgba(0,0,0,0.04) 4px
-  );
-  pointer-events: none;
-  z-index: 0;
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background: repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);
 }
-
-/* ── QUICK ACTION ROW ── */
-#cw-actions {
-  display: flex;
-  gap: 3px;
-  padding: 7px 9px 6px;
-  border-bottom: 1px solid var(--cw-brd);
-  flex-wrap: wrap;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-  background: var(--cw-bg2);
-}
-.cw-act {
-  background: var(--cw-accent-xlo);
-  border: 1px solid var(--cw-brd);
-  color: var(--cw-ink3);
-  font-family: inherit;
-  font-size: 0.32rem;
-  letter-spacing: 1px;
-  padding: 3px 7px;
-  cursor: pointer;
-  border-radius: 1px;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
-  white-space: nowrap;
-}
-.cw-act:hover {
-  background: var(--cw-accent-lo);
-  color: var(--cw-accent);
-  border-color: var(--cw-accent-dim);
-}
-.cw-act-sep {
-  width: 1px;
-  background: var(--cw-brd);
-  margin: 3px 2px;
-  flex-shrink: 0;
-}
+#cw-panel > * { position: relative; z-index: 1; }
 
 /* ── CHAT LOG ── */
 #cw-log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px 13px;
-  min-height: 80px;
-  max-height: 280px;
-  position: relative;
-  z-index: 1;
-}
-/* scrollbar */
-#cw-log::-webkit-scrollbar { width: 3px; }
-#cw-log::-webkit-scrollbar-track { background: transparent; }
-#cw-log::-webkit-scrollbar-thumb { background: var(--cw-accent-lo); border-radius: 2px; }
-
-/* message rows */
-.cw-msg { margin-bottom: 14px; animation: cw-fadein 0.2s ease; }
-@keyframes cw-fadein {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.cw-role {
-  font-size: 0.31rem;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  margin-bottom: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.cw-role-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.cw-msg-body {
-  font-size: 0.4rem;
-  line-height: 1.75;
-  white-space: pre-wrap;
-  word-break: break-word;
+  flex: 1; overflow-y: auto; padding: 10px 0;
+  scrollbar-width: thin; scrollbar-color: var(--cw-accent-lo) transparent;
+  display: flex; flex-direction: column; gap: 1px;
 }
 
-/* role colours — boosted contrast */
-.cw-msg[data-role="user"]      .cw-role      { color: var(--cw-accent); }
-.cw-msg[data-role="user"]      .cw-role-dot  { background: var(--cw-accent); }
-.cw-msg[data-role="user"]      .cw-msg-body  { color: var(--cw-ink); }
-
-.cw-msg[data-role="assistant"] .cw-role      { color: var(--cw-ink2); }
-.cw-msg[data-role="assistant"] .cw-role-dot  { background: var(--cw-ink3); }
-.cw-msg[data-role="assistant"] .cw-msg-body  { color: var(--cw-ink2); }
-
-.cw-msg[data-role="system"]    .cw-role      { display: none; }
-.cw-msg[data-role="system"]    .cw-msg-body  { color: var(--cw-ink3); font-size: 0.35rem; letter-spacing: 0.5px; padding: 2px 0; }
-
-.cw-msg[data-role="error"]     .cw-role      { color: #c03030; }
-.cw-msg[data-role="error"]     .cw-msg-body  { color: #d04040; font-size: 0.38rem; }
-
-/* streaming cursor */
-.cw-cursor {
-  display: inline-block;
-  width: 7px; height: 1px;
-  background: var(--cw-ink3);
-  margin-left: 2px;
-  vertical-align: middle;
-  animation: cw-blink 0.7s step-end infinite;
+/* ── MESSAGE BUBBLES ── */
+.cw-msg {
+  padding: 8px 12px;
+  font-size: 0.40rem; line-height: 1.65;
+  transition: background 0.1s;
 }
-@keyframes cw-blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-/* per-message copy/insert buttons */
-.cw-copy-btn, .cw-insert-btn {
-  background: none;
-  border: 1px solid var(--cw-brd);
-  color: var(--cw-ink3);
-  font-family: inherit;
-  font-size: 0.3rem;
-  letter-spacing: 1px;
-  padding: 1px 6px;
-  cursor: pointer;
-  border-radius: 1px;
-  margin-top: 5px;
-  transition: all 0.15s;
-}
-.cw-copy-btn:hover, .cw-insert-btn:hover {
-  color: var(--cw-accent);
-  border-color: var(--cw-accent-dim);
-  background: var(--cw-accent-xlo);
-}
-.cw-insert-btn { margin-left: 4px; }
-
-/* ── ATTACH STRIP ── */
-#cw-attach-strip {
-  display: none;
-  padding: 5px 9px;
-  gap: 5px;
-  flex-wrap: wrap;
-  border-top: 1px solid var(--cw-brd);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-  background: var(--cw-bg2);
-}
-.cw-chip {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--cw-accent-xlo);
-  border: 1px solid var(--cw-brd);
-  border-radius: 1px;
-  padding: 3px 6px;
-  font-size: 0.33rem;
+.cw-msg-user {
+  background: var(--cw-msg-user);
+  border-left: 2px solid var(--cw-accent);
   color: var(--cw-ink2);
-  max-width: 140px;
+  margin: 0 8px;
 }
-.cw-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-.cw-chip-thumb { width: 22px; height: 22px; object-fit: cover; border-radius: 1px; flex-shrink: 0; }
-.cw-chip-rm {
-  background: none; border: none;
-  color: var(--cw-ink3); cursor: pointer;
-  font-size: 0.38rem; line-height: 1; padding: 0 0 0 2px; flex-shrink: 0;
-}
-.cw-chip-rm:hover { color: var(--cw-accent); }
-
-/* ── SEARCH / IMAGINE INLINE PANELS ── */
-.cw-tool-panel {
-  padding: 8px 10px 6px;
-  border-top: 1px solid var(--cw-brd);
-  background: var(--cw-bg2);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-}
-.cw-tool-label {
-  font-size: 0.29rem;
-  letter-spacing: 2.5px;
-  color: var(--cw-accent-dim);
-  margin-bottom: 6px;
-  text-transform: uppercase;
-}
-.cw-tool-row {
-  display: flex;
-  gap: 5px;
-  align-items: flex-end;
-}
-.cw-tool-inp {
-  flex: 1;
-  background: rgba(0,0,0,0.3);
-  border: 1px solid var(--cw-brd);
+.cw-msg-assistant {
+  background: var(--cw-msg-ai);
   color: var(--cw-ink);
-  font-family: inherit;
-  font-size: 0.38rem;
-  padding: 4px 7px;
-  outline: none;
-  resize: none;
-  transition: border-color 0.2s;
-  line-height: 1.5;
+  border-left: 2px solid rgba(80,200,255,0.3);
+  margin: 0 8px;
 }
-:root[data-theme="paper"] .cw-tool-inp { background: rgba(255,255,255,0.4); }
-.cw-tool-inp:focus { border-color: var(--cw-accent-dim); }
-.cw-tool-btn {
-  padding: 4px 10px;
-  font-size: 0.31rem;
-  letter-spacing: 2px;
-  background: var(--cw-accent-xlo);
-  border: 1px solid var(--cw-accent-dim);
-  color: var(--cw-accent);
-  cursor: pointer;
-  flex-shrink: 0;
-  font-family: inherit;
-  transition: all 0.15s;
-  white-space: nowrap;
+.cw-msg-system {
+  color: var(--cw-ink3); font-size: 0.34rem;
+  letter-spacing: 1px; padding: 4px 14px;
+  border-left: none;
 }
-.cw-tool-btn:hover { background: var(--cw-accent-lo); }
-.cw-tool-status {
-  font-size: 0.31rem;
-  color: var(--cw-ink3);
-  margin-top: 4px;
-  min-height: 12px;
-  letter-spacing: 0.5px;
+.cw-msg-error {
+  color: rgba(255,60,60,0.75); font-size: 0.36rem;
+  padding: 5px 14px; letter-spacing: 1px; border-left: none;
 }
+.cw-msg-label {
+  font-size: 0.25rem; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--cw-accent-dim); margin-bottom: 3px; display: block;
+}
+.cw-msg-user .cw-msg-label { color: var(--cw-accent); }
+.cw-msg-assistant .cw-msg-label { color: rgba(80,200,255,0.5); }
+.cw-msg-text { white-space: pre-wrap; word-break: break-word; }
+
+/* attachment chips */
+.cw-att-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 5px; }
+.cw-att-chip {
+  padding: 2px 6px; font-size: 0.28rem; letter-spacing: 1px;
+  border: 1px solid var(--cw-brd); color: var(--cw-ink3); background: var(--cw-accent-xlo);
+}
+.cw-att-thumb { max-width: 80px; max-height: 60px; display: block; margin-top: 5px; object-fit: cover; }
+
+/* Image generation result */
+.cw-img-result { margin-top: 6px; }
+.cw-img-result img { max-width: 100%; display: block; margin-bottom: 4px; }
+.cw-img-action-btn {
+  display: inline-block; padding: 4px 10px; font-size: 0.3rem;
+  letter-spacing: 1.5px; text-transform: uppercase; background: transparent;
+  border: 1px solid var(--cw-brd); color: var(--cw-ink2); cursor: pointer;
+  font-family: inherit; text-decoration: none; transition: all 0.15s; margin-right: 5px;
+}
+.cw-img-action-btn:hover { border-color: var(--cw-accent-dim); color: var(--cw-accent); }
 
 /* ── INPUT ROW ── */
-#cw-input-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  padding: 6px 9px 8px;
+#cw-input-area {
   border-top: 1px solid var(--cw-brd);
-  position: relative;
-  z-index: 1;
-  flex-shrink: 0;
-  background: var(--cw-bg);
-}
-
-#cw-inp {
-  flex: 1;
   background: var(--cw-bg2);
-  border: 1px solid var(--cw-brd);
-  border-radius: 1px;
-  color: var(--cw-ink);
-  font-family: inherit;
-  font-size: 0.4rem;
-  line-height: 1.55;
-  padding: 5px 8px;
-  resize: none;
-  outline: none;
-  overflow: hidden;
-  min-height: 30px;
-  max-height: 90px;
-  transition: border-color 0.2s;
-}
-#cw-inp:focus { border-color: var(--cw-accent-dim); }
-#cw-inp::placeholder { color: var(--cw-ink3); }
-#cw-inp:disabled { opacity: 0.35; }
-
-#cw-send-btn {
-  background: var(--cw-accent-xlo);
-  border: 1px solid var(--cw-accent-dim);
-  color: var(--cw-accent);
-  font-family: inherit;
-  font-size: 0.42rem;
-  width: 30px; height: 30px;
-  cursor: pointer;
-  border-radius: 1px;
   flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
 }
-#cw-send-btn:hover:not(:disabled) { background: var(--cw-accent-lo); color: var(--cw-ink); }
-#cw-send-btn:disabled { opacity: 0.25; cursor: not-allowed; }
 
-.cw-icon-btn {
-  background: var(--cw-accent-xlo);
+/* attach strip */
+#cw-attach-strip {
+  display: flex; flex-wrap: wrap; gap: 5px;
+  padding: 5px 10px 0; min-height: 0;
+}
+.cw-att-preview {
+  display: flex; align-items: center; gap: 4px;
+  padding: 2px 6px; background: var(--cw-accent-xlo);
+  border: 1px solid var(--cw-brd); font-size: 0.30rem;
+  letter-spacing: 1px; color: var(--cw-ink3);
+}
+.cw-att-rm { cursor: pointer; color: var(--cw-accent-dim); margin-left: 2px; font-size: 0.3rem; }
+.cw-att-rm:hover { color: var(--cw-accent); }
+
+/* drop overlay */
+#cw-drop-overlay {
+  display: none; position: absolute; inset: 0; z-index: 999;
+  background: rgba(0,0,0,0.85);
+  align-items: center; justify-content: center;
+  font-size: 0.6rem; letter-spacing: 4px; color: var(--cw-accent);
+  border: 2px dashed var(--cw-accent);
+}
+
+/* main input row */
+#cw-row {
+  display: flex; align-items: flex-end; gap: 0; padding: 8px 8px 8px;
+}
+
+/* ── PLUS BUTTON ── */
+#cw-plus-btn {
+  width: 30px; height: 30px; flex-shrink: 0;
+  background: transparent;
   border: 1px solid var(--cw-brd);
   color: var(--cw-ink3);
-  font-size: 0.44rem;
-  width: 24px; height: 24px;
-  cursor: pointer;
-  border-radius: 1px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
-  flex-shrink: 0;
+  font-size: 18px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; margin-right: 5px; align-self: flex-end;
 }
-.cw-icon-btn:hover { color: var(--cw-accent); border-color: var(--cw-accent-dim); }
+#cw-plus-btn:hover { border-color: var(--cw-accent-dim); color: var(--cw-accent); }
+#cw-plus-btn.open { background: var(--cw-accent-xlo); border-color: var(--cw-accent-dim); color: var(--cw-accent); transform: rotate(45deg); }
 
-#cw-file-input { display: none; }
-
-/* ── STATUS LINE ── */
-#cw-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 3px 10px 4px;
-  border-top: 1px solid var(--cw-brd);
+/* ── PLUS MENU (pops above input) ── */
+#cw-plus-menu {
+  display: none; position: absolute;
+  bottom: calc(100% + 4px); left: 8px;
   background: var(--cw-bg2);
-  position: relative;
-  z-index: 1;
+  border: 1px solid var(--cw-brd-hot);
+  z-index: 9998; min-width: 220px;
+  /* glitchy outer edge */
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 2px 2px 0 rgba(200,71,42,0.2);
+  animation: cwMenuGlitch 5s steps(1) infinite;
+}
+@keyframes cwMenuGlitch {
+  0%,92%   { box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 2px 2px 0 rgba(200,71,42,0.2); }
+  93%      { box-shadow: 0 0 0 1px rgba(255,255,255,0.5), 3px 1px 0 rgba(200,71,42,0.4), -1px 0 0 rgba(0,180,255,0.15); }
+  95%,100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 2px 2px 0 rgba(200,71,42,0.2); }
+}
+#cw-plus-menu.open { display: block; }
+
+.cw-pm-section {
+  padding: 5px 10px 2px;
+  font-size: 0.22rem; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--cw-accent-dim); border-bottom: 1px solid var(--cw-brd);
+}
+.cw-pm-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer; transition: background 0.1s;
+  font-size: 0.36rem; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--cw-ink2);
+}
+.cw-pm-item:hover { background: var(--cw-accent-xlo); color: var(--cw-ink); }
+.cw-pm-item.active-tool { color: var(--cw-accent); }
+.cw-pm-icon {
+  width: 16px; height: 16px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; color: var(--cw-accent-dim);
+}
+.cw-pm-item:hover .cw-pm-icon { color: var(--cw-accent); }
+.cw-pm-item.active-tool .cw-pm-icon { color: var(--cw-accent); }
+
+/* ── TEXTAREA ── */
+#cw-inp {
+  flex: 1; background: transparent;
+  border: none; border-bottom: 1px solid var(--cw-brd);
+  color: var(--cw-ink); font-family: inherit;
+  font-size: 0.42rem; line-height: 1.5;
+  padding: 4px 6px; resize: none; outline: none;
+  min-height: 28px; max-height: 90px; overflow-y: auto;
+  transition: border-color 0.15s;
+}
+#cw-inp:focus { border-bottom-color: var(--cw-accent-dim); }
+#cw-inp::placeholder { color: var(--cw-ink3); }
+
+/* ── SEND BUTTON ── */
+#cw-send-btn {
+  width: 30px; height: 30px; flex-shrink: 0; margin-left: 5px;
+  background: var(--cw-accent);
+  border: none; color: #fff;
+  font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; align-self: flex-end;
+}
+#cw-send-btn:hover { background: #e0532e; }
+#cw-send-btn:disabled { background: var(--cw-accent-lo); cursor: not-allowed; }
+
+/* ── STATUS BAR ── */
+#cw-status-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 10px 6px;
+  border-top: 1px solid var(--cw-accent-xlo);
   flex-shrink: 0;
 }
 #cw-status {
-  font-size: 0.31rem;
-  letter-spacing: 1.5px;
-  color: var(--cw-ink3);
+  font-size: 0.28rem; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--cw-ink3); flex: 1;
 }
-#cw-status.busy { color: var(--cw-accent-dim); animation: cw-pulse 1.2s ease-in-out infinite; }
-@keyframes cw-pulse { 0%,100%{opacity:0.5} 50%{opacity:1} }
-#cw-status-acts { display: flex; gap: 2px; }
-.cw-status-btn {
-  background: none;
-  border: 1px solid transparent;
-  color: var(--cw-ink3);
-  font-family: inherit;
-  font-size: 0.29rem;
-  letter-spacing: 1px;
-  cursor: pointer;
-  padding: 2px 5px;
-  border-radius: 1px;
-  transition: all 0.15s;
-}
-.cw-status-btn:hover {
-  color: var(--cw-accent);
-  border-color: var(--cw-brd);
-  background: var(--cw-accent-xlo);
-}
-.cw-status-btn.active-tool {
-  color: var(--cw-accent);
-  border-color: var(--cw-accent-dim);
-  background: var(--cw-accent-xlo);
-}
+#cw-status.busy { color: var(--cw-accent-dim); animation: pulse 1s infinite; }
 
-/* ── MODEL PICKER DROPDOWN ── */
-#cw-model-picker {
-  display: none;
-  position: absolute;
-  top: 100%;
-  right: 0;
-  min-width: 230px;
+/* copy / insert / clear micro-buttons */
+.cw-micro-btn {
+  font-family: inherit; font-size: 0.28rem; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--cw-ink3);
+  background: transparent; border: none;
+  cursor: pointer; padding: 2px 5px; transition: color 0.15s;
+}
+.cw-micro-btn:hover { color: var(--cw-accent); }
+
+/* ── TOOL PANELS (image, search, lore) — rendered in the log area ── */
+#cw-tool-pane {
+  border-top: 1px solid var(--cw-brd);
   background: var(--cw-bg2);
-  border: 1px solid var(--cw-brd-hot);
-  border-top: 2px solid var(--cw-accent);
-  z-index: 999;
-  max-height: 280px;
-  overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
-}
-#cw-model-picker::-webkit-scrollbar { width: 3px; }
-#cw-model-picker::-webkit-scrollbar-thumb { background: var(--cw-accent-lo); }
-#cw-model-picker.open { display: block; }
-.cw-model-opt {
-  padding: 8px 13px;
-  font-size: 0.36rem;
-  letter-spacing: 0.5px;
-  color: var(--cw-ink2);
-  cursor: pointer;
-  border-bottom: 1px solid var(--cw-brd);
-  transition: background 0.12s, color 0.12s;
-}
-.cw-model-opt:hover { background: var(--cw-accent-lo); color: var(--cw-ink); }
-.cw-model-opt.active { color: var(--cw-accent); background: var(--cw-accent-xlo); }
-.cw-model-sep {
-  padding: 5px 13px 4px;
-  font-size: 0.29rem;
-  letter-spacing: 2.5px;
-  color: var(--cw-accent-dim);
-  background: var(--cw-bg);
-  border-bottom: 1px solid var(--cw-brd);
-  text-transform: uppercase;
-}
-
-/* ── API KEY SETUP PROMPT ── */
-#cw-setup {
+  padding: 10px 12px;
+  flex-shrink: 0;
   display: none;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px 12px;
-  position: relative;
-  z-index: 1;
 }
-#cw-setup.show { display: flex; }
-#cw-setup-msg { font-size: 0.38rem; color: var(--cw-ink3); line-height: 1.6; }
-#cw-key-inp {
-  background: var(--cw-bg2);
+#cw-tool-pane.open { display: block; }
+#cw-tool-pane-header {
+  font-size: 0.24rem; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--cw-accent-dim); margin-bottom: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+#cw-tool-pane-close {
+  background: none; border: none; color: var(--cw-ink3);
+  cursor: pointer; font-size: 0.3rem; padding: 0 2px;
+  transition: color 0.15s;
+}
+#cw-tool-pane-close:hover { color: var(--cw-accent); }
+.cw-tool-inp {
+  width: 100%; background: var(--cw-bg);
   border: 1px solid var(--cw-brd);
-  border-radius: 1px;
-  color: var(--cw-ink);
-  font-family: inherit;
-  font-size: 0.38rem;
-  padding: 5px 8px;
-  outline: none;
-  width: 100%;
-  transition: border-color 0.2s;
+  border-left: 2px solid var(--cw-accent-dim);
+  color: var(--cw-ink); font-family: inherit;
+  font-size: 0.38rem; padding: 6px 8px; outline: none; resize: none;
+  transition: border-color 0.15s;
 }
-#cw-key-inp:focus { border-color: var(--cw-accent-dim); }
-#cw-key-save {
-  align-self: flex-start;
-  background: var(--cw-accent-xlo);
-  border: 1px solid var(--cw-accent-dim);
-  color: var(--cw-accent);
-  font-family: inherit;
-  font-size: 0.36rem;
-  letter-spacing: 1.5px;
-  padding: 4px 12px;
-  cursor: pointer;
-  transition: all 0.15s;
+.cw-tool-inp:focus { border-color: var(--cw-accent-dim); }
+.cw-tool-inp::placeholder { color: var(--cw-ink3); }
+.cw-tool-row { display: flex; gap: 6px; margin-top: 6px; }
+.cw-tool-btn {
+  padding: 6px 14px; background: transparent;
+  border: 1px solid var(--cw-accent);
+  color: var(--cw-accent); font-family: inherit;
+  font-size: 0.34rem; letter-spacing: 1.5px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.15s; flex-shrink: 0;
 }
-#cw-key-save:hover { background: var(--cw-accent-lo); color: var(--cw-ink); }
-
-/* ── DROP OVERLAY ── */
-#cw-drop-overlay {
-  display: none;
-  position: absolute;
-  inset: 0;
-  background: rgba(200,71,42,0.04);
-  border: 2px dashed var(--cw-accent-dim);
-  z-index: 10;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.45rem;
-  letter-spacing: 3px;
-  color: var(--cw-accent);
-  pointer-events: none;
+.cw-tool-btn:hover { background: var(--cw-accent-xlo); }
+.cw-tool-status {
+  font-size: 0.3rem; letter-spacing: 1px; color: var(--cw-ink3);
+  margin-top: 5px; text-transform: uppercase;
 }
 
-/* ── IMAGE GEN RESULT ── */
-#cw-imagine-result img {
-  width: 100%;
-  max-height: 200px;
-  object-fit: contain;
-  border: 1px solid var(--cw-brd);
-  display: block;
-  margin-top: 6px;
-}
-.cw-img-actions {
-  display: flex;
-  gap: 5px;
-  margin-top: 5px;
-}
-.cw-img-action-btn {
-  font-size: 0.3rem;
-  letter-spacing: 2px;
-  padding: 3px 8px;
-  background: var(--cw-accent-xlo);
-  border: 1px solid var(--cw-brd);
-  color: var(--cw-ink2);
-  cursor: pointer;
-  font-family: inherit;
-  text-decoration: none;
-  transition: all 0.15s;
-}
-.cw-img-action-btn:hover { border-color: var(--cw-accent-dim); color: var(--cw-accent); }
+/* ── QUICK ACTIONS (in plus menu) ── */
+/* No separate cw-actions bar anymore */
+
+/* File input hidden */
+#cw-file-input { display: none; }
 </style>
 
 <!-- ── MARKUP ───────────────────────────────────────────────── -->
 <div id="cw-wrap">
 
-  <!-- header toggle bar -->
+  <!-- model picker dropdown (above bar) -->
+  <div id="cw-model-picker">
+    <div class="cw-model-sep">// loading models…</div>
+  </div>
+
+  <!-- header toggle bar with glitch outline -->
   <div id="cw-bar" onclick="cwToggle()" role="button" aria-expanded="false" aria-controls="cw-panel">
     <div id="cw-sigil"></div>
-    <span id="cw-label">✦ WRITER</span>
-    <span id="cw-model-tag" onclick="event.stopPropagation(); cwModelPickerToggle()" title="Switch model">—</span>
+    <span id="cw-label">✦ CYGNUS</span>
+    <span id="cw-model-tag" onclick="event.stopPropagation(); cwModelPickerToggle()" title="Switch model">AUTO</span>
     <span id="cw-chevron">▾</span>
   </div>
 
-  <!-- model picker — populated dynamically from /api/writer?action=models -->
-  <div id="cw-model-picker">
-    <div class="cw-model-sep">// loading available models…</div>
-  </div>
-
   <!-- panel body -->
-  <div id="cw-panel" role="region" aria-label="Writing assistant">
+  <div id="cw-panel" role="region" aria-label="Cygnus writing assistant">
 
     <!-- drop overlay -->
     <div id="cw-drop-overlay">DROP FILE</div>
 
-    <!-- api key setup -->
-    <div id="cw-setup">
-      <div id="cw-setup-msg">// no api key found for this provider.<br>paste your key below — stored locally, never sent anywhere except the api endpoint.</div>
-      <form onsubmit="cwKeySave();return false;" autocomplete="off" style="display:contents;">
-      <input id="cw-key-inp" type="password" placeholder="sk-or-…  /  gsk_…  /  AIza…" autocomplete="current-password" spellcheck="false">
-      <button id="cw-key-save" type="submit">SAVE KEY</button>
-      </form>
-    </div>
-
-    <!-- quick actions -->
-    <div id="cw-actions">
-      <button class="cw-act" data-action="dialogue">▌DIALOGUE</button>
-      <button class="cw-act" data-action="characters">◈ CHARACTERS</button>
-      <button class="cw-act" data-action="outline">▦ OUTLINE</button>
-      <button class="cw-act" data-action="continue">▶ CONTINUE</button>
-      <div class="cw-act-sep"></div>
-      <button class="cw-act" data-action="lore">◉ LORE CHECK</button>
-      <button class="cw-act" data-action="scene">⊞ NEW SCENE</button>
-      <button class="cw-act" data-action="horror">⚠ HORROR FX</button>
-      <button class="cw-act" data-action="edit">✎ EDIT</button>
-      <div class="cw-act-sep"></div>
-      <button class="cw-act" data-action="search">⊕ WEB SEARCH</button>
-    </div>
-
     <!-- chat log -->
     <div id="cw-log"></div>
+
+    <!-- tool pane (image / search / lore — one at a time) -->
+    <div id="cw-tool-pane">
+      <div id="cw-tool-pane-header">
+        <span id="cw-tool-pane-title">// TOOL</span>
+        <button id="cw-tool-pane-close" onclick="cwCloseTool()">✕</button>
+      </div>
+      <!-- image generation -->
+      <div id="cw-tool-imagine" style="display:none">
+        <textarea id="cw-imagine-inp" rows="2" class="cw-tool-inp" placeholder="Describe the scene… ruined Dhaka skyline, black rain, lone figure on rooftop…" spellcheck="false"></textarea>
+        <div class="cw-tool-row">
+          <button onclick="cwImagine()" class="cw-tool-btn">GENERATE IMAGE</button>
+          <span id="cw-imagine-status" class="cw-tool-status"></span>
+        </div>
+        <div id="cw-imagine-result"></div>
+      </div>
+      <!-- web search -->
+      <div id="cw-tool-search" style="display:none">
+        <input id="cw-search-inp" type="text" class="cw-tool-inp" placeholder="Search query — injected into next message…" spellcheck="false">
+        <div class="cw-tool-row">
+          <button onclick="cwSearchInject()" class="cw-tool-btn">INJECT SEARCH</button>
+          <span id="cw-search-status" class="cw-tool-status"></span>
+        </div>
+      </div>
+      <!-- lore dropbox -->
+      <div id="cw-tool-lore" style="display:none">
+        <textarea id="cw-lore-inp" rows="4" class="cw-tool-inp" placeholder="Author notes — character rules, world constraints, tone reminders. Cygnus treats this as ground truth…" spellcheck="false" oninput="cwSaveLore()"></textarea>
+        <div class="cw-tool-status" id="cw-lore-status">// not set</div>
+      </div>
+    </div>
 
     <!-- attachment strip -->
     <div id="cw-attach-strip"></div>
 
-    <!-- input row -->
-    <div id="cw-input-row">
-      <label for="cw-file-input" class="cw-icon-btn" title="Attach image or text file">📎</label>
-      <input id="cw-file-input" type="file" accept="image/*,.txt,.md,.json,.csv" multiple>
-      <textarea id="cw-inp" rows="1" placeholder="Ask about lore, request a scene, draft dialogue, drop a file…" spellcheck="false"></textarea>
-      <button id="cw-send-btn" onclick="cwSend()" title="Send (Enter)">↑</button>
-    </div>
+    <!-- input area -->
+    <div id="cw-input-area">
+      <div id="cw-row">
+        <!-- + button -->
+        <button id="cw-plus-btn" onclick="cwPlusToggle()" title="Attach / Tools / Actions" aria-label="Open tools menu">+</button>
 
-    <!-- image generation panel -->
-    <div id="cw-imagine-row" class="cw-tool-panel" style="display:none;">
-      <div class="cw-tool-label">// IMAGEN — DESCRIBE SCENE FOR AI IMAGE</div>
-      <div class="cw-tool-row">
-        <textarea id="cw-imagine-inp" rows="2" class="cw-tool-inp" placeholder="A ruined Dhaka skyline under a static grey sky, black rain falling, lone figure on a rooftop…" spellcheck="false"></textarea>
-        <button onclick="cwImagine()" class="cw-tool-btn">GENERATE</button>
+        <!-- plus menu (pops above) -->
+        <div id="cw-plus-menu" role="menu">
+          <div class="cw-pm-section">ATTACH</div>
+          <label class="cw-pm-item" for="cw-file-input" onclick="cwPlusToggle()">
+            <span class="cw-pm-icon">📎</span> IMAGE OR FILE
+          </label>
+
+          <div class="cw-pm-section">TOOLS</div>
+          <div class="cw-pm-item" id="cw-pm-lore" onclick="cwOpenTool('lore')">
+            <span class="cw-pm-icon">◉</span> LORE DROPBOX
+          </div>
+          <div class="cw-pm-item" id="cw-pm-search" onclick="cwOpenTool('search')">
+            <span class="cw-pm-icon">⊕</span> WEB SEARCH
+          </div>
+          <div class="cw-pm-item" id="cw-pm-imagine" onclick="cwOpenTool('imagine')">
+            <span class="cw-pm-icon">◈</span> IMAGEN (AI ART)
+          </div>
+
+          <div class="cw-pm-section">QUICK WRITE</div>
+          <div class="cw-pm-item" onclick="cwQuick('dialogue');cwPlusToggle()">
+            <span class="cw-pm-icon">▌</span> DIALOGUE SCENE
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('continue');cwPlusToggle()">
+            <span class="cw-pm-icon">▶</span> CONTINUE CHAPTER
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('outline');cwPlusToggle()">
+            <span class="cw-pm-icon">▦</span> CHAPTER OUTLINE
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('characters');cwPlusToggle()">
+            <span class="cw-pm-icon">◈</span> CHARACTER SHEET
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('lore');cwPlusToggle()">
+            <span class="cw-pm-icon">◉</span> LORE CHECK
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('horror');cwPlusToggle()">
+            <span class="cw-pm-icon">⚠</span> HORROR LAYER
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('edit');cwPlusToggle()">
+            <span class="cw-pm-icon">✎</span> EDIT / REVIEW
+          </div>
+          <div class="cw-pm-item" onclick="cwQuick('scene');cwPlusToggle()">
+            <span class="cw-pm-icon">⊞</span> NEW SCENE
+          </div>
+        </div>
+
+        <textarea id="cw-inp" rows="1" placeholder="Ask Cygnus…" spellcheck="false"></textarea>
+        <button id="cw-send-btn" onclick="cwSend()" title="Send (Enter)">↑</button>
+        <input id="cw-file-input" type="file" accept="image/*,.txt,.md,.json,.csv" multiple>
       </div>
-      <div id="cw-imagine-status" class="cw-tool-status"></div>
-      <div id="cw-imagine-result"></div>
-    </div>
 
-    <!-- search row -->
-    <div id="cw-search-row" class="cw-tool-panel" style="display:none;">
-      <div class="cw-tool-label">// WEB SEARCH — RESULTS INJECT INTO NEXT MESSAGE</div>
-      <div class="cw-tool-row">
-        <input id="cw-search-inp" type="text" class="cw-tool-inp" placeholder="Search query…" spellcheck="false">
-        <button onclick="cwSearchInject()" class="cw-tool-btn">SEARCH</button>
-      </div>
-      <div id="cw-search-status" class="cw-tool-status"></div>
-    </div>
-
-    <!-- lore dropbox -->
-    <div id="cw-lore-row" class="cw-tool-panel" style="display:none;">
-      <div class="cw-tool-label">// LORE DROPBOX — injected into every request as author context</div>
-      <textarea id="cw-lore-inp" rows="5" class="cw-tool-inp" placeholder="Paste story-specific lore, character notes, world rules, or chapter context here. Cygnus will treat this as authoritative ground truth for your project…" spellcheck="false" oninput="cwSaveLore()"></textarea>
-      <div class="cw-tool-status" id="cw-lore-status">// not set</div>
-    </div>
-
-    <!-- status / util row -->
-    <div id="cw-status-row">
-      <span id="cw-status">// ready</span>
-      <div id="cw-status-acts">
-        <button class="cw-status-btn" onclick="cwToggleSearch()" title="Web search" id="cw-search-toggle">SEARCH</button>
-        <button class="cw-status-btn" onclick="cwToggleImagine()" title="AI image generation" id="cw-imagine-toggle">IMAGE</button>
-        <button class="cw-status-btn" onclick="cwToggleLore()" title="Lore dropbox — inject author notes into every request" id="cw-lore-toggle">LORE</button>
-        <button class="cw-status-btn" onclick="cwExportConversation()" title="Export conversation as .md">EXPORT MD</button>
-        <button class="cw-status-btn" onclick="cwClear()" title="Clear history">CLEAR</button>
-        <button class="cw-status-btn" onclick="cwCopyLast()" title="Copy last response">COPY</button>
-        <button class="cw-status-btn" onclick="cwInsertLast()" title="Insert into editor">INSERT</button>
+      <!-- status bar -->
+      <div id="cw-status-row">
+        <span id="cw-status">// ready</span>
+        <button class="cw-micro-btn" onclick="cwCopyLast()" title="Copy last response">COPY</button>
+        <button class="cw-micro-btn" onclick="cwInsertLast()" title="Insert into editor">INSERT</button>
+        <button class="cw-micro-btn" onclick="cwExportConversation()" title="Export as .md">EXPORT</button>
+        <button class="cw-micro-btn" onclick="cwClear()" title="Clear history">CLEAR</button>
       </div>
     </div>
 
@@ -5623,13 +5519,15 @@ Use toolbar effects on selected text:
       label: 'WORLD ANOMALIES',
       render: () => {
         const anomalies = [
-          { name:'RAIN OF OBSEDIA', detail:'Black rainfall. Daily. Acidic compound — harmless per field test. Infected enter stasis on contact. Sky bleeds downward.' },
-          { name:'FOG OF MEDUSA', detail:'Germany. Yellow gas. All organic matter: lethal. Fully rejected husks: unaffected. Spreading northwest.' },
-          { name:'THE GREAT MIGRATION', detail:'Trillions of insects. Northward. Unknown origin. Birds following. Unknown if running from or toward.' },
+          { name:'RAIN OF OBSEDIA', detail:'Black rainfall. Daily. Acidic compound — harmless per field test. Infected enter stasis on contact. Sky bleeds downward.', revealCh: 3 },
+          { name:'FOG OF MEDUSA', detail:'Germany. Yellow gas. All organic matter: lethal. Fully rejected husks: unaffected. Spreading northwest.', revealCh: 5 },
+          { name:'THE GREAT MIGRATION', detail:'Trillions of insects. Northward. Unknown origin. Birds following. Unknown if running from or toward.', revealCh: 2 },
         ];
-        return anomalies.map(a =>
-          `<div class="sbi-anomaly"><span class="sbi-anomaly-name">// ${a.name}</span><span class="sbi-anomaly-detail">${a.detail}</span></div>`
-        ).join('');
+        const revealedUpTo = window.currentChapterIdx != null ? window.currentChapterIdx : -1;
+        return anomalies.map(a => {
+          const hidden = revealedUpTo < a.revealCh;
+          return `<div class="sbi-anomaly${hidden?' redacted':''}"><span class="sbi-anomaly-name">// ${a.name}</span><span class="sbi-anomaly-detail">${a.detail}</span></div>`;
+        }).join('');
       }
     },
     {
@@ -6053,9 +5951,15 @@ function updateSkyStat(idx) {
   const skyEl = document.getElementById('hdr-sky-val');
   if (!skyEl) return;
   const isPaper = document.documentElement.dataset.theme === 'paper';
-  // idx -1 = synopsis screen. Dark mode → RAINY (rain runs). Paper/light → CLEAR (rain is hidden by CSS).
-  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : (isPaper ? 'CLEAR' : 'RAINY');
-  const col   = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : (isPaper ? '#f5a623' : '#4466aa');
+  if (isPaper) {
+    // Paper mode always shows clear sky
+    skyEl.textContent = 'SUNNY ☀';
+    skyEl.style.color = '#f5a623';
+    return;
+  }
+  // idx -1 = synopsis screen. Dark mode → RAINY (rain runs).
+  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'RAINY';
+  const col   = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#4466aa';
   skyEl.textContent = state;
   skyEl.style.color = col;
 }
@@ -6222,6 +6126,10 @@ function loadChapter(idx) {
 
   // Sky HUD
   updateSkyStat(idx);
+  // Re-render anomaly panel so redaction reflects current chapter
+  if (window._sbiRender && window._sbiGetCurrent) {
+    window._sbiRender(window._sbiGetCurrent());
+  }
 
   // Restore scroll position for this chapter
   const savedScroll = (() => { try { return parseInt(localStorage.getItem('_as_scroll_' + idx) || '0'); } catch { return 0; } })();
@@ -6618,6 +6526,194 @@ const AMBIENT_BUILDERS = {
     lfo.start();
     return [n1, n2, lfo];
   },
+
+  // DEEP WATER — low rumble + slow bubbling resonance
+  deep_water: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'brown');
+    const lp = _makeLpFilter(ctx, 180);
+    const g  = ctx.createGain(); g.gain.value = 0.55;
+    noise.connect(lp); lp.connect(g); g.connect(masterGain);
+    noise.start();
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.05; lfo.type = 'sine';
+    const lfoG = ctx.createGain(); lfoG.gain.value = 0.28;
+    lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
+    let bubbleTimer;
+    function bubble() {
+      const osc = ctx.createOscillator(); osc.frequency.value = 80 + Math.random()*60; osc.type = 'sine';
+      const dg = ctx.createGain(); dg.gain.setValueAtTime(0.12, ctx.currentTime);
+      dg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.9);
+      osc.connect(dg); dg.connect(masterGain); osc.start(); osc.stop(ctx.currentTime + 0.9);
+      bubbleTimer = setTimeout(bubble, 2500 + Math.random() * 5000);
+    }
+    bubble();
+    noise._stopDrip = () => clearTimeout(bubbleTimer);
+    return [noise, lfo];
+  },
+
+  // DISTANT THUNDER — low periodic rumble bursts over wind
+  thunder_distant: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'brown');
+    const lp = _makeLpFilter(ctx, 300);
+    const hp = _makeHpFilter(ctx, 40);
+    const g  = ctx.createGain(); g.gain.value = 0.3;
+    noise.connect(lp); lp.connect(hp); hp.connect(g); g.connect(masterGain);
+    noise.start();
+    let rumbleTimer;
+    function rumble() {
+      const dur = 1.5 + Math.random() * 2.5;
+      const rg = ctx.createGain(); rg.gain.setValueAtTime(0, ctx.currentTime);
+      rg.gain.linearRampToValueAtTime(0.55, ctx.currentTime + 0.4);
+      rg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      const rb = _makeNoise(ctx, 'brown');
+      const rlp = _makeLpFilter(ctx, 120);
+      rb.connect(rlp); rlp.connect(rg); rg.connect(masterGain); rb.start(); rb.stop(ctx.currentTime + dur + 0.1);
+      rumbleTimer = setTimeout(rumble, 4000 + Math.random() * 14000);
+    }
+    rumble();
+    noise._stopDrip = () => clearTimeout(rumbleTimer);
+    return [noise];
+  },
+
+  // RAIN OF OBSEDIA — black rain: heavier rain + low sub-bass drone + eerie upward tones
+  obsedia: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'pink');
+    const lp = _makeLpFilter(ctx, 600);
+    const g  = ctx.createGain(); g.gain.value = 0.65;
+    noise.connect(lp); lp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Sub drone
+    const sub = ctx.createOscillator(); sub.frequency.value = 42; sub.type = 'sine';
+    const sg = ctx.createGain(); sg.gain.value = 0.18;
+    sub.connect(sg); sg.connect(masterGain); sub.start();
+    // Slow rising tone — "sky bleeding downward"
+    const tone = ctx.createOscillator(); tone.frequency.value = 220; tone.type = 'sine';
+    const tg = ctx.createGain(); tg.gain.value = 0.04;
+    const tlfo = ctx.createOscillator(); tlfo.frequency.value = 0.03; tlfo.type = 'sine';
+    const tlfoG = ctx.createGain(); tlfoG.gain.value = 0.03;
+    tlfo.connect(tlfoG); tlfoG.connect(tg.gain);
+    tone.connect(tg); tg.connect(masterGain); tone.start(); tlfo.start();
+    return [noise, sub, tone, tlfo];
+  },
+
+  // HUSK HIVE — distant crowd breathing/shuffling, barely human
+  husk_hive: (ctx, masterGain) => {
+    const nodes = [];
+    // Layered breathing oscillators — slightly detuned
+    [0.7, 1.1, 0.9, 1.3].forEach((rate, i) => {
+      const osc = ctx.createOscillator();
+      osc.frequency.value = 80 + i * 7;
+      osc.type = 'sawtooth';
+      const lp = _makeLpFilter(ctx, 200 - i*20);
+      const lfo = ctx.createOscillator(); lfo.frequency.value = rate; lfo.type = 'sine';
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.025;
+      const og = ctx.createGain(); og.gain.value = 0.018;
+      lfo.connect(lfoG); lfoG.connect(og.gain);
+      osc.connect(lp); lp.connect(og); og.connect(masterGain);
+      osc.start(); lfo.start();
+      nodes.push(osc, lfo);
+    });
+    // Low noise bed
+    const noise = _makeNoise(ctx, 'brown');
+    const nlp = _makeLpFilter(ctx, 150);
+    const ng = ctx.createGain(); ng.gain.value = 0.2;
+    noise.connect(nlp); nlp.connect(ng); ng.connect(masterGain); noise.start();
+    nodes.push(noise);
+    return nodes;
+  },
+
+  // BLANK ZONE STATIC — the 4 lost years: degrading signal, fragments, silence gaps
+  blank_zone: (ctx, masterGain) => {
+    const noise = _makeNoise(ctx, 'white');
+    const bp = _makeBpFilter(ctx, 1200, 8);
+    const g  = ctx.createGain(); g.gain.value = 0.22;
+    noise.connect(bp); bp.connect(g); g.connect(masterGain);
+    noise.start();
+    // Intermittent silence — the gaps where memory was
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.18; lfo.type = 'square';
+    const lfoG = ctx.createGain(); lfoG.gain.value = 0.18;
+    lfo.connect(lfoG); lfoG.connect(g.gain); lfo.start();
+    // Occasional fragment tones — like memory trying to surface
+    let fragTimer;
+    function fragment() {
+      const f = ctx.createOscillator();
+      f.frequency.value = [220, 330, 440, 880][Math.floor(Math.random()*4)];
+      f.type = 'sine';
+      const fg = ctx.createGain(); fg.gain.setValueAtTime(0.06, ctx.currentTime);
+      fg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+      f.connect(fg); fg.connect(masterGain); f.start(); f.stop(ctx.currentTime + 0.2);
+      fragTimer = setTimeout(fragment, 3000 + Math.random() * 9000);
+    }
+    fragment();
+    noise._stopDrip = () => clearTimeout(fragTimer);
+    return [noise, lfo];
+  },
+
+  // CYGNUS SIGNAL — 88.7Hz drone + the decoded message freq layers
+  cygnus_tone: (ctx, masterGain) => {
+    const base = ctx.createOscillator(); base.frequency.value = 88.7; base.type = 'sine';
+    const bg = ctx.createGain(); bg.gain.value = 0.14;
+    base.connect(bg); bg.connect(masterGain); base.start();
+    // Harmonic layers
+    const harmonics = [177.4, 265.1, 443.5];
+    const nodes = [base];
+    harmonics.forEach((freq, i) => {
+      const osc = ctx.createOscillator(); osc.frequency.value = freq; osc.type = 'sine';
+      const hg = ctx.createGain(); hg.gain.value = 0.04 / (i + 1);
+      osc.connect(hg); hg.connect(masterGain); osc.start();
+      nodes.push(osc);
+    });
+    // Slow amplitude modulation — signal breathing
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.04; lfo.type = 'sine';
+    const lfoG = ctx.createGain(); lfoG.gain.value = 0.09;
+    lfo.connect(lfoG); lfoG.connect(bg.gain); lfo.start();
+    nodes.push(lfo);
+    return nodes;
+  },
+
+  // THE MIGRATION — distant insect mass: high-pitched layered drone, moving
+  migration: (ctx, masterGain) => {
+    const nodes = [];
+    [3200, 3600, 4100, 4800, 5200].forEach((freq, i) => {
+      const osc = ctx.createOscillator(); osc.frequency.value = freq; osc.type = 'sine';
+      const lfo = ctx.createOscillator(); lfo.frequency.value = 8 + i * 2.5; lfo.type = 'sine';
+      const lfoG = ctx.createGain(); lfoG.gain.value = 0.012;
+      const og = ctx.createGain(); og.gain.value = 0.016;
+      lfo.connect(lfoG); lfoG.connect(og.gain);
+      osc.connect(og); og.connect(masterGain); osc.start(); lfo.start();
+      nodes.push(osc, lfo);
+    });
+    // low rumble underneath
+    const rumble = _makeNoise(ctx, 'brown');
+    const rlp = _makeLpFilter(ctx, 250);
+    const rg = ctx.createGain(); rg.gain.value = 0.18;
+    rumble.connect(rlp); rlp.connect(rg); rg.connect(masterGain); rumble.start();
+    nodes.push(rumble);
+    return nodes;
+  },
+
+  // WRONGNESS — the uncanny: detuned unison, reality slippage feeling
+  wrongness: (ctx, masterGain) => {
+    const nodes = [];
+    // Two almost-unison tones — creates beating effect (the wrongness)
+    [[200, 201.3], [300, 301.7], [400, 398.8]].forEach(([f1, f2]) => {
+      [f1, f2].forEach(freq => {
+        const osc = ctx.createOscillator(); osc.frequency.value = freq; osc.type = 'sine';
+        const g = ctx.createGain(); g.gain.value = 0.028;
+        osc.connect(g); g.connect(masterGain); osc.start();
+        nodes.push(osc);
+      });
+    });
+    // Sub pressure
+    const sub = ctx.createOscillator(); sub.frequency.value = 38; sub.type = 'sine';
+    const sg = ctx.createGain(); sg.gain.value = 0.12;
+    sub.connect(sg); sg.connect(masterGain); sub.start();
+    // Slow volume drift — reality feels unstable
+    const lfo = ctx.createOscillator(); lfo.frequency.value = 0.025; lfo.type = 'sine';
+    const lfoG = ctx.createGain(); lfoG.gain.value = 0.1;
+    lfo.connect(lfoG); lfoG.connect(sg.gain); lfo.start();
+    nodes.push(sub, lfo);
+    return nodes;
+  },
 };
 
 function setAmbient(key, btnEl) {
@@ -6639,9 +6735,7 @@ function setAmbient(key, btnEl) {
   }
   document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
   if (btnEl) btnEl.classList.add('amb-active');
-}
-
-function stopAmbient(clearBtn = true) {
+}(clearBtn = true) {
   if (_ambGain && _ambCtx) {
     try {
       _ambGain.gain.linearRampToValueAtTime(0, _ambCtx.currentTime + 0.8);
