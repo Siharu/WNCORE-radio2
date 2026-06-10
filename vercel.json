@@ -1,15 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "api/config.js": { "maxDuration": 10 },
-    "api/chat.js": { "maxDuration": 10 },
-    "api/upload.js": { "maxDuration": 10 },
-    "api/user.js": { "maxDuration": 10 },
-    "api/icy.js": { "maxDuration": 10 },
-    "api/earth-admin.js": { "maxDuration": 30 },
-    "api/community.js": { "maxDuration": 10 },
-    "api/writer.js": { "maxDuration": 10 }
-  },
   "headers": [
     {
       "source": "/api/(.*)",
