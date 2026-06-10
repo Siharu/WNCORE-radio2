@@ -581,6 +581,31 @@ body {
 .hdr-stat-val.red { color: var(--red); }
 .hdr-stat-val.pulse { animation: statPulse 3s ease-in-out infinite; }
 @keyframes statPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+/* Outbreak redacted state — pre-ch3 */
+#hdr-outbreak.redacted {
+  filter: blur(3px);
+  opacity: 0.5;
+  animation: outbreakGlitch 2.4s steps(1) infinite;
+  letter-spacing: 3px;
+  user-select: none;
+}
+@keyframes outbreakGlitch {
+  0%,100% { filter:blur(3px); letter-spacing:3px; opacity:0.5; }
+  15% { filter:blur(1px); letter-spacing:5px; opacity:0.8; }
+  30% { filter:blur(4px); letter-spacing:2px; opacity:0.3; }
+  60% { filter:blur(2px); letter-spacing:4px; opacity:0.6; }
+  80% { filter:blur(5px); letter-spacing:1px; opacity:0.2; }
+}
+/* Year glitching state — ch3–6 */
+#hdr-year-val.glitch-year {
+  animation: yearGlitch 0.8s steps(1) infinite;
+  color: var(--red) !important;
+}
+@keyframes yearGlitch {
+  0%   { content:''; }
+  /* actual values cycled by JS */
+  100% { content:''; }
+}
 
 #hdr-right {
   display: flex; align-items: center; gap: 10px;
@@ -3214,11 +3239,11 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <div id="hdr-status-row">
       <div class="hdr-stat">
         <span class="hdr-stat-label">WORLD</span>
-        <span class="hdr-stat-val red">-2</span>
+        <span class="hdr-stat-val red" id="hdr-world-val">-2</span>
       </div>
       <div class="hdr-stat">
         <span class="hdr-stat-label">YEAR</span>
-        <span class="hdr-stat-val">2032</span>
+        <span class="hdr-stat-val" id="hdr-year-val">2032</span>
       </div>
       <div class="hdr-stat">
         <span class="hdr-stat-label">OUTBREAK</span>
@@ -3226,7 +3251,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
       </div>
       <div class="hdr-stat">
         <span class="hdr-stat-label">IMMUNE</span>
-        <span class="hdr-stat-val">8.28%</span>
+        <span class="hdr-stat-val" id="hdr-immune-val">8.28%</span>
       </div>
       <div class="hdr-stat" id="hdr-sky-stat">
         <span class="hdr-stat-label">SKY STATUS</span>
@@ -5956,6 +5981,18 @@ Use toolbar effects on selected text:
     {
       label: 'WORLD ANOMALIES',
       render: () => {
+        const maxCh = window._getMaxChapter ? window._getMaxChapter() : 0;
+        // Before ch7: show only vague world news
+        if (maxCh < 7) {
+          const mundane = [
+            'WHO monitoring cluster in South Asia. Standard protocol.',
+            'Bangladesh monsoon forecast: above average rainfall.',
+            'UN climate panel postponed. Delegate disputes ongoing.',
+            'Dhaka infrastructure budget approved for 2033 cycle.',
+          ];
+          return mundane.map(t => `<div class="sbi-anomaly"><span class="sbi-anomaly-detail">${t}</span></div>`).join('');
+        }
+        // Ch7-19: mixed — anomalies partially revealed
         const anomalies = [
           { name:'RAIN OF OBSEDIA', detail:'Black rainfall. Daily. Acidic compound — harmless per field test. Infected enter stasis on contact. Sky bleeds downward.', revealCh: 3 },
           { name:'FOG OF MEDUSA', detail:'Germany. Yellow gas. All organic matter: lethal. Fully rejected husks: unaffected. Spreading northwest.', revealCh: 5 },
@@ -5971,11 +6008,22 @@ Use toolbar effects on selected text:
     {
       label: 'FACTION DOSSIER',
       render: () => {
+        const maxCh = window._getMaxChapter ? window._getMaxChapter() : 0;
+        // Before ch8: news fragments only — no faction intel
+        if (maxCh < 8) {
+          const fragments = [
+            { name:'WORLD WIRE', tag:'GENERAL · ONGOING', body:'Celebrity couple announces split. World mourns. Climate summit delayed again. New startup raises $2B for unnamed orbital project.', status:'▸ SIGNAL: CLEAR' },
+            { name:'WORLD WIRE', tag:'HEALTH · SOUTH ASIA', body:'Unusual respiratory clusters reported in Nepal valleys. WHO sends monitoring team. "No cause for alarm."', status:'▸ SIGNAL: NOMINAL' },
+          ];
+          const f = fragments[Math.floor(Date.now() / 12000) % fragments.length];
+          return `<span class="sbi-faction-name">${f.name}</span><span class="sbi-faction-tag">${f.tag}</span><span class="sbi-faction-body">${f.body}</span><div class="sbi-faction-status">${f.status}</div>`;
+        }
+        // Ch8-19: faction data begins appearing
         const factions = [
-          { name:'LOGBOOK DRIFTERS', tag:'INTEL DISTRIBUTOR · UNKNOWN SIZE', body:'No name. No base. Logbooks appear in malls, supply depots, evacuation points worldwide. Comprehensive and accurate — except when they are not. Counter-Drifter plants fake editions. Cannot be fully trusted.', status:'\u25b8 THREAT LEVEL: UNKNOWN' },
-          { name:'ROOFTOP SEERS', tag:'BROADCAST NETWORK · PACIFIC RIM', body:'Religious radio origin. Still broadcasting. Still peaceful. Still warning. Their voices do not break. Their eyes reflect light like cats at night.', status:'\u25b8 CLASSIFICATION: INFECTED · CONFIRMED' },
-          { name:'BLOOD PACT', tag:'CRIMINAL SYNDICATE · ANTARCTICA', body:'Brotherhood Pact. Small biker gang before the Blank Zone. Now international, resource-rich, unknown funding. Organ trade. Growth unexplained.', status:'\u25b8 STATUS: EXPANDING · DO NOT ENGAGE' },
-          { name:'PALE NODE', tag:'SCIENCE CELL · BROADCAST', body:'Former Sunday podcast scientists. Emergency signal. Acidic rainfall confirmed harmless by their field tests. One member missing post-Germany report.', status:'\u25b8 CONTACT: UNSTABLE' },
+          { name:'LOGBOOK DRIFTERS', tag:'INTEL DISTRIBUTOR · UNKNOWN SIZE', body:'No name. No base. Logbooks appear in malls, supply depots, evacuation points worldwide. Comprehensive and accurate — except when they are not. Counter-Drifter plants fake editions. Cannot be fully trusted.', status:'▸ THREAT LEVEL: UNKNOWN' },
+          { name:'ROOFTOP SEERS', tag:'BROADCAST NETWORK · PACIFIC RIM', body:'Religious radio origin. Still broadcasting. Still peaceful. Still warning. Their voices do not break. Their eyes reflect light like cats at night.', status:'▸ CLASSIFICATION: INFECTED · CONFIRMED' },
+          { name:'BLOOD PACT', tag:'CRIMINAL SYNDICATE · ANTARCTICA', body:'Brotherhood Pact. Small biker gang before the Blank Zone. Now international, resource-rich, unknown funding. Organ trade. Growth unexplained.', status:'▸ STATUS: EXPANDING · DO NOT ENGAGE' },
+          { name:'PALE NODE', tag:'SCIENCE CELL · BROADCAST', body:'Former Sunday podcast scientists. Emergency signal. Acidic rainfall confirmed harmless by their field tests. One member missing post-Germany report.', status:'▸ CONTACT: UNSTABLE' },
         ];
         const f = factions[Math.floor(Date.now() / 12000) % factions.length];
         return `<span class="sbi-faction-name">${f.name}</span><span class="sbi-faction-tag">${f.tag}</span><span class="sbi-faction-body">${f.body}</span><div class="sbi-faction-status">${f.status}</div>`;
@@ -6088,6 +6136,53 @@ Use toolbar effects on selected text:
     });
   }
 
+  // Returns fallback hub entries appropriate to the user's chapter progress
+  function getPhaseEntries(maxCh) {
+    if (maxCh < 3) {
+      // Phase 0 — Ch1-2: mundane world news, no lore
+      return [
+        { type:'WORLD_FEED',    text:'K-pop group VANTA announces world tour, Dhaka date unconfirmed.', alert:false },
+        { type:'WORLD_FEED',    text:'Tokyo city council approves new transit expansion through 2035.', alert:false },
+        { type:'WORLD_FEED',    text:'Bangladesh cricket team qualifies for regional semifinals.', alert:false },
+        { type:'WORLD_FEED',    text:'UN climate session postponed to November amid delegate disputes.', alert:false },
+        { type:'WORLD_FEED',    text:'New Dhaka overpass project delayed by six months due to funding.', alert:false },
+      ];
+    } else if (maxCh < 8) {
+      // Phase 1 — Ch3-7: mundane + lore breadcrumbs mixed
+      return [
+        { type:'WORLD_FEED',    text:'Celebrity gossip: Mira Lune and Nox split after 3 years. Fans mourn.', alert:false },
+        { type:'HEALTH_ALERT',  text:'Nepal health ministry confirms unusual respiratory cluster in Pokhara valley. Origin unknown.', alert:true },
+        { type:'WORLD_FEED',    text:'Bangladesh floods displace 40,000. Government response criticized.', alert:false },
+        { type:'SCIENCE_WIRE',  text:'New orbital construction firm announces Moon habitat feasibility study.', alert:false },
+        { type:'WORLD_FEED',    text:'WHO monitoring "anomalous flu-like clusters" in three South Asian cities.', alert:true },
+        { type:'WORLD_FEED',    text:'New NGO "White Flag" launches humanitarian mission from London docks.', alert:false },
+        { type:'SCIENCE_WIRE',  text:'Aurora sightings reported at unusually low latitudes. Cause disputed.', alert:false },
+      ];
+    } else if (maxCh < 20) {
+      // Phase 2 — Ch8-19: deep lore, factions, anomalies
+      return [
+        { type:'WNCORE_INTERCEPT', text:'Moon Dome status: UNKNOWN. Last verified transmission 14 days ago.', alert:true },
+        { type:'ANOMALY_REPORT',   text:'Rain of Obsedia: 3hr window, Dhaka sector. Infected count: rising.', alert:true },
+        { type:'DRIFTER_LOGBOOK',  text:'Vol.44 found at depot. Pages 12-17 removed. Someone knew.', alert:false },
+        { type:'FACTION_SIGNAL',   text:'Blood Pact confirmed active in Chittagong port district. Organ routes shifting north.', alert:true },
+        { type:'PALE_NODE_LEAK',   text:'Pale Node paper: "Transformation is not pathological — it is epistemological."', alert:false },
+        { type:'WNCORE_INTERCEPT', text:'Rooftop Seers broadcast intercepted: 7 confirmed infected broadcasters, unaware.', alert:true },
+        { type:'ANOMALY_REPORT',   text:'Global Chilling onset confirmed. Hail events up 4x in past month.', alert:true },
+        { type:'DRIFTER_LOGBOOK',  text:'Alaska Coalition emergency session. Classified agenda. Nuke protocol rumored.', alert:true },
+      ];
+    } else {
+      // Phase 3 — Ch20+ (WNCORE joined): full ARG intel
+      return [
+        { type:'WNCORE_INTERCEPT', text:'Signal degraded. Static on all primary channels. Rerouting via node 7.', alert:false },
+        { type:'DRIFTER_LOGBOOK',  text:'Vol.44 found at Dhaka depot. Pages 12-17 removed.', alert:false },
+        { type:'ANOMALY_REPORT',   text:'Rain of Obsedia: 3hr window. Infected count: rising.', alert:true },
+        { type:'GHUUL_REGISTRY',   text:'Confirmed Ghuul sighting: 173rd verified. Location: redacted.', alert:true },
+        { type:'WNCORE_BROADCAST', text:'All drifters: coordinate 0.315126 remains active. Do not approach alone.', alert:true },
+        { type:'PALE_NODE_LEAK',   text:'Document recovered: "The Blank Zone was not an accident."', alert:true },
+      ];
+    }
+  }
+
   async function fetchSignals() {
     if (isFetching) return;
     isFetching = true;
@@ -6097,11 +6192,13 @@ Use toolbar effects on selected text:
     if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.textContent = '◌ SCANNING...'; }
     if (statusEl) statusEl.textContent = 'FETCHING';
 
+    const maxCh = window._getMaxChapter ? window._getMaxChapter() : 0;
+
     try {
       const res = await fetch('/api/drifter-hub', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ seed: Date.now() })
+        body: JSON.stringify({ seed: Date.now(), chapter_phase: maxCh })
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -6115,11 +6212,7 @@ Use toolbar effects on selected text:
       console.warn('[DrifterHub]', err);
       if (statusEl) statusEl.textContent = 'ERR';
       if (hubEntries.length === 0) {
-        hubEntries = [
-          { type:'WNCORE_INTERCEPT', text:'Signal degraded. Static on all primary channels.', alert:false },
-          { type:'DRIFTER_LOGBOOK',  text:'Vol.44 found at Dhaka depot. Pages 12-17 removed.', alert:false },
-          { type:'ANOMALY_REPORT',   text:'Rain of Obsedia: 3hr window. Infected count: rising.', alert:true },
-        ];
+        hubEntries = getPhaseEntries(maxCh);
       }
     } finally {
       isFetching = false;
@@ -6396,11 +6489,138 @@ function updateSkyStat(idx) {
     return;
   }
   // idx -1 = synopsis screen. Dark mode → RAINY (rain runs).
-  const state = idx >= 0 ? SKY_STATES[Math.min(idx, SKY_STATES.length - 1)] : 'RAINY';
-  const col   = idx >= 0 ? SKY_COLORS[Math.min(idx, SKY_COLORS.length - 1)] : '#4466aa';
-  skyEl.textContent = state;
-  skyEl.style.color = col;
+  if (idx < 0) {
+    skyEl.textContent = 'RAINY';
+    skyEl.style.color = '#4466aa';
+    return;
+  }
+  // Map by chapter_num (1-based) so ch1=SUNNY, ch2=BLUE, etc.
+  // Prologue (chapter_num=0) shows redacted state.
+  const ch = window.chapters ? window.chapters[idx] : null;
+  const chNum = ch ? (ch.chapter_num || 0) : idx;
+  if (chNum === 0) {
+    // Prologue: nightmare, sky is redacted/unknown
+    skyEl.textContent = '████';
+    skyEl.style.color = 'rgba(180,50,50,0.6)';
+    return;
+  }
+  const stateIdx = Math.min(chNum - 1, SKY_STATES.length - 1);
+  skyEl.textContent = SKY_STATES[stateIdx];
+  skyEl.style.color = SKY_COLORS[stateIdx];
 }
+
+/* ═══════════════════════════════════════════════════
+   PER-USER CHAPTER-GATED HUD STATS
+   Tracks max chapter_num ever read in localStorage.
+   All header stats are driven by the user's personal
+   progress, not the chapter currently displayed.
+═══════════════════════════════════════════════════ */
+const AS_MAX_KEY = '_as_max_chnum';
+
+function getMaxChapter() {
+  try { return parseInt(localStorage.getItem(AS_MAX_KEY) || '0', 10) || 0; } catch { return 0; }
+}
+function setMaxChapter(chNum) {
+  try {
+    const prev = getMaxChapter();
+    if (chNum > prev) {
+      localStorage.setItem(AS_MAX_KEY, String(chNum));
+      window._asMaxChapter = chNum;
+    }
+  } catch {}
+}
+window._asMaxChapter = getMaxChapter();
+
+// Year glitch interval handle
+let _yearGlitchInterval = null;
+const YEAR_GLITCH_VALUES = ['2028','2029','2030','2031','2032','2027','████','2031','2028','2033','2030'];
+
+function updateHUDStats(maxChNum) {
+  const worldEl    = document.getElementById('hdr-world-val');
+  const yearEl     = document.getElementById('hdr-year-val');
+  const outbreakEl = document.getElementById('hdr-outbreak');
+  const immuneEl   = document.getElementById('hdr-immune-val');
+
+  // ── WORLD label ───────────────────────────────
+  if (worldEl) {
+    if (maxChNum < 7) {
+      worldEl.textContent = 'EARTH';
+      worldEl.classList.remove('red');
+      worldEl.style.color = '#aaaaaa';
+    } else {
+      worldEl.textContent = '-2';
+      worldEl.classList.add('red');
+      worldEl.style.color = '';
+    }
+  }
+
+  // ── YEAR ──────────────────────────────────────
+  if (yearEl) {
+    clearInterval(_yearGlitchInterval);
+    yearEl.classList.remove('glitch-year');
+    if (maxChNum < 3) {
+      // Chapters 1-2: protag's body is 2028
+      yearEl.textContent = '2028';
+      yearEl.style.color = '';
+    } else if (maxChNum < 7) {
+      // Chapters 3-6: year is unstable, glitches
+      yearEl.classList.add('glitch-year');
+      let gi = 0;
+      _yearGlitchInterval = setInterval(() => {
+        if (!document.getElementById('hdr-year-val')) { clearInterval(_yearGlitchInterval); return; }
+        document.getElementById('hdr-year-val').textContent = YEAR_GLITCH_VALUES[gi++ % YEAR_GLITCH_VALUES.length];
+      }, 260);
+    } else {
+      // Chapter 7+: truth revealed
+      yearEl.textContent = '2032';
+      yearEl.style.color = '';
+    }
+  }
+
+  // ── OUTBREAK ──────────────────────────────────
+  if (outbreakEl) {
+    if (maxChNum < 3) {
+      // Prologue / ch1-2: outbreak not started, text blurred and redacted
+      outbreakEl.textContent = '██████';
+      outbreakEl.classList.add('redacted');
+      outbreakEl.classList.remove('pulse');
+      outbreakEl.style.color = 'rgba(180,50,50,0.5)';
+    } else {
+      outbreakEl.textContent = 'ACTIVE';
+      outbreakEl.classList.remove('redacted');
+      outbreakEl.classList.add('pulse');
+      outbreakEl.style.color = '';
+    }
+  }
+
+  // ── IMMUNE percentage ─────────────────────────
+  // Canonical: 8.28% at 6-month mark (ch ~20+)
+  // Starts appearing ch13 onward, gradual decline from 100%
+  if (immuneEl) {
+    if (maxChNum < 13) {
+      immuneEl.textContent = '—';
+      immuneEl.style.color = 'var(--text3)';
+    } else if (maxChNum < 17) {
+      immuneEl.textContent = '100%';
+      immuneEl.style.color = '#44ff88';
+    } else if (maxChNum < 20) {
+      immuneEl.textContent = '69%';
+      immuneEl.style.color = '#aaff44';
+    } else if (maxChNum < 23) {
+      immuneEl.textContent = '46%';
+      immuneEl.style.color = '#ffcc44';
+    } else if (maxChNum < 26) {
+      immuneEl.textContent = '22%';
+      immuneEl.style.color = '#ff8844';
+    } else {
+      immuneEl.textContent = '8.28%';
+      immuneEl.style.color = 'var(--red)';
+    }
+  }
+}
+
+// Expose so Drifter Hub and other systems can read it
+window._getMaxChapter = getMaxChapter;
 
 /* ═══════════════════════════════════════════════════
    SUPABASE + CHAPTERS
@@ -6408,6 +6628,8 @@ function updateSkyStat(idx) {
 const SB_URL = 'https://srxppxenkasomlrgyavr.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNyeHBweGVua2Fzb21scmd5YXZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2ODAyMTYsImV4cCI6MjA5MDI1NjIxNn0.fRW8MHGEWb4E3XIp-zX3Hxgi2IFZ6H10YQKD8DrXgWQ';
 let sb = null, chapters = [], curIdx = -1, editId = null, isAdmin = false, fz = 1;
+// Expose chapters globally so HUD functions can read chapter_num
+Object.defineProperty(window, 'chapters', { get: () => chapters, configurable: true });
 
 async function initPage() {
   await new Promise(r => {
@@ -6420,6 +6642,8 @@ async function initPage() {
   loadPrefs();
   loadReaderOpts();
   initScrollProgress();
+  // Init HUD from saved user progress
+  updateHUDStats(getMaxChapter());
 }
 document.addEventListener('DOMContentLoaded', initPage);
 
@@ -8233,7 +8457,13 @@ loadChapter = function(idx) {
   _origLoadChapter(idx);
   try {
     const ch = chapters[idx];
-    if (ch) localStorage.setItem(storyProgressKey(ch.story_id || 'another-sky'), String(idx));
+    if (ch) {
+      localStorage.setItem(storyProgressKey(ch.story_id || 'another-sky'), String(idx));
+      // Track max chapter_num ever read (per-user progress gate)
+      const chNum = ch.chapter_num || 0;
+      setMaxChapter(chNum);
+      updateHUDStats(getMaxChapter());
+    }
     // reading time
     const words = (ch?.content || '').trim().split(/\s+/).filter(Boolean).length;
     const mins = Math.max(1, Math.round(words / 200));
@@ -8813,7 +9043,150 @@ async function generateNewVolume(silent) {
     setTimeout(() => { /* cleared next frame naturally */ }, 120);
   }
 
-  /* ── HOWLER AUDIO ── */
+  /* ── WEB AUDIO AUDIO ENGINE — no CDN, all procedural ── */
+  let _audioCtx = null, _rainNode = null, _rainNodes = [], _birdNodes = [], _thunderCtx = null;
+
+  function _getAudioCtx() {
+    if (!_audioCtx || _audioCtx.state === 'closed') {
+      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (_audioCtx.state === 'suspended') _audioCtx.resume().catch(() => {});
+    return _audioCtx;
+  }
+
+  function _makeNoiseBuf(ctx, type, seconds) {
+    const sr = ctx.sampleRate;
+    const buf = ctx.createBuffer(1, sr * seconds, sr);
+    const d = buf.getChannelData(0);
+    if (type === 'white') {
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    } else if (type === 'brown') {
+      let last = 0;
+      for (let i = 0; i < d.length; i++) {
+        const w = Math.random() * 2 - 1;
+        d[i] = (last + 0.02 * w) / 1.02; last = d[i]; d[i] *= 3.5;
+      }
+    } else { // pink
+      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+      for (let i = 0; i < d.length; i++) {
+        const w = Math.random() * 2 - 1;
+        b0=0.99886*b0+w*0.0555179; b1=0.99332*b1+w*0.0750759;
+        b2=0.96900*b2+w*0.1538520; b3=0.86650*b3+w*0.3104856;
+        b4=0.55000*b4+w*0.5329522; b5=-0.7616*b5-w*0.0168980;
+        d[i] = (b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11; b6=w*0.115926;
+      }
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buf; src.loop = true;
+    return src;
+  }
+
+  function startWebAudioRain() {
+    try {
+      const ctx = _getAudioCtx();
+      const master = ctx.createGain(); master.gain.setValueAtTime(0, ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0.22, ctx.currentTime + 2.5);
+      master.connect(ctx.destination);
+      // Pink noise base — rain on glass
+      const noise = _makeNoiseBuf(ctx, 'pink', 4);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 80;
+      const ng = ctx.createGain(); ng.gain.value = 0.7;
+      noise.connect(lp); lp.connect(hp); hp.connect(ng); ng.connect(master);
+      noise.start();
+      // Drip layer
+      let dripTimer;
+      function drip() {
+        try {
+          const osc = ctx.createOscillator(); osc.frequency.value = 180 + Math.random() * 120;
+          const dg = ctx.createGain(); dg.gain.setValueAtTime(0.15, ctx.currentTime);
+          dg.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+          osc.connect(dg); dg.connect(master); osc.start(); osc.stop(ctx.currentTime + 0.35);
+        } catch(_) {}
+        dripTimer = setTimeout(drip, 700 + Math.random() * 2200);
+      }
+      drip();
+      _rainNode = master;
+      _rainNodes = [noise];
+      _rainNodes._dripTimer = dripTimer;
+      _rainNodes._stopDrip = () => clearTimeout(dripTimer);
+      noise._stopDrip = () => clearTimeout(dripTimer);
+    } catch(e) { console.warn('[rain]', e); }
+  }
+
+  function startWebAudioBirdsong() {
+    try {
+      const ctx = _getAudioCtx();
+      const master = ctx.createGain(); master.gain.setValueAtTime(0, ctx.currentTime);
+      master.gain.linearRampToValueAtTime(0.18, ctx.currentTime + 3.0);
+      master.connect(ctx.destination);
+      // Brown noise base — forest ambience
+      const noise = _makeNoiseBuf(ctx, 'brown', 4);
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600;
+      const ng = ctx.createGain(); ng.gain.value = 0.45;
+      noise.connect(lp); lp.connect(ng); ng.connect(master);
+      noise.start();
+      // Cricket/bird layer — three detuned oscillators with LFO
+      const nodes = [noise];
+      [3800, 4100, 4600].forEach((freq, i) => {
+        try {
+          const osc = ctx.createOscillator(); osc.frequency.value = freq; osc.type = 'sine';
+          const lfo = ctx.createOscillator(); lfo.frequency.value = 14 + i * 3; lfo.type = 'sine';
+          const lfoG = ctx.createGain(); lfoG.gain.value = 0.014;
+          const oscG = ctx.createGain(); oscG.gain.value = 0.018;
+          lfo.connect(lfoG); lfoG.connect(oscG.gain);
+          osc.connect(oscG); oscG.connect(master);
+          osc.start(); lfo.start();
+          nodes.push(osc, lfo);
+        } catch(_) {}
+      });
+      // Gentle wind swell
+      const wind = _makeNoiseBuf(ctx, 'pink', 4);
+      const wlp = ctx.createBiquadFilter(); wlp.type = 'lowpass'; wlp.frequency.value = 400;
+      const wg = ctx.createGain(); wg.gain.value = 0.2;
+      wind.connect(wlp); wlp.connect(wg); wg.connect(master); wind.start();
+      nodes.push(wind);
+      _rainNode = master;
+      _birdNodes = nodes;
+    } catch(e) { console.warn('[birdsong]', e); }
+  }
+
+  function stopWebAudioRain() {
+    try {
+      if (_rainNode && _audioCtx) {
+        _rainNode.gain.linearRampToValueAtTime(0, _audioCtx.currentTime + 1.5);
+      }
+      if (_rainNodes && _rainNodes._stopDrip) _rainNodes._stopDrip();
+      _birdNodes.forEach(n => { try { if (n._stopDrip) n._stopDrip(); n.stop && n.stop(); } catch(_){} });
+      _rainNodes = []; _birdNodes = [];
+    } catch(_) {}
+  }
+
+  // Procedural thunder — low rumble burst
+  function _triggerProceduralThunder() {
+    try {
+      const ctx = _getAudioCtx();
+      const dur = 1.8 + Math.random() * 2.2;
+      const g = ctx.createGain(); g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.5 + Math.random() * 0.25, ctx.currentTime + 0.2);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+      g.connect(ctx.destination);
+      // Brown noise burst — low shelf for rumble
+      const buf = ctx.createBuffer(1, ctx.sampleRate * (dur + 0.1), ctx.sampleRate);
+      const d = buf.getChannelData(0);
+      let last = 0;
+      for (let i = 0; i < d.length; i++) {
+        const w = Math.random() * 2 - 1;
+        d[i] = (last + 0.02 * w) / 1.02; last = d[i]; d[i] *= 3.5;
+      }
+      const src = ctx.createBufferSource(); src.buffer = buf;
+      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 160;
+      src.connect(lp); lp.connect(g);
+      src.start(); src.stop(ctx.currentTime + dur + 0.1);
+    } catch(_) {}
+  }
+
+  /* ── HOWLER AUDIO (kept as shell, now routes to Web Audio) ── */
   function initAudio() {
     if (audioUnlocked) return;
     audioUnlocked = true;
@@ -8821,116 +9194,17 @@ async function generateNewVolume(silent) {
   }
 
   function startThemeAudio() {
-    /* Stop whatever is currently playing */
-    if (rainSound) {
-      rainSound.fade(rainSound.volume(), 0, 600);
-      setTimeout(() => { if (rainSound) { rainSound.stop(); rainSound.unload(); rainSound = null; } }, 700);
-    }
-    thunderSounds.forEach(t => { try { t.stop(); t.unload(); } catch(_){} });
-    thunderSounds.length = 0;
+    // Stop existing audio
+    stopWebAudioRain();
+    thunderSounds = [];
 
     const isPaper = document.documentElement.dataset.theme === 'paper';
-
     if (isPaper) {
-      /* Paper / light mode: ambient birdsong + nature sounds */
-      rainSound = new Howl({
-        src: [
-          'https://cdn.freesound.org/previews/531/531947_2523167-lq.mp3', /* forest birds morning */
-          'https://cdn.freesound.org/previews/456/456968_5121236-lq.mp3', /* gentle birdsong */
-        ],
-        loop: true,
-        volume: 0,
-        html5: true,
-        onloaderror: () => {
-          /* fallback: different birds URL — play inside onload, not before it */
-          rainSound = new Howl({
-            src: ['https://cdn.freesound.org/previews/476/476042_6418094-lq.mp3'],
-            loop: true, volume: 0, html5: true,
-            onload: function() { this.play(); this.fade(0, 0.18, 3000); },
-            onloaderror: () => { rainSound = null; }
-          });
-        }
-      });
-      rainSound.play();
-      rainSound.fade(0, 0.18, 3000);
-      /* No thunder — add gentle ambient wind layer instead */
-      return;
-    }
-
-    /* Dark mode: Continuous rain ambience — looped */
-    rainSound = new Howl({
-      src: [
-        'https://cdn.freesound.org/previews/346/346186_5121236-lq.mp3', /* rain on glass */
-      ],
-      loop: true,
-      volume: 0,
-      html5: true,
-      onloaderror: () => {
-        /* fallback: Web Audio API generated rain noise */
-        rainSound = null;
-        startWebAudioRain();
-      }
-    });
-    rainSound.play();
-    rainSound.fade(0, 0.22, 2500);
-
-    /* Thunder sound pool — 3 variations using freesound previews */
-    const thunderUrls = [
-      'https://cdn.freesound.org/previews/398/398032_4284968-lq.mp3',
-      'https://cdn.freesound.org/previews/204/204867_3797507-lq.mp3',
-      'https://cdn.freesound.org/previews/237/237375_4284968-lq.mp3',
-    ];
-    thunderUrls.forEach(url => {
-      thunderSounds.push(new Howl({
-        src: [url],
-        volume: 0.55,
-        html5: true,
-      }));
-    });
-  }
-
-  /* Called by toggleTheme() to swap rain ↔ birdsong when theme changes */
-  window._synAudioRestartOnTheme = function() {
-    if (!audioUnlocked) return; /* hasn't been unlocked yet, let initAudio handle it */
-    startThemeAudio();
-  };
-
-  /* Web Audio fallback — pink-noise rain */
-  let _audioCtx = null, _rainNode = null;
-  function startWebAudioRain() {
-    try {
-      _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      const bufSz = _audioCtx.sampleRate * 2;
-      const buf = _audioCtx.createBuffer(1, bufSz, _audioCtx.sampleRate);
-      const data = buf.getChannelData(0);
-      let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
-      for (let i = 0; i < bufSz; i++) {
-        const wh = Math.random() * 2 - 1;
-        b0=0.99886*b0+wh*0.0555179; b1=0.99332*b1+wh*0.0750759;
-        b2=0.96900*b2+wh*0.1538520; b3=0.86650*b3+wh*0.3104856;
-        b4=0.55000*b4+wh*0.5329522; b5=-0.7616*b5-wh*0.0168980;
-        data[i] = (b0+b1+b2+b3+b4+b5+b6+wh*0.5362)*0.11;
-        b6 = wh * 0.115926;
-      }
-      const src = _audioCtx.createBufferSource();
-      src.buffer = buf; src.loop = true;
-      const gain = _audioCtx.createGain(); gain.gain.value = 0;
-      const filter = _audioCtx.createBiquadFilter();
-      filter.type = 'bandpass'; filter.frequency.value = 900; filter.Q.value = 0.4;
-      src.connect(filter); filter.connect(gain); gain.connect(_audioCtx.destination);
-      src.start();
-      _rainNode = gain;
-      /* Fade in */
-      gain.gain.linearRampToValueAtTime(0.18, _audioCtx.currentTime + 2.5);
-    } catch(e) { /* silent fallback */ }
-  }
-
-  function stopWebAudioRain() {
-    if (_rainNode && _audioCtx) {
-      _rainNode.gain.linearRampToValueAtTime(0, _audioCtx.currentTime + 1.5);
+      startWebAudioBirdsong();
+    } else {
+      startWebAudioRain();
     }
   }
-
 
   /* ── IN-PAGE BACK NAVIGATION ── */
   window.addEventListener('popstate', function(e) {
@@ -8962,11 +9236,7 @@ async function generateNewVolume(silent) {
 
   /* ── PUBLIC: triggerThunder ── */
   window.triggerThunder = function(forceLightning) {
-    if (thunderSounds.length > 0) {
-      const t = thunderSounds[Math.floor(Math.random() * thunderSounds.length)];
-      t.volume(0.35 + Math.random() * 0.4);
-      t.play();
-    }
+    _triggerProceduralThunder();
     if (forceLightning || Math.random() > 0.3) triggerLightning();
   };
 
@@ -9019,19 +9289,11 @@ async function generateNewVolume(silent) {
     cancelAnimationFrame(raf);
     const c = document.getElementById('rain-canvas');
     if (c) c.classList.remove('active');
-    if (rainSound) rainSound.fade(rainSound.volume(), 0, 1200);
     stopWebAudioRain();
     const el = document.getElementById('lightning-flash');
     if (el) el.style.background = 'rgba(220,230,255,0)';
-    // Clear all storm timers
     if (window._stormTimer) { clearTimeout(window._stormTimer); window._stormTimer = null; }
-    setTimeout(() => {
-      if (rainSound) { rainSound.stop(); rainSound.unload(); rainSound = null; }
-      thunderSounds.forEach(t => { try { t.stop(); t.unload(); } catch(_){} });
-      thunderSounds = [];
-      // NOTE: do NOT reset audioUnlocked here — if user re-enters synopsis quickly,
-      // the browser gesture is already unlocked and initAudio() won't fire again.
-    }, 1500);
+    // NOTE: do NOT reset audioUnlocked here — gesture already unlocked
   };
 })();
 
