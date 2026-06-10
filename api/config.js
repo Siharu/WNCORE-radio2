@@ -98,6 +98,76 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ── CHAPTERS: GET/POST/DELETE /api/config?action=chapters ────────────────
+  if (req.query.action === 'chapters') {
+
+    // GET — public read, no auth needed
+    if (req.method === 'GET') {
+      const storyId = req.query.story_id || 'another-sky';
+      if (!supabaseUrl || !supabaseKey) return res.status(200).json([]);
+      const r = await fetch(
+        sbUrl(`chapters?story_id=eq.${encodeURIComponent(storyId)}&order=chapter_num.asc`),
+        { headers: sbHeaders() }
+      );
+      if (!r.ok) return res.status(200).json([]);
+      return res.status(200).json(await r.json());
+    }
+
+    // Writes require auth
+    const tok = req.headers['x-admin-token'];
+    if (tok !== adminToken) return res.status(401).json({ error: 'Unauthorized' });
+
+    // POST — upsert (insert or update)
+    if (req.method === 'POST') {
+      const { id, story_id, chapter_num, title, content, is_published, published_at, published_by } = req.body || {};
+      if (!story_id || !chapter_num || !title) return res.status(400).json({ error: 'story_id, chapter_num, title required' });
+
+      let r, data;
+      if (id) {
+        // UPDATE existing chapter
+        r = await fetch(sbUrl(`chapters?id=eq.${encodeURIComponent(id)}`), {
+          method: 'PATCH',
+          headers: sbHeaders({ 'Prefer': 'return=representation' }),
+          body: JSON.stringify({ chapter_num, title, content, is_published }),
+        });
+      } else {
+        // INSERT new chapter
+        r = await fetch(sbUrl('chapters'), {
+          method: 'POST',
+          headers: sbHeaders({ 'Prefer': 'return=representation' }),
+          body: JSON.stringify({ story_id, chapter_num, title, content,
+            is_published: is_published ?? true,
+            published_at: published_at || new Date().toISOString(),
+            published_by: published_by || 'operator' }),
+        });
+      }
+      if (!r.ok) {
+        const e = await r.text();
+        return res.status(500).json({ error: 'Failed to save chapter', details: e });
+      }
+      data = await r.json();
+      const chapter = Array.isArray(data) ? data[0] : data;
+      return res.status(200).json({ success: true, chapter });
+    }
+
+    // DELETE — by chapter id
+    if (req.method === 'DELETE') {
+      const { id } = req.query;
+      if (!id) return res.status(400).json({ error: 'id required' });
+      const r = await fetch(sbUrl(`chapters?id=eq.${encodeURIComponent(id)}`), {
+        method: 'DELETE',
+        headers: sbHeaders(),
+      });
+      if (!r.ok) {
+        const e = await r.text();
+        return res.status(500).json({ error: 'Failed to delete chapter', details: e });
+      }
+      return res.status(200).json({ success: true });
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   // ── STORIES: GET/POST/DELETE /api/config?action=stories ──────────────────
   if (req.query.action === 'stories') {
     const SEED = [{ id:'another-sky', title:'Another Sky', prefix:'AS', accent:'#c80000',
