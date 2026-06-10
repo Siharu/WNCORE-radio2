@@ -8,7 +8,7 @@
     "api/icy.js": { "maxDuration": 10 },
     "api/earth-admin.js": { "maxDuration": 30 },
     "api/community.js": { "maxDuration": 10 },
-    "api/writer.js": { "maxDuration": 30 }
+    "api/writer.js": { "maxDuration": 10 }
   },
   "headers": [
     {
