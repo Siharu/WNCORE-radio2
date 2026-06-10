@@ -2041,22 +2041,31 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 
 #ced-left-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px 7px;
+  padding: 7px 12px 6px;
   border-bottom: 1px solid rgba(200,71,42,0.18);
   flex-shrink: 0;
   background: #000;
   position: relative;
 }
-/* Red underline accent on header */
 #ced-left-head::after {
   content: '';
   position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
   background: linear-gradient(90deg, rgba(200,71,42,0.6) 0%, transparent 100%);
 }
-
 #ced-logo {
-  font-size: 0.22rem; letter-spacing: 4px;
-  color: rgba(200,71,42,0.5); text-transform: uppercase;
+  display: flex; flex-direction: column; gap: 0;
+}
+#ced-logo::before {
+  content: 'DOSSIER TERMINAL';
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.16rem; letter-spacing: 3.5px;
+  color: rgba(200,71,42,0.3); text-transform: uppercase; line-height: 1;
+  display: block;
+}
+/* the span text itself */
+#ced-logo {
+  font-size: 0.24rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.7); text-transform: uppercase;
 }
 /* Dossier unit tag — shown next to logo */
 #ced-logo::before {
@@ -2076,39 +2085,34 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 
 /* NEW CHAPTER button — styled as a PROTOCOL button */
 #ced-new-btn {
-  margin: 10px 10px 4px; padding: 8px 10px;
+  margin: 8px 10px 3px; padding: 7px 10px;
   background: transparent;
-  border: 1px solid rgba(200,71,42,0.35);
-  color: rgba(200,71,42,0.75);
+  border: 1px solid rgba(200,71,42,0.28);
+  color: rgba(200,71,42,0.6);
   font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.28rem; letter-spacing: 3px; cursor: pointer;
+  font-size: 0.22rem; letter-spacing: 3.5px; cursor: pointer;
   text-transform: uppercase; transition: all 0.12s; flex-shrink: 0;
   clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
-  position: relative;
-}
-#ced-new-btn::after {
-  content: '';
-  position: absolute; bottom: -1px; left: 4px; right: 4px; height: 1px;
-  background: rgba(200,71,42,0.3);
+  display: flex; align-items: center; gap: 6px; width: calc(100% - 20px);
 }
 #ced-new-btn:hover {
-  background: rgba(200,71,42,0.1);
-  border-color: rgba(200,71,42,0.7);
+  background: rgba(200,71,42,0.09);
+  border-color: rgba(200,71,42,0.6);
   color: #c8472a;
 }
 
 /* Chapter search filter */
 #ced-ch-search {
-  margin: 6px 10px 4px; padding: 5px 8px;
-  background: #000;
-  border: none; border-bottom: 1px solid rgba(200,71,42,0.2);
+  margin: 4px 10px; padding: 5px 8px;
+  background: transparent;
+  border: none; border-bottom: 1px solid rgba(200,71,42,0.15);
   color: rgba(200,100,80,0.8);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.3rem;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
   outline: none; letter-spacing: 1px;
   width: calc(100% - 20px); box-sizing: border-box;
 }
-#ced-ch-search:focus { border-bottom-color: #c8472a; }
-#ced-ch-search::placeholder { color: rgba(200,71,42,0.2); }
+#ced-ch-search:focus { border-bottom-color: rgba(200,71,42,0.5); }
+#ced-ch-search::placeholder { color: rgba(200,71,42,0.18); }
 
 /* Chapter list */
 #ced-ch-list {
@@ -2118,9 +2122,12 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 
 /* Chapter list item — dossier record row */
 .ced-ch-item {
-  display: flex; flex-direction: column; gap: 1px;
-  padding: 9px 12px 9px 14px; cursor: grab;
-  border-bottom: 1px solid rgba(200,71,42,0.06);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  row-gap: 1px; column-gap: 8px;
+  padding: 7px 10px 7px 14px; cursor: grab;
+  border-bottom: 1px solid rgba(200,71,42,0.07);
   position: relative; transition: background 0.1s;
 }
 /* Left accent bar */
@@ -2129,30 +2136,37 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   background: #c8472a; opacity: 0; transition: opacity 0.12s;
 }
 .ced-ch-item:hover { background: rgba(200,71,42,0.05); }
-.ced-ch-item.active { background: rgba(200,71,42,0.09); }
+.ced-ch-item.active {
+  background: rgba(200,71,42,0.11);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
+}
 .ced-ch-item.active::before { opacity: 1; }
 .ced-ch-item.dragging { opacity: 0.35; cursor: grabbing; }
 .ced-ch-item.drag-over { border-top: 2px solid #c8472a; }
 
-/* Record ID label above chapter name */
+/* Record ID label */
 .ced-ch-num {
-  font-size: 0.2rem; letter-spacing: 3px;
-  color: rgba(200,71,42,0.3); text-transform: uppercase;
+  font-size: 0.17rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.28); text-transform: uppercase;
+  grid-column: 1; grid-row: 1; align-self: end;
 }
-.ced-ch-num::before { content: 'REC-'; }
+.ced-ch-num::before { content: 'REC '; }
 
 .ced-ch-name {
-  font-size: 0.38rem; color: rgba(200,120,100,0.8);
+  font-size: 0.36rem; color: rgba(200,120,100,0.82);
   text-transform: uppercase; letter-spacing: 0.5px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  grid-column: 1; grid-row: 2;
 }
-.ced-ch-item.active .ced-ch-name { color: #fff; }
+.ced-ch-item.active .ced-ch-name { color: rgba(255,200,180,0.96); }
+.ced-ch-item.active .ced-ch-num { color: rgba(200,71,42,0.55); }
 
 /* Published / draft badge */
 .ced-ch-status {
-  font-size: 0.19rem; letter-spacing: 2px; text-transform: uppercase;
-  margin-top: 2px; padding: 1px 4px; align-self: flex-start;
+  font-size: 0.17rem; letter-spacing: 2px; text-transform: uppercase;
+  padding: 1px 5px; align-self: center;
   border: 1px solid transparent;
+  grid-column: 2; grid-row: 1 / 3;
 }
 .ced-ch-status.pub  { color: rgba(60,200,100,0.55); border-color: rgba(60,200,100,0.18); }
 .ced-ch-status.draft{ color: rgba(200,130,0,0.55);  border-color: rgba(200,130,0,0.18); }
@@ -2350,114 +2364,162 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   pointer-events: none; z-index: 3;
 }
 
-/* ── TOOLBAR / OPERATION HEADER ─────────────────────────────── */
+/* ── TOOLBAR / OPERATION HEADER — DOSSIER RECORD REDESIGN ─── */
+/* Zone 1 — Record identity fields */
 #ced-toolbar {
-  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-  padding: 0 12px;
-  border-bottom: 1px solid rgba(200,71,42,0.18);
-  background: #000; flex-shrink: 0;
-  position: relative; z-index: 1; min-height: 44px;
+  display: flex; flex-direction: column;
+  border-bottom: 1px solid rgba(200,71,42,0.3);
+  background: #030000; flex-shrink: 0;
+  position: relative; z-index: 1;
 }
-/* Red gradient underline */
-#ced-toolbar::after {
-  content: '';
-  position: absolute; bottom: -1px; left: 0; right: 0; height: 1px;
-  background: linear-gradient(90deg, rgba(200,71,42,0.55) 0%, rgba(200,71,42,0.1) 50%, transparent 100%);
-}
-
-/* CH# and title — dossier field treatment */
 #ced-toolbar-meta {
-  display: flex; gap: 0; align-items: stretch;
-  border: 1px solid rgba(200,71,42,0.2); flex-shrink: 0;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
-  background: #080000;
+  display: flex; align-items: stretch; gap: 0;
+  padding: 0; border-bottom: 1px solid rgba(200,71,42,0.14);
+}
+.ced-field-block {
+  display: flex; flex-direction: column; justify-content: center;
+  border-right: 1px solid rgba(200,71,42,0.14);
+  padding: 5px 10px; gap: 1px; position: relative;
+}
+.ced-field-block:last-child { border-right: none; flex: 1; }
+.ced-field-label {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.17rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.35); text-transform: uppercase;
+  line-height: 1;
 }
 #ced-num {
-  width: 44px; background: transparent;
-  border: none; border-right: 1px solid rgba(200,71,42,0.2);
+  width: 44px; background: transparent; border: none;
   color: #c8472a; font-family: var(--font-mono,'IBM Plex Mono');
-  font-size: 0.44rem; padding: 6px 8px; outline: none;
-  text-align: center;
+  font-size: 0.54rem; font-weight: 700; padding: 0; outline: none;
+  text-align: left; letter-spacing: 1px; line-height: 1.1;
 }
 #ced-title {
-  width: 190px; background: transparent; border: none;
-  color: rgba(220,160,140,0.9);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.4rem;
-  padding: 6px 8px; outline: none; text-transform: uppercase; letter-spacing: 0.5px;
+  background: transparent; border: none; width: 100%;
+  color: rgba(220,160,140,0.95);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.42rem;
+  padding: 0; outline: none; text-transform: uppercase; letter-spacing: 1px; line-height: 1.1;
 }
-#ced-num:focus, #ced-title:focus { background: rgba(200,71,42,0.04); }
+#ced-num:focus  { color: #e06040; }
+#ced-title:focus { color: #e8d0c0; }
+/* Wordcount + autosave in the meta bar */
+#ced-meta-right {
+  display: flex; align-items: center; gap: 10px;
+  margin-left: auto; padding: 0 12px; border-left: 1px solid rgba(200,71,42,0.14); flex-shrink: 0;
+}
+#ced-wordcount {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.22rem; letter-spacing: 2px; color: rgba(200,71,42,0.3);
+}
+#ced-autosave {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.2rem; letter-spacing: 2px; color: rgba(200,71,42,0.25);
+}
 
-/* FX buttons row */
+/* Zone 2 — FX strip */
 #ced-toolbar-effects {
-  display: flex; align-items: center; gap: 3px; flex-wrap: wrap; flex: 1;
+  display: flex; align-items: center; gap: 0;
+  border-bottom: 1px solid rgba(200,71,42,0.12);
+  background: #000; overflow-x: auto; flex-shrink: 0;
 }
+#ced-toolbar-effects::-webkit-scrollbar { display: none; }
 .ced-toolbar-sep {
-  font-size: 0.2rem; letter-spacing: 2px;
-  color: rgba(200,71,42,0.22); padding: 0 3px; text-transform: uppercase;
+  font-size: 0.17rem; letter-spacing: 2.5px; padding: 0 8px;
+  color: rgba(200,71,42,0.2); text-transform: uppercase;
+  border-right: 1px solid rgba(200,71,42,0.1); white-space: nowrap; align-self: stretch;
+  display: flex; align-items: center;
 }
 .ced-fx-btn {
-  display: flex; align-items: center; gap: 3px; padding: 3px 7px;
-  background: transparent; border: 1px solid rgba(200,71,42,0.16);
-  color: rgba(200,100,80,0.65);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.25rem;
+  display: flex; align-items: center; gap: 4px;
+  padding: 6px 9px; border: none; border-right: 1px solid rgba(200,71,42,0.1);
+  background: transparent; color: rgba(200,100,80,0.45);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.22rem;
   letter-spacing: 1.5px; cursor: pointer; text-transform: uppercase;
-  transition: all 0.1s; white-space: nowrap;
+  transition: all 0.1s; white-space: nowrap; align-self: stretch;
 }
-.ced-fx-btn:hover { background: rgba(200,71,42,0.09); border-color: rgba(200,71,42,0.5); color: #c8472a; }
-.ced-fx-btn .lucid-icon { width: 9px; height: 9px; }
+.ced-fx-btn:hover { background: rgba(200,71,42,0.08); color: #c8472a; }
+.ced-fx-btn:active { background: rgba(200,71,42,0.18); }
+.ced-fx-btn .lucid-icon { width: 9px; height: 9px; opacity: 0.6; }
+.ced-fx-btn:hover .lucid-icon { opacity: 1; }
 
-/* Toolbar actions group */
+/* Zone 3 — Action bar: publish / schedule / export / find / check / delete */
 #ced-toolbar-actions {
-  display: flex; align-items: center; gap: 6px; margin-left: auto;
+  display: flex; align-items: stretch; gap: 0;
+  background: #020000; flex-shrink: 0; flex-wrap: wrap;
 }
+
+/* Publish toggle — dossier card style */
+#ced-pub-row {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 5px 10px; gap: 1px; cursor: pointer;
+  border-right: 1px solid rgba(200,71,42,0.14);
+  min-width: 72px; position: relative;
+  font-family: var(--font-mono,'IBM Plex Mono');
+}
+#ced-pub-row .ced-field-label { pointer-events: none; }
+#ced-pub-toggle { display: none; }
+#ced-pub-label {
+  font-size: 0.3rem; letter-spacing: 2px; font-weight: 700;
+  color: rgba(200,71,42,0.35); transition: color 0.15s;
+}
+#ced-pub-toggle:checked ~ #ced-pub-label { color: rgba(80,220,120,0.8); }
+#ced-pub-row:hover #ced-pub-label { color: rgba(200,100,80,0.8); }
+
+/* Schedule */
+#ced-schedule-wrap {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 5px 10px; gap: 1px;
+  border-right: 1px solid rgba(200,71,42,0.14);
+}
+.ced-schedule-input {
+  background: transparent; border: none; border-bottom: 1px solid rgba(200,71,42,0.2);
+  color: rgba(200,100,80,0.55);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem;
+  padding: 1px 0; outline: none; cursor: pointer; width: 140px; color-scheme: dark;
+}
+.ced-schedule-input:focus { border-bottom-color: #c8472a; }
+
+/* Export / Find / Check — compact icon buttons */
+.ced-export-wrap {
+  position: relative; border-right: 1px solid rgba(200,71,42,0.14);
+}
+.ced-export-btn {
+  height: 100%; padding: 0 10px;
+  background: transparent; border: none; color: rgba(200,100,80,0.45);
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.22rem; letter-spacing: 1.5px;
+  cursor: pointer; text-transform: uppercase; white-space: nowrap; transition: all 0.1s;
+}
+.ced-export-btn:hover { color: #c8472a; background: rgba(200,71,42,0.06); }
+
+/* Status indicator */
 #ced-status {
-  font-size: 0.26rem; color: rgba(200,71,42,0.5);
-  letter-spacing: 1.5px; min-width: 60px; text-align: right;
+  display: flex; align-items: center; padding: 0 10px;
+  font-size: 0.22rem; color: rgba(200,71,42,0.5);
+  letter-spacing: 1.5px; min-width: 70px; font-family: var(--font-mono,'IBM Plex Mono');
 }
+
+/* Delete / Publish action buttons — CP2077 choice card treatment */
 .ced-action-btn {
-  display: flex; align-items: center; gap: 4px; padding: 5px 11px;
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.28rem;
+  display: flex; align-items: center; gap: 5px;
+  padding: 0 14px;
+  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem;
   letter-spacing: 2px; cursor: pointer; text-transform: uppercase; transition: all 0.12s;
+  border: none; position: relative;
 }
 .ced-save-btn {
-  background: transparent; border: 1px solid #c8472a; color: #c8472a;
-  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%);
+  background: rgba(200,71,42,0.08);
+  border-left: 2px solid #c8472a !important;
+  color: #c8472a; margin-left: auto;
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 0 100%);
 }
-.ced-save-btn:hover { background: rgba(200,71,42,0.14); }
+.ced-save-btn:hover { background: rgba(200,71,42,0.2); color: #ff7050; }
+.ced-save-btn:active { background: rgba(200,71,42,0.35); }
 .ced-del-btn {
   background: transparent;
-  border: 1px solid rgba(150,0,0,0.35); color: rgba(200,60,60,0.55);
+  border-left: 2px solid rgba(150,0,0,0.3) !important;
+  color: rgba(200,60,60,0.4);
 }
-.ced-del-btn:hover { border-color: #ff4444; color: #ff4444; }
-
-/* Published toggle */
-#ced-pub-row {
-  display: flex; align-items: center; gap: 6px; padding: 0 2px;
-  font-size: 0.24rem; letter-spacing: 1.5px;
-  color: rgba(200,100,80,0.55); font-family: var(--font-mono,'IBM Plex Mono'); flex-shrink: 0;
-}
-#ced-pub-toggle {
-  appearance: none; width: 26px; height: 12px;
-  background: rgba(200,71,42,0.12);
-  border: 1px solid rgba(200,71,42,0.3); border-radius: 6px;
-  cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0;
-}
-#ced-pub-toggle::after {
-  content: ''; position: absolute; top: 2px; left: 2px;
-  width: 7px; height: 7px; background: rgba(200,71,42,0.45); border-radius: 50%;
-  transition: left 0.18s, background 0.18s;
-}
-#ced-pub-toggle:checked { background: rgba(60,180,100,0.18); border-color: rgba(60,180,100,0.45); }
-#ced-pub-toggle:checked::after { left: 15px; background: rgba(60,180,100,0.8); }
-
-/* Schedule input */
-#ced-schedule-wrap { display: flex; align-items: center; gap: 3px; }
-.ced-schedule-input {
-  background: #000; border: none; border-bottom: 1px solid rgba(200,71,42,0.18);
-  color: rgba(200,100,80,0.5);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.24rem;
-  padding: 2px 4px; outline: none; cursor: pointer; width: 130px; color-scheme: dark;
-}
+.ced-del-btn:hover { background: rgba(180,0,0,0.1); color: #ff4444; border-left-color: #ff4444 !important; }
 .ced-schedule-input:focus { border-bottom-color: rgba(200,71,42,0.5); }
 
 /* Word count / autosave */
@@ -3545,14 +3607,28 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <!-- RIGHT PANEL: editor + preview -->
     <div id="ced-right">
 
-      <!-- Toolbar -->
+      <!-- Toolbar — dossier record layout -->
       <div id="ced-toolbar">
+
+        <!-- Zone 1: Record fields — Chapter number + title -->
         <div id="ced-toolbar-meta">
-          <input type="number" id="ced-num" min="1" placeholder="CH#" title="Chapter number">
-          <input type="text" id="ced-title" placeholder="CHAPTER TITLE" maxlength="120" title="Chapter title">
+          <div class="ced-field-block" style="min-width:60px;max-width:68px;">
+            <span class="ced-field-label">CH #</span>
+            <input type="number" id="ced-num" min="1" placeholder="—" title="Chapter number">
+          </div>
+          <div class="ced-field-block">
+            <span class="ced-field-label">CHAPTER TITLE</span>
+            <input type="text" id="ced-title" placeholder="UNTITLED" maxlength="120" title="Chapter title">
+          </div>
+          <div id="ced-meta-right">
+            <span id="ced-wordcount">0 WORDS</span>
+            <span id="ced-autosave"></span>
+          </div>
         </div>
+
+        <!-- Zone 2: FX / insert strip -->
         <div id="ced-toolbar-effects">
-          <span class="ced-toolbar-sep">FX</span>
+          <span class="ced-toolbar-sep">MARKUP</span>
           <button class="ced-fx-btn" title="[GLITCH]...[/GLITCH]" onclick="cedWrap('[GLITCH]','[/GLITCH]')"><img src="assets/lucid/Signal-2.png" alt="" class="lucid-icon">GLITCH</button>
           <button class="ced-fx-btn" title="[REDACT]...[/REDACT]" onclick="cedWrap('[REDACT]','[/REDACT]')"><img src="assets/lucid/Bookmark.png" alt="" class="lucid-icon">REDACT</button>
           <button class="ced-fx-btn" title="[STATIC]...[/STATIC]" onclick="cedWrap('[STATIC]','[/STATIC]')"><img src="assets/lucid/Signal-0.png" alt="" class="lucid-icon">STATIC</button>
@@ -3561,16 +3637,28 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <button class="ced-fx-btn" title="[MARGIN: note]" onclick="cedInsertMargin()"><img src="assets/lucid/List.png" alt="" class="lucid-icon">MARGIN</button>
           <span class="ced-toolbar-sep">INSERT</span>
           <button class="ced-fx-btn" title="[IMG url=... align=center caption=...]" onclick="cedInsertImg()"><img src="assets/lucid/File-Image.png" alt="" class="lucid-icon">IMG</button>
+          <span class="ced-toolbar-sep">TOOLS</span>
+          <button class="ced-fx-btn" onclick="cedToggleFindBar()" title="Find &amp; Replace (Ctrl+H)"><img src="assets/lucid/Search.png" alt="" class="lucid-icon">FIND</button>
+          <button class="ced-fx-btn" onclick="cedToggleCheckPanel()" title="Grammar &amp; Clarity check"><img src="assets/lucid/Check.png" alt="" class="lucid-icon">CHECK</button>
         </div>
+
+        <!-- Zone 3: Status + publish actions row -->
         <div id="ced-toolbar-actions">
+
+          <!-- Publish toggle — dossier field card -->
           <label id="ced-pub-row" title="Toggle published/draft">
+            <span class="ced-field-label">STATUS</span>
             <input type="checkbox" id="ced-pub-toggle" onchange="cedTogglePublished(this.checked)">
             <span id="ced-pub-label">DRAFT</span>
           </label>
-          <div id="ced-schedule-wrap" title="Schedule publish datetime (leave blank for manual)">
-            <span class="ced-toolbar-sep" style="font-size:0.24rem;">SCHED</span>
+
+          <!-- Schedule field -->
+          <div id="ced-schedule-wrap" title="Schedule publish datetime">
+            <span class="ced-field-label">SCHEDULE</span>
             <input type="datetime-local" id="ced-schedule-dt" class="ced-schedule-input" onchange="cedSchedule(this.value)" title="Scheduled publish time">
           </div>
+
+          <!-- Export -->
           <div class="ced-export-wrap">
             <button class="ced-export-btn" onclick="cedToggleExportMenu(event)" title="Export chapter">EXPORT ▾</button>
             <div class="ced-export-menu" id="ced-export-menu">
@@ -3580,17 +3668,20 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
               <button onclick="cedPreviewAsReader()" style="border-top:1px solid rgba(200,0,0,0.15);margin-top:2px;padding-top:5px;">⊞ READER PREVIEW</button>
             </div>
           </div>
-          <button class="ced-fx-btn" onclick="cedToggleFindBar()" title="Find & Replace (Ctrl+H)">FIND</button>
-          <button class="ced-fx-btn" onclick="cedToggleCheckPanel()" title="Grammar & Clarity check">CHECK</button>
-          <span id="ced-wordcount">0 WORDS</span>
-          <span id="ced-autosave"></span>
+
+          <!-- Status output -->
           <div id="ced-status"></div>
-          <button class="ced-action-btn ced-del-btn" id="ced-del-btn" title="Delete chapter" onclick="cedDelete()" style="display:none;">
-            <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:9px;height:9px;vertical-align:middle;margin-right:3px">DELETE
+
+          <!-- Delete — only shown when editing existing chapter -->
+          <button class="ced-action-btn ced-del-btn" id="ced-del-btn" title="Delete chapter permanently" onclick="cedDelete()" style="display:none;">
+            <img src="assets/lucid/Exit.png" alt="" class="lucid-icon" style="width:9px;height:9px;">DEL
           </button>
-          <button class="ced-action-btn ced-save-btn" onclick="cedSave()" title="Publish (Ctrl+S)">
-            <img src="assets/lucid/Upload.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">PUBLISH
+
+          <!-- Publish/Save — primary action -->
+          <button class="ced-action-btn ced-save-btn" onclick="cedSave()" title="Save &amp; Publish (Ctrl+S)">
+            <img src="assets/lucid/Upload.png" alt="" class="lucid-icon" style="width:10px;height:10px;">PUBLISH
           </button>
+
         </div>
       </div>
 
@@ -6670,18 +6761,33 @@ window.revertTranslation = function () {
    ADMIN
 ═══════════════════════════════════════════════════ */
 function autoDetect() {
-  // Restore admin state
+  // Restore admin state — only within this session (no cross-session token copy)
   if (sessionStorage.getItem('wncore_auth') === '1') { isAdmin = true; showFab(); }
-  // Restore token into sessionStorage from localStorage if missing (cross-session resume)
-  if (!sessionStorage.getItem('ced_admin_tok') && localStorage.getItem('chapters_admin_token')) {
-    sessionStorage.setItem('ced_admin_tok', localStorage.getItem('chapters_admin_token'));
+  // NOTE: do NOT auto-copy localStorage admin token into sessionStorage here.
+  // Admin must re-authenticate each new session. Token is only persisted for UX
+  // within the same tab session after login.
+
+  // Clear reader nav state on every page load so users always start from scratch.
+  // sessionStorage keys are tab-scoped, but a hard refresh should reset position.
+  // We use a flag to distinguish a soft in-session navigate vs a hard refresh.
+  const isHardRefresh = !sessionStorage.getItem('as_session_live');
+  if (isHardRefresh) {
+    // Hard refresh — clear all reader + admin session state
+    sessionStorage.removeItem('as_nav');
+    sessionStorage.removeItem('as_ch');
+    sessionStorage.removeItem('wncore_auth');
+    sessionStorage.removeItem('ced_admin_tok');
+    isAdmin = false;
+    const fab = document.getElementById('afab');
+    if (fab) fab.style.display = 'none';
+    sessionStorage.setItem('as_session_live', '1');
   }
 
   const nav = sessionStorage.getItem('as_nav');
   const ch  = parseInt(sessionStorage.getItem('as_ch') || '-1', 10);
 
   if (nav === 'synopsis' || nav === 'reader') {
-    // Skip intro + gate entirely — user has already passed the gate this session
+    // Skip intro + gate — user navigated here this session
     const scene = document.getElementById('bh-scene');
     const gate  = document.getElementById('world-gate');
     if (scene) { scene.style.display = 'none'; }
@@ -6690,7 +6796,6 @@ function autoDetect() {
 
     loadChapters().then(() => {
       if (nav === 'reader' && ch >= 0 && ch < chapters.length) {
-        // Resume at the chapter they were on
         document.getElementById('synopsis-gate').style.display = 'none';
         document.getElementById('synopsis-gate').classList.remove('show');
         document.getElementById('ch-reader').style.display = 'flex';
@@ -6702,12 +6807,11 @@ function autoDetect() {
         loadChapter(ch);
         history.replaceState({ as_view: 'reader', chIdx: ch }, '', location.href.split('#')[0] + '#ch-' + ch);
       } else {
-        // Resume at synopsis
         showSynopsis();
       }
     });
   } else {
-    // First visit this session — normal flow (intro → gate → synopsis)
+    // Fresh load — normal flow (intro → gate → synopsis)
     loadChapters();
   }
 }
@@ -6737,7 +6841,7 @@ async function doLogin() {
       isAdmin = true;
       sessionStorage.setItem('wncore_auth', '1');
       sessionStorage.setItem('ced_admin_tok', token);
-      localStorage.setItem('chapters_admin_token', token);
+      // Do NOT persist to localStorage — admin session ends on tab close
       showFab(); closeLogin(); openUpload();
     } else {
       errEl.textContent = '// ACCESS DENIED';
@@ -6756,9 +6860,8 @@ function openUpload() {
   cedFetchStories().then(() => {
     cedApplyStoryTheme();
     cedRenderList();
-    const storyChaps2 = chapters.filter(c => c.story_id === cedActiveStoryId);
-    if (storyChaps2.length > 0) cedLoadChapter(chapters.indexOf(storyChaps2[storyChaps2.length-1]));
-    else cedNewChapter();
+    // Always open to blank new-chapter form — don't auto-load last chapter
+    cedNewChapter();
   });
 }
 function closeUpload() {
@@ -6827,7 +6930,7 @@ async function cedFetchStories() {
 }
 
 function cedAdminToken() {
-  return sessionStorage.getItem('ced_admin_tok') || localStorage.getItem('chapters_admin_token') || '';
+  return sessionStorage.getItem('ced_admin_tok') || '';
 }
 
 async function cedApiSaveStory(story) {
@@ -7005,6 +7108,7 @@ function cedRenderList() {
     const globalIdx = chapters.indexOf(ch);
     const item = document.createElement('div');
     item.className = 'ced-ch-item' + (ch.id === cedEditId ? ' active' : '');
+    item.dataset.chId = String(ch.id);
     const words = (ch.content || '').trim().split(/\s+/).filter(Boolean).length;
     const isPub = ch.is_published !== false; // default true for existing chapters
     item.innerHTML = `
@@ -7032,7 +7136,7 @@ function cedLoadChapter(idx) {
   const schedEl = document.getElementById('ced-schedule-dt');
   if (schedEl) schedEl.value = ch.publish_at ? new Date(ch.publish_at).toISOString().slice(0,16) : '';
   document.querySelectorAll('.ced-ch-item').forEach(el => {
-    el.classList.toggle('active', el.querySelector('.ced-ch-name')?.textContent === ch.title);
+    el.classList.toggle('active', el.dataset.chId === String(ch.id));
   });
   cedUpdatePreview();
   cedUpdateWordCount();
@@ -7257,8 +7361,30 @@ function cedSyncPubToggle(isPublished) {
 
 async function cedTogglePublished(val) {
   cedSyncPubToggle(val);
-  if (!cedEditId || !sb) return;
-  await sb.from('chapters').update({ is_published: val }).eq('id', cedEditId);
+  if (!cedEditId || !isAdmin) return;
+  const stat = document.getElementById('ced-status');
+  if (stat) stat.textContent = val ? '// publishing…' : '// drafting…';
+  const ch = chapters.find(c => c.id === cedEditId);
+  if (!ch) { if (stat) stat.textContent = '// chapter not found'; return; }
+  const res = await fetch('/api/config?action=chapters', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': cedAdminToken() },
+    body: JSON.stringify({
+      id:           ch.id,
+      story_id:     ch.story_id,
+      chapter_num:  ch.chapter_num,
+      title:        ch.title,
+      content:      ch.content,
+      is_published: val,
+    }),
+  });
+  if (!res.ok) {
+    const j = await res.json().catch(() => ({}));
+    if (stat) stat.textContent = '// publish failed: ' + (j.error || res.status);
+    cedSyncPubToggle(!val);
+    return;
+  }
+  if (stat) { stat.textContent = val ? '// PUBLISHED' : '// DRAFT'; setTimeout(() => { if (stat) stat.textContent = ''; }, 2000); }
   await loadChapters(cedActiveStoryId);
   cedRenderShelf();
   cedRenderList();
