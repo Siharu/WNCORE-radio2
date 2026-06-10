@@ -3411,12 +3411,14 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     </div>
     <div class="modal-inner">
       <div class="modal-title">OPERATOR AUTHENTICATION</div>
-      <div class="modal-field"><label class="modal-label">ACCESS TOKEN:</label><input type="password" class="modal-inp" id="li-token" autocomplete="off" /></div>
+      <form onsubmit="doLogin();return false;" autocomplete="off" style="display:contents;">
+      <div class="modal-field"><label class="modal-label">ACCESS TOKEN:</label><input type="password" class="modal-inp" id="li-token" autocomplete="current-password" /></div>
       <div class="modal-err" id="li-err"></div>
       <div class="modal-row">
-        <button class="btn-r" onclick="doLogin()">AUTHENTICATE</button>
-        <button class="btn-d" onclick="closeLogin()">CANCEL</button>
+        <button class="btn-r" type="submit">AUTHENTICATE</button>
+        <button class="btn-d" type="button" onclick="closeLogin()">CANCEL</button>
       </div>
+      </form>
     </div>
   </div>
 </div>
@@ -4245,8 +4247,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     <!-- api key setup -->
     <div id="cw-setup">
       <div id="cw-setup-msg">// no api key found for this provider.<br>paste your key below — stored locally, never sent anywhere except the api endpoint.</div>
-      <input id="cw-key-inp" type="password" placeholder="sk-or-…  /  gsk_…  /  AIza…" autocomplete="off" spellcheck="false">
-      <button id="cw-key-save" onclick="cwKeySave()">SAVE KEY</button>
+      <form onsubmit="cwKeySave();return false;" autocomplete="off" style="display:contents;">
+      <input id="cw-key-inp" type="password" placeholder="sk-or-…  /  gsk_…  /  AIza…" autocomplete="current-password" spellcheck="false">
+      <button id="cw-key-save" type="submit">SAVE KEY</button>
+      </form>
     </div>
 
     <!-- quick actions -->
@@ -5811,6 +5815,7 @@ function startGateTwitch() {
 
 document.getElementById('btn-yes').addEventListener('click', () => {
   // YES — proceed to synopsis
+  sessionStorage.setItem('as_nav', 'synopsis');
   document.getElementById('world-gate').style.transition = 'opacity 0.8s';
   document.getElementById('world-gate').style.opacity = '0';
   setTimeout(() => {
@@ -5931,6 +5936,8 @@ function doDecrypt() {
 }
 
 function beginReading() {
+  sessionStorage.setItem('as_nav', 'reader');
+  sessionStorage.setItem('as_ch', String(currentChapterIdx >= 0 ? currentChapterIdx : 0));
   history.pushState({ as_view: 'reader', chIdx: currentChapterIdx }, '', location.href.split('#')[0] + '#ch-' + currentChapterIdx);
   document.getElementById('synopsis-gate').classList.remove('show');
   document.getElementById('synopsis-gate').style.display = 'none';
@@ -6083,6 +6090,9 @@ function loadChapter(idx) {
   if (isNaN(idx) || idx < 0 || idx >= chapters.length) return;
   curIdx = idx;
   currentChapterIdx = idx;
+  // Persist navigation state so refresh restores this chapter
+  sessionStorage.setItem('as_nav', 'reader');
+  sessionStorage.setItem('as_ch', String(idx));
   // Push in-page history state so back-button works within reader
   history.pushState({ as_view: 'reader', chIdx: idx }, '', location.href.split('#')[0] + '#ch-' + idx);
 
@@ -6660,9 +6670,42 @@ window.revertTranslation = function () {
    ADMIN
 ═══════════════════════════════════════════════════ */
 function autoDetect() {
-  // If token was verified this session, restore admin state
+  // Restore admin state
   if (sessionStorage.getItem('wncore_auth') === '1') { isAdmin = true; showFab(); }
-  loadChapters();
+
+  const nav = sessionStorage.getItem('as_nav');
+  const ch  = parseInt(sessionStorage.getItem('as_ch') || '-1', 10);
+
+  if (nav === 'synopsis' || nav === 'reader') {
+    // Skip intro + gate entirely — user has already passed the gate this session
+    const scene = document.getElementById('bh-scene');
+    const gate  = document.getElementById('world-gate');
+    if (scene) { scene.style.display = 'none'; }
+    if (gate)  { gate.style.display  = 'none'; }
+    document.getElementById('reader-shell').classList.add('show');
+
+    loadChapters().then(() => {
+      if (nav === 'reader' && ch >= 0 && ch < chapters.length) {
+        // Resume at the chapter they were on
+        document.getElementById('synopsis-gate').style.display = 'none';
+        document.getElementById('synopsis-gate').classList.remove('show');
+        document.getElementById('ch-reader').style.display = 'flex';
+        document.getElementById('ch-reader').classList.add('show');
+        const listWrap = document.getElementById('sb-list-wrap');
+        if (listWrap) listWrap.classList.add('unlocked');
+        const mobBar = document.getElementById('mob-bar');
+        if (mobBar) mobBar.classList.add('reader-active');
+        loadChapter(ch);
+        history.replaceState({ as_view: 'reader', chIdx: ch }, '', location.href.split('#')[0] + '#ch-' + ch);
+      } else {
+        // Resume at synopsis
+        showSynopsis();
+      }
+    });
+  } else {
+    // First visit this session — normal flow (intro → gate → synopsis)
+    loadChapters();
+  }
 }
 function showFab() { document.getElementById('afab').style.display = 'block'; }
 function openLogin() {
@@ -6689,6 +6732,7 @@ async function doLogin() {
     if (res.ok) {
       isAdmin = true;
       sessionStorage.setItem('wncore_auth', '1');
+      sessionStorage.setItem('ced_admin_tok', token);
       showFab(); closeLogin(); openUpload();
     } else {
       errEl.textContent = '// ACCESS DENIED';
@@ -6700,9 +6744,6 @@ async function doLogin() {
     setTimeout(() => errEl.textContent = '', 2200);
   }
 }
-document.addEventListener('keydown', e => {
-  if (document.getElementById('login-modal').classList.contains('open') && e.key === 'Enter') doLogin();
-});
 
 function openUpload() {
   if (!isAdmin) { openLogin(); return; }
@@ -7611,49 +7652,66 @@ function cedInsertImg() {
 }
 
 async function cedSave() {
-  if (!isAdmin || !sb) return;
-  const num = parseInt(document.getElementById('ced-num').value);
+  if (!isAdmin) return;
+  const num   = parseInt(document.getElementById('ced-num').value);
   const title = document.getElementById('ced-title').value.trim();
-  const body = document.getElementById('ced-body').value.trim();
-  const stat = document.getElementById('ced-status');
+  const body  = document.getElementById('ced-body').value.trim();
+  const stat  = document.getElementById('ced-status');
   if (!num || !title || !body) { stat.textContent = '// ALL FIELDS REQUIRED'; return; }
-  stat.textContent = 'Saving...';
-  let error;
-  if (cedEditId) {
-    ({ error } = await sb.from('chapters').update({ title, content: body, chapter_num: num }).eq('id', cedEditId));
-  } else {
-    const res = await sb.from('chapters').insert({
-      story_id: cedActiveStoryId, chapter_num: num, title, content: body,
-      is_published: document.getElementById('ced-pub-toggle')?.checked ?? true,
-      published_at: new Date().toISOString(),
-      published_by: localStorage.getItem('chapters_admin_user') || 'operator',
-    }).select('id').single();
-    error = res.error;
-    if (!error && res.data) cedEditId = res.data.id;
+  stat.textContent = '// saving…';
+
+  const payload = {
+    story_id:     cedActiveStoryId,
+    chapter_num:  num,
+    title,
+    content:      body,
+    is_published: document.getElementById('ced-pub-toggle')?.checked ?? true,
+    published_at: new Date().toISOString(),
+    published_by: localStorage.getItem('chapters_admin_user') || 'operator',
+  };
+  if (cedEditId) payload.id = cedEditId;
+
+  const res = await fetch('/api/config?action=chapters', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': cedAdminToken() },
+    body:    JSON.stringify(payload),
+  });
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    stat.textContent = '// ERROR: ' + (json.error || res.status);
+    return;
   }
-  if (error) { stat.textContent = '// ERROR: ' + error.message; return; }
+
+  if (!cedEditId && json.chapter?.id) cedEditId = json.chapter.id;
   stat.textContent = '// SAVED';
-  // clear draft
   localStorage.removeItem(cedDraftKey());
   document.getElementById('ced-draft-banner').classList.remove('show');
-  await loadChapters();
+  await loadChapters(cedActiveStoryId);
   cedRenderShelf();
   cedRenderList();
   document.getElementById('ced-del-btn').style.display = '';
-  setTimeout(() => { const s = document.getElementById('ced-status'); if (s) s.textContent = ''; }, 2000);
+  setTimeout(() => { const s = document.getElementById('ced-status'); if (s && s.textContent === '// SAVED') s.textContent = ''; }, 2000);
 }
 
 async function cedDelete() {
-  if (!cedEditId || !isAdmin || !sb) return;
+  if (!cedEditId || !isAdmin) return;
   if (!confirm('Delete this chapter permanently?')) return;
   const statusEl = document.getElementById('ced-status');
   statusEl.textContent = '// deleting…';
-  const { error } = await sb.from('chapters').delete().eq('id', cedEditId);
-  if (error) {
-    statusEl.textContent = '// Delete failed: ' + (error.message || error.code || 'RLS/permission error');
-    console.error('[cedDelete]', error);
+
+  const res = await fetch(`/api/config?action=chapters&id=${encodeURIComponent(cedEditId)}`, {
+    method:  'DELETE',
+    headers: { 'x-admin-token': cedAdminToken() },
+  });
+  const json = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    statusEl.textContent = '// Delete failed: ' + (json.error || res.status);
+    console.error('[cedDelete]', json);
     return;
   }
+
   localStorage.removeItem(cedDraftKey());
   cedEditId = null;
   await loadChapters(cedActiveStoryId);

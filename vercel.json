@@ -7,7 +7,8 @@
     "api/user.js": { "maxDuration": 10 },
     "api/icy.js": { "maxDuration": 10 },
     "api/earth-admin.js": { "maxDuration": 30 },
-    "api/community.js": { "maxDuration": 10 }
+    "api/community.js": { "maxDuration": 10 },
+    "api/writer.js": { "maxDuration": 30 }
   },
   "headers": [
     {
@@ -81,6 +82,7 @@
     { "src": "/api/icy",         "dest": "/api/icy.js" },
     { "src": "/api/earth-admin", "dest": "/api/earth-admin.js" },
     { "src": "/api/community",   "dest": "/api/community.js" },
+    { "src": "/api/writer",      "dest": "/api/writer.js" },
     { "src": "/(.*)",            "dest": "/$1" },
     { "handle": "error" },
     { "status": 404, "src": "/(.*)", "dest": "/404.html" }
