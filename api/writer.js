@@ -311,7 +311,7 @@ async function generateImage(prompt) {
 }
 
 // ── Provider: Groq ────────────────────────────────────────────────────────────
-async function callGroq(messages, modelId) {
+async function callGroq(messages, modelId, systemPrompt) {
   const model = modelId === 'groq/llama-3.1-8b' ? 'llama-3.1-8b-instant' : 'llama-3.3-70b-versatile';
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -324,7 +324,7 @@ async function callGroq(messages, modelId) {
 }
 
 // ── Provider: Gemini ──────────────────────────────────────────────────────────
-async function callGemini(messages, attachments, modelId) {
+async function callGemini(messages, attachments, modelId, systemPrompt) {
   const model = modelId === 'gemini/pro' ? 'gemini-2.5-pro' : 'gemini-3.5-flash';
   const lastUser = [...messages].reverse().find(m => m.role === 'user');
   const parts = [];
@@ -346,7 +346,7 @@ async function callGemini(messages, attachments, modelId) {
 }
 
 // ── Provider: DeepSeek ────────────────────────────────────────────────────────
-async function callDeepSeek(messages) {
+async function callDeepSeek(messages, systemPrompt) {
   const r = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_API_KEY}` },
@@ -358,7 +358,7 @@ async function callDeepSeek(messages) {
 }
 
 // ── Provider: OpenRouter ──────────────────────────────────────────────────────
-async function callOpenRouter(messages, modelId) {
+async function callOpenRouter(messages, modelId, systemPrompt) {
   const model = modelId === 'openrouter/mistral' ? 'mistralai/mistral-7b-instruct:free' : 'meta-llama/llama-3.1-8b-instruct:free';
   const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -373,17 +373,17 @@ async function callOpenRouter(messages, modelId) {
 // ── Route to specific model ───────────────────────────────────────────────────
 async function callModel(modelId, messages, attachments, systemPrompt) {
   systemPrompt = systemPrompt || SYSTEM_PROMPT;
-  if (modelId?.startsWith('groq/') && GROQ_API_KEY)         return callGroq(messages, modelId);
-  if (modelId?.startsWith('gemini/') && GEMINI_API_KEY)      return callGemini(messages, attachments, modelId);
-  if (modelId === 'deepseek/chat' && DEEPSEEK_API_KEY)       return callDeepSeek(messages);
-  if (modelId?.startsWith('openrouter/') && OPENROUTER_API_KEY) return callOpenRouter(messages, modelId);
+  if (modelId?.startsWith('groq/') && GROQ_API_KEY)            return callGroq(messages, modelId, systemPrompt);
+  if (modelId?.startsWith('gemini/') && GEMINI_API_KEY)         return callGemini(messages, attachments, modelId, systemPrompt);
+  if (modelId === 'deepseek/chat' && DEEPSEEK_API_KEY)          return callDeepSeek(messages, systemPrompt);
+  if (modelId?.startsWith('openrouter/') && OPENROUTER_API_KEY) return callOpenRouter(messages, modelId, systemPrompt);
   // auto cascade
   const hasImages = attachments?.some(a => a.type === 'image');
   const errors = [];
-  if (GROQ_API_KEY && !hasImages)    { try { return await callGroq(messages, 'groq/llama-3.3-70b'); } catch(e) { errors.push(e.message); } }
-  if (GEMINI_API_KEY)                { try { return await callGemini(messages, attachments, 'gemini/flash'); } catch(e) { errors.push(e.message); } }
-  if (DEEPSEEK_API_KEY)              { try { return await callDeepSeek(messages); } catch(e) { errors.push(e.message); } }
-  if (OPENROUTER_API_KEY)            { try { return await callOpenRouter(messages, 'openrouter/llama-free'); } catch(e) { errors.push(e.message); } }
+  if (GROQ_API_KEY && !hasImages)    { try { return await callGroq(messages, 'groq/llama-3.3-70b', systemPrompt); } catch(e) { errors.push(e.message); } }
+  if (GEMINI_API_KEY)                { try { return await callGemini(messages, attachments, 'gemini/flash', systemPrompt); } catch(e) { errors.push(e.message); } }
+  if (DEEPSEEK_API_KEY)              { try { return await callDeepSeek(messages, systemPrompt); } catch(e) { errors.push(e.message); } }
+  if (OPENROUTER_API_KEY)            { try { return await callOpenRouter(messages, 'openrouter/llama-free', systemPrompt); } catch(e) { errors.push(e.message); } }
   throw new Error('All providers failed: ' + errors.join(', '));
 }
 
