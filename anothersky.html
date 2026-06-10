@@ -1868,13 +1868,130 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 .ced-bracketed::after  { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 
 /* ── SHELL ──────────────────────────────────────────────────── */
+/* ── SANTAX TOP HEADER BAR ──────────────────────────────────── */
+#ced-hdr {
+  display: flex; align-items: stretch;
+  height: 36px; flex-shrink: 0; width: 100%;
+  background: #000;
+  border-bottom: 1px solid rgba(200,71,42,0.5);
+  position: relative; z-index: 10;
+  box-shadow: 0 1px 0 rgba(200,71,42,0.12), 0 2px 12px rgba(0,0,0,0.6);
+}
+/* Corner bracket TL */
+#ced-hdr::before {
+  content: ''; position: absolute; top: 0; left: 0;
+  width: 18px; height: 18px;
+  border-top: 2px solid rgba(200,71,42,0.9);
+  border-left: 2px solid rgba(200,71,42,0.9);
+  pointer-events: none;
+}
+/* Corner bracket TR */
+#ced-hdr::after {
+  content: ''; position: absolute; top: 0; right: 0;
+  width: 18px; height: 18px;
+  border-top: 2px solid rgba(200,71,42,0.9);
+  border-right: 2px solid rgba(200,71,42,0.9);
+  pointer-events: none;
+}
+
+#ced-hdr-left {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 0 16px; gap: 1px;
+  border-right: 1px solid rgba(200,71,42,0.2);
+  min-width: 220px; flex-shrink: 0;
+}
+#ced-hdr-unit {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.26rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.9); text-transform: uppercase;
+}
+.ced-hdr-dim {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.18rem; letter-spacing: 2px;
+  color: rgba(200,71,42,0.3); text-transform: uppercase;
+}
+
+#ced-hdr-tabs {
+  display: flex; align-items: stretch; flex: 1;
+}
+.ced-hdr-tab {
+  flex: 1; padding: 0 10px;
+  background: transparent;
+  border: none; border-right: 1px solid rgba(200,71,42,0.12);
+  border-bottom: 2px solid transparent;
+  color: rgba(200,100,80,0.3);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.22rem; letter-spacing: 2.5px;
+  cursor: pointer; text-transform: uppercase;
+  transition: all 0.12s; white-space: nowrap;
+  position: relative;
+}
+.ced-hdr-tab:hover { color: rgba(200,100,80,0.7); background: rgba(200,71,42,0.04); }
+.ced-hdr-tab.active {
+  color: rgba(220,140,120,0.95);
+  border-bottom-color: #c8472a;
+  background: rgba(200,71,42,0.07);
+}
+/* Scan-bar animation on active tab */
+.ced-hdr-tab.active::after {
+  content: '';
+  position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(200,71,42,0.8), transparent);
+  animation: ced-tab-scan 2s linear infinite;
+}
+@keyframes ced-tab-scan {
+  0%   { transform: translateX(-100%); opacity: 0.6; }
+  50%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0.6; }
+}
+
+#ced-hdr-right {
+  display: flex; align-items: center; gap: 12px;
+  padding: 0 12px;
+  border-left: 1px solid rgba(200,71,42,0.2);
+  flex-shrink: 0;
+}
+.ced-hdr-stat {
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.2rem; letter-spacing: 2px;
+  color: rgba(200,100,80,0.5); text-transform: uppercase;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.ced-hdr-live {
+  color: rgba(80,220,120,0.8);
+  animation: ced-pulse-live 2s ease-in-out infinite;
+}
+@keyframes ced-pulse-live {
+  0%,100% { opacity: 0.8; } 50% { opacity: 0.3; }
+}
+#ced-hdr-unit-id { color: #c8472a; }
+
+#ced-hdr-close {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid rgba(200,71,42,0.3);
+  color: rgba(200,80,60,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.2rem; letter-spacing: 2px;
+  cursor: pointer; text-transform: uppercase;
+  transition: all 0.12s;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%);
+}
+#ced-hdr-close:hover { border-color: #c8472a; color: #c8472a; background: rgba(200,71,42,0.08); }
+
+/* ─── Update shell layout to be column so header sits above panels ─── */
 #ced-shell {
-  display: flex; width: 100%; height: 100%;
+  display: flex; flex-direction: column; width: 100%; height: 100%;
   background: #050000;
   font-family: var(--font-mono, 'IBM Plex Mono');
   position: relative;
   overflow: hidden;
 }
+#ced-panels {
+  display: flex; flex: 1; overflow: hidden; min-height: 0;
+}
+
 /* CRT scanline wash */
 #ced-shell::before {
   content: '';
@@ -3339,13 +3456,33 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 <div id="upload-modal" class="modal" style="padding:0;align-items:stretch;justify-content:stretch;">
   <div id="ced-shell">
 
+    <!-- SANTAX-style top header bar -->
+    <div id="ced-hdr">
+      <div id="ced-hdr-left">
+        <span id="ced-hdr-unit">WNCORE // CONTENT OPERATOR TERMINAL</span>
+        <span id="ced-hdr-build" class="ced-hdr-dim">BUILD 9.31 · SANTAX SOFTWARES INC.</span>
+      </div>
+      <div id="ced-hdr-tabs">
+        <button class="ced-hdr-tab active" onclick="cedHdrTab(this,'chapters')">CHAPTERS</button>
+        <button class="ced-hdr-tab" onclick="cedHdrTab(this,'stories')">STORIES</button>
+        <button class="ced-hdr-tab" onclick="cedHdrTab(this,'lore')">LORE CONTEXT</button>
+        <button class="ced-hdr-tab" onclick="cedHdrTab(this,'notes')">PRIVATE NOTES</button>
+      </div>
+      <div id="ced-hdr-right">
+        <span class="ced-hdr-stat"><span class="ced-hdr-dim">UNIT</span> <span id="ced-hdr-unit-id">77</span></span>
+        <span class="ced-hdr-stat"><span class="ced-hdr-dim">STATUS</span> <span class="ced-hdr-live">ONLINE</span></span>
+        <button class="ced-icon-btn" id="ced-hdr-close" title="Close (Ctrl+B)" onclick="closeUpload()">
+          <img src="assets/lucid/Exit.png" alt="Close" class="lucid-icon">✕ CLOSE
+        </button>
+      </div>
+    </div>
+
     <!-- LEFT PANEL: chapter list -->
+    <div id="ced-panels">
     <div id="ced-left">
       <div id="ced-left-head">
         <span id="ced-logo">CHAPTER EDITOR</span>
-        <button class="ced-icon-btn" title="Close (Ctrl+B)" onclick="closeUpload()">
-          <img src="assets/lucid/Exit.png" alt="Close" class="lucid-icon">
-        </button>
+
       </div>
       <!-- STORY SHELF -->
       <div id="ced-story-shelf"><!-- populated by cedRenderShelf() --></div>
@@ -4868,6 +5005,7 @@ Use toolbar effects on selected text:
         </div>
       </div>
     </div>
+    </div><!-- /ced-panels -->
 
   </div>
 </div>
@@ -6582,6 +6720,33 @@ function closeUpload() {
   cedEditId = null;
 }
 
+/* ── Header tab switcher ── */
+function cedHdrTab(btn, tab) {
+  document.querySelectorAll('.ced-hdr-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Show/hide left panel sections based on tab
+  const shelf   = document.getElementById('ced-story-shelf');
+  const newStory= document.getElementById('ced-new-story-modal');
+  const chList  = document.getElementById('ced-ch-list');
+  const search  = document.getElementById('ced-ch-search');
+  const newBtn  = document.getElementById('ced-new-btn');
+  const lore    = document.getElementById('ced-lore-section');
+  const notes   = document.getElementById('ced-notes-wrap');
+  // All hidden by default
+  [shelf,newStory,chList,search,newBtn,lore,notes].forEach(el => { if(el) el.style.display='none'; });
+  if (tab === 'chapters') {
+    [chList,search,newBtn].forEach(el => { if(el) el.style.display=''; });
+  } else if (tab === 'stories') {
+    [shelf,newStory].forEach(el => { if(el) el.style.display=''; });
+    if (newStory) newStory.style.display = 'none'; // only show on + btn
+    if (shelf) shelf.style.display = '';
+  } else if (tab === 'lore') {
+    if (lore) { lore.style.display=''; lore.classList.add('open'); }
+  } else if (tab === 'notes') {
+    if (notes) notes.style.display='';
+  }
+}
+
 /* ── Chapter Editor state ── */
 let cedEditId = null;
 let cedPreviewTimer = null;
@@ -7481,14 +7646,22 @@ async function cedSave() {
 async function cedDelete() {
   if (!cedEditId || !isAdmin || !sb) return;
   if (!confirm('Delete this chapter permanently?')) return;
+  const statusEl = document.getElementById('ced-status');
+  statusEl.textContent = '// deleting…';
   const { error } = await sb.from('chapters').delete().eq('id', cedEditId);
-  if (error) { document.getElementById('ced-status').textContent = '// Delete failed.'; return; }
+  if (error) {
+    statusEl.textContent = '// Delete failed: ' + (error.message || error.code || 'RLS/permission error');
+    console.error('[cedDelete]', error);
+    return;
+  }
   localStorage.removeItem(cedDraftKey());
   cedEditId = null;
-  await loadChapters();
+  await loadChapters(cedActiveStoryId);
   cedRenderShelf();
   cedRenderList();
   cedNewChapter();
+  statusEl.textContent = '// chapter deleted';
+  setTimeout(() => { if (statusEl.textContent === '// chapter deleted') statusEl.textContent = ''; }, 2500);
 }
 
 /* Keep old aliases so any other references don't break */
