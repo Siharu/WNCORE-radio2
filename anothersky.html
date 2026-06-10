@@ -29,9 +29,9 @@
   --surface2:  #160008;
   --brd:       rgba(180,0,0,0.18);
   --brd-hot:   rgba(255,0,0,0.55);
-  --text:      #e8d5d0;
-  --text2:     rgba(232,213,208,0.72);
-  --text3:     rgba(232,213,208,0.42);
+  --text:      #f0d8d0;
+  --text2:     rgba(240,200,188,0.72);
+  --text3:     rgba(240,188,175,0.45);
   --red:       #ff1a1a;
   --dred:      #8b0000;
   --dred2:     #440000;
@@ -3560,6 +3560,216 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   </div>
 </div>
 
+<!-- ── ADMIN PANEL: SQUARE BUTTONS + GLITCH MENUS ── -->
+<style>
+/* ─── SQUARE EVERYTHING — remove all chamfer clip-paths ─── */
+#ced-hdr-close,
+#ced-new-btn,
+.ced-icon-btn,
+.ced-action-btn,
+#ced-check-run,
+.ced-story-card,
+.cns-btn,
+.ced-hdr-tab,
+.ced-ch-item.active,
+.ced-export-btn,
+.cfb-btn,
+.ced-check-mode-btn,
+#ced-pub-row,
+#ced-schedule-wrap {
+  clip-path: none !important;
+  border-radius: 0 !important;
+}
+
+/* ─── GLITCH WHITE OUTER BORDER — on menus that pop up ─── */
+@keyframes adminMenuGlitch {
+  0%,88%   { box-shadow: -1px 0 0 rgba(255,255,255,0.7), 1px 0 0 rgba(200,71,42,0.4); }
+  89%      { box-shadow: -2px 0 0 rgba(255,255,255,0.9), 2px 0 0 rgba(200,71,42,0.8); transform: translateX(1px); }
+  90%      { box-shadow: 2px 0 0 rgba(255,255,255,0.9), -1px 0 0 rgba(200,71,42,0.6); transform: translateX(-1px); }
+  91%,100% { box-shadow: -1px 0 0 rgba(255,255,255,0.7), 1px 0 0 rgba(200,71,42,0.4); transform: none; }
+}
+
+.ced-export-menu,
+#ced-new-story-modal,
+.cw-pm-item:hover,
+#cw-plus-menu {
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  outline: 1px solid rgba(200,71,42,0.3) !important;
+}
+
+.ced-export-menu.open,
+#ced-new-story-modal.open {
+  animation: adminMenuGlitch 4s steps(1) infinite;
+}
+
+/* ─── EXPORT MENU — sharper, square, glitch outline ─── */
+.ced-export-menu {
+  position: absolute;
+  top: auto; bottom: calc(100% + 4px); right: 0;
+  background: #060002;
+  border: 1px solid rgba(200,71,42,0.45) !important;
+  outline: 1px solid rgba(255,255,255,0.10) !important;
+  padding: 3px 0;
+  min-width: 160px;
+  z-index: 200;
+  flex-direction: column;
+  display: none;
+}
+.ced-export-menu.open { display: flex; }
+.ced-export-menu button {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(200,71,42,0.08);
+  color: rgba(200,120,100,0.8);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 2px;
+  padding: 7px 12px; cursor: pointer; text-align: left;
+  text-transform: uppercase; transition: background 0.1s, color 0.1s;
+}
+.ced-export-menu button:last-child { border-bottom: none; }
+.ced-export-menu button:hover { background: rgba(200,71,42,0.1); color: #c8472a; }
+
+/* ─── ALL CED BUTTONS — clean square with consistent sizing ─── */
+.ced-fx-btn {
+  border-radius: 0 !important;
+  clip-path: none !important;
+  padding: 5px 9px;
+  border: 1px solid rgba(200,71,42,0.22) !important;
+  background: transparent;
+  color: rgba(200,100,80,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 1.5px;
+  cursor: pointer; text-transform: uppercase;
+  transition: all 0.1s;
+  display: inline-flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+}
+.ced-fx-btn:hover { background: rgba(200,71,42,0.1) !important; color: #c8472a !important; border-color: rgba(200,71,42,0.55) !important; }
+.ced-fx-btn:active { background: rgba(200,71,42,0.2) !important; }
+
+/* ─── ACTION BUTTONS — PUBLISH / DEL ─── */
+.ced-action-btn {
+  border-radius: 0;
+  clip-path: none;
+  padding: 6px 14px;
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem; letter-spacing: 2px;
+  cursor: pointer; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 5px;
+  transition: all 0.1s;
+}
+.ced-save-btn {
+  background: rgba(200,71,42,0.15);
+  border: 1px solid rgba(200,71,42,0.55);
+  color: rgba(220,140,120,0.95);
+}
+.ced-save-btn:hover { background: rgba(200,71,42,0.28); border-color: #c8472a; color: #fff; }
+.ced-del-btn {
+  background: transparent;
+  border: 1px solid rgba(200,71,42,0.2);
+  color: rgba(200,71,42,0.45);
+}
+.ced-del-btn:hover { background: rgba(200,0,0,0.1); border-color: rgba(200,0,0,0.6); color: #ff4444; }
+
+/* ─── HEADER CLOSE BUTTON ─── */
+#ced-hdr-close {
+  clip-path: none;
+  border-radius: 0;
+  border: 1px solid rgba(200,71,42,0.35) !important;
+  padding: 6px 12px;
+  font-size: 0.22rem; letter-spacing: 2px;
+}
+
+/* ─── NEW CHAPTER BUTTON ─── */
+#ced-new-btn {
+  clip-path: none;
+  border-radius: 0;
+  border: 1px solid rgba(200,71,42,0.32) !important;
+  font-size: 0.24rem; letter-spacing: 2px;
+}
+
+/* ─── TAB BUTTONS — clearly square ─── */
+.ced-hdr-tab {
+  clip-path: none;
+  border-radius: 0;
+}
+
+/* ─── FIND BAR BUTTONS ─── */
+.cfb-btn {
+  clip-path: none; border-radius: 0;
+  background: transparent;
+  border: 1px solid rgba(200,71,42,0.22) !important;
+  color: rgba(200,100,80,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.26rem; letter-spacing: 1px;
+  padding: 3px 8px; cursor: pointer;
+  transition: all 0.1s;
+}
+.cfb-btn:hover { background: rgba(200,71,42,0.08); color: #c8472a; border-color: rgba(200,71,42,0.5) !important; }
+
+/* ─── CHECK MODE BUTTONS ─── */
+.ced-check-mode-btn {
+  clip-path: none; border-radius: 0;
+}
+#ced-check-run { clip-path: none; border-radius: 0; }
+
+/* ─── CREATE STORY MODAL — glitch border ─── */
+#ced-new-story-modal {
+  border: 1px solid rgba(200,71,42,0.3) !important;
+  outline: 1px solid rgba(255,255,255,0.08) !important;
+}
+#ced-new-story-modal.open {
+  animation: adminMenuGlitch 5s steps(1) infinite;
+}
+.cns-btn { clip-path: none; border-radius: 0; }
+
+/* ─── STORY CARDS — square with clear active state ─── */
+.ced-story-card {
+  clip-path: none;
+  border-radius: 0;
+}
+.ced-story-card.active {
+  clip-path: none;
+  border-radius: 0;
+}
+
+/* ─── STATUS FIELD — cleaner inline layout ─── */
+#ced-pub-row {
+  border-radius: 0;
+  border: 1px solid rgba(200,71,42,0.22) !important;
+  padding: 4px 10px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ─── SCHEDULE INPUT — square ─── */
+.ced-schedule-input {
+  border-radius: 0 !important;
+}
+
+/* ─── TOOLBAR SEPARATOR LINES — thinner, subtler ─── */
+.ced-toolbar-sep {
+  font-size: 0.2rem; letter-spacing: 2.5px;
+  color: rgba(200,71,42,0.25);
+  padding: 0 4px;
+  border-left: 1px solid rgba(200,71,42,0.12);
+  margin-left: 2px;
+}
+
+/* ─── CW PLUS MENU — square + glitch outer ─── */
+#cw-plus-menu {
+  border-radius: 0 !important;
+  border: 1px solid rgba(200,71,42,0.45) !important;
+  outline: 1px solid rgba(255,255,255,0.12) !important;
+}
+#cw-plus-menu.open {
+  animation: adminMenuGlitch 4s steps(1) infinite;
+}
+.cw-pm-item {
+  border-radius: 0 !important;
+}
+</style>
+
 <!-- Upload Modal -->
 <div id="upload-modal" class="modal" style="padding:0;align-items:stretch;justify-content:stretch;">
   <div id="ced-shell">
@@ -3898,11 +4108,12 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 /* ── MODEL PICKER DROPDOWN ── */
 #cw-model-picker {
-  display: none; position: absolute;
-  right: 0; top: 100%; z-index: 9999;
+  display: none; position: fixed;
+  z-index: 99999;
   background: var(--cw-bg2);
   border: 1px solid var(--cw-brd-hot);
-  min-width: 200px; max-height: 260px; overflow-y: auto;
+  outline: 1px solid rgba(255,255,255,0.10);
+  min-width: 220px; max-height: 280px; overflow-y: auto;
   scrollbar-width: thin; scrollbar-color: var(--cw-accent-lo) transparent;
 }
 #cw-model-picker.open { display: block; }
@@ -4051,11 +4262,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 /* ── PLUS MENU (pops above input) ── */
 #cw-plus-menu {
-  display: none; position: absolute;
-  bottom: calc(100% + 4px); left: 8px;
+  display: none; position: fixed;
   background: var(--cw-bg2);
   border: 1px solid var(--cw-brd-hot);
-  z-index: 9998; min-width: 220px;
+  z-index: 99998; min-width: 220px;
   /* glitchy outer edge */
   box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 2px 2px 0 rgba(200,71,42,0.2);
   animation: cwMenuGlitch 5s steps(1) infinite;
@@ -4593,7 +4803,16 @@ window.cwToggle = function() {
 window.cwModelPickerToggle = function(force) {
   cwPickerOpen = force !== undefined ? force : !cwPickerOpen;
   const picker = document.getElementById('cw-model-picker');
+  const tag    = document.getElementById('cw-model-tag');
   picker.classList.toggle('open', cwPickerOpen);
+  if (cwPickerOpen && tag) {
+    // Position picker above the bar using fixed coords
+    const r = tag.getBoundingClientRect();
+    picker.style.right  = (window.innerWidth - r.right) + 'px';
+    picker.style.bottom = (window.innerHeight - r.top + 4) + 'px';
+    picker.style.left   = 'auto';
+    picker.style.top    = 'auto';
+  }
 };
 
 function updateModelTag(label) {
@@ -4974,6 +5193,190 @@ function setDisabled(val) {
 function cwEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// ── PLUS MENU ────────────────────────────────────────────────
+let _cwPlusOpen = false;
+window.cwPlusToggle = function() {
+  _cwPlusOpen = !_cwPlusOpen;
+  const menu = document.getElementById('cw-plus-menu');
+  const btn  = document.getElementById('cw-plus-btn');
+  if (menu) menu.classList.toggle('open', _cwPlusOpen);
+  if (btn)  btn.classList.toggle('open', _cwPlusOpen);
+  if (_cwPlusOpen && btn && menu) {
+    const r = btn.getBoundingClientRect();
+    menu.style.left   = r.left + 'px';
+    menu.style.bottom = (window.innerHeight - r.top + 4) + 'px';
+    menu.style.top    = 'auto';
+    menu.style.right  = 'auto';
+  }
+};
+// close plus menu on outside click
+document.addEventListener('click', e => {
+  if (!_cwPlusOpen) return;
+  const wrap = document.getElementById('cw-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    _cwPlusOpen = false;
+    const menu = document.getElementById('cw-plus-menu');
+    const btn  = document.getElementById('cw-plus-btn');
+    if (menu) menu.classList.remove('open');
+    if (btn)  btn.classList.remove('open');
+  }
+});
+
+// ── TOOL PANE ────────────────────────────────────────────────
+let _cwActiveTool = null;
+window.cwOpenTool = function(tool) {
+  _cwPlusOpen = false;
+  const menu = document.getElementById('cw-plus-menu');
+  const btn  = document.getElementById('cw-plus-btn');
+  if (menu) menu.classList.remove('open');
+  if (btn)  btn.classList.remove('open');
+
+  const pane = document.getElementById('cw-tool-pane');
+  const title = document.getElementById('cw-tool-pane-title');
+  ['imagine','search','lore'].forEach(t => {
+    const el = document.getElementById('cw-tool-' + t);
+    if (el) el.style.display = (t === tool) ? '' : 'none';
+  });
+  const labels = { imagine:'// AI IMAGE', search:'// WEB SEARCH', lore:'// LORE DROPBOX' };
+  if (title) title.textContent = labels[tool] || '// TOOL';
+  if (pane)  pane.style.display = 'block';
+  _cwActiveTool = tool;
+
+  // load lore text when opened
+  if (tool === 'lore') {
+    const ta = document.getElementById('cw-lore-inp');
+    if (ta) ta.value = cwGetLore();
+  }
+  // update pm-item active states
+  ['lore','search','imagine'].forEach(t => {
+    const el = document.getElementById('cw-pm-' + t);
+    if (el) el.classList.toggle('active-tool', t === tool);
+  });
+};
+window.cwCloseTool = function() {
+  const pane = document.getElementById('cw-tool-pane');
+  if (pane) pane.style.display = 'none';
+  ['lore','search','imagine'].forEach(t => {
+    const el = document.getElementById('cw-pm-' + t);
+    if (el) el.classList.remove('active-tool');
+  });
+  _cwActiveTool = null;
+};
+
+// ── QUICK PROMPTS ────────────────────────────────────────────
+window.cwQuick = function(action) {
+  const prompts = {
+    dialogue:   'Write a short dialogue scene for the current chapter. Stay true to the characters — Som is quiet and analytical, mother is emotionally intense. Use the wrongness aesthetic if tension is present.',
+    continue:   'Continue the chapter from where it left off. Match the existing tone and pacing exactly. Do not summarise — write the next paragraphs.',
+    outline:    'Write a chapter outline for the next chapter. Include: opening scene, emotional arc, key events, closing image. Keep it tight — no padding.',
+    characters: 'Generate a character sheet for the main characters in the current chapter context: name, role, physical description, psychological state, speech pattern, what they want vs what they fear.',
+    lore:       'Check the current chapter text for lore consistency against the series bible: sky states, transformation taxonomy (Husks/Infected/Ghuuls), Som\'s knowledge limits, the Blank Zone rules, Rain of Obsedia properties.',
+    horror:     'Identify the strongest horror moment in the current text and rewrite it with more wrongness — not gore, but uncanniness. Reality slightly wrong. The horror of things that don\'t make sense.',
+    edit:       'Edit the current chapter text for clarity, pacing, and prose quality. Preserve the voice — dark, quiet, literary. Flag any lore inconsistencies inline with [LORE?] tags.',
+    scene:      'Write a new scene that could fit into the current chapter. Include: setting, sensory detail, one character action, one moment of wrongness. Keep it short — one page.',
+  };
+  const msg = prompts[action] || action;
+  const inp = document.getElementById('cw-inp');
+  if (inp) {
+    inp.value = msg;
+    window.cwAutoResize?.(inp);
+    inp.focus();
+  }
+};
+
+// ── IMAGE GENERATION ─────────────────────────────────────────
+window.cwImagine = async function() {
+  const inp = document.getElementById('cw-imagine-inp');
+  const status = document.getElementById('cw-imagine-status');
+  const result = document.getElementById('cw-imagine-result');
+  const prompt = inp?.value?.trim();
+  if (!prompt) return;
+  if (status) status.textContent = '// generating…';
+  if (result) result.innerHTML = '';
+  try {
+    const res = await fetch('/api/writer?action=imagine', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt }),
+    });
+    const data = await res.json();
+    if (data.imageUrl || data.url) {
+      const url = data.imageUrl || data.url;
+      if (result) result.innerHTML = `<img src="${url}" style="max-width:100%;border:1px solid rgba(200,71,42,0.3);margin-top:6px;" alt="Generated">`;
+      if (status) status.textContent = '// done';
+    } else {
+      throw new Error(data.error || 'no image returned');
+    }
+  } catch(e) {
+    if (status) status.textContent = '// error: ' + e.message;
+  }
+};
+
+// ── WEB SEARCH INJECT ────────────────────────────────────────
+window.cwSearchInject = function() {
+  const inp = document.getElementById('cw-search-inp');
+  const status = document.getElementById('cw-search-status');
+  const q = inp?.value?.trim();
+  if (!q) return;
+  cwPendingSearch = q;
+  if (status) status.textContent = '// will inject on next send';
+  cwCloseTool();
+};
+
+// ── COPY / INSERT / EXPORT / CLEAR ───────────────────────────
+window.cwCopyLast = function() {
+  if (!cwLastReply) return;
+  navigator.clipboard.writeText(cwLastReply).catch(() => {});
+  cwSetStatus('// copied', false);
+  setTimeout(() => cwSetStatus('// ready', false), 1200);
+};
+
+window.cwInsertLast = function() {
+  if (!cwLastReply) return;
+  const ta = document.getElementById('ced-body');
+  if (!ta) return;
+  const pos = ta.selectionStart;
+  const v = ta.value;
+  ta.value = v.slice(0, pos) + '\n\n' + cwLastReply + '\n\n' + v.slice(pos);
+  ta.selectionStart = ta.selectionEnd = pos + cwLastReply.length + 4;
+  ta.dispatchEvent(new Event('input'));
+  cwSetStatus('// inserted into editor', false);
+  setTimeout(() => cwSetStatus('// ready', false), 1500);
+};
+
+window.cwExportConversation = function() {
+  if (!cwHistory.length) return;
+  const lines = cwHistory.map(m =>
+    (m.role === 'user' ? '> USER\n' : '> CYGNUS\n') + m.content
+  ).join('\n\n---\n\n');
+  const blob = new Blob([lines], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'cygnus-session-' + Date.now() + '.md';
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+
+window.cwClear = function() {
+  cwHistory = [];
+  cwHistoryLoaded = false;
+  cwLastReply = '';
+  cwAttachments = [];
+  renderAttachStrip();
+  const log = document.getElementById('cw-log');
+  if (log) log.innerHTML = '';
+  cwAppend('system', '// history cleared');
+  // persist clear
+  try {
+    const userId = cwGetUserId();
+    fetch('/api/writer?action=clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    }).catch(() => {});
+  } catch {}
+};
 
 })();
 </script>
@@ -6735,11 +7138,12 @@ function setAmbient(key, btnEl) {
   }
   document.querySelectorAll('.ro-amb-btn').forEach(b => b.classList.remove('amb-active'));
   if (btnEl) btnEl.classList.add('amb-active');
-}(clearBtn = true) {
+}
+
+function stopAmbient(clearBtn = true) {
   if (_ambGain && _ambCtx) {
     try {
       _ambGain.gain.linearRampToValueAtTime(0, _ambCtx.currentTime + 0.8);
-      const ctx = _ambCtx;
       setTimeout(() => {
         _ambNodes.forEach(n => { try { if(n._stopDrip) n._stopDrip(); n.stop?.(); } catch{} });
         _ambNodes = [];
