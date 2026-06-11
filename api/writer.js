@@ -287,26 +287,30 @@ function extractUrls(text) {
 // ── Image generation via Gemini Imagen ───────────────────────────────────────
 async function generateImage(prompt) {
   if (!GEMINI_API_KEY) throw new Error('No Gemini API key configured');
-  // Imagen 3 via Gemini API
+  // gemini-2.5-flash-image (Nano Banana) via generateContent
+  // imagen-3.0-generate-002 was shut down Nov 10 2025
   const r = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${GEMINI_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${GEMINI_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        instances: [{ prompt }],
-        parameters: { sampleCount: 1, aspectRatio: '16:9', safetyFilterLevel: 'block_only_high' },
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
       }),
     }
   );
   if (!r.ok) {
     const e = await r.json().catch(() => ({}));
-    throw new Error(e.error?.message || `Imagen ${r.status}`);
+    throw new Error(e.error?.message || `Gemini image ${r.status}`);
   }
   const d = await r.json();
-  const b64 = d.predictions?.[0]?.bytesBase64Encoded;
-  const mime = d.predictions?.[0]?.mimeType || 'image/png';
-  if (!b64) throw new Error('No image returned from Imagen');
+  // Image is in candidates[0].content.parts — find the inlineData part
+  const parts = d.candidates?.[0]?.content?.parts || [];
+  const imgPart = parts.find(p => p.inlineData);
+  if (!imgPart) throw new Error('No image returned from Gemini');
+  const b64  = imgPart.inlineData.data;
+  const mime = imgPart.inlineData.mimeType || 'image/png';
   return { b64, mime, dataUrl: `data:${mime};base64,${b64}` };
 }
 
