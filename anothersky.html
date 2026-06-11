@@ -944,9 +944,12 @@ body {
 #synopsis-gate {
   display: none; flex: 1;
   align-items: center; justify-content: center;
-  padding: 60px 40px;
+  padding: 60px 300px 60px 40px;
   position: relative; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+}
+@media (max-width: 700px) {
+  #synopsis-gate { padding: 40px 20px 54vh 20px !important; }
 }
 #synopsis-gate.show { display: flex; }
 
@@ -2363,6 +2366,177 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #ced-notes:focus { border-left-color: rgba(200,71,42,0.4); }
 #ced-notes::placeholder { color: rgba(200,71,42,0.15); }
 
+/* ═══════════════════════════════════════════
+   STORY SELECTOR PANEL (overlays synopsis-gate)
+═══════════════════════════════════════════ */
+#story-selector {
+  position: absolute;
+  top: 0; right: 0; bottom: 0;
+  width: 280px;
+  display: flex; flex-direction: column;
+  background: rgba(4,0,0,0.78);
+  backdrop-filter: blur(14px) saturate(0.7);
+  -webkit-backdrop-filter: blur(14px) saturate(0.7);
+  border-left: 1px solid rgba(200,71,42,0.1);
+  z-index: 20;
+  transform: translateX(100%);
+  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  will-change: transform;
+}
+#synopsis-gate.show #story-selector { transform: translateX(0); }
+
+#ssel-hdr {
+  padding: 18px 16px 12px;
+  border-bottom: 1px solid rgba(200,71,42,0.08);
+  display: flex; align-items: baseline; justify-content: space-between;
+  flex-shrink: 0;
+}
+#ssel-label {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.75rem; letter-spacing: 3px;
+  color: rgba(200,71,42,0.45); text-transform: uppercase;
+}
+#ssel-count-val {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.65rem; letter-spacing: 2px;
+  color: rgba(212,197,176,0.25);
+}
+
+#ssel-list {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200,71,42,0.2) transparent;
+}
+#ssel-list::-webkit-scrollbar { width: 2px; }
+#ssel-list::-webkit-scrollbar-thumb { background: rgba(200,71,42,0.2); }
+
+.ssel-card {
+  padding: 0 14px; cursor: pointer;
+  transition: background 0.15s;
+  border-left: 2px solid transparent;
+}
+.ssel-card:hover { background: rgba(200,71,42,0.04); border-left-color: rgba(200,71,42,0.2); }
+.ssel-card.active { border-left-color: var(--red); background: rgba(200,71,42,0.06); }
+
+.ssel-card-inner {
+  display: flex; gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(200,71,42,0.06);
+  align-items: flex-start;
+}
+
+.ssel-thumb {
+  position: relative; flex-shrink: 0;
+  width: 68px; height: 50px; overflow: hidden;
+}
+.ssel-thumb-img {
+  width: 100%; height: 100%;
+  background-size: cover; background-position: center;
+  filter: saturate(0.5) brightness(0.7);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+.ssel-card:hover .ssel-thumb-img,
+.ssel-card.active .ssel-thumb-img { filter: saturate(0.85) brightness(0.95); transform: scale(1.05); }
+
+.ssel-badge {
+  position: absolute; top: 3px; right: 3px;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.55rem; letter-spacing: 1.5px;
+  padding: 2px 4px;
+  background: rgba(200,71,42,0.9); color: #000;
+  font-weight: 700; text-transform: uppercase;
+}
+.ssel-badge.ongoing { background: rgba(60,200,100,0.85); }
+
+.ssel-body { flex: 1; min-width: 0; }
+.ssel-date {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.65rem; letter-spacing: 2px;
+  color: rgba(200,71,42,0.4); text-transform: uppercase; margin-bottom: 3px;
+}
+.ssel-title {
+  font-family: var(--font-display, 'Special Gothic Expanded One');
+  font-size: 0.65rem; letter-spacing: 0.5px;
+  color: rgba(212,197,176,0.6); text-transform: uppercase;
+  margin-bottom: 4px; transition: color 0.2s;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.ssel-card:hover .ssel-title, .ssel-card.active .ssel-title { color: #fff; }
+
+.ssel-blurb {
+  font-family: var(--font-body, 'Comic Neue');
+  font-size: 0.75rem; line-height: 1.5;
+  color: rgba(212,197,176,0.35);
+  display: none; max-height: 0; opacity: 0;
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+.ssel-card.active .ssel-blurb { display: block; max-height: 60px; opacity: 1; color: rgba(212,197,176,0.5); }
+
+.ssel-enter-btn {
+  display: none; margin-top: 8px;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.7rem; letter-spacing: 2px;
+  color: var(--red); background: none;
+  border: 1px solid rgba(200,71,42,0.35);
+  padding: 5px 10px; cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ssel-card.active .ssel-enter-btn { display: inline-block; }
+.ssel-enter-btn:hover { background: rgba(200,71,42,0.1); border-color: var(--red); }
+
+#ssel-ftr {
+  padding: 12px 14px;
+  border-top: 1px solid rgba(200,71,42,0.08);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+#ssel-signal {
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.65rem; letter-spacing: 2px;
+  color: rgba(200,71,42,0.25); text-transform: uppercase;
+}
+#ssel-signal span { color: rgba(80,220,120,0.65); animation: blink 2s steps(1) infinite; }
+
+/* pull tab */
+#ssel-tab {
+  position: absolute; left: -28px; top: 50%;
+  transform: translateY(-50%);
+  width: 28px; height: 64px;
+  background: rgba(200,71,42,0.07);
+  border: 1px solid rgba(200,71,42,0.14); border-right: none;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.2s;
+  writing-mode: vertical-rl;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.2rem; letter-spacing: 2px;
+  color: rgba(200,71,42,0.35); text-transform: uppercase; user-select: none;
+}
+#ssel-tab:hover { background: rgba(200,71,42,0.14); color: rgba(200,71,42,0.7); }
+
+@media (max-width: 700px) {
+  #story-selector {
+    top: auto; left: 0; right: 0; bottom: 0;
+    width: 100%; height: auto; max-height: 52vh;
+    border-left: none; border-top: 1px solid rgba(200,71,42,0.15);
+    transform: translateY(100%);
+    transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
+  }
+  #synopsis-gate.show #story-selector { transform: translateY(0); }
+  /* On mobile, start collapsed until user taps tab */
+  #synopsis-gate.show #story-selector[data-collapsed="1"] { transform: translateY(calc(100% - 26px)); }
+  #ssel-tab {
+    left: 50%; top: -26px; transform: translateX(-50%);
+    width: 64px; height: 26px;
+    border: 1px solid rgba(200,71,42,0.14); border-bottom: none;
+    writing-mode: horizontal-tb;
+  }
+  #ssel-list { max-height: 34vh; }
+  .ssel-card.active .ssel-blurb { display: none; }
+  .ssel-card.active .ssel-enter-btn { display: none; }
+}
+
 /* ── STORY SHELF ────────────────────────────────────────────── */
 #ced-story-shelf {
   width: 100%; padding: 8px 10px 0; flex-shrink: 0;
@@ -3415,6 +3589,7 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   </div>
 </div>
 
+
 <!-- ═══ PHASE 3: READER SHELL ═══ -->
 <div id="reader-shell">
 
@@ -3608,6 +3783,20 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
             </button>
           </div>
         </div>
+
+        <!-- ── STORY SELECTOR PANEL ── -->
+        <div id="story-selector">
+          <div id="ssel-tab">SERIES</div>
+          <div id="ssel-hdr">
+            <div id="ssel-label">// Transmissions</div>
+            <div id="ssel-count-val">-- STORIES</div>
+          </div>
+          <div id="ssel-list"><!-- populated by sselRender() --></div>
+          <div id="ssel-ftr">
+            <div id="ssel-signal">SIG <span>●</span> LIVE</div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Chapter reader -->
@@ -6538,7 +6727,6 @@ function startGateTwitch() {
 })();
 
 document.getElementById('btn-yes').addEventListener('click', () => {
-  // YES — proceed to synopsis
   sessionStorage.setItem('as_nav', 'synopsis');
   document.getElementById('world-gate').style.transition = 'opacity 0.8s';
   document.getElementById('world-gate').style.opacity = '0';
@@ -6548,6 +6736,7 @@ document.getElementById('btn-yes').addEventListener('click', () => {
     showSynopsis();
   }, 800);
 });
+
 
 document.getElementById('btn-no').addEventListener('click', () => {
   // NO — wrong world response
@@ -6613,18 +6802,144 @@ function synApplyStory(story) {
   }
 }
 
+/* ── STORY SELECTOR PANEL ────────────────────────────────── */
+
+const SSEL_STORIES = [
+  {
+    id: 'another-sky',
+    title: 'ANOTHER SKY',
+    date: 'MARCH 26, 2032',
+    blurb: 'A man wakes in a city he recognises. Everything is wrong.',
+    badge: 'NEW', badgeClass: 'ongoing',
+    thumb: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=300&q=70',
+    thumbPos: 'center 20%',
+  },
+  {
+    id: 'simulunas',
+    title: 'SIMULUNAS',
+    date: 'NOVEMBER 2048',
+    blurb: 'The Moon dome is cracking. Someone inside is broadcasting.',
+    badge: 'COMPLETE', badgeClass: '',
+    thumb: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=300&q=70',
+    thumbPos: 'center 40%',
+  },
+];
+
+let sselActiveId = 'another-sky';
+
+function sselRender() {
+  const list = document.getElementById('ssel-list');
+  if (!list) return;
+
+  // Merge with cedStories for cover_image if available
+  list.innerHTML = '';
+  SSEL_STORIES.forEach(story => {
+    const ced = cedStories.find(s => s.id === story.id);
+    const thumb = (ced && ced.cover_image) ? ced.cover_image : story.thumb;
+    const isActive = story.id === sselActiveId;
+
+    const card = document.createElement('div');
+    card.className = 'ssel-card' + (isActive ? ' active' : '');
+    card.dataset.sselId = story.id;
+    card.innerHTML = `
+      <div class="ssel-card-inner">
+        <div class="ssel-thumb">
+          <div class="ssel-thumb-img" style="background-image:url('${thumb}');background-position:${story.thumbPos}"></div>
+          <span class="ssel-badge ${story.badgeClass}">${story.badge}</span>
+        </div>
+        <div class="ssel-body">
+          <div class="ssel-date">${story.date}</div>
+          <div class="ssel-title">${story.title}</div>
+          <div class="ssel-blurb">${story.blurb}</div>
+          <button class="ssel-enter-btn">ENTER →</button>
+        </div>
+      </div>`;
+
+    card.addEventListener('click', (e) => {
+      if (e.target.classList.contains('ssel-enter-btn')) {
+        sselEnter(story.id);
+        return;
+      }
+      sselSelect(story.id);
+    });
+    list.appendChild(card);
+  });
+
+  const countEl = document.getElementById('ssel-count-val') || document.getElementById('ssel-count');
+  if (countEl) countEl.textContent = SSEL_STORIES.length.toString().padStart(2,'0') + ' STORIES';
+}
+
+function sselSelect(id) {
+  if (id === sselActiveId) return;
+  sselActiveId = id;
+
+  document.querySelectorAll('.ssel-card').forEach(c => {
+    c.classList.toggle('active', c.dataset.sselId === id);
+  });
+
+  // Apply story to synopsis content
+  const ced = cedStories.find(s => s.id === id) || { id };
+  synApplyStory(ced);
+
+  // Sky state
+  const gate = document.getElementById('synopsis-gate');
+  if (gate) {
+    gate.classList.remove('sky-grey','sky-rainy','sky-stormy','sky-another');
+    if (id === 'another-sky') gate.classList.add('sky-another');
+    else gate.classList.add('sky-rainy');
+  }
+}
+
+function sselEnter(id) {
+  sselActiveId = id;
+  cedActiveStoryId = id;
+  const ced = cedStories.find(s => s.id === id) || cedStories[0];
+  synApplyStory(ced);
+  beginReading();
+}
+
+function sselInit() {
+  sselRender();
+  const tab = document.getElementById('ssel-tab');
+  const sel = document.getElementById('story-selector');
+  // Start collapsed on mobile
+  if (sel && window.innerWidth <= 700) {
+    sel.dataset.collapsed = '1';
+    tab.textContent = '▲';
+  }
+  if (tab) {
+    tab.addEventListener('click', () => {
+      const sel = document.getElementById('story-selector');
+      if (!sel) return;
+      const collapsed = sel.dataset.collapsed === '1';
+      if (collapsed) {
+        sel.style.transform = '';
+        sel.dataset.collapsed = '0';
+        tab.textContent = window.innerWidth <= 700 ? '▼' : 'SERIES';
+      } else {
+        const isMobile = window.innerWidth <= 700;
+        sel.style.transform = isMobile ? 'translateY(calc(100% - 26px))' : 'translateX(calc(100% - 28px))';
+        sel.dataset.collapsed = '1';
+        tab.textContent = window.innerWidth <= 700 ? '▲' : '▶';
+      }
+    });
+  }
+}
+
 function showSynopsis() {
   history.pushState({ as_view: 'synopsis' }, '', location.href.split('#')[0] + '#synopsis');
   document.getElementById('synopsis-gate').classList.add('show');
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
   document.getElementById('synopsis-gate').style.display = 'flex';
-  // Hide mobile chapter bar on synopsis screen
   const mobBar = document.getElementById('mob-bar');
   if (mobBar) mobBar.classList.remove('reader-active');
   updateSkyStat(currentChapterIdx);
-  // Start rain atmosphere
   setTimeout(() => startSynopsisRain(), 300);
+  // Init story selector (idempotent)
+  if (!document.getElementById('ssel-list').children.length) {
+    setTimeout(() => sselInit(), 100);
+  }
 }
 
 let decrypted = false;
