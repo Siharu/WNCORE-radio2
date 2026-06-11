@@ -606,6 +606,14 @@ body {
   /* actual values cycled by JS */
   100% { content:''; }
 }
+/* Signal dormant — shown after 3+ days absent */
+#hdr-signal-val.dormant {
+  color: var(--red);
+  animation: statPulse 4s ease-in-out infinite;
+}
+#hdr-signal-val.fresh {
+  color: rgba(80,255,160,0.8);
+}
 
 #hdr-right {
   display: flex; align-items: center; gap: 10px;
@@ -1215,6 +1223,30 @@ to   { background-size: 100px 71px; }
   text-transform: uppercase;
 }
 
+/* Mobile HUD strip — only visible on small screens */
+#mob-hud-strip {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 18px;
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: clamp(0.32rem, 2.4vw, 0.42rem);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.mob-hud-stat { display: inline-flex; flex-direction: column; gap: 1px; }
+.mob-hud-label { font-size: 0.28rem; letter-spacing: 3px; color: var(--text3); }
+.mob-hud-val { color: var(--text2); }
+.mob-hud-val.red { color: var(--red); }
+.mob-hud-val.green { color: rgba(80,255,160,0.85); }
+.mob-hud-val.pulse { animation: statPulse 3s ease-in-out infinite; }
+.mob-hud-val.blur { filter: blur(2px); opacity: 0.5; }
+.mob-hud-sep { color: var(--text3); opacity: 0.4; align-self: center; }
+@media (max-width: 700px) {
+  #mob-hud-strip { display: flex; }
+}
+
 /* Encrypted synopsis — before decrypt */
 #syn-encrypted {
   font-family: var(--font-mono, 'IBM Plex Mono');
@@ -1290,6 +1322,31 @@ to   { background-size: 100px 71px; }
 }
 #ch-reader.show { display: flex; }
 @media(max-width: 700px) { #ch-reader { padding: 24px 20px 80px; } }
+
+@media (max-width: 480px) {
+  /* Chapter reader body — slightly smaller, tighter line height */
+  #ch-body { font-size: 0.97rem; line-height: 1.85; }
+  body.fs2 #ch-body { font-size: 1.1rem; }
+  body.fs3 #ch-body { font-size: 1.25rem; }
+
+  /* Drop cap — reduce on very small screens to avoid collision */
+  #ch-body p:first-of-type::first-letter {
+    font-size: 2.4rem;
+    margin-right: 7px;
+    margin-top: 6px;
+  }
+
+  /* Chapter file header — tighten spacing */
+  .ch-file-header { margin-bottom: 24px; padding-bottom: 14px; }
+  .ch-file-title { font-size: clamp(1.3rem, 7vw, 2rem); }
+  .ch-case-id { font-size: 0.3rem; letter-spacing: 3px; }
+  .ch-file-date { font-size: 0.3rem; }
+  .ch-read-time { font-size: 0.28rem; }
+
+  /* Chapter nav buttons — bigger tap target */
+  .ch-nav { margin-top: 36px; gap: 8px; }
+  .ch-nav-btn { padding: 14px 10px; font-size: 0.38rem; }
+}
 
 /* Chapter header — brutalist case file */
 .ch-file-header {
@@ -2769,11 +2826,142 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 }
 
 @media (max-width: 700px) {
-  #ced-left { display: none; }
+  /* ── ADMIN PANEL MOBILE LAYOUT ── */
+
+  /* Shell goes full screen, single column */
+  #ced-shell {
+    border-radius: 0;
+    border-left: none; border-right: none;
+  }
+
+  /* Header: stack unit name above tabs, hide build string */
+  #ced-hdr {
+    flex-wrap: wrap;
+    gap: 0;
+    padding: 0;
+    min-height: unset;
+  }
+  #ced-hdr-left {
+    width: 100%;
+    padding: 8px 12px 4px;
+    border-bottom: 1px solid rgba(200,71,42,0.1);
+    gap: 0;
+  }
+  #ced-hdr-build { display: none; }
+  #ced-hdr-unit { font-size: 0.28rem; }
+  #ced-hdr-tabs {
+    flex: 1;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 4px 8px;
+    gap: 2px;
+    border-bottom: 1px solid rgba(200,71,42,0.15);
+  }
+  #ced-hdr-tabs::-webkit-scrollbar { display: none; }
+  .ced-hdr-tab { font-size: 0.22rem; padding: 5px 8px; white-space: nowrap; }
+  #ced-hdr-right {
+    padding: 6px 8px;
+    gap: 8px;
+  }
+  .ced-hdr-stat { display: none; } /* hide UNIT/STATUS counters, keep just close btn */
+  #ced-hdr-close { font-size: 0.22rem; padding: 5px 8px; }
+
+  /* Panels: single column — hide left, show right only */
+  #ced-panels { flex-direction: column; }
+  #ced-left { display: none; } /* hidden by default — revealed via drawer */
+  #ced-right { flex: 1; min-height: 0; }
   #ced-split { flex-direction: column; }
   #ced-preview-pane { display: none; }
-  #ced-editor-pane { flex: 1; }
-  #ced-title { width: 130px; }
+  #ced-editor-pane { flex: 1; min-height: 200px; }
+
+  /* Toolbar meta — stack instead of row */
+  #ced-toolbar-meta {
+    flex-wrap: wrap;
+    padding: 4px 0;
+  }
+  .ced-field-block {
+    padding: 4px 8px;
+    min-width: 0;
+  }
+  .ced-field-block:first-child { min-width: 52px; max-width: 60px; }
+  #ced-meta-right {
+    width: 100%;
+    padding: 4px 8px;
+    border-left: none;
+    border-top: 1px solid rgba(200,71,42,0.1);
+    justify-content: flex-end;
+  }
+  #ced-title { font-size: 0.38rem; }
+  #ced-num { font-size: 0.46rem; }
+  .ced-field-label { font-size: 0.15rem; }
+
+  /* FX strip — scrollable, larger touch targets */
+  #ced-toolbar-effects { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .ced-fx-btn { padding: 8px 10px; font-size: 0.2rem; }
+  .ced-toolbar-sep { padding: 0 6px; }
+
+  /* Action bar — wrap and give bigger tap targets */
+  #ced-toolbar-actions { flex-wrap: wrap; }
+  #ced-pub-row { min-width: 60px; padding: 6px 8px; }
+  #ced-pub-label { font-size: 0.28rem; }
+  #ced-schedule-wrap { padding: 6px 8px; }
+  .ced-schedule-input { width: 120px; font-size: 0.22rem; }
+
+  /* Action buttons — bigger tap area */
+  .ced-action-btn, #ced-save-btn, #ced-delete-btn,
+  #ced-export-btn, #ced-find-btn, #ced-check-btn {
+    padding: 8px 10px !important;
+    font-size: 0.22rem !important;
+  }
+
+  /* Textarea editor — full width, min height */
+  #ced-body { font-size: 0.78rem; line-height: 1.7; }
+
+  /* Chapter list drawer FAB — floats over editor on mobile */
+  #ced-mob-list-btn {
+    display: flex !important;
+  }
+
+  /* Chapter list drawer overlay */
+  #ced-mob-drawer {
+    display: none;
+    position: absolute; inset: 0; z-index: 900;
+  }
+  #ced-mob-drawer.open { display: block; }
+  #ced-mob-backdrop {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.7);
+  }
+  #ced-mob-panel {
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: min(280px, 85vw);
+    background: #020000;
+    border-right: 1px solid rgba(200,71,42,0.3);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+    animation: cedDrawerIn 0.2s ease;
+  }
+  @keyframes cedDrawerIn {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(0); }
+  }
+  #ced-mob-panel-inner {
+    flex: 1; overflow-y: auto; padding: 12px 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #ced-mob-panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 10px 8px;
+    border-bottom: 1px solid rgba(200,71,42,0.2);
+    font-family: var(--font-mono,'IBM Plex Mono');
+    font-size: 0.26rem; letter-spacing: 3px; color: rgba(200,71,42,0.6);
+    text-transform: uppercase;
+  }
+  #ced-mob-close-btn {
+    background: none; border: 1px solid rgba(200,71,42,0.3);
+    color: rgba(200,71,42,0.6); font-size: 0.22rem; padding: 4px 8px;
+    font-family: var(--font-mono,'IBM Plex Mono'); cursor: pointer;
+    letter-spacing: 1px;
+  }
 }
 
 /* ═══════════════════════════════════════════════════
@@ -3257,6 +3445,10 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
         <span class="hdr-stat-label">SKY STATUS</span>
         <span class="hdr-stat-val" id="hdr-sky-val">—</span>
       </div>
+      <div class="hdr-stat" id="hdr-signal-stat" style="display:none">
+        <span class="hdr-stat-label">LAST SIGNAL</span>
+        <span class="hdr-stat-val" id="hdr-signal-val">—</span>
+      </div>
     </div>
     <div id="hdr-right">
       <button class="hdr-btn" id="theme-btn" onclick="toggleTheme()" title="Toggle paper mode">
@@ -3384,6 +3576,16 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
           <div id="syn-stamp">CASE FILE // ANOTHER SKY // WORLD-2 // LOGBOOK DRIFTERS</div>
           <div id="syn-title">ANOTHER SKY</div>
           <div id="syn-world-tag">WORLD -2 · 2032 · DHAKA, BANGLADESH · AGE 28 · 8.28% IMMUNE</div>
+          <!-- Mobile-only HUD strip — mirrors header stats hidden on small screens -->
+          <div id="mob-hud-strip">
+            <span class="mob-hud-stat"><span class="mob-hud-label">YEAR</span><span class="mob-hud-val" id="mob-hud-year">2032</span></span>
+            <span class="mob-hud-sep">·</span>
+            <span class="mob-hud-stat"><span class="mob-hud-label">OUTBREAK</span><span class="mob-hud-val" id="mob-hud-outbreak">ACTIVE</span></span>
+            <span class="mob-hud-sep">·</span>
+            <span class="mob-hud-stat"><span class="mob-hud-label">IMMUNE</span><span class="mob-hud-val" id="mob-hud-immune">—</span></span>
+            <span class="mob-hud-sep mob-hud-signal-sep" id="mob-hud-signal-sep" style="display:none">·</span>
+            <span class="mob-hud-stat" id="mob-hud-signal-stat" style="display:none"><span class="mob-hud-label">SIGNAL</span><span class="mob-hud-val" id="mob-hud-signal">—</span></span>
+          </div>
 
           <div id="syn-encrypted" aria-hidden="true">
 █████ ████ ██ ████ ████ ██████ ████ ████ ██ ███ ████ ██████ ██████████ ████████ ████ ██ ████████████ ██████ ████ ████ ████ ████████ ██ ████ ████████ ████ ████ ████ ████ ████ ████████████ ████████████ ████ ███████ ████████ ████████████████ ████ ████████ ████ ████████████████████ ████████████ ████████████ ██ ████████████ ████████████████ ████ ████████████ ████████████ ████████████ ████ ████████ ████████████████████ ████████████████████████ ████████████ ████████████ ████████ ████████████████████ ████████████████████ ████████████ ████████████
@@ -3822,6 +4024,28 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
     <!-- LEFT PANEL: chapter list -->
     <div id="ced-panels">
+
+    <!-- Mobile: chapter list drawer (hidden on desktop) -->
+    <div id="ced-mob-drawer">
+      <div id="ced-mob-backdrop" onclick="cedCloseMobDrawer()"></div>
+      <div id="ced-mob-panel">
+        <div id="ced-mob-panel-head">
+          <span>CHAPTERS</span>
+          <button id="ced-mob-close-btn" onclick="cedCloseMobDrawer()">✕ CLOSE</button>
+        </div>
+        <div id="ced-mob-panel-inner">
+          <button onclick="cedNewChapter();cedCloseMobDrawer();" style="width:100%;background:none;border:1px solid rgba(200,71,42,0.3);color:rgba(200,71,42,0.7);font-family:var(--font-mono,'IBM Plex Mono');font-size:0.26rem;letter-spacing:2px;padding:8px;cursor:pointer;margin-bottom:8px;text-transform:uppercase;">+ NEW CHAPTER</button>
+          <input id="ced-mob-search" placeholder="// FILTER..." oninput="cedFilterChapters(this.value)" style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(200,71,42,0.2);color:rgba(200,100,80,0.7);font-family:var(--font-mono,'IBM Plex Mono');font-size:0.26rem;padding:6px 0;outline:none;margin-bottom:10px;letter-spacing:1px;box-sizing:border-box;">
+          <div id="ced-mob-ch-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile FAB: open chapter list -->
+    <button id="ced-mob-list-btn" onclick="cedOpenMobDrawer()" title="Chapter list" style="display:none;position:absolute;bottom:72px;left:12px;z-index:800;background:#0a0000;border:1px solid rgba(200,71,42,0.5);color:rgba(200,71,42,0.8);font-family:var(--font-mono,'IBM Plex Mono');font-size:0.22rem;letter-spacing:2px;padding:8px 12px;cursor:pointer;text-transform:uppercase;align-items:center;">
+      <img src="assets/lucid/List.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">CHAPTERS
+    </button>
+
     <div id="ced-left">
       <div id="ced-left-head">
         <span id="ced-logo">CHAPTER EDITOR</span>
@@ -4907,58 +5131,6 @@ window.cwToggleImagine = function() {
 };
 
 // ── IMAGE GENERATION ──────────────────────────────────────────
-window.cwImagine = async function() {
-  const inp    = document.getElementById('cw-imagine-inp');
-  const status = document.getElementById('cw-imagine-status');
-  const result = document.getElementById('cw-imagine-result');
-  const prompt = inp?.value?.trim();
-  if (!prompt) return;
-  status.textContent = '// generating image…';
-  result.innerHTML = '';
-  inp.disabled = true;
-  try {
-    const r = await fetch('/api/writer?action=imagine', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt }),
-    });
-    const d = await r.json();
-    if (!r.ok) throw new Error(d.error || 'generation failed');
-    // Show the image
-    const img = document.createElement('img');
-    img.src = d.dataUrl;
-    img.style.cssText = 'width:100%;max-height:220px;object-fit:contain;border:1px solid rgba(200,71,42,0.2);display:block;margin-top:4px;';
-    result.appendChild(img);
-    // Add insert-into-chapter button
-    const btnRow = document.createElement('div');
-    btnRow.className = 'cw-img-actions';
-    const insBtn = document.createElement('button');
-    insBtn.textContent = 'INSERT INTO CHAPTER';
-    insBtn.className = 'cw-img-action-btn';
-    insBtn.onclick = () => {
-      const editor = document.getElementById('ced-body');
-      if (editor) {
-        const tag = '[IMG url=' + d.dataUrl.slice(0,60) + '… align=center caption=' + prompt.slice(0,40) + ']';
-        editor.value += '\n' + tag + '\n';
-        cwAppend('system', '// image reference inserted into chapter editor');
-      }
-    };
-    const dlBtn = document.createElement('a');
-    dlBtn.textContent = 'DOWNLOAD';
-    dlBtn.href = d.dataUrl;
-    dlBtn.download = 'cygnus-image.png';
-    dlBtn.className = 'cw-img-action-btn';
-    btnRow.appendChild(insBtn);
-    btnRow.appendChild(dlBtn);
-    result.appendChild(btnRow);
-    status.textContent = '// image ready';
-  } catch(e) {
-    status.textContent = '// error: ' + e.message;
-  } finally {
-    inp.disabled = false;
-  }
-};
-
 // ── API KEY SETUP — no-op (keys handled server-side via /api/writer) ──────────
 function showSetup(msg) {
   // Keys are stored in Vercel env vars — no client-side key needed.
@@ -5347,13 +5519,16 @@ window.cwQuick = function(action) {
 
 // ── IMAGE GENERATION ─────────────────────────────────────────
 window.cwImagine = async function() {
-  const inp = document.getElementById('cw-imagine-inp');
+  const inp    = document.getElementById('cw-imagine-inp');
   const status = document.getElementById('cw-imagine-status');
   const result = document.getElementById('cw-imagine-result');
+  const btn    = document.querySelector('#cw-tool-imagine .cw-tool-btn');
   const prompt = inp?.value?.trim();
   if (!prompt) return;
   if (status) status.textContent = '// generating…';
   if (result) result.innerHTML = '';
+  if (inp) inp.disabled = true;
+  if (btn) { btn.disabled = true; btn.textContent = '// GENERATING…'; }
   try {
     const res = await fetch('/api/writer?action=imagine', {
       method: 'POST',
@@ -5361,15 +5536,44 @@ window.cwImagine = async function() {
       body: JSON.stringify({ prompt }),
     });
     const data = await res.json();
-    if (data.imageUrl || data.url) {
-      const url = data.imageUrl || data.url;
-      if (result) result.innerHTML = `<img src="${url}" style="max-width:100%;border:1px solid rgba(200,71,42,0.3);margin-top:6px;" alt="Generated">`;
-      if (status) status.textContent = '// done';
-    } else {
-      throw new Error(data.error || 'no image returned');
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    // API returns { dataUrl, b64, mime } — dataUrl is the canonical field
+    const url = data.dataUrl || data.imageUrl || data.url;
+    if (!url) throw new Error(data.error || 'no image returned');
+    if (result) {
+      const img = document.createElement('img');
+      img.src = url;
+      img.style.cssText = 'width:100%;max-height:260px;object-fit:contain;border:1px solid rgba(200,71,42,0.2);display:block;margin-top:6px;';
+      result.appendChild(img);
+      // Action row
+      const btnRow = document.createElement('div');
+      btnRow.className = 'cw-img-actions';
+      const insBtn = document.createElement('button');
+      insBtn.textContent = 'INSERT INTO CHAPTER';
+      insBtn.className = 'cw-img-action-btn';
+      insBtn.onclick = () => {
+        const editor = document.getElementById('ced-body');
+        if (editor) {
+          editor.value += '\n[IMG url=' + url + ' align=center caption=' + prompt.slice(0, 60) + ']\n';
+          editor.dispatchEvent(new Event('input'));
+          cwAppend('system', '// image inserted into chapter editor');
+        }
+      };
+      const dlBtn = document.createElement('a');
+      dlBtn.textContent = 'DOWNLOAD';
+      dlBtn.href = url;
+      dlBtn.download = 'cygnus-image.png';
+      dlBtn.className = 'cw-img-action-btn';
+      btnRow.appendChild(insBtn);
+      btnRow.appendChild(dlBtn);
+      result.appendChild(btnRow);
     }
+    if (status) status.textContent = '// image ready';
   } catch(e) {
     if (status) status.textContent = '// error: ' + e.message;
+  } finally {
+    if (inp) inp.disabled = false;
+    if (btn) { btn.disabled = false; btn.textContent = 'GENERATE IMAGE'; }
   }
 };
 
@@ -6617,10 +6821,184 @@ function updateHUDStats(maxChNum) {
       immuneEl.style.color = 'var(--red)';
     }
   }
+
+  // ── MOBILE STRIP sync ─────────────────────────
+  _syncMobHUD(maxChNum);
 }
 
-// Expose so Drifter Hub and other systems can read it
+function _syncMobHUD(maxChNum) {
+  // Year
+  const mobYear = document.getElementById('mob-hud-year');
+  if (mobYear) {
+    if (maxChNum < 3) {
+      mobYear.textContent = '2028';
+      mobYear.className = 'mob-hud-val';
+    } else if (maxChNum < 7) {
+      mobYear.textContent = YEAR_GLITCH_VALUES[Math.floor(Date.now() / 500) % YEAR_GLITCH_VALUES.length];
+      mobYear.className = 'mob-hud-val red';
+    } else {
+      mobYear.textContent = '2032';
+      mobYear.className = 'mob-hud-val';
+    }
+  }
+  // Outbreak
+  const mobOut = document.getElementById('mob-hud-outbreak');
+  if (mobOut) {
+    if (maxChNum < 3) {
+      mobOut.textContent = '██████';
+      mobOut.className = 'mob-hud-val blur';
+    } else {
+      mobOut.textContent = 'ACTIVE';
+      mobOut.className = 'mob-hud-val red pulse';
+    }
+  }
+  // Immune — mirror from header val
+  const mobImm = document.getElementById('mob-hud-immune');
+  if (mobImm) {
+    const immuneEl = document.getElementById('hdr-immune-val');
+    if (immuneEl) {
+      mobImm.textContent = immuneEl.textContent;
+      mobImm.style.color = immuneEl.style.color;
+    }
+  }
+}
+
+// Expose for Drifter Hub and other systems can read it
 window._getMaxChapter = getMaxChapter;
+
+/* ═══════════════════════════════════════════════════
+   SIGNAL DORMANT SYSTEM
+   Tracks last visit date and days absent.
+   - First visit: no stat shown (world doesn't know you yet)
+   - Return within same day: LAST SIGNAL: TODAY
+   - 1-2 days: SIGNAL: X DAYS AGO
+   - 3+ days: stat turns red, pulses — DORMANT: X DAYS
+   - 7+ days: immune stat ticks up slightly as penalty
+   - 30+ days: sky degrades one extra step
+═══════════════════════════════════════════════════ */
+const AS_LAST_VISIT_KEY = '_as_last_visit';   // ISO date string YYYY-MM-DD
+const AS_ABSENT_KEY     = '_as_days_absent';  // int
+
+function _todayStr() {
+  return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function _daysBetween(isoA, isoB) {
+  const msPerDay = 86400000;
+  return Math.round((new Date(isoB) - new Date(isoA)) / msPerDay);
+}
+
+function initSignalTracking() {
+  const maxCh = getMaxChapter();
+  // Don't show anything if user has never read a chapter
+  if (maxCh < 1) return;
+
+  const today = _todayStr();
+  let daysAbsent = 0;
+
+  try {
+    const lastVisit = localStorage.getItem(AS_LAST_VISIT_KEY);
+    if (lastVisit && lastVisit !== today) {
+      daysAbsent = Math.max(0, _daysBetween(lastVisit, today));
+      localStorage.setItem(AS_ABSENT_KEY, String(daysAbsent));
+    } else if (!lastVisit) {
+      // First ever tracked visit — don't count as absent
+      daysAbsent = 0;
+    } else {
+      // Same day return
+      daysAbsent = 0;
+      try { daysAbsent = parseInt(localStorage.getItem(AS_ABSENT_KEY) || '0', 10); } catch {}
+    }
+    // Always update last visit to today
+    localStorage.setItem(AS_LAST_VISIT_KEY, today);
+  } catch { return; }
+
+  window._asDaysAbsent = daysAbsent;
+  updateSignalStat(daysAbsent, maxCh);
+}
+
+function updateSignalStat(daysAbsent, maxCh) {
+  const statEl  = document.getElementById('hdr-signal-stat');
+  const valEl   = document.getElementById('hdr-signal-val');
+  if (!statEl || !valEl) return;
+
+  // Only show after user has started reading
+  if (maxCh < 1) {
+    statEl.style.display = 'none';
+    _setMobSignal(null);
+    return;
+  }
+
+  statEl.style.display = '';
+  valEl.classList.remove('dormant', 'fresh');
+
+  let label, cls;
+  if (daysAbsent === 0) {
+    label = 'TODAY'; cls = 'fresh';
+  } else if (daysAbsent === 1) {
+    label = 'YESTERDAY'; cls = '';
+  } else if (daysAbsent < 3) {
+    label = `${daysAbsent} DAYS AGO`; cls = '';
+  } else if (daysAbsent < 7) {
+    label = `DORMANT: ${daysAbsent}D`; cls = 'dormant';
+  } else if (daysAbsent < 30) {
+    label = `DARK: ${daysAbsent}D`; cls = 'dormant';
+  } else {
+    label = `LOST: ${daysAbsent}D`; cls = 'dormant';
+  }
+
+  valEl.textContent = label;
+  if (cls) valEl.classList.add(cls);
+
+  // Sync to mobile strip
+  _setMobSignal(label, cls);
+
+  // 7+ days absent: immune stat ticks up (world moved on without you)
+  if (daysAbsent >= 7) {
+    _applyAbsencePenalty(daysAbsent, maxCh);
+  }
+}
+
+function _setMobSignal(label, cls) {
+  const sep  = document.getElementById('mob-hud-signal-sep');
+  const stat = document.getElementById('mob-hud-signal-stat');
+  const val  = document.getElementById('mob-hud-signal');
+  if (!stat || !val) return;
+  if (!label) {
+    if (sep) sep.style.display = 'none';
+    stat.style.display = 'none';
+    return;
+  }
+  if (sep) sep.style.display = '';
+  stat.style.display = '';
+  val.textContent = label;
+  val.className = 'mob-hud-val' + (cls === 'dormant' ? ' red' : cls === 'fresh' ? ' green' : '');
+}
+
+function _applyAbsencePenalty(daysAbsent, maxCh) {
+  // Only applies once the immune stat is visible (ch13+)
+  if (maxCh < 13) return;
+  const immuneEl = document.getElementById('hdr-immune-val');
+  if (!immuneEl) return;
+
+  // Each week absent nudges the immune % up slightly — more people exposed while you were gone
+  // Caps at one tier above the canonical value for the chapter
+  const weeksAbsent = Math.min(Math.floor(daysAbsent / 7), 4);
+  const absenceSuffix = weeksAbsent > 0 ? ` +${weeksAbsent * 2}%?` : '';
+  if (weeksAbsent > 0 && immuneEl.textContent && !immuneEl.textContent.includes('?')) {
+    immuneEl.textContent = immuneEl.textContent + absenceSuffix;
+    immuneEl.title = `${weeksAbsent} week${weeksAbsent > 1 ? 's' : ''} unmonitored. Data may be stale.`;
+  }
+
+  // 30+ days: sky degrades one extra step
+  if (daysAbsent >= 30) {
+    const skyEl = document.getElementById('hdr-sky-val');
+    if (skyEl && !skyEl.textContent.includes('?')) {
+      skyEl.textContent = skyEl.textContent + ' ?';
+      skyEl.title = 'Signal integrity compromised. Data outdated.';
+    }
+  }
+}
 
 /* ═══════════════════════════════════════════════════
    SUPABASE + CHAPTERS
@@ -6644,6 +7022,8 @@ async function initPage() {
   initScrollProgress();
   // Init HUD from saved user progress
   updateHUDStats(getMaxChapter());
+  // Signal dormant tracking — must run after updateHUDStats sets immune val
+  setTimeout(() => initSignalTracking(), 50);
 }
 document.addEventListener('DOMContentLoaded', initPage);
 
@@ -7867,7 +8247,7 @@ function cedRenderList() {
     item.className = 'ced-ch-item' + (ch.id === cedEditId ? ' active' : '');
     item.dataset.chId = String(ch.id);
     const words = (ch.content || '').trim().split(/\s+/).filter(Boolean).length;
-    const isPub = ch.is_published !== false; // default true for existing chapters
+    const isPub = ch.is_published !== false;
     item.innerHTML = `
       <span class="ced-ch-num">${story.prefix}-${String(ch.chapter_num).padStart(2,'0')}</span>
       <span class="ced-ch-name">${ch.title}</span>
@@ -7877,6 +8257,18 @@ function cedRenderList() {
     cedInitDrag(item, globalIdx);
     list.appendChild(item);
   });
+
+  // Mirror to mobile drawer list
+  const mobList = document.getElementById('ced-mob-ch-list');
+  if (mobList) mobList.innerHTML = list.innerHTML;
+  // Re-bind click handlers on mobile items
+  if (mobList) {
+    mobList.querySelectorAll('.ced-ch-item').forEach((el, i) => {
+      const chId = parseInt(el.dataset.chId);
+      const globalIdx = chapters.findIndex(c => c.id === chId);
+      el.onclick = () => { cedLoadChapter(globalIdx); cedCloseMobDrawer(); };
+    });
+  }
 }
 
 function cedLoadChapter(idx) {
@@ -7989,7 +8381,22 @@ function cedDiscardDraft() {
 let cedFilterQuery = '';
 function cedFilterChapters(q) {
   cedFilterQuery = q.toLowerCase();
+  // sync both search inputs
+  const desktopQ = document.getElementById('ced-ch-search');
+  const mobQ = document.getElementById('ced-mob-search');
+  if (desktopQ && document.activeElement !== desktopQ) desktopQ.value = q;
+  if (mobQ && document.activeElement !== mobQ) mobQ.value = q;
   cedRenderList();
+}
+
+/* ── MOBILE ADMIN DRAWER ── */
+function cedOpenMobDrawer() {
+  const drawer = document.getElementById('ced-mob-drawer');
+  if (drawer) { drawer.style.display = 'block'; cedRenderList(); }
+}
+function cedCloseMobDrawer() {
+  const drawer = document.getElementById('ced-mob-drawer');
+  if (drawer) drawer.style.display = 'none';
 }
 
 /* ══════════════════════════════════════════════════
@@ -8463,6 +8870,9 @@ loadChapter = function(idx) {
       const chNum = ch.chapter_num || 0;
       setMaxChapter(chNum);
       updateHUDStats(getMaxChapter());
+      // Update signal stat — reading resets dormant display to TODAY
+      const absent = window._asDaysAbsent || 0;
+      updateSignalStat(absent, getMaxChapter());
     }
     // reading time
     const words = (ch?.content || '').trim().split(/\s+/).filter(Boolean).length;
