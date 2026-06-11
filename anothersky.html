@@ -3663,9 +3663,25 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   <div id="ssp-inner">
     <div id="ssp-eyebrow">LOGBOOK DRIFTERS ARCHIVE // SIGNAL INTERCEPT // SELECT TRANSMISSION</div>
     <div id="ssp-title">CHOOSE<br><span class="ssp-red">YOUR SIGNAL</span></div>
+    <div id="ssp-admin-bar">
+      <span>// ADMIN</span>
+      <button id="ssp-edit-toggle" onclick="sspToggleEdit()">EDIT CARDS</button>
+      <button id="ssp-add-card" onclick="sspAddCard()">+ ADD STORY</button>
+    </div>
     <div id="ssp-grid">
       <!-- populated by sspRender() -->
     </div>
+  </div>
+</div>
+
+<!-- ═══ WIP PHASE ═══ -->
+<div id="wip-phase">
+  <canvas id="wip-reel" aria-hidden="true"></canvas>
+  <div id="wip-inner">
+    <div id="wip-eyebrow">SIGNAL INTERCEPT // TRANSMISSION INCOMPLETE</div>
+    <div id="wip-title">YET TO<br><span>COMPLETE</span></div>
+    <div id="wip-sub">THIS ARCHIVE IS STILL BEING WRITTEN.<br>CHECK BACK WHEN THE SIGNAL CLEARS.</div>
+    <button id="wip-back" onclick="sspBack()">← RETURN TO SIGNAL SELECT</button>
   </div>
 </div>
 
@@ -6895,6 +6911,7 @@ const SSEL_STORIES = [
     badge: 'COMPLETE', badgeClass: '',
     thumb: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=300&q=70',
     thumbPos: 'center 40%',
+    wip: true,
   },
 ];
 
@@ -6972,63 +6989,216 @@ function sselEnter(id) {
 }
 
 /* ── STANDALONE STORY SELECTOR PHASE ──────────────── */
+// Topic pools per story for glitch reel
+const SSP_REEL_TOPICS = {
+  'another-sky': ['storm clouds dark','apocalypse city rain','abandoned city fog',
+    'flood disaster aerial','dark forest mist','lightning storm','fire smoke ruin',
+    'galaxy nebula space','bioluminescence ocean','neuron cell microscope'],
+  'simulunas': ['moon surface crater','lunar dome future','space station orbit',
+    'earth from space','astronaut floating','galaxy milky way','nebula blue purple',
+    'ice crystal macro','signal transmission wave','deep space stars'],
+  '_default': ['galaxy stars','nebula cosmos','deep ocean','cell biology',
+    'aurora borealis','volcano eruption','forest macro','storm lightning'],
+};
+
+// Active reel loops: storyId -> { rAF, stop() }
+const sspReelLoops = {};
+
+function sspBuildReel(canvas, storyId) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const topics = SSP_REEL_TOPICS[storyId] || SSP_REEL_TOPICS['_default'];
+  let pool = [...topics].sort(() => Math.random() - 0.5);
+  let poolIdx = 0;
+  let curImg = null, nextImg = null;
+  const imgA = new Image(), imgB = new Image();
+  imgA.crossOrigin = imgB.crossOrigin = 'anonymous';
+  const HOLD = 220, GLITCH = 80;
+  let phase = 'hold', phaseT = 0, lastTs = 0, rafId = null;
+  let slices = [];
+
+  function nextUrl() {
+    const t = pool[poolIdx % pool.length];
+    poolIdx++;
+    if (poolIdx >= pool.length) { pool = [...topics].sort(() => Math.random() - 0.5); poolIdx = 0; }
+    return `https://source.unsplash.com/400x600/?${encodeURIComponent(t)}&sig=${Date.now()+poolIdx}`;
+  }
+  function preload(cb) {
+    const img = poolIdx % 2 === 0 ? imgA : imgB;
+    img.onload = () => { nextImg = img; cb && cb(); };
+    img.onerror = () => { poolIdx++; preload(cb); };
+    img.src = nextUrl();
+  }
+  function drawFit(img, dx=0, alpha=1) {
+    const cw = canvas.width, ch = canvas.height;
+    if (!img || !img.naturalWidth) return;
+    const sc = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+    const sw = img.naturalWidth * sc, sh = img.naturalHeight * sc;
+    ctx.globalAlpha = alpha;
+    try { ctx.drawImage(img, (cw-sw)/2+dx, (ch-sh)/2, sw, sh); } catch(e){}
+    ctx.globalAlpha = 1;
+  }
+  function tick(ts) {
+    rafId = requestAnimationFrame(tick);
+    if (!lastTs) lastTs = ts;
+    const dt = Math.min(ts - lastTs, 100); lastTs = ts;
+    const cw = canvas.width, ch = canvas.height;
+    ctx.clearRect(0, 0, cw, ch);
+    if (!curImg) return;
+    phaseT += dt;
+    if (phase === 'hold') {
+      drawFit(curImg);
+      if (phaseT > HOLD) {
+        phase = 'glitch'; phaseT = 0;
+        slices = Array.from({length:8}, () => ({
+          y: Math.random()*ch, h: 2+Math.random()*20, dx: (Math.random()-.5)*40
+        }));
+      }
+    } else {
+      const t = phaseT / GLITCH;
+      drawFit(curImg);
+      // chromatic split
+      ctx.save();
+      ctx.globalCompositeOperation = 'screen';
+      ctx.filter = 'saturate(3) hue-rotate(0deg)';
+      drawFit(curImg, -6*Math.sin(t*Math.PI), 0.3);
+      ctx.filter = 'saturate(3) hue-rotate(200deg)';
+      drawFit(curImg, 6*Math.sin(t*Math.PI), 0.3);
+      ctx.filter = 'none';
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.restore();
+      // slice displacement
+      for (const s of slices) {
+        try { ctx.drawImage(canvas, 0, s.y, cw, s.h, s.dx, s.y, cw, s.h); } catch(e){}
+      }
+      // white flash
+      if (t < 0.2) {
+        ctx.fillStyle = '#fff';
+        ctx.globalAlpha = 0.2*(1-t/0.2);
+        ctx.fillRect(0,0,cw,ch);
+        ctx.globalAlpha = 1;
+      }
+      if (phaseT > GLITCH) {
+        phase = 'hold'; phaseT = 0;
+        if (nextImg) { curImg = nextImg; nextImg = null; preload(); }
+      }
+    }
+  }
+  function resize() {
+    canvas.width = canvas.offsetWidth || 260;
+    canvas.height = canvas.offsetHeight || 416;
+  }
+  resize();
+  const ro = new ResizeObserver(resize);
+  ro.observe(canvas);
+
+  const first = poolIdx % 2 === 0 ? imgA : imgB;
+  first.crossOrigin = 'anonymous';
+  first.onload = () => { curImg = first; poolIdx++; preload(); lastTs = 0; rafId = requestAnimationFrame(tick); };
+  first.onerror = () => { poolIdx++; preload(); };
+  first.src = nextUrl();
+
+  return { stop() { cancelAnimationFrame(rafId); ro.disconnect(); } };
+}
+
+let sspEditMode = false;
+
 function sspRender() {
   const grid = document.getElementById('ssp-grid');
   if (!grid) return;
   grid.innerHTML = '';
+  // stop old reels
+  Object.values(sspReelLoops).forEach(r => r && r.stop && r.stop());
+  Object.keys(sspReelLoops).forEach(k => delete sspReelLoops[k]);
+
+  // show admin bar if logged in
+  const adminBar = document.getElementById('ssp-admin-bar');
+  if (adminBar) adminBar.classList.toggle('show', !!isAdmin);
 
   SSEL_STORIES.forEach(story => {
-    const ced = cedStories.find(s => s.id === story.id);
-
-    // Poster: Another Sky uses local asset; others prefer admin-set cover_image
-    const posterUrl = (story.id === 'another-sky')
-      ? 'assets/poster/anothersky.png'
-      : (ced && ced.cover_image ? ced.cover_image : story.thumb);
-
     const card = document.createElement('div');
-    card.className = 'ssp-card';
+    card.className = 'ssp-card' + (sspEditMode ? ' admin-mode' : '');
     card.dataset.sselId = story.id;
+
     card.innerHTML = `
-      <div class="ssp-poster" style="background-image:url('${posterUrl}')"></div>
+      <canvas class="ssp-reel" style="position:absolute;inset:0;width:100%;height:100%;z-index:1;"></canvas>
       <div class="ssp-overlay"></div>
       <div class="ssp-content">
         <span class="ssp-badge ${story.badgeClass}">${story.badge}</span>
         <div class="ssp-card-eyebrow">${story.date}</div>
         <div class="ssp-card-title" data-value="${story.title}">${story.title}</div>
       </div>
-      <button class="ssp-enter"><span>ACCESS ARCHIVE</span></button>`;
+      <button class="ssp-enter"><span>${story.wip ? 'VIEW STATUS' : 'ACCESS ARCHIVE'}</span></button>
+      <div class="ssp-edit-overlay">
+        <input class="ssp-edit-field" data-field="title" placeholder="TITLE" value="${story.title}">
+        <input class="ssp-edit-field" data-field="date" placeholder="DATE" value="${story.date}">
+        <div class="ssp-edit-row">
+          <input class="ssp-edit-field" data-field="badge" placeholder="BADGE" value="${story.badge}">
+          <select class="ssp-edit-field" data-field="wip">
+            <option value="false" ${!story.wip?'selected':''}>LIVE</option>
+            <option value="true" ${story.wip?'selected':''}>WIP</option>
+          </select>
+        </div>
+        <button class="ssp-edit-save" onclick="sspSaveCard('${story.id}', this)">SAVE</button>
+      </div>`;
 
-    // scramble-text on hover — exact ref.txt mechanic
+    // start reel
+    const cvs = card.querySelector('.ssp-reel');
+    setTimeout(() => {
+      if (cvs) sspReelLoops[story.id] = sspBuildReel(cvs, story.id);
+    }, 50);
+
+    // scramble
     const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     const titleEl = card.querySelector('.ssp-card-title');
-    let scrambleInterval = null;
+    let si = null;
     card.addEventListener('mouseenter', () => {
-      let iteration = 0;
-      clearInterval(scrambleInterval);
-      scrambleInterval = setInterval(() => {
-        titleEl.innerText = titleEl.innerText
-          .split('')
-          .map((letter, index) => {
-            if (index < iteration) return titleEl.dataset.value[index];
-            return letters[Math.floor(Math.random() * 26)];
-          })
-          .join('');
-        if (iteration >= titleEl.dataset.value.length) clearInterval(scrambleInterval);
-        iteration += 1 / 3;
+      let iteration = 0; clearInterval(si);
+      si = setInterval(() => {
+        titleEl.innerText = titleEl.dataset.value.split('').map((l,i) =>
+          i < iteration ? titleEl.dataset.value[i] : letters[Math.floor(Math.random()*26)]
+        ).join('');
+        if (iteration >= titleEl.dataset.value.length) clearInterval(si);
+        iteration += 1/3;
       }, 30);
     });
-    card.addEventListener('mouseleave', () => {
-      clearInterval(scrambleInterval);
-      titleEl.innerText = titleEl.dataset.value;
-    });
+    card.addEventListener('mouseleave', () => { clearInterval(si); titleEl.innerText = titleEl.dataset.value; });
 
-    card.querySelector('.ssp-enter').addEventListener('click', (e) => {
-      e.stopPropagation();
-      sspEnter(story.id);
-    });
-    card.addEventListener('click', () => sspEnter(story.id));
+    card.querySelector('.ssp-enter').addEventListener('click', e => { e.stopPropagation(); if (!sspEditMode) sspEnter(story.id); });
+    card.addEventListener('click', () => { if (!sspEditMode) sspEnter(story.id); });
     grid.appendChild(card);
   });
+}
+
+function sspToggleEdit() {
+  sspEditMode = !sspEditMode;
+  const btn = document.getElementById('ssp-edit-toggle');
+  if (btn) btn.classList.toggle('active', sspEditMode);
+  sspRender();
+}
+
+function sspSaveCard(id, btn) {
+  const card = btn.closest('.ssp-card');
+  const get = f => card.querySelector(`[data-field="${f}"]`)?.value || '';
+  const story = SSEL_STORIES.find(s => s.id === id);
+  if (!story) return;
+  story.title = get('title').toUpperCase();
+  story.date = get('date').toUpperCase();
+  story.badge = get('badge').toUpperCase();
+  story.wip = get('wip') === 'true';
+  story.badgeClass = story.wip ? '' : (story.badgeClass || '');
+  sspRender();
+}
+
+function sspAddCard() {
+  const id = 'story-' + Date.now();
+  SSEL_STORIES.push({
+    id, title: 'NEW STORY', date: 'TBD', blurb: '',
+    badge: 'UPCOMING', badgeClass: '',
+    thumb: '', thumbPos: 'center', wip: true,
+  });
+  sspEditMode = true;
+  sspRender();
 }
 
 function showStorySelect() {
@@ -7044,28 +7214,56 @@ function showStorySelect() {
   sessionStorage.setItem('as_nav', 'story-select');
 }
 
+function sspFadeOut(el, cb) {
+  if (!el) { cb && cb(); return; }
+  el.style.transition = 'opacity 0.4s';
+  el.style.opacity = '0';
+  setTimeout(() => {
+    el.classList.remove('show');
+    el.style.opacity = ''; el.style.transition = '';
+    cb && cb();
+  }, 420);
+}
+
+function sspBack() {
+  const wip = document.getElementById('wip-phase');
+  sspFadeOut(wip, () => showStorySelect());
+}
+
 function sspEnter(id) {
   sselActiveId = id;
   cedActiveStoryId = id;
+  const story = SSEL_STORIES.find(s => s.id === id);
   const phase = document.getElementById('story-select-phase');
-  if (phase) {
-    phase.style.transition = 'opacity 0.5s';
-    phase.style.opacity = '0';
-    setTimeout(() => {
-      phase.classList.remove('show');
-      phase.style.opacity = '';
-      phase.style.transition = '';
-    }, 500);
+
+  if (story && story.wip) {
+    // show WIP screen
+    sspFadeOut(phase, () => {
+      const wip = document.getElementById('wip-phase');
+      if (wip) {
+        wip.classList.add('show');
+        // boot wip reel
+        const c = document.getElementById('wip-reel');
+        if (c && !c._reelStarted) {
+          c._reelStarted = true;
+          c.width = window.innerWidth; c.height = window.innerHeight;
+          sspBuildReel(c, id);
+        }
+      }
+    });
+    return;
   }
-  const ced = cedStories.find(s => s.id === id) || cedStories[0];
-  synApplyStory(ced);
-  // set sky class
-  const gate = document.getElementById('synopsis-gate');
-  if (gate) {
-    gate.classList.remove('sky-grey','sky-rainy','sky-stormy','sky-another');
-    gate.classList.add(id === 'another-sky' ? 'sky-another' : 'sky-rainy');
-  }
-  showSynopsis();
+
+  sspFadeOut(phase, () => {
+    const ced = cedStories.find(s => s.id === id) || cedStories[0];
+    synApplyStory(ced);
+    const gate = document.getElementById('synopsis-gate');
+    if (gate) {
+      gate.classList.remove('sky-grey','sky-rainy','sky-stormy','sky-another');
+      gate.classList.add(id === 'another-sky' ? 'sky-another' : 'sky-rainy');
+    }
+    showSynopsis();
+  });
 }
 
 function sselInit() {
