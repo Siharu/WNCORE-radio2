@@ -944,12 +944,9 @@ body {
 #synopsis-gate {
   display: none; flex: 1;
   align-items: center; justify-content: center;
-  padding: 60px 320px 60px 44px;
+  padding: 60px 40px;
   position: relative; overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-}
-@media (max-width: 700px) {
-  #synopsis-gate { padding: 40px 20px 54vh 20px !important; }
 }
 #synopsis-gate.show { display: flex; }
 
@@ -2366,259 +2363,6 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #ced-notes:focus { border-left-color: rgba(200,71,42,0.4); }
 #ced-notes::placeholder { color: rgba(200,71,42,0.15); }
 
-/* ═══════════════════════════════════════════
-   STORY SELECTOR PANEL — right rail media cards
-═══════════════════════════════════════════ */
-#story-selector {
-  position: absolute;
-  top: 0; right: 0; bottom: 0;
-  width: 300px;
-  display: flex; flex-direction: column;
-  background: rgba(2,0,4,0.82);
-  backdrop-filter: blur(18px) saturate(0.6);
-  -webkit-backdrop-filter: blur(18px) saturate(0.6);
-  border-left: 1px solid rgba(200,71,42,0.12);
-  z-index: 20;
-  transform: translateX(100%);
-  transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
-  will-change: transform;
-}
-#synopsis-gate.show #story-selector { transform: translateX(0); }
-
-/* pull tab */
-#ssel-tab {
-  position: absolute; left: -28px; top: 50%;
-  transform: translateY(-50%);
-  width: 28px; height: 64px;
-  background: rgba(200,71,42,0.08);
-  border: 1px solid rgba(200,71,42,0.18); border-right: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: background 0.2s;
-  writing-mode: vertical-rl;
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.6rem; letter-spacing: 2px;
-  color: rgba(200,71,42,0.45); text-transform: uppercase; user-select: none;
-}
-#ssel-tab:hover { background: rgba(200,71,42,0.16); color: rgba(200,71,42,0.8); }
-
-/* header */
-#ssel-hdr {
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid rgba(200,71,42,0.08);
-  display: flex; align-items: baseline; justify-content: space-between;
-  flex-shrink: 0;
-}
-#ssel-label {
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.6rem; letter-spacing: 3px;
-  color: rgba(200,71,42,0.5); text-transform: uppercase;
-}
-#ssel-count-val {
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.55rem; letter-spacing: 2px;
-  color: rgba(212,197,176,0.2);
-}
-
-/* scrollable card list */
-#ssel-list {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 10px 12px 8px;
-  display: flex; flex-direction: column; gap: 10px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(200,71,42,0.2) transparent;
-}
-#ssel-list::-webkit-scrollbar { width: 2px; }
-#ssel-list::-webkit-scrollbar-thumb { background: rgba(200,71,42,0.2); }
-
-/* card */
-.ssel-card {
-  position: relative;
-  cursor: pointer;
-  border: 1px solid rgba(200,71,42,0.1);
-  overflow: hidden;
-  transition: border-color 0.2s, transform 0.2s;
-  background: rgba(8,0,4,0.6);
-  flex-shrink: 0;
-}
-.ssel-card:hover { border-color: rgba(200,71,42,0.35); transform: translateX(-3px); }
-.ssel-card.active { border-color: rgba(200,71,42,0.6); }
-
-/* cover image - 16:9 */
-.ssel-cover {
-  position: relative;
-  width: 100%; padding-top: 52%;
-  overflow: hidden;
-}
-.ssel-cover-img {
-  position: absolute; inset: 0;
-  background-size: cover; background-position: center;
-  filter: saturate(0.45) brightness(0.65);
-  transition: filter 0.4s, transform 0.4s;
-}
-.ssel-card:hover .ssel-cover-img,
-.ssel-card.active .ssel-cover-img {
-  filter: saturate(0.75) brightness(0.85);
-  transform: scale(1.04);
-}
-/* gradient overlay on cover */
-.ssel-cover::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom,
-    rgba(0,0,0,0.1) 0%,
-    rgba(0,0,0,0.0) 40%,
-    rgba(2,0,4,0.85) 100%);
-  pointer-events: none;
-}
-
-/* badge — top-right of cover */
-.ssel-badge {
-  position: absolute; top: 8px; right: 8px; z-index: 2;
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.5rem; letter-spacing: 2px;
-  padding: 3px 7px;
-  background: rgba(200,71,42,0.92); color: #fff;
-  font-weight: 700; text-transform: uppercase;
-  clip-path: polygon(0 0, calc(100% - 4px) 0, 100% 4px, 100% 100%, 0 100%);
-}
-.ssel-badge.ongoing {
-  background: rgba(34,160,80,0.9);
-}
-
-/* card body */
-.ssel-body {
-  padding: 10px 12px 12px;
-}
-.ssel-date {
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.55rem; letter-spacing: 2px;
-  color: rgba(200,71,42,0.5); text-transform: uppercase;
-  margin-bottom: 4px;
-}
-.ssel-title {
-  font-family: var(--font-display, 'Special Gothic Expanded One');
-  font-size: 0.85rem; letter-spacing: 1px;
-  color: rgba(230,210,200,0.85); text-transform: uppercase;
-  margin-bottom: 6px;
-  transition: color 0.2s;
-  line-height: 1.15;
-}
-.ssel-card:hover .ssel-title,
-.ssel-card.active .ssel-title { color: #fff; }
-
-.ssel-blurb {
-  font-family: var(--font-body, 'Comic Neue');
-  font-size: 0.72rem; line-height: 1.55;
-  color: rgba(212,197,176,0.38);
-  margin-bottom: 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.ssel-card.active .ssel-blurb { color: rgba(212,197,176,0.55); }
-
-.ssel-enter-btn {
-  display: flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.6rem; letter-spacing: 2.5px;
-  color: var(--red); background: none;
-  border: 1px solid rgba(200,71,42,0.4);
-  padding: 6px 12px; cursor: pointer;
-  text-transform: uppercase;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
-}
-.ssel-enter-btn:hover {
-  background: rgba(200,71,42,0.15);
-  border-color: var(--red);
-  color: #fff;
-}
-.ssel-enter-btn::after { content: '→'; font-size: 0.8rem; }
-
-/* footer */
-#ssel-ftr {
-  padding: 10px 16px;
-  border-top: 1px solid rgba(200,71,42,0.08);
-  display: flex; align-items: center; gap: 8px;
-  flex-shrink: 0;
-}
-#ssel-signal {
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.52rem; letter-spacing: 2px;
-  color: rgba(200,71,42,0.25); text-transform: uppercase;
-}
-#ssel-signal span { color: rgba(80,220,120,0.7); animation: blink 2s steps(1) infinite; }
-
-/* ── MOBILE: bottom sheet ── */
-@media (max-width: 700px) {
-  #story-selector {
-    top: auto; left: 0; right: 0; bottom: 0;
-    width: 100%; height: auto; max-height: 55vh;
-    border-left: none; border-top: 1px solid rgba(200,71,42,0.15);
-    transform: translateY(100%);
-    transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
-  }
-  #synopsis-gate.show #story-selector { transform: translateY(0); }
-  #synopsis-gate.show #story-selector[data-collapsed="1"] { transform: translateY(calc(100% - 26px)); }
-  #ssel-tab {
-    left: 50%; top: -26px; transform: translateX(-50%);
-    width: 64px; height: 26px;
-    border: 1px solid rgba(200,71,42,0.18); border-bottom: none;
-    writing-mode: horizontal-tb;
-    font-size: 0.6rem;
-  }
-  #ssel-list {
-    max-height: 36vh;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto; overflow-y: hidden;
-    padding: 10px 12px;
-    gap: 10px;
-  }
-  .ssel-card { width: 220px; flex-shrink: 0; }
-  .ssel-cover { padding-top: 56%; }
-}
-
-
-/* pull tab */
-#ssel-tab {
-  position: absolute; left: -28px; top: 50%;
-  transform: translateY(-50%);
-  width: 28px; height: 64px;
-  background: rgba(200,71,42,0.07);
-  border: 1px solid rgba(200,71,42,0.14); border-right: none;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer; transition: background 0.2s;
-  writing-mode: vertical-rl;
-  font-family: var(--font-mono, 'IBM Plex Mono');
-  font-size: 0.2rem; letter-spacing: 2px;
-  color: rgba(200,71,42,0.35); text-transform: uppercase; user-select: none;
-}
-#ssel-tab:hover { background: rgba(200,71,42,0.14); color: rgba(200,71,42,0.7); }
-
-@media (max-width: 700px) {
-  #story-selector {
-    top: auto; left: 0; right: 0; bottom: 0;
-    width: 100%; height: auto; max-height: 52vh;
-    border-left: none; border-top: 1px solid rgba(200,71,42,0.15);
-    transform: translateY(100%);
-    transition: transform 0.45s cubic-bezier(0.16,1,0.3,1);
-  }
-  #synopsis-gate.show #story-selector { transform: translateY(0); }
-  /* On mobile, start collapsed until user taps tab */
-  #synopsis-gate.show #story-selector[data-collapsed="1"] { transform: translateY(calc(100% - 26px)); }
-  #ssel-tab {
-    left: 50%; top: -26px; transform: translateX(-50%);
-    width: 64px; height: 26px;
-    border: 1px solid rgba(200,71,42,0.14); border-bottom: none;
-    writing-mode: horizontal-tb;
-  }
-  #ssel-list { max-height: 34vh; }
-  .ssel-card.active .ssel-blurb { display: none; }
-  .ssel-card.active .ssel-enter-btn { display: none; }
-}
-
 /* ── STORY SHELF ────────────────────────────────────────────── */
 #ced-story-shelf {
   width: 100%; padding: 8px 10px 0; flex-shrink: 0;
@@ -3671,7 +3415,6 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   </div>
 </div>
 
-
 <!-- ═══ PHASE 3: READER SHELL ═══ -->
 <div id="reader-shell">
 
@@ -3865,20 +3608,6 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
             </button>
           </div>
         </div>
-
-        <!-- ── STORY SELECTOR PANEL ── -->
-        <div id="story-selector">
-          <div id="ssel-tab">SERIES</div>
-          <div id="ssel-hdr">
-            <div id="ssel-label">// Transmissions</div>
-            <div id="ssel-count-val">-- STORIES</div>
-          </div>
-          <div id="ssel-list"><!-- populated by sselRender() --></div>
-          <div id="ssel-ftr">
-            <div id="ssel-signal">SIG <span>●</span> LIVE</div>
-          </div>
-        </div>
-
       </div>
 
       <!-- Chapter reader -->
@@ -6809,6 +6538,7 @@ function startGateTwitch() {
 })();
 
 document.getElementById('btn-yes').addEventListener('click', () => {
+  // YES — proceed to synopsis
   sessionStorage.setItem('as_nav', 'synopsis');
   document.getElementById('world-gate').style.transition = 'opacity 0.8s';
   document.getElementById('world-gate').style.opacity = '0';
@@ -6818,7 +6548,6 @@ document.getElementById('btn-yes').addEventListener('click', () => {
     showSynopsis();
   }, 800);
 });
-
 
 document.getElementById('btn-no').addEventListener('click', () => {
   // NO — wrong world response
@@ -6884,141 +6613,18 @@ function synApplyStory(story) {
   }
 }
 
-/* ── STORY SELECTOR PANEL ────────────────────────────────── */
-
-const SSEL_STORIES = [
-  {
-    id: 'another-sky',
-    title: 'ANOTHER SKY',
-    date: 'MARCH 26, 2032',
-    blurb: 'A man wakes in a city he recognises. Everything is wrong.',
-    badge: 'NEW', badgeClass: 'ongoing',
-    thumb: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=300&q=70',
-    thumbPos: 'center 20%',
-  },
-  {
-    id: 'simulunas',
-    title: 'SIMULUNAS',
-    date: 'NOVEMBER 2048',
-    blurb: 'The Moon dome is cracking. Someone inside is broadcasting.',
-    badge: 'COMPLETE', badgeClass: '',
-    thumb: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=300&q=70',
-    thumbPos: 'center 40%',
-  },
-];
-
-let sselActiveId = 'another-sky';
-
-function sselRender() {
-  const list = document.getElementById('ssel-list');
-  if (!list) return;
-
-  list.innerHTML = '';
-  SSEL_STORIES.forEach(story => {
-    const ced = cedStories.find(s => s.id === story.id);
-    const thumb = (ced && ced.cover_image) ? ced.cover_image : story.thumb;
-    const isActive = story.id === sselActiveId;
-
-    const card = document.createElement('div');
-    card.className = 'ssel-card' + (isActive ? ' active' : '');
-    card.dataset.sselId = story.id;
-    card.innerHTML = `
-      <div class="ssel-cover">
-        <div class="ssel-cover-img" style="background-image:url('${thumb}');background-position:${story.thumbPos}"></div>
-        <span class="ssel-badge ${story.badgeClass}">${story.badge}</span>
-      </div>
-      <div class="ssel-body">
-        <div class="ssel-date">${story.date}</div>
-        <div class="ssel-title">${story.title}</div>
-        <div class="ssel-blurb">${story.blurb}</div>
-        <button class="ssel-enter-btn">ENTER</button>
-      </div>`;
-
-    card.addEventListener('click', (e) => {
-      if (e.target.closest('.ssel-enter-btn')) {
-        sselEnter(story.id);
-        return;
-      }
-      sselSelect(story.id);
-    });
-    list.appendChild(card);
-  });
-
-  const countEl = document.getElementById('ssel-count-val');
-  if (countEl) countEl.textContent = SSEL_STORIES.length.toString().padStart(2,'0') + ' STORIES';
-}
-
-function sselSelect(id) {
-  if (id === sselActiveId) return;
-  sselActiveId = id;
-
-  document.querySelectorAll('.ssel-card').forEach(c => {
-    c.classList.toggle('active', c.dataset.sselId === id);
-  });
-
-  // Apply story to synopsis content
-  const ced = cedStories.find(s => s.id === id) || { id };
-  synApplyStory(ced);
-
-  // Sky state
-  const gate = document.getElementById('synopsis-gate');
-  if (gate) {
-    gate.classList.remove('sky-grey','sky-rainy','sky-stormy','sky-another');
-    if (id === 'another-sky') gate.classList.add('sky-another');
-    else gate.classList.add('sky-rainy');
-  }
-}
-
-function sselEnter(id) {
-  sselActiveId = id;
-  cedActiveStoryId = id;
-  const ced = cedStories.find(s => s.id === id) || cedStories[0];
-  synApplyStory(ced);
-  beginReading();
-}
-
-function sselInit() {
-  sselRender();
-  const tab = document.getElementById('ssel-tab');
-  const sel = document.getElementById('story-selector');
-  // Start collapsed on mobile
-  if (sel && window.innerWidth <= 700) {
-    sel.dataset.collapsed = '1';
-    tab.textContent = '▲';
-  }
-  if (tab) {
-    tab.addEventListener('click', () => {
-      const sel = document.getElementById('story-selector');
-      if (!sel) return;
-      const collapsed = sel.dataset.collapsed === '1';
-      if (collapsed) {
-        sel.style.transform = '';
-        sel.dataset.collapsed = '0';
-        tab.textContent = window.innerWidth <= 700 ? '▼' : 'SERIES';
-      } else {
-        const isMobile = window.innerWidth <= 700;
-        sel.style.transform = isMobile ? 'translateY(calc(100% - 26px))' : 'translateX(calc(100% - 28px))';
-        sel.dataset.collapsed = '1';
-        tab.textContent = window.innerWidth <= 700 ? '▲' : '▶';
-      }
-    });
-  }
-}
-
 function showSynopsis() {
   history.pushState({ as_view: 'synopsis' }, '', location.href.split('#')[0] + '#synopsis');
   document.getElementById('synopsis-gate').classList.add('show');
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
   document.getElementById('synopsis-gate').style.display = 'flex';
+  // Hide mobile chapter bar on synopsis screen
   const mobBar = document.getElementById('mob-bar');
   if (mobBar) mobBar.classList.remove('reader-active');
   updateSkyStat(currentChapterIdx);
+  // Start rain atmosphere
   setTimeout(() => startSynopsisRain(), 300);
-  // Init story selector (idempotent)
-  if (!document.getElementById('ssel-list').children.length) {
-    setTimeout(() => sselInit(), 100);
-  }
 }
 
 let decrypted = false;
