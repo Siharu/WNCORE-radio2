@@ -756,6 +756,10 @@ body {
   #ssp-grid { gap: 20px; }
   .ssp-card { width: min(220px, 80vw); }
 }
+@media (max-width: 480px) {
+  #ssp-grid { flex-direction: column; align-items: center; }
+  .ssp-card { width: min(260px, 88vw); }
+}
 
 /* ═══════════════════════════════════════════════════
    ── PHASE 3: MAIN READER SHELL ──
@@ -1176,7 +1180,7 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 @media (max-width: 700px) {
-  #synopsis-gate { padding: 40px 20px 54vh 20px !important; }
+  #synopsis-gate { padding: clamp(24px, 6vw, 40px) 20px 40px !important; }
 }
 #synopsis-gate.show { display: flex; }
 
@@ -2341,6 +2345,7 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 #ced-shell {
   display: flex; flex-direction: column; width: 100%; height: 100%;
   background: #050000;
+  color: rgba(200,100,80,0.7); /* fallback for any uncoloured child */
   font-family: var(--font-mono, 'IBM Plex Mono');
   position: relative;
   overflow: hidden;
@@ -4692,6 +4697,7 @@ select.ssp-edit-field option {
 #cw-wrap {
   position: relative;
   margin-bottom: 6px;
+  color: var(--cw-ink2);
   font-family: var(--font-mono, 'IBM Plex Mono', monospace);
 }
 
@@ -6558,6 +6564,17 @@ Use toolbar effects on selected text:
   resize();
   window.addEventListener('resize', () => resize());
   requestAnimationFrame(draw);
+
+  // Pause rAF when tab hidden — saves battery and CPU
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      running = false;
+      cancelAnimationFrame(raf);
+    } else if (!transitioning) {
+      running = true;
+      raf = requestAnimationFrame(draw);
+    }
+  });
 })();
 
 
@@ -7039,7 +7056,7 @@ const SSEL_STORIES = [
     date: 'MARCH 26, 2032',
     blurb: 'A man wakes in a city he recognises. Everything is wrong.',
     badge: 'NEW', badgeClass: 'ongoing',
-    thumb: 'https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=300&q=70',
+    thumb: 'https://picsum.photos/seed/anothersky/300/420',
     thumbPos: 'center 20%',
   },
   {
@@ -7048,7 +7065,7 @@ const SSEL_STORIES = [
     date: 'NOVEMBER 2048',
     blurb: 'The Moon dome is cracking. Someone inside is broadcasting.',
     badge: 'COMPLETE', badgeClass: '',
-    thumb: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=300&q=70',
+    thumb: 'https://picsum.photos/seed/simulunas/300/420',
     thumbPos: 'center 40%',
     wip: true,
   },
@@ -7160,7 +7177,7 @@ function sspBuildReel(canvas, storyId) {
     const t = pool[poolIdx % pool.length];
     poolIdx++;
     if (poolIdx >= pool.length) { pool = [...topics].sort(() => Math.random() - 0.5); poolIdx = 0; }
-    return `https://source.unsplash.com/400x600/?${encodeURIComponent(t)}&sig=${Date.now()+poolIdx}`;
+    return `https://picsum.photos/seed/${encodeURIComponent(t)}${poolIdx}/400/600`;
   }
   function preload(cb) {
     const img = poolIdx % 2 === 0 ? imgA : imgB;
@@ -7866,7 +7883,7 @@ document.addEventListener('DOMContentLoaded', initPage);
   function buildPool() {
     const shuffled = [...TOPICS].sort(() => Math.random() - 0.5);
     return shuffled.map((t, i) =>
-      `https://source.unsplash.com/${W}x${H}/?${encodeURIComponent(t)}&sig=${Date.now() + i}`
+      `https://picsum.photos/seed/${encodeURIComponent(t)}${i}/800/500`
     );
   }
 
@@ -7916,12 +7933,15 @@ document.addEventListener('DOMContentLoaded', initPage);
     return slices;
   }
 
+  // Resize only on actual size change, not every frame
+  const _glitchRO = new ResizeObserver(() => resize());
+  _glitchRO.observe(canvas);
+
   function drawFrame(ts) {
     rAFId = requestAnimationFrame(drawFrame);
     const dt = ts - lastFrame;
     lastFrame = ts;
 
-    resize();
     const cw = canvas.width, ch = canvas.height;
 
     if (!curImg) {
@@ -10720,6 +10740,16 @@ async function generateNewVolume(silent) {
     if (window._stormTimer) { clearTimeout(window._stormTimer); window._stormTimer = null; }
     // NOTE: do NOT reset audioUnlocked here — gesture already unlocked
   };
+
+  // Pause when tab hidden
+  document.addEventListener('visibilitychange', () => {
+    if (!canvas) return;
+    if (document.hidden) {
+      if (running) { running = false; cancelAnimationFrame(raf); }
+    } else {
+      if (canvas.classList.contains('active') && !running) { running = true; draw(); }
+    }
+  });
 })();
 
 </script>
@@ -10837,6 +10867,15 @@ async function generateNewVolume(silent) {
     moonImg.src = 'assets/celestial/moon/' + moonFrame + '.png';
   }
   moonTimer = setInterval(tickMoon, 1000 / MOON_FPS);
+
+  // Pause moon animation when tab is hidden
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      clearInterval(moonTimer); moonTimer = null;
+    } else if (!moonTimer) {
+      moonTimer = setInterval(tickMoon, 1000 / MOON_FPS);
+    }
+  });
 
   // Show a planet (or moon if idx === -1)
   function showBody(idx) {
