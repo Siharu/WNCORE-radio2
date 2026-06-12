@@ -780,9 +780,14 @@ body {
    T = TV      · wide cinematic, large type, max-width expanded
 ═══════════════════════════════════════════════════ */
 
-/* ── M: force narrow mobile column regardless of actual viewport ── */
-html[data-view="M"] #reader-shell { max-width: 430px; margin: 0 auto; }
+/* ── M: mobile emulator — full-viewport shell, narrow centered column ── */
+/* Shell fills viewport so header (sticky) spans edge-to-edge */
+html[data-view="M"] #reader-shell { max-width: 100%; margin: 0; }
+/* as-body becomes a centered narrow column; switch to flex-column so mob-bar stacks above as-main */
+html[data-view="M"] #as-body { max-width: 430px; margin-left: auto; margin-right: auto; width: 100%; flex-direction: column; }
 html[data-view="M"] #as-header { padding: 0 12px; min-height: 50px; }
+/* signal-meter (fixed) aligns to the 430px column */
+html[data-view="M"] #signal-meter { max-width: 430px; left: 50%; transform: translateX(-50%); right: auto; }
 html[data-view="M"] #hdr-status-row .hdr-stat:nth-child(n+3) { display: none; }
 html[data-view="M"] #hdr-sub { display: none; }
 html[data-view="M"] #as-sidebar { display: none !important; }
