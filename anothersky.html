@@ -4016,11 +4016,8 @@ select.ssp-edit-field option {
     <button id="sb-toggle-btn" onclick="sbToggle()" title="Toggle archive sidebar">ARCHIVE</button>
   </div>
 
-  <!-- Body -->
-  <div id="as-body">
-
-    <!-- Sidebar -->
-    <nav id="as-sidebar">
+  <!-- Sidebar — position:fixed, lives outside flex containers so it can't create phantom columns -->
+  <nav id="as-sidebar">
       <div id="sb-archive-header">
         <span id="sb-archive-label">ANOTHER SKY</span>
         <div id="sb-archive-meta">
@@ -4062,6 +4059,9 @@ select.ssp-edit-field option {
         <button class="sb-tool-btn" id="sb-apoclog-btn" onclick="openApocLog()"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:4px"><rect x="2" y="1" width="8" height="11" rx="0.5" stroke="currentColor" stroke-width="1" fill="none" opacity="0.8"/><line x1="4" y1="4" x2="8" y2="4" stroke="currentColor" stroke-width="0.8" opacity="0.7"/><line x1="4" y1="6" x2="8" y2="6" stroke="currentColor" stroke-width="0.8" opacity="0.7"/><line x1="4" y1="8" x2="7" y2="8" stroke="currentColor" stroke-width="0.8" opacity="0.5"/><line x1="9" y1="8" x2="12" y2="5" stroke="currentColor" stroke-width="0.8" opacity="0.6"/><circle cx="11.5" cy="4.5" r="1.2" fill="currentColor" opacity="0.85"/></svg> APOCALYPSE LOG</button>
       </div>
     </nav>
+
+  <!-- Body — only mob-bar and as-main are flex children here -->
+  <div id="as-body">
 
     <!-- Mobile chapter bar — MUST be outside #as-main (sibling) so sticky works on iOS Safari.
          overflow:auto on a parent breaks position:sticky for children. -->
