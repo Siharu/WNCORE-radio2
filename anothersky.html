@@ -796,7 +796,7 @@ html[data-view="M"] .ch-nav-btn { width: 100%; min-height: 52px; }
 html[data-view="M"] #syn-box { max-width: 100%; padding: 0; }
 html[data-view="M"] #syn-title { font-size: clamp(2rem, 10vw, 3rem); }
 html[data-view="M"] #synopsis-gate { padding: 24px 18px 40px !important; align-items: flex-start; }
-html[data-view="M"] #ssp-grid { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; }
+html[data-view="M"] #ssp-grid { flex-wrap: wrap; overflow-x: hidden; justify-content: center; }
 html[data-view="M"] .ssp-card { width: 200px; flex-shrink: 0; }
 
 /* ── T: TV / wide display ── */
@@ -1301,7 +1301,15 @@ body.sb-open #sb-backdrop { display: block; }
 @media (max-width: 700px) {
   #synopsis-gate { padding: clamp(24px, 6vw, 40px) 20px 40px !important; }
 }
-#synopsis-gate.show { display: flex; }
+#synopsis-gate.show {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
 
 /* ── SKY PARALLAX LAYERS — GPU composited via transform ── */
 .sky-layer {
