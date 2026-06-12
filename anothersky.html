@@ -537,7 +537,8 @@ body {
   display: none; position: fixed; inset: 0; z-index: 150;
   background: radial-gradient(ellipse at center, #0a0002 0%, #000 70%);
   align-items: center; justify-content: center;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 #story-select-phase.show { display: flex; }
 
@@ -751,19 +752,70 @@ body {
 
 /* ── MOBILE ── */
 @media (max-width: 700px) {
-  #ssp-inner { gap: 24px; padding: 24px 0 32px; }
+  #ssp-inner { gap: 20px; padding: 24px 16px 40px; width: 100%; }
   #ssp-title { font-size: clamp(1.3rem, 6vw, 1.8rem); }
-  #ssp-grid { gap: 20px; }
-  .ssp-card { width: min(220px, 80vw); }
-}
-@media (max-width: 480px) {
-  #ssp-grid { flex-direction: column; align-items: center; }
-  .ssp-card { width: min(260px, 88vw); }
+  /* Cards sit side by side, scroll horizontally */
+  #ssp-grid {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 16px;
+    overflow-x: auto;
+    overflow-y: visible;
+    width: 100%;
+    padding: 8px 4px 16px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  #ssp-grid::-webkit-scrollbar { display: none; }
+  .ssp-card { width: 200px; flex-shrink: 0; }
 }
 
 /* ═══════════════════════════════════════════════════
    ── PHASE 3: MAIN READER SHELL ──
 ═══════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   VIEW MODE OVERRIDES  (html[data-view])
+   M = Mobile  · narrow 390px column, mobile media queries forced
+   P = PC      · default fluid layout (no overrides)
+   T = TV      · wide cinematic, large type, max-width expanded
+═══════════════════════════════════════════════════ */
+
+/* ── M: force narrow mobile column regardless of actual viewport ── */
+html[data-view="M"] #reader-shell { max-width: 430px; margin: 0 auto; }
+html[data-view="M"] #as-header { padding: 0 12px; min-height: 50px; }
+html[data-view="M"] #hdr-status-row .hdr-stat:nth-child(n+3) { display: none; }
+html[data-view="M"] #hdr-sub { display: none; }
+html[data-view="M"] #as-sidebar { display: none !important; }
+html[data-view="M"] #sb-toggle-strip { display: none !important; }
+html[data-view="M"] #mob-bar { display: flex !important; }
+html[data-view="M"] #hdr-right { display: none !important; }
+html[data-view="M"] #ch-reader { max-width: 100%; padding: 20px 18px 48px; }
+html[data-view="M"] #ch-body { font-size: 1.02rem; line-height: 1.95; }
+html[data-view="M"] .ch-nav { flex-direction: column; gap: 8px; }
+html[data-view="M"] .ch-nav-btn { width: 100%; min-height: 52px; }
+html[data-view="M"] #syn-box { max-width: 100%; padding: 0; }
+html[data-view="M"] #syn-title { font-size: clamp(2rem, 10vw, 3rem); }
+html[data-view="M"] #synopsis-gate { padding: 24px 18px 40px !important; align-items: flex-start; }
+html[data-view="M"] #ssp-grid { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; }
+html[data-view="M"] .ssp-card { width: 200px; flex-shrink: 0; }
+
+/* ── T: TV / wide display ── */
+html[data-view="T"] #reader-shell { max-width: 100%; }
+html[data-view="T"] #as-body { max-width: 1600px; margin: 0 auto; width: 100%; }
+html[data-view="T"] #as-sidebar { width: 320px; }
+html[data-view="T"] #ch-reader { max-width: 960px; padding: 64px 80px 100px; }
+html[data-view="T"] #ch-body { font-size: 1.28rem; line-height: 2.1; }
+html[data-view="T"] #ch-body p:first-of-type::first-letter { font-size: 5rem; margin-right: 14px; margin-top: 14px; }
+html[data-view="T"] .ch-file-title { font-size: clamp(2rem, 3vw, 3.2rem); }
+html[data-view="T"] .ch-nav-btn { padding: 20px 16px; font-size: 0.56rem; }
+html[data-view="T"] #syn-title { font-size: clamp(3rem, 5vw, 6rem); }
+html[data-view="T"] #syn-text { font-size: 1.15rem; line-height: 2.1; max-width: 800px; }
+html[data-view="T"] #as-header { min-height: 72px; padding: 0 48px; }
+html[data-view="T"] .hdr-stat-label { font-size: 0.42rem; }
+html[data-view="T"] .hdr-stat-val { font-size: 0.72rem; }
+html[data-view="T"] #ssp-grid { gap: 40px; }
+html[data-view="T"] .ssp-card { width: 340px; }
+
 #reader-shell {
   display: none; min-height: 100vh; min-height: 100dvh;
   flex-direction: column;
@@ -877,19 +929,86 @@ body {
 #as-body {
   display: flex; flex: 1; min-height: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* ── SIDEBAR ── */
 #as-sidebar {
-  width: 220px; flex-shrink: 0;
+  width: 260px; flex-shrink: 0;
   background: var(--surface);
   border-right: 1px solid var(--brd);
-  position: sticky; top: 60px;
+  position: fixed;
+  top: 60px; left: 0;
   height: calc(100vh - 60px);
   display: flex; flex-direction: column;
   overflow: hidden;
-  transition: background 0.6s, border-color 0.6s;
+  z-index: 200;
+  transform: translateX(-260px);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1), background 0.6s, border-color 0.6s;
+  will-change: transform;
+}
+#as-sidebar.open {
+  transform: translateX(0);
+  box-shadow: 4px 0 32px rgba(0,0,0,0.7);
+}
+
+/* Mobile: sidebar hidden entirely — mob-bar + chapter drawer handles navigation */
+@media (max-width: 700px) {
+  #as-sidebar { display: none !important; }
+  #sb-toggle-strip { display: none !important; }
+}
+
+/* Toggle strip — anchored to top-left below header, not mid-screen */
+#sb-toggle-strip {
+  position: fixed;
+  top: 58px;
+  left: 0;
+  z-index: 201;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  transition: left 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+#as-sidebar.open ~ * #sb-toggle-strip,
+body.sb-open #sb-toggle-strip { left: 260px; }
+#sb-toggle-btn {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  background: var(--surface);
+  border: 1px solid var(--brd);
+  border-left: none;
+  color: var(--red);
+  font-family: var(--font-mono, 'IBM Plex Mono');
+  font-size: 0.28rem;
+  letter-spacing: 3px;
+  padding: 14px 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s, left 0.28s cubic-bezier(0.4,0,0.2,1);
+  user-select: none;
+}
+#sb-toggle-btn:hover { background: rgba(200,0,0,0.08); color: var(--dred); }
+
+/* Hide sidebar toggle strip until reader is active */
+#sb-toggle-strip { display: none; }
+body.reader-shell-active #sb-toggle-strip { display: flex; }
+#sb-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 199;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(1px);
+}
+body.sb-open #sb-backdrop { display: block; }
+
+/* Push main content when sidebar open on wide screens */
+@media (min-width: 900px) {
+  body.sb-open #as-body { padding-left: 260px; transition: padding-left 0.28s cubic-bezier(0.4,0,0.2,1); }
+  #as-body { transition: padding-left 0.28s cubic-bezier(0.4,0,0.2,1); }
+  body.sb-open #sb-backdrop { display: none; }
 }
 
 #sb-archive-header {
@@ -1307,6 +1426,12 @@ body {
   mix-blend-mode: screen;
 }
 
+/* Glitch reel is entry-gate atmosphere only — hide it on synopsis screen */
+#synopsis-gate.synopsis-mode #glitch-reel { display: none; }
+/* Show reel only for simulunas synopsis, never for another-sky */
+#synopsis-gate.sky-another #glitch-reel { display: none !important; }
+#synopsis-gate.sky-rainy:not(.sky-another) #glitch-reel { display: block; }
+
 /* push syn-box above everything */
 #syn-box { position: relative; z-index: 9; }
 /* lightning flash overlay */
@@ -1567,7 +1692,7 @@ to   { background-size: 100px 71px; }
   margin: 0 auto; padding: 48px 48px 80px;
 }
 #ch-reader.show { display: flex; }
-@media(max-width: 700px) { #ch-reader { padding: 24px 20px 80px; } }
+@media(max-width: 700px) { #ch-reader { padding: 24px 20px 40px; } }
 
 @media (max-width: 480px) {
   /* Chapter reader body — slightly smaller, tighter line height */
@@ -1690,6 +1815,8 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   color: var(--dred2); font-family: var(--font-mono, 'IBM Plex Mono');
   font-size: 0.42rem; letter-spacing: 2px; cursor: pointer;
   text-transform: uppercase; transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 .ch-nav-btn:hover:not(:disabled) { border-color: var(--red); color: var(--red); }
 .ch-nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
@@ -2098,7 +2225,6 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 }
 
 @media(max-width: 700px) {
-  #as-sidebar { display: none; }
   #mob-bar { display: flex; }
   #as-header .hdr-stat:not(:first-child) { display: none; }
 }
@@ -3442,8 +3568,8 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   }
   #syn-encrypted,
   #syn-text {
-    font-size: clamp(0.78rem, 3.5vw, 0.95rem);
-    line-height: 1.8;
+    font-size: clamp(0.9rem, 3.5vw, 1.0rem);
+    line-height: 1.9;
     -webkit-hyphens: auto;
     hyphens: auto;
     overflow-wrap: break-word;
@@ -3462,15 +3588,20 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 
 /* Chapter reader — tighten on mobile */
 @media (max-width: 480px) {
-  #ch-reader { padding: 20px 16px 64px; }
+  /* More breathing room, not less */
+  #ch-reader { padding: 20px 18px 48px; }
   .ch-file-title { font-size: clamp(1.3rem, 6vw, 2rem); }
-  #ch-body { font-size: 0.95rem; line-height: 1.9; }
+  /* Slightly larger + more readable line height on small screens */
+  #ch-body { font-size: 1.02rem; line-height: 1.95; }
+  /* Drop cap — shrink so it doesn't crowd the first line on narrow columns */
   #ch-body p:first-of-type::first-letter {
-    font-size: 2.4rem;
+    font-size: 2.2rem;
     margin-right: 6px;
+    margin-top: 4px;
   }
-  .ch-nav { flex-direction: column; gap: 8px; }
-  .ch-nav-btn { width: 100%; }
+  /* Nav buttons stacked, full-width, big tap targets */
+  .ch-nav { flex-direction: column; gap: 8px; margin-top: 40px; }
+  .ch-nav-btn { width: 100%; min-height: 52px; font-size: 0.44rem; }
 }
 
 /* Sidebar shown via mobile bar — sticky at top */
@@ -3879,6 +4010,12 @@ select.ssp-edit-field option {
   <!-- Signal meter (progress) -->
   <div id="signal-meter"><div id="signal-fill"></div></div>
 
+  <!-- Sidebar backdrop + toggle — fixed overlays, must be OUTSIDE flex containers -->
+  <div id="sb-backdrop" onclick="sbToggle()"></div>
+  <div id="sb-toggle-strip">
+    <button id="sb-toggle-btn" onclick="sbToggle()" title="Toggle archive sidebar">ARCHIVE</button>
+  </div>
+
   <!-- Body -->
   <div id="as-body">
 
@@ -3938,8 +4075,8 @@ select.ssp-edit-field option {
           <img src="assets/lucid/Chevron-Arrow-Down.png" alt="" class="lucid-icon" id="mob-ch-trigger-arrow" style="width:10px;height:10px;vertical-align:middle">
         </button>
         <div id="mob-bar-tools">
-          <button class="hdr-btn" onclick="openLogbookDrawer()" title="Logbook — world intel">
-            <img src="assets/lucid/File-Text.png" alt="Logbook" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
+          <button class="hdr-btn" onclick="sbToggle()" title="Signal feed &amp; chapters" id="mob-sb-btn">
+            <img src="assets/lucid/File-Text.png" alt="Archive" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
           </button>
           <button class="hdr-btn" onclick="toggleReaderOpts()">
             <img src="assets/lucid/Gear.png" alt="Options" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
@@ -4096,6 +4233,15 @@ select.ssp-edit-field option {
       <span class="ro-label">FOCUS MODE</span>
       <label class="ro-toggle"><input type="checkbox" id="ro-focus" onchange="toggleFocus(this.checked)"><span class="ro-track"></span></label>
     </div>
+
+    <hr class="ro-divider">
+    <div class="ro-section">VIEW MODE</div>
+    <div class="ro-row">
+      <button class="ro-btn" onclick="setViewMode('M')" id="vm-M-btn">M</button>
+      <button class="ro-btn active" onclick="setViewMode('P')" id="vm-P-btn">P</button>
+      <button class="ro-btn" onclick="setViewMode('T')" id="vm-T-btn">T</button>
+    </div>
+    <div id="ro-vm-label" style="font-size:0.26rem;color:var(--text3);letter-spacing:1px;margin-top:4px;text-align:center;">// PC · default</div>
 
     <hr class="ro-divider">
     <div class="ro-section">TRANSLATE</div>
@@ -5527,22 +5673,6 @@ window.cwToggleSearch = function() {
 
 // ── SEARCH INJECT — attaches results to next message ─────────
 let cwPendingSearch = null;
-window.cwSearchInject = async function() {
-  const inp = document.getElementById('cw-search-inp');
-  const status = document.getElementById('cw-search-status');
-  const q = inp?.value?.trim();
-  if (!q) return;
-  status.textContent = '// searching…';
-  inp.disabled = true;
-  try {
-    // We'll pass searchQuery to /api/writer on the next send
-    cwPendingSearch = q;
-    status.textContent = '// query queued — will inject on next send: "' + q.slice(0, 40) + '"';
-    inp.value = '';
-  } finally {
-    inp.disabled = false;
-  }
-};
 
 // ── IMAGINE PANEL TOGGLE ──────────────────────────────────────
 window.cwToggleImagine = function() {
@@ -5561,25 +5691,6 @@ function showSetup(msg) {
 }
 function hideSetup() {}
 window.cwKeySave = function() {};
-
-// ── QUICK ACTIONS ─────────────────────────────────────────────
-const QUICK_PROMPTS = {
-  dialogue:   'Write a dialogue scene set in the current chapter context. Two characters, tense, lore-grounded.',
-  characters: 'Generate a character sheet for the current chapter or the characters I\'ve been writing about.',
-  outline:    'Generate a chapter outline for what comes next, following the current narrative thread.',
-  continue:   'Continue from where the current chapter text ends. Match the tone and voice.',
-  edit:       'Review the current chapter text for consistency, pacing issues, and lore accuracy. Give specific notes.',
-  lore:       'Run a lore consistency check on the current chapter text against the series bible.',
-  scene:      'Write a new scene set in World-2, 2032, consistent with the current sky stage and outbreak timeline.',
-  horror:     'Layer in horror-effect writing — wrongness, sky degradation, body horror through transformation logic — into the current scene.',
-  search:     'Based on what I\'ve been asking about, what additional research or real-world parallels might strengthen this scene or character?'
-};
-
-window.cwQuick = function(action) {
-  const prompt = QUICK_PROMPTS[action];
-  if (!prompt) return;
-  cwSend(prompt);
-};
 
 // ── SEND ──────────────────────────────────────────────────────
 window.cwSend = async function(overrideMsg) {
@@ -5780,44 +5891,6 @@ function cwAppend(role, text, attachments) {
 }
 
 // ── UTILS ─────────────────────────────────────────────────────
-window.cwClear = function() {
-  cwHistory   = [];
-  cwHistoryLoaded = false;
-  cwLastReply = '';
-  cwAttachments = [];
-  const log = document.getElementById('cw-log');
-  if (log) log.innerHTML = '';
-  renderAttachStrip();
-  cwSetStatus('// ready', false);
-  // also clear from Supabase
-  const userId = cwGetUserId();
-  fetch('/api/writer?action=clear', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userId }),
-  }).catch(() => {});
-  cwAppend('system', '// cleared.');
-};
-
-window.cwCopyLast = function() {
-  if (!cwLastReply) return;
-  navigator.clipboard.writeText(cwLastReply).then(() => {
-    cwSetStatus('// copied!', false);
-    setTimeout(() => cwSetStatus('// ready', false), 1500);
-  });
-};
-
-window.cwInsertLast = function() {
-  if (!cwLastReply) return;
-  const ta = document.getElementById('ced-body');
-  if (!ta) return;
-  const pos = ta.selectionEnd;
-  ta.setRangeText('\n\n' + cwLastReply + '\n\n', pos, pos, 'end');
-  ta.focus();
-  if (window.cedUpdatePreview) window.cedUpdatePreview();
-  cwAppend('system', '// inserted into editor.');
-};
-
 function cwSetStatus(msg, busy) {
   const el = document.getElementById('cw-status');
   if (!el) return;
@@ -6978,6 +7051,8 @@ document.getElementById('btn-yes').addEventListener('click', () => {
   setTimeout(() => {
     document.getElementById('world-gate').style.display = 'none';
     document.getElementById('reader-shell').classList.add('show');
+    document.body.classList.add('reader-shell-active');
+    sbInitState();
     showStorySelect();
   }, 800);
 });
@@ -7451,10 +7526,11 @@ function sselInit() {
 
 function showSynopsis() {
   history.pushState({ as_view: 'synopsis' }, '', location.href.split('#')[0] + '#synopsis');
-  document.getElementById('synopsis-gate').classList.add('show');
+  const sg = document.getElementById('synopsis-gate');
+  sg.classList.add('show', 'synopsis-mode');
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
-  document.getElementById('synopsis-gate').style.display = 'flex';
+  sg.style.display = 'flex';
   const mobBar = document.getElementById('mob-bar');
   if (mobBar) mobBar.classList.remove('reader-active');
   updateSkyStat(currentChapterIdx);
@@ -8033,29 +8109,49 @@ document.addEventListener('DOMContentLoaded', initPage);
     }
   }
 
-  // Boot: load first two images then start
+  // Boot: only load images if reel should actually run (don't waste bandwidth on Another Sky)
   const first = poolIdx % 2 === 0 ? imgA : imgB;
   first.crossOrigin = 'anonymous';
   first.onload = () => {
     curImg = first;
     poolIdx++;
     preloadNext();
-    lastFrame = performance.now();
-    rAFId = requestAnimationFrame(drawFrame);
-  };
-  first.onerror = () => { poolIdx++; preloadNext(); };
-  first.src = nextUrl();
-
-  // Pause when synopsis-gate not visible (perf)
-  const observer = new MutationObserver(() => {
-    const gate = document.getElementById('synopsis-gate');
-    if (!gate) return;
-    if (gate.classList.contains('show') && !rAFId) {
+    if (shouldReelRun()) {
       lastFrame = performance.now();
       rAFId = requestAnimationFrame(drawFrame);
-    } else if (!gate.classList.contains('show') && rAFId) {
+    }
+
+  };
+  first.onerror = () => { poolIdx++; preloadNext(); };
+  // Defer initial image load — only fetch if Simulunas is the active story
+  // (checking on next tick so story classes are set by then)
+  setTimeout(() => {
+    const gate = document.getElementById('synopsis-gate');
+    const isSimulunas = gate && gate.classList.contains('sky-rainy') && !gate.classList.contains('sky-another');
+    const defaultAnother = !gate || (!gate.classList.contains('sky-rainy') && !gate.classList.contains('sky-another'));
+    // Only preload if simulunas is active, or no story is chosen yet (guard both cases)
+    if (!defaultAnother || isSimulunas) first.src = nextUrl();
+  }, 0);
+
+  // Only run glitch reel for Simulunas — Another Sky uses its own sky background
+  function shouldReelRun() {
+    const gate = document.getElementById('synopsis-gate');
+    return gate &&
+           gate.classList.contains('show') &&
+           gate.classList.contains('sky-rainy') &&
+           !gate.classList.contains('sky-another');
+  }
+
+  const observer = new MutationObserver(() => {
+    if (shouldReelRun() && !rAFId) {
+      lastFrame = performance.now();
+      rAFId = requestAnimationFrame(drawFrame);
+    } else if (!shouldReelRun() && rAFId) {
       cancelAnimationFrame(rAFId);
       rAFId = null;
+      // Clear canvas so no stale image bleeds through
+      const c = document.getElementById('glitch-reel');
+      if (c) c.getContext('2d').clearRect(0, 0, c.width, c.height);
     }
   });
   const gate = document.getElementById('synopsis-gate');
@@ -8070,6 +8166,30 @@ async function loadChapters(storyId) {
   chapters = error ? [] : (data || []);
   renderSidebar();
   document.getElementById('sb-count').textContent = chapters.filter(c => c.story_id === 'another-sky').length || chapters.length;
+}
+
+function sbToggle(forceOpen) {
+  const sidebar = document.getElementById('as-sidebar');
+  const strip   = document.getElementById('sb-toggle-strip');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.contains('open');
+  const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+  sidebar.classList.toggle('open', shouldOpen);
+  document.body.classList.toggle('sb-open', shouldOpen);
+  // Move strip only on desktop (strip hidden on mobile)
+  if (strip && window.innerWidth > 700) {
+    strip.style.left = shouldOpen ? '260px' : '0px';
+  }
+  const btn = document.getElementById('sb-toggle-btn');
+  if (btn) btn.textContent = shouldOpen ? '← CLOSE' : 'ARCHIVE';
+  // Update mob-bar sidebar button state
+  const mobBtn = document.getElementById('mob-sb-btn');
+  if (mobBtn) mobBtn.classList.toggle('active', shouldOpen);
+}
+
+// Open sidebar on desktop by default after reader loads
+function sbInitState() {
+  if (window.innerWidth >= 900) sbToggle(true);
 }
 
 function renderSidebar() {
@@ -8162,6 +8282,8 @@ function loadChapter(idx) {
   if (isNaN(idx) || idx < 0 || idx >= chapters.length) return;
   curIdx = idx;
   currentChapterIdx = idx;
+  // Auto-close sidebar on mobile (overlay mode)
+  if (window.innerWidth < 900) sbToggle(false);
   // Persist navigation state so refresh restores this chapter
   sessionStorage.setItem('as_nav', 'reader');
   sessionStorage.setItem('as_ch', String(idx));
@@ -8416,6 +8538,14 @@ function syncReaderUI() {
   });
   const j = document.getElementById('ro-justify'); if (j) j.checked = readerOpts.justify;
   const f = document.getElementById('ro-focus'); if (f) f.checked = readerOpts.focus;
+  // Sync view mode buttons
+  const curVm = document.documentElement.getAttribute('data-view') || 'P';
+  ['M','P','T'].forEach(m => {
+    const btn = document.getElementById('vm-'+m+'-btn');
+    if (btn) btn.classList.toggle('active', m === curVm);
+  });
+  const lbl = document.getElementById('ro-vm-label');
+  if (lbl) lbl.textContent = VM_LABELS?.[curVm] || '';
 }
 
 
@@ -8838,6 +8968,35 @@ function setAmbVol(v) {
 }
 
 function toggleReaderOpts() { document.getElementById('reader-opts-panel').classList.toggle('open'); }
+
+const VM_LABELS = { M: '// MOBILE · narrow column', P: '// PC · default', T: '// TV · wide cinematic' };
+function setViewMode(mode) {
+  document.documentElement.setAttribute('data-view', mode);
+  localStorage.setItem('as_view_mode', mode);
+  // Update button active states
+  ['M','P','T'].forEach(m => {
+    const btn = document.getElementById('vm-'+m+'-btn');
+    if (btn) btn.classList.toggle('active', m === mode);
+  });
+  const lbl = document.getElementById('ro-vm-label');
+  if (lbl) lbl.textContent = VM_LABELS[mode] || '';
+  // On M mode: close sidebar; on P/T: restore sidebar state for screen size
+  if (mode === 'M') {
+    sbToggle(false);
+  } else if (mode === 'P' || mode === 'T') {
+    if (window.innerWidth >= 900) sbToggle(true);
+  }
+}
+// Restore saved view mode on load
+(function() {
+  const saved = localStorage.getItem('as_view_mode') || 'P';
+  if (saved !== 'P') setViewMode(saved);
+  else {
+    // mark P as active on startup
+    const btn = document.getElementById('vm-P-btn');
+    if (btn) btn.classList.add('active');
+  }
+})();
 function setFont(f) { readerOpts.font = f; applyReaderOpts(); syncReaderUI(); saveReaderOpts(); }
 function toggleJustify(v) { readerOpts.justify = v; applyReaderOpts(); saveReaderOpts(); }
 function toggleFocus(v) { readerOpts.focus = v; applyReaderOpts(); saveReaderOpts(); }
@@ -8965,6 +9124,8 @@ function autoDetect() {
     if (scene) { scene.style.display = 'none'; }
     if (gate)  { gate.style.display  = 'none'; }
     document.getElementById('reader-shell').classList.add('show');
+    document.body.classList.add('reader-shell-active');
+    sbInitState();
 
     loadChapters().then(() => {
       if (nav === 'reader' && ch >= 0 && ch < chapters.length) {
@@ -11227,7 +11388,13 @@ async function generateNewVolume(silent) {
   startCrypticRotation();
   // Keyboard close
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeInspect(); closeLogbookDrawer(); }
+    if (e.key === 'Escape') {
+      closeInspect(); closeLogbookDrawer();
+      // Close sidebar on mobile/overlay mode
+      if (document.getElementById('as-sidebar')?.classList.contains('open') && window.innerWidth < 900) {
+        sbToggle(false);
+      }
+    }
   });
 
 })();
