@@ -1462,6 +1462,15 @@ body.sb-open #sb-backdrop { display: block; }
 /* Paper mode — override storm/blackhole layer tints so they don't show */
 :root[data-theme="paper"] #sky-storm { opacity: 0 !important; }
 :root[data-theme="paper"] #sky-blackhole { opacity: 0 !important; }
+/* Paper mode — ensure sky-wrap doesn't get cut off */
+:root[data-theme="paper"] #synopsis-gate.show {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+:root[data-theme="paper"] #sky-wrap {
+  height: 100vh;
+  overflow: hidden;
+}
 
 /* ── SKY WEATHER STATES ── */
 #synopsis-gate.sky-grey   #sky-clouds-top  { opacity: 0.7; }
@@ -3585,6 +3594,12 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     hyphens: auto;
     overflow-wrap: break-word;
   }
+  #syn-btn-wrap {
+    display: flex !important;
+    flex-direction: column;
+    gap: 10px !important;
+    width: 100%;
+  }
   #syn-decrypt-btn,
   #syn-begin-btn {
     width: 100%;
@@ -3603,9 +3618,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 @media (max-width: 700px) {
   #mob-bar {
     position: sticky;
-    top: 44px;
+    top: 0;
     z-index: 48;
-    display: none !important;
+    display: flex !important;
   }
   #mob-bar.reader-active {
     display: flex !important;
@@ -4149,8 +4164,8 @@ select.ssp-edit-field option {
             <p>He has not yet looked at what he lost. He is not ready. The sky won't wait.</p>
           </div>
 
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
-            <button id="syn-decrypt-btn" onclick="doDecrypt()">
+          <div id="syn-btn-wrap" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+            <button id="syn-decrypt-btn" onclick="doDecrypt()" style="display:none">
               <span><img src="assets/lucid/Lock-Open.png" alt="" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle;margin-right:4px">DECRYPT ARCHIVE</span>
             </button>
             <button id="syn-begin-btn" onclick="beginReading()">
@@ -7127,8 +7142,8 @@ const SSEL_STORIES = [
     date: 'MARCH 26, 2032',
     blurb: 'A man wakes in a city he recognises. Everything is wrong.',
     badge: 'NEW', badgeClass: 'ongoing',
-    thumb: 'https://picsum.photos/seed/anothersky/300/420',
-    thumbPos: 'center 20%',
+    thumb: 'https://images.unsplash.com/photo-1534274988757-a28bf1a4c817?w=400&h=560&fit=crop&crop=entropy',
+    thumbPos: 'center 30%',
   },
   {
     id: 'simulunas',
