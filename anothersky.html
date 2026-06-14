@@ -754,72 +754,29 @@ body {
 @media (max-width: 700px) {
   #ssp-inner { gap: 20px; padding: 24px 16px 40px; width: 100%; }
   #ssp-title { font-size: clamp(1.3rem, 6vw, 1.8rem); }
-  /* Cards sit side by side, scroll horizontally */
+  /* Cards centered, wrap on narrow screens */
   #ssp-grid {
-    flex-wrap: nowrap;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 16px;
-    overflow-x: auto;
-    overflow-y: visible;
+    overflow-x: hidden;
     width: 100%;
     padding: 8px 4px 16px;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
   }
-  #ssp-grid::-webkit-scrollbar { display: none; }
-  .ssp-card { width: 200px; flex-shrink: 0; }
+  .ssp-card { width: 160px; flex-shrink: 0; }
+  /* Shrink header to reclaim reading space */
+  #as-header { min-height: 44px; padding: 0 14px; }
+  #hdr-right { display: none !important; }
+  #hdr-sub { display: none; }
+  #hdr-status-row .hdr-stat:nth-child(n+3) { display: none; }
+  /* signal meter aligns to new header height */
+  #signal-meter { top: 44px; }
 }
 
 /* ═══════════════════════════════════════════════════
    ── PHASE 3: MAIN READER SHELL ──
 ═══════════════════════════════════════════════════ */
-/* ═══════════════════════════════════════════════════
-   VIEW MODE OVERRIDES  (html[data-view])
-   M = Mobile  · narrow 390px column, mobile media queries forced
-   P = PC      · default fluid layout (no overrides)
-   T = TV      · wide cinematic, large type, max-width expanded
-═══════════════════════════════════════════════════ */
 
-/* ── M: mobile emulator — full-viewport shell, narrow centered column ── */
-/* Shell fills viewport so header (sticky) spans edge-to-edge */
-html[data-view="M"] #reader-shell { max-width: 100%; margin: 0; }
-/* as-body becomes a centered narrow column; switch to flex-column so mob-bar stacks above as-main */
-html[data-view="M"] #as-body { max-width: 430px; margin-left: auto; margin-right: auto; width: 100%; flex-direction: column; }
-html[data-view="M"] #as-header { padding: 0 12px; min-height: 50px; }
-/* signal-meter (fixed) aligns to the 430px column */
-html[data-view="M"] #signal-meter { max-width: 430px; left: 50%; transform: translateX(-50%); right: auto; }
-html[data-view="M"] #hdr-status-row .hdr-stat:nth-child(n+3) { display: none; }
-html[data-view="M"] #hdr-sub { display: none; }
-html[data-view="M"] #as-sidebar { display: none !important; }
-html[data-view="M"] #sb-toggle-strip { display: none !important; }
-html[data-view="M"] #mob-bar { display: flex !important; }
-html[data-view="M"] #hdr-right { display: none !important; }
-html[data-view="M"] #ch-reader { max-width: 100%; padding: 20px 18px 48px; }
-html[data-view="M"] #ch-body { font-size: 1.02rem; line-height: 1.95; }
-html[data-view="M"] .ch-nav { flex-direction: column; gap: 8px; }
-html[data-view="M"] .ch-nav-btn { width: 100%; min-height: 52px; }
-html[data-view="M"] #syn-box { max-width: 100%; padding: 0; }
-html[data-view="M"] #syn-title { font-size: clamp(2rem, 10vw, 3rem); }
-html[data-view="M"] #synopsis-gate { padding: 24px 18px 40px !important; align-items: flex-start; }
-html[data-view="M"] #ssp-grid { flex-wrap: wrap; overflow-x: hidden; justify-content: center; }
-html[data-view="M"] .ssp-card { width: 200px; flex-shrink: 0; }
-
-/* ── T: TV / wide display ── */
-html[data-view="T"] #reader-shell { max-width: 100%; }
-html[data-view="T"] #as-body { max-width: 1600px; margin: 0 auto; width: 100%; }
-html[data-view="T"] #as-sidebar { width: 320px; }
-html[data-view="T"] #ch-reader { max-width: 960px; padding: 64px 80px 100px; }
-html[data-view="T"] #ch-body { font-size: 1.28rem; line-height: 2.1; }
-html[data-view="T"] #ch-body p:first-of-type::first-letter { font-size: 5rem; margin-right: 14px; margin-top: 14px; }
-html[data-view="T"] .ch-file-title { font-size: clamp(2rem, 3vw, 3.2rem); }
-html[data-view="T"] .ch-nav-btn { padding: 20px 16px; font-size: 0.56rem; }
-html[data-view="T"] #syn-title { font-size: clamp(3rem, 5vw, 6rem); }
-html[data-view="T"] #syn-text { font-size: 1.15rem; line-height: 2.1; max-width: 800px; }
-html[data-view="T"] #as-header { min-height: 72px; padding: 0 48px; }
-html[data-view="T"] .hdr-stat-label { font-size: 0.42rem; }
-html[data-view="T"] .hdr-stat-val { font-size: 0.72rem; }
-html[data-view="T"] #ssp-grid { gap: 40px; }
-html[data-view="T"] .ssp-card { width: 340px; }
 
 #reader-shell {
   display: none; min-height: 100vh; min-height: 100dvh;
@@ -961,6 +918,8 @@ html[data-view="T"] .ssp-card { width: 340px; }
 @media (max-width: 700px) {
   #as-sidebar { display: none !important; }
   #sb-toggle-strip { display: none !important; }
+  /* Stack mob-bar above as-main instead of beside it */
+  #as-body { flex-direction: column; }
 }
 
 /* Toggle strip — anchored to top-left below header, not mid-screen */
@@ -998,7 +957,11 @@ body.sb-open #sb-toggle-strip { left: 260px; }
 
 /* Hide sidebar toggle strip until reader is active */
 #sb-toggle-strip { display: none; }
-body.reader-shell-active #sb-toggle-strip { display: flex; }
+body.reader-active #sb-toggle-strip { display: flex; }
+body.synopsis-active #sb-toggle-strip,
+body.story-select-active #sb-toggle-strip { display: none !important; }
+/* Hide reader body layout during story-select — header stays, body doesn't bleed */
+body.story-select-active #as-body { display: none !important; }
 #sb-backdrop {
   display: none;
   position: fixed;
@@ -1311,12 +1274,19 @@ body.sb-open #sb-backdrop { display: block; }
   position: fixed;
   inset: 0;
   z-index: 140;
-  width: 100%;
-  height: 100%;
   overflow-y: auto;
+  background: var(--paper, #010004);
 }
 
 /* ── SKY PARALLAX LAYERS — GPU composited via transform ── */
+/* Sky wrap — fixed to viewport so sky covers full screen even when synopsis scrolls */
+#sky-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .sky-layer {
   position: absolute; inset: 0;
   pointer-events: none;
@@ -1705,31 +1675,50 @@ to   { background-size: 100px 71px; }
   margin: 0 auto; padding: 48px 48px 80px;
 }
 #ch-reader.show { display: flex; }
-@media(max-width: 700px) { #ch-reader { padding: 24px 20px 40px; } }
+@media(max-width: 700px) { #ch-reader { padding: 20px 18px 80px; } }
 
 @media (max-width: 480px) {
-  /* Chapter reader body — slightly smaller, tighter line height */
-  #ch-body { font-size: 0.97rem; line-height: 1.85; }
-  body.fs2 #ch-body { font-size: 1.1rem; }
-  body.fs3 #ch-body { font-size: 1.25rem; }
+  /* More readable body text */
+  #ch-body { font-size: 1.05rem; line-height: 2.0; }
+  body.fs2 #ch-body { font-size: 1.18rem; }
+  body.fs3 #ch-body { font-size: 1.32rem; }
 
-  /* Drop cap — reduce on very small screens to avoid collision */
+  /* Drop cap */
   #ch-body p:first-of-type::first-letter {
     font-size: 2.4rem;
     margin-right: 7px;
     margin-top: 6px;
   }
 
-  /* Chapter file header — tighten spacing */
+  /* Chapter file header */
   .ch-file-header { margin-bottom: 24px; padding-bottom: 14px; }
-  .ch-file-title { font-size: clamp(1.3rem, 7vw, 2rem); }
+  .ch-file-title { font-size: clamp(1.4rem, 7vw, 2rem); }
   .ch-case-id { font-size: 0.3rem; letter-spacing: 3px; }
   .ch-file-date { font-size: 0.3rem; }
   .ch-read-time { font-size: 0.28rem; }
 
-  /* Chapter nav buttons — bigger tap target */
-  .ch-nav { margin-top: 36px; gap: 8px; }
-  .ch-nav-btn { padding: 14px 10px; font-size: 0.38rem; }
+  /* Nav — full width stacked, big tap targets, fixed to bottom */
+  .ch-nav {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    margin: 0; padding: 0;
+    border-top: 1px solid var(--brd);
+    background: rgba(1,0,4,0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 40;
+    display: flex;
+    gap: 0;
+  }
+  .ch-nav-btn {
+    flex: 1;
+    padding: 16px 10px;
+    font-size: 0.42rem;
+    border: none;
+    border-right: 1px solid var(--brd);
+    min-height: 56px;
+  }
+  .ch-nav-btn:last-child { border-right: none; }
 }
 
 /* Chapter header — brutalist case file */
@@ -3599,42 +3588,20 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
   }
 }
 
-/* Chapter reader — tighten on mobile */
-@media (max-width: 480px) {
-  /* More breathing room, not less */
-  #ch-reader { padding: 20px 18px 48px; }
-  .ch-file-title { font-size: clamp(1.3rem, 6vw, 2rem); }
-  /* Slightly larger + more readable line height on small screens */
-  #ch-body { font-size: 1.02rem; line-height: 1.95; }
-  /* Drop cap — shrink so it doesn't crowd the first line on narrow columns */
-  #ch-body p:first-of-type::first-letter {
-    font-size: 2.2rem;
-    margin-right: 6px;
-    margin-top: 4px;
-  }
-  /* Nav buttons stacked, full-width, big tap targets */
-  .ch-nav { flex-direction: column; gap: 8px; margin-top: 40px; }
-  .ch-nav-btn { width: 100%; min-height: 52px; font-size: 0.44rem; }
-}
+
 
 /* Sidebar shown via mobile bar — sticky at top */
 @media (max-width: 700px) {
   #mob-bar {
     position: sticky;
-    top: 58px;
+    top: 44px;
     z-index: 48;
-    /* Now a sibling of #as-main inside #as-body (no overflow:auto parent),
-       so position:sticky works correctly on iOS Safari. */
     display: none !important;
   }
   #mob-bar.reader-active {
     display: flex !important;
   }
-  #synopsis-gate .sky-layer {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-  }
+  /* sky-layer is position:fixed globally — no override needed */
   #syn-box {
     position: relative;
     z-index: 2;
@@ -4088,6 +4055,11 @@ select.ssp-edit-field option {
           <img src="assets/lucid/Chevron-Arrow-Down.png" alt="" class="lucid-icon" id="mob-ch-trigger-arrow" style="width:10px;height:10px;vertical-align:middle">
         </button>
         <div id="mob-bar-tools">
+          <button class="hdr-btn" onclick="toggleTheme()" title="Toggle paper mode" id="mob-theme-btn">
+            <img src="assets/lucid/Disk.png" alt="Theme" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle;margin-right:3px">
+            <span id="mob-theme-lbl-d">PAPER</span>
+            <span id="mob-theme-lbl-p" style="display:none">DARK</span>
+          </button>
           <button class="hdr-btn" onclick="sbToggle()" title="Signal feed &amp; chapters" id="mob-sb-btn">
             <img src="assets/lucid/File-Text.png" alt="Archive" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
           </button>
@@ -4125,14 +4097,16 @@ select.ssp-edit-field option {
 
       <!-- Synopsis gate -->
       <div id="synopsis-gate">
-        <!-- Sky parallax layers -->
-        <div class="sky-layer" id="sky-bg"          aria-hidden="true"></div>
-        <div class="sky-layer" id="sky-moon"        aria-hidden="true"></div>
-        <div class="sky-layer" id="sky-wispy"       aria-hidden="true"></div>
-        <div class="sky-layer" id="sky-clouds-med"  aria-hidden="true"></div>
-        <div class="sky-layer" id="sky-clouds-top"  aria-hidden="true"></div>
-        <div class="sky-layer" id="sky-storm"       aria-hidden="true"></div>
-        <div class="sky-layer" id="sky-blackhole"   aria-hidden="true"></div>
+        <!-- Sky parallax layers — wrapped in fixed viewport cover -->
+        <div id="sky-wrap">
+          <div class="sky-layer" id="sky-bg"          aria-hidden="true"></div>
+          <div class="sky-layer" id="sky-moon"        aria-hidden="true"></div>
+          <div class="sky-layer" id="sky-wispy"       aria-hidden="true"></div>
+          <div class="sky-layer" id="sky-clouds-med"  aria-hidden="true"></div>
+          <div class="sky-layer" id="sky-clouds-top"  aria-hidden="true"></div>
+          <div class="sky-layer" id="sky-storm"       aria-hidden="true"></div>
+          <div class="sky-layer" id="sky-blackhole"   aria-hidden="true"></div>
+        </div>
         <!-- Rain canvas (kept, sits above sky) -->
         <canvas id="rain-canvas" aria-hidden="true"></canvas>
         <div id="lightning-flash" aria-hidden="true"></div>
@@ -4247,14 +4221,7 @@ select.ssp-edit-field option {
       <label class="ro-toggle"><input type="checkbox" id="ro-focus" onchange="toggleFocus(this.checked)"><span class="ro-track"></span></label>
     </div>
 
-    <hr class="ro-divider">
-    <div class="ro-section">VIEW MODE</div>
-    <div class="ro-row">
-      <button class="ro-btn" onclick="setViewMode('M')" id="vm-M-btn">M</button>
-      <button class="ro-btn active" onclick="setViewMode('P')" id="vm-P-btn">P</button>
-      <button class="ro-btn" onclick="setViewMode('T')" id="vm-T-btn">T</button>
-    </div>
-    <div id="ro-vm-label" style="font-size:0.26rem;color:var(--text3);letter-spacing:1px;margin-top:4px;text-align:center;">// PC · default</div>
+
 
     <hr class="ro-divider">
     <div class="ro-section">TRANSLATE</div>
@@ -6205,6 +6172,8 @@ Use toolbar effects on selected text:
   const hintEl = document.getElementById('forest-hint');
   const termEl = document.getElementById('terminal-burst');
   if (!scene) { setTimeout(showGate, 800); return; }
+  // Session-restore: intro was skipped, scene already hidden — bail without starting RAF
+  if (scene.style.display === 'none') return;
 
   const ctx = canvas ? canvas.getContext('2d') : null;
   let W, H, raf, running = true;
@@ -6604,6 +6573,11 @@ Use toolbar effects on selected text:
         setTimeout(() => {
           termEl.classList.remove('active');
           scene.classList.add('exit');
+          setTimeout(() => {
+            scene.style.display = 'none';
+            running = false;
+            if (raf) cancelAnimationFrame(raf);
+          }, 1800); // after transition completes
           setTimeout(showGate, 1400);
         }, 70);
       }, 680);
@@ -7454,6 +7428,8 @@ function showStorySelect() {
   const phase = document.getElementById('story-select-phase');
   if (!phase) { showSynopsis(); return; }
   sspRender();
+  document.body.classList.add('story-select-active');
+  document.body.classList.remove('reader-active', 'synopsis-active');
   phase.style.opacity = '0';
   phase.classList.add('show');
   requestAnimationFrame(() => {
@@ -7544,6 +7520,8 @@ function showSynopsis() {
   document.getElementById('ch-reader').classList.remove('show');
   document.getElementById('ch-reader').style.display = 'none';
   sg.style.display = 'flex';
+  document.body.classList.add('synopsis-active');
+  document.body.classList.remove('story-select-active', 'reader-active');
   const mobBar = document.getElementById('mob-bar');
   if (mobBar) mobBar.classList.remove('reader-active');
   updateSkyStat(currentChapterIdx);
@@ -7586,10 +7564,12 @@ function beginReading() {
   sessionStorage.setItem('as_nav', 'reader');
   sessionStorage.setItem('as_ch', String(currentChapterIdx >= 0 ? currentChapterIdx : 0));
   history.pushState({ as_view: 'reader', chIdx: currentChapterIdx }, '', location.href.split('#')[0] + '#ch-' + currentChapterIdx);
-  document.getElementById('synopsis-gate').classList.remove('show');
+  document.getElementById('synopsis-gate').classList.remove('show'); document.body.classList.remove('synopsis-active');
   document.getElementById('synopsis-gate').style.display = 'none';
   document.getElementById('ch-reader').style.display = 'flex';
   document.getElementById('ch-reader').classList.add('show');
+  document.body.classList.add('reader-active');
+  document.body.classList.remove('story-select-active', 'synopsis-active');
   // Reveal chapter list now that the user has entered the reader
   const listWrap = document.getElementById('sb-list-wrap');
   if (listWrap) listWrap.classList.add('unlocked');
@@ -8304,10 +8284,12 @@ function loadChapter(idx) {
   history.pushState({ as_view: 'reader', chIdx: idx }, '', location.href.split('#')[0] + '#ch-' + idx);
 
   // Ensure reader is showing
-  document.getElementById('synopsis-gate').classList.remove('show');
+  document.getElementById('synopsis-gate').classList.remove('show'); document.body.classList.remove('synopsis-active');
   document.getElementById('synopsis-gate').style.display = 'none';
   document.getElementById('ch-reader').style.display = 'flex';
   document.getElementById('ch-reader').classList.add('show');
+  document.body.classList.add('reader-active');
+  document.body.classList.remove('story-select-active', 'synopsis-active');
   // Show mobile chapter bar
   const mobBar = document.getElementById('mob-bar');
   if (mobBar) mobBar.classList.add('reader-active');
@@ -8551,14 +8533,6 @@ function syncReaderUI() {
   });
   const j = document.getElementById('ro-justify'); if (j) j.checked = readerOpts.justify;
   const f = document.getElementById('ro-focus'); if (f) f.checked = readerOpts.focus;
-  // Sync view mode buttons
-  const curVm = document.documentElement.getAttribute('data-view') || 'P';
-  ['M','P','T'].forEach(m => {
-    const btn = document.getElementById('vm-'+m+'-btn');
-    if (btn) btn.classList.toggle('active', m === curVm);
-  });
-  const lbl = document.getElementById('ro-vm-label');
-  if (lbl) lbl.textContent = VM_LABELS?.[curVm] || '';
 }
 
 
@@ -8982,34 +8956,7 @@ function setAmbVol(v) {
 
 function toggleReaderOpts() { document.getElementById('reader-opts-panel').classList.toggle('open'); }
 
-const VM_LABELS = { M: '// MOBILE · narrow column', P: '// PC · default', T: '// TV · wide cinematic' };
-function setViewMode(mode) {
-  document.documentElement.setAttribute('data-view', mode);
-  localStorage.setItem('as_view_mode', mode);
-  // Update button active states
-  ['M','P','T'].forEach(m => {
-    const btn = document.getElementById('vm-'+m+'-btn');
-    if (btn) btn.classList.toggle('active', m === mode);
-  });
-  const lbl = document.getElementById('ro-vm-label');
-  if (lbl) lbl.textContent = VM_LABELS[mode] || '';
-  // On M mode: close sidebar; on P/T: restore sidebar state for screen size
-  if (mode === 'M') {
-    sbToggle(false);
-  } else if (mode === 'P' || mode === 'T') {
-    if (window.innerWidth >= 900) sbToggle(true);
-  }
-}
-// Restore saved view mode on load
-(function() {
-  const saved = localStorage.getItem('as_view_mode') || 'P';
-  if (saved !== 'P') setViewMode(saved);
-  else {
-    // mark P as active on startup
-    const btn = document.getElementById('vm-P-btn');
-    if (btn) btn.classList.add('active');
-  }
-})();
+
 function setFont(f) { readerOpts.font = f; applyReaderOpts(); syncReaderUI(); saveReaderOpts(); }
 function toggleJustify(v) { readerOpts.justify = v; applyReaderOpts(); saveReaderOpts(); }
 function toggleFocus(v) { readerOpts.focus = v; applyReaderOpts(); saveReaderOpts(); }
@@ -9033,6 +8980,10 @@ function syncThemeBtn() {
   const isDark = readerOpts.displayMode === 'dark';
   document.getElementById('theme-lbl-d').style.display = isDark ? '' : 'none';
   document.getElementById('theme-lbl-p').style.display = isDark ? 'none' : '';
+  const md = document.getElementById('mob-theme-lbl-d');
+  const mp = document.getElementById('mob-theme-lbl-p');
+  if (md) md.style.display = isDark ? '' : 'none';
+  if (mp) mp.style.display = isDark ? 'none' : '';
 }
 
 document.addEventListener('click', e => {
@@ -9143,9 +9094,11 @@ function autoDetect() {
     loadChapters().then(() => {
       if (nav === 'reader' && ch >= 0 && ch < chapters.length) {
         document.getElementById('synopsis-gate').style.display = 'none';
-        document.getElementById('synopsis-gate').classList.remove('show');
+        document.getElementById('synopsis-gate').classList.remove('show'); document.body.classList.remove('synopsis-active');
         document.getElementById('ch-reader').style.display = 'flex';
         document.getElementById('ch-reader').classList.add('show');
+        document.body.classList.add('reader-active');
+        document.body.classList.remove('story-select-active', 'synopsis-active');
         const listWrap = document.getElementById('sb-list-wrap');
         if (listWrap) listWrap.classList.add('unlocked');
         const mobBar = document.getElementById('mob-bar');
@@ -10835,6 +10788,8 @@ async function generateNewVolume(silent) {
       document.getElementById('ch-reader').classList.remove('show');
       document.getElementById('ch-reader').style.display = 'none';
       document.getElementById('synopsis-gate').style.display = 'flex';
+      document.body.classList.add('synopsis-active');
+      document.body.classList.remove('reader-active', 'story-select-active');
       const mobBar = document.getElementById('mob-bar');
       if (mobBar) mobBar.classList.remove('reader-active');
       updateSkyStat(currentChapterIdx);
@@ -10845,6 +10800,8 @@ async function generateNewVolume(silent) {
       document.getElementById('synopsis-gate').style.display = 'none';
       document.getElementById('ch-reader').style.display = 'flex';
       document.getElementById('ch-reader').classList.add('show');
+      document.body.classList.add('reader-active');
+      document.body.classList.remove('synopsis-active', 'story-select-active');
       if (idx !== currentChapterIdx) loadChapter(idx);
     }
   });
