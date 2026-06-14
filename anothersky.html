@@ -2085,7 +2085,7 @@ body.fs3 #ch-body { font-size: 1.42rem; }
   display: none;
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 250;
 }
 #mob-ch-drawer.open { display: flex; flex-direction: column; }
 
@@ -3644,6 +3644,9 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
     left: 8px;
     right: 8px;
     width: auto;
+    max-height: calc(100vh - 140px);
+    overflow-y: auto;
+    top: 68px;
   }
 }
 
@@ -4084,7 +4087,7 @@ select.ssp-edit-field option {
             <span id="mob-theme-lbl-d">PAPER</span>
             <span id="mob-theme-lbl-p" style="display:none">DARK</span>
           </button>
-          <button class="hdr-btn" onclick="sbToggle()" title="Signal feed &amp; chapters" id="mob-sb-btn">
+          <button class="hdr-btn" onclick="openChDrawer()" title="Signal feed &amp; chapters" id="mob-sb-btn">
             <img src="assets/lucid/File-Text.png" alt="Archive" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
           </button>
         </div>
