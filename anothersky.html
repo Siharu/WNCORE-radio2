@@ -961,6 +961,8 @@ body.reader-active #sb-toggle-strip { display: flex; }
 body.synopsis-active #sb-toggle-strip,
 body.story-select-active #sb-toggle-strip { display: none !important; }
 /* Hide reader body layout during story-select — header stays, body doesn't bleed */
+body.story-select-active #as-sidebar,
+body.synopsis-active #as-sidebar { transform: translateX(-260px) !important; pointer-events: none !important; }
 body.story-select-active #as-body { display: none !important; }
 #sb-backdrop {
   display: none;
@@ -2232,6 +2234,13 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 }
 @media(min-width: 701px) { #mob-bar { display: none !important; } }
 @media(max-width: 700px)  { #hdr-right { display: none !important; } }
+/* Show opts button in header on mobile when in synopsis or reader */
+@media(max-width: 700px) {
+  body.synopsis-active #hdr-right,
+  body.reader-active #hdr-right { display: flex !important; }
+  body.synopsis-active #hdr-right .hdr-btn:not(#opts-btn),
+  body.reader-active #hdr-right .hdr-btn:not(#opts-btn) { display: none; }
+}
 
 /* ═══════════════════════════════════════════════════
    ADMIN FAB — CYBERPUNK HUD
@@ -7429,7 +7438,7 @@ function showStorySelect() {
   if (!phase) { showSynopsis(); return; }
   sspRender();
   document.body.classList.add('story-select-active');
-  document.body.classList.remove('reader-active', 'synopsis-active');
+  document.body.classList.remove('reader-active', 'synopsis-active', 'sb-open');
   phase.style.opacity = '0';
   phase.classList.add('show');
   requestAnimationFrame(() => {
@@ -7521,7 +7530,7 @@ function showSynopsis() {
   document.getElementById('ch-reader').style.display = 'none';
   sg.style.display = 'flex';
   document.body.classList.add('synopsis-active');
-  document.body.classList.remove('story-select-active', 'reader-active');
+  document.body.classList.remove('story-select-active', 'reader-active', 'sb-open');
   const mobBar = document.getElementById('mob-bar');
   if (mobBar) mobBar.classList.remove('reader-active');
   updateSkyStat(currentChapterIdx);
