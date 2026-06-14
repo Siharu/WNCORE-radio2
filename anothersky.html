@@ -914,9 +914,21 @@ body {
   box-shadow: 4px 0 32px rgba(0,0,0,0.7);
 }
 
-/* Mobile: sidebar hidden entirely — mob-bar + chapter drawer handles navigation */
+/* Mobile: sidebar hidden by default, visible when toggled via sbToggle() */
 @media (max-width: 700px) {
-  #as-sidebar { display: none !important; }
+  #as-sidebar { 
+    display: none !important; 
+    position: fixed;
+    left: 0;
+    top: 60px;
+    z-index: 250;
+    width: 260px;
+    height: calc(100vh - 60px);
+  }
+  #as-sidebar.open { 
+    display: flex !important;
+    flex-direction: column;
+  }
   #sb-toggle-strip { display: none !important; }
   /* Stack mob-bar above as-main instead of beside it */
   #as-body { flex-direction: column; }
@@ -4087,7 +4099,7 @@ select.ssp-edit-field option {
             <span id="mob-theme-lbl-d">PAPER</span>
             <span id="mob-theme-lbl-p" style="display:none">DARK</span>
           </button>
-          <button class="hdr-btn" onclick="openChDrawer()" title="Signal feed &amp; chapters" id="mob-sb-btn">
+          <button class="hdr-btn" onclick="sbToggle()" title="Signal feed &amp; chapters" id="mob-sb-btn">
             <img src="assets/lucid/File-Text.png" alt="Archive" class="lucid-icon" style="width:12px;height:12px;vertical-align:middle">
           </button>
         </div>
@@ -4180,10 +4192,10 @@ select.ssp-edit-field option {
 
       <!-- Chapter reader -->
       <div id="ch-reader">
-        <div id="ch-placeholder">
+        <div id="ch-placeholder" onclick="openChDrawer()" style="cursor:pointer;">
           <div class="ph-glyph">████<span class="ph-cursor"></span></div>
           <div class="ph-hint">SELECT A CHAPTER FROM THE ARCHIVE</div>
-          <button id="ph-resume" onclick="resumeReading()">
+          <button id="ph-resume" onclick="resumeReading(event);event.stopPropagation()">
             <span style="font-size:0.3rem;opacity:0.5;display:block;margin-bottom:2px">LAST SESSION</span>
             <span id="ph-resume-text">RESUME READING →</span>
           </button>
