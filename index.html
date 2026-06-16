@@ -2898,11 +2898,11 @@ document.addEventListener('DOMContentLoaded', loadSiteConfig);
     document.querySelectorAll('.anime-news-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     currentTab = tab;
-    loadAnimeNews(tab);
+    debounce('loadAnimeNews', () => loadAnimeNews(tab), 200)();
   };
 
   window.refreshAnimeNews = function(){
-    loadAnimeNews(currentTab);
+    debounce('loadAnimeNews', () => loadAnimeNews(currentTab), 200)();
   };
 
   async function loadAnimeNews(type){
@@ -3099,6 +3099,15 @@ if ('serviceWorker' in navigator) {
 <div class="aber-lock-toast" id="aber-lock-toast">⚠ SIGNAL LOCKED — MAP A CONSTELLATION FIRST</div>
 
 <script>
+/* ── RAM OPTIMIZATION: Debounce utility ── */
+const _debounceMap = {};
+function debounce(name, fn, delay = 500) {
+  return function(...args) {
+    if (_debounceMap[name]) clearTimeout(_debounceMap[name]);
+    _debounceMap[name] = setTimeout(() => { fn(...args); }, delay);
+  };
+}
+
 /* ── ABERRANT STAR — flowchart gate ── */
 (function() {
   function isFlowchartUnlocked() {
@@ -3218,6 +3227,23 @@ if ('serviceWorker' in navigator) {
 </style>
 
 <style>
+/* ── PAPER MODE FIX: Featured J-Music Stations text visibility ── */
+html[data-theme="paper"] .anime-stations-grid,
+html[data-theme="paper"] .anime-stations-grid * {
+  color: var(--text1) !important;
+}
+
+html[data-theme="paper"] .anime-stations-grid div,
+html[data-theme="paper"] .anime-stations-grid span,
+html[data-theme="paper"] .anime-stations-grid p {
+  color: var(--text1) !important;
+}
+
+/* ── PAPER MODE FIX: Anime page text that uses var(--text3) ── */
+html[data-theme="paper"] #page-anime [style*="color:var(--text3)"] {
+  color: var(--text1) !important;
+}
+
 /* ── IPTV PAGE ── */
 .iptv-wrap {
   max-width: 1200px;
