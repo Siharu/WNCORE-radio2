@@ -106,6 +106,139 @@ body::after{
 #unlock-close:hover{color:var(--txt)}
 #unlock-node-label{font-size:0.42rem;letter-spacing:2px;color:var(--txt3);white-space:nowrap}
 
+/* ════════════════════════════════════════════════════════
+   NODE MODAL — interactive node detail viewer
+════════════════════════════════════════════════════════ */
+#node-modal{
+  position:fixed;inset:0;z-index:9996;
+  background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+#node-modal.active{display:flex;opacity:1;pointer-events:all}
+
+#node-modal-panel{
+  position:relative;
+  width:90%;max-width:680px;max-height:75vh;
+  background:rgba(4,3,10,0.98);border:2px solid rgba(200,71,42,0.4);
+  box-shadow:0 0 48px rgba(200,71,42,0.2),inset 0 0 40px rgba(200,71,42,0.02);
+  border-radius:2px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  animation:modal-in 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+@keyframes modal-in{from{transform:scale(0.92);opacity:0}to{transform:scale(1);opacity:1}}
+
+#node-modal-header{
+  padding:20px 24px;border-bottom:1px solid rgba(200,71,42,0.2);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+}
+
+#node-modal-title{font-family:var(--orb);font-size:1.2rem;color:var(--acc);letter-spacing:2px}
+#node-modal-tag{font-size:0.42rem;letter-spacing:3px;color:rgba(200,71,42,0.6);margin-bottom:4px}
+
+#node-modal-close{
+  font-family:var(--mono);font-size:0.5rem;color:var(--txt3);
+  background:transparent;border:1px solid rgba(255,255,255,0.1);
+  cursor:pointer;padding:6px 10px;border-radius:2px;
+  transition:all 0.15s;flex-shrink:0;
+}
+#node-modal-close:hover{background:rgba(200,71,42,0.12);color:var(--txt)}
+
+#node-modal-content{
+  flex:1;overflow-y:auto;padding:24px;
+  font-size:0.52rem;line-height:1.8;color:var(--txt2);
+}
+
+#node-modal-content h3{
+  font-family:var(--orb);font-size:0.72rem;color:var(--acc2);
+  margin-top:16px;margin-bottom:8px;letter-spacing:1px;
+}
+
+#node-modal-content p{margin-bottom:12px}
+
+#node-modal-img{
+  width:100%;max-height:240px;object-fit:cover;
+  border:1px solid rgba(200,71,42,0.2);margin:12px 0;
+  border-radius:2px;
+}
+
+#node-modal-transcript{
+  background:rgba(0,0,0,0.4);border-left:3px solid rgba(200,71,42,0.5);
+  padding:12px 14px;margin:12px 0;font-family:var(--vt);font-size:0.48rem;
+  color:rgba(200,71,42,0.7);line-height:1.6;
+  border-radius:2px;
+}
+
+/* ════════════════════════════════════════════════════════
+   REAL-TIME DATA PANEL — signal strength, coordinates, missing count
+   LEFT SLIDE-IN DRAWER
+════════════════════════════════════════════════════════ */
+#rt-panel{
+  position:fixed;left:0;top:57px;z-index:99;
+  width:280px;height:calc(100vh - 57px);
+  background:rgba(4,3,10,0.97);
+  border-right:2px solid rgba(200,71,42,0.3);border-bottom:1px solid rgba(200,71,42,0.2);
+  padding:16px;font-family:var(--mono);font-size:0.48rem;
+  box-shadow:8px 8px 24px rgba(0,0,0,0.5);
+  overflow-y:auto;
+  transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+#rt-panel.open{transform:translateX(0)}
+
+#rt-toggle{
+  position:fixed;left:16px;top:70px;z-index:100;
+  font-family:var(--mono);font-size:0.5rem;letter-spacing:2px;
+  background:rgba(4,3,10,0.95);border:1px solid rgba(200,71,42,0.4);
+  color:var(--acc);padding:8px 12px;cursor:pointer;border-radius:2px;
+  transition:all 0.2s;
+}
+#rt-toggle:hover{background:rgba(200,71,42,0.12);box-shadow:0 0 12px rgba(200,71,42,0.2)}
+#rt-toggle.open{left:296px;border-left:1px solid rgba(200,71,42,0.2)}
+
+/* Backdrop when panel open */
+#rt-backdrop{
+  position:fixed;inset:0;z-index:98;background:rgba(0,0,0,0.3);
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+#rt-backdrop.open{opacity:1;pointer-events:all}
+
+.rt-section{
+  margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(200,71,42,0.15);
+}
+
+.rt-label{
+  font-size:0.4rem;letter-spacing:3px;color:rgba(200,71,42,0.6);
+  text-transform:uppercase;margin-bottom:6px;
+}
+
+.rt-value{
+  font-family:var(--vt);font-size:0.68rem;color:var(--acc);
+  letter-spacing:2px;margin-bottom:2px;
+  animation:rt-glitch 0.5s ease-in-out;
+}
+
+@keyframes rt-glitch{
+  0%,100%{color:var(--acc);text-shadow:0 0 6px rgba(200,71,42,0.3)}
+  50%{color:rgba(200,71,42,0.7);text-shadow:0 0 12px rgba(200,71,42,0.15)}
+}
+
+.rt-bar{
+  width:100%;height:8px;background:rgba(200,71,42,0.1);
+  border:1px solid rgba(200,71,42,0.2);border-radius:2px;margin-top:6px;
+  overflow:hidden;position:relative;
+}
+
+.rt-bar-fill{
+  height:100%;background:linear-gradient(90deg,rgba(200,71,42,0.3),rgba(200,71,42,0.7));
+  width:0%;transition:width 0.3s ease;
+  box-shadow:0 0 8px rgba(200,71,42,0.4);
+}
+
+.rt-warning{color:rgba(232,100,80,0.8)}
+.rt-critical{color:rgba(255,80,80,0.9);animation:rt-pulse-crit 0.8s infinite}
+@keyframes rt-pulse-crit{0%,100%{opacity:1}50%{opacity:0.6}}
+
 /* CANVAS */
 #map-wrap{
   position:fixed;
@@ -1741,6 +1874,111 @@ body::before{
   image-rendering: pixelated;
   filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
 }
+
+/* ════════════════════════════════════════════════════════
+   MOBILE RESPONSIVE — <700px breakpoint
+════════════════════════════════════════════════════════ */
+@media (max-width: 700px) {
+  /* Hide map, show list */
+  #map-wrap { display: none !important; }
+  #node-list { display: flex !important; flex-direction: column; }
+  
+  /* Hide desktop-only controls */
+  #zoom-controls { display: none !important; }
+  #legend-btn { display: none !important; }
+  #export-btn { display: none !important; }
+  
+  /* RT-panel mobile: make drawer more accessible */
+  #rt-panel { width: 100%; height: auto; max-height: 50vh; top: 57px; left: 0; right: 0; border-right: none; }
+  #rt-toggle { left: 50%; transform: translateX(-50%); bottom: 16px; top: auto; z-index: 101; }
+  #rt-backdrop { display: none !important; }
+  
+  /* Header adjustments */
+  #hd { flex-wrap: wrap; padding: 8px 12px; }
+  .hd-title { display: none; }
+  
+  /* Node list grid on smaller screens */
+  #node-list-grid { grid-template-columns: 1fr; }
+}
+
+/* ════════════════════════════════════════════════════════
+   NODE LIST CARD STYLES
+════════════════════════════════════════════════════════ */
+.node-list-card {
+  background: rgba(12,8,22,0.95);
+  border: 1px solid rgba(200,71,42,0.3);
+  border-radius: 2px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.node-list-card:active {
+  background: rgba(12,8,22,0.98);
+  border-color: rgba(200,71,42,0.6);
+  box-shadow: 0 0 16px rgba(200,71,42,0.2);
+}
+
+.node-list-card--locked {
+  border-color: rgba(200,71,42,0.15);
+  opacity: 0.7;
+}
+
+.node-list-card--unlocked {
+  border-color: rgba(200,71,42,0.4);
+  opacity: 1;
+}
+
+.nlc-tag {
+  font-size: 0.36rem;
+  letter-spacing: 3px;
+  color: rgba(200,71,42,0.5);
+  text-transform: uppercase;
+}
+
+.nlc-unlocked .nlc-tag {
+  color: rgba(200,71,42,0.7);
+}
+
+.nlc-name {
+  font-family: var(--orb);
+  font-size: 0.9rem;
+  color: var(--acc2);
+  letter-spacing: 1px;
+}
+
+.nlc-locked .nlc-name {
+  color: rgba(200,71,42,0.4);
+}
+
+.nlc-sub {
+  font-size: 0.44rem;
+  color: var(--txt2);
+  line-height: 1.4;
+}
+
+.nlc-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.4rem;
+  color: var(--txt3);
+}
+
+.nlc-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(200,71,42,0.4);
+}
+
+.nlc-unlocked .nlc-dot {
+  background: rgba(200,71,42,0.8);
+}
+
 </style>
 </head>
 <body>
@@ -1827,6 +2065,18 @@ body::before{
   <div id="minimap-viewport"></div>
 </div>
 
+<!-- MOBILE LIST VIEW — responsive node list for <700px -->
+<div id="node-list" style="display:none;position:fixed;top:57px;left:0;right:0;bottom:0;overflow-y:auto;z-index:50;">
+  <div id="node-list-header" style="padding:16px;border-bottom:1px solid rgba(200,71,42,0.2);position:sticky;top:0;background:rgba(4,3,10,0.98);z-index:10;">
+    <div style="font-family:var(--orb);font-size:0.8rem;color:var(--acc);letter-spacing:2px;margin-bottom:8px;">NODE REGISTRY</div>
+    <div style="font-size:0.48rem;color:var(--txt2);" id="node-count">0 / 0 nodes unlocked</div>
+  </div>
+  <div id="node-list-grid" style="display:grid;grid-template-columns:1fr;gap:12px;padding:16px;grid-auto-rows:max-content;">
+    <!-- Cards generated by JavaScript -->
+  </div>
+</div>
+
+<!-- MAP VIEW — desktop/landscape mode -->
 <div id="map-wrap">
   <div id="map-scroll">
     <div id="map-sizer">
@@ -1891,6 +2141,61 @@ body::before{
     </div>
     <div id="bs-close-plain" style="display:none;margin-top:14px;">
       <button id="bs-dismiss" style="font-family:var(--mono);font-size:0.5rem;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px solid rgba(255,255,255,0.07);color:var(--txt3);padding:8px 18px;cursor:pointer;border-radius:4px;width:100%;">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<!-- NODE MODAL — Click to reveal transcripts, images, documents -->
+<div id="node-modal">
+  <div id="node-modal-panel">
+    <div id="node-modal-header">
+      <div>
+        <div id="node-modal-tag"></div>
+        <div id="node-modal-title"></div>
+      </div>
+      <button id="node-modal-close">CLOSE</button>
+    </div>
+    <div id="node-modal-content"></div>
+  </div>
+</div>
+
+<!-- REAL-TIME DATA PANEL — Signal strength, coordinates, missing count -->
+<div id="rt-backdrop"></div>
+<button id="rt-toggle">⊳ SIGNAL</button>
+<div id="rt-panel">
+  <div class="rt-section">
+    <div class="rt-label">SIGNAL STRENGTH</div>
+    <div class="rt-value" id="rt-signal">88.7 MHz</div>
+    <div class="rt-bar">
+      <div class="rt-bar-fill" id="rt-signal-bar" style="width:72%"></div>
+    </div>
+  </div>
+  
+  <div class="rt-section">
+    <div class="rt-label">COORDINATES</div>
+    <div class="rt-value" id="rt-coords">23.8103 N, 90.4125 E</div>
+    <div style="font-size:0.4rem;color:var(--txt3);margin-top:4px;">DHAKA NODE / STRATUM-0</div>
+  </div>
+  
+  <div class="rt-section">
+    <div class="rt-label">MISSING PERSONS</div>
+    <div class="rt-value rt-warning" id="rt-missing-count">173</div>
+    <div style="font-size:0.4rem;color:rgba(200,71,42,0.5);margin-top:4px;" id="rt-missing-status">CONFIRMED GHUULS</div>
+  </div>
+  
+  <div class="rt-section">
+    <div class="rt-label">OUTBREAK STATUS</div>
+    <div class="rt-value rt-critical" id="rt-outbreak">DAY 180+</div>
+    <div class="rt-bar" style="margin-top:6px;">
+      <div class="rt-bar-fill" id="rt-outbreak-bar" style="width:85%;background:linear-gradient(90deg,rgba(255,80,80,0.3),rgba(255,80,80,0.7))"></div>
+    </div>
+  </div>
+  
+  <div class="rt-section">
+    <div class="rt-label">SIGNAL INTEGRITY</div>
+    <div id="rt-integrity-text" style="font-size:0.42rem;color:var(--txt3);line-height:1.6;margin-bottom:8px;">THE VEIL CONTINUES TO FAIL. AUDIO CORRUPTED ACROSS 14 CHANNELS. NO RECOVERY PREDICTED.</div>
+    <div class="rt-bar">
+      <div class="rt-bar-fill" id="rt-integrity-bar" style="width:28%;background:linear-gradient(90deg,rgba(255,80,80,0.4),rgba(255,80,80,0.8))"></div>
     </div>
   </div>
 </div>
@@ -2417,6 +2722,596 @@ const NODES = [
    x:2550, y:3650, wide:true},
 
 ];
+
+/* ════════════════════════════════════════════════════════
+   ENHANCED NODE DATA — transcripts, images, documents
+   Images can be: procedural (generated), glitched (stock), or custom (user-provided)
+════════════════════════════════════════════════════════ */
+const NODE_DETAILS = {
+  'wncore': {
+    transcript: `[SIGNAL-ARCHIVE-INIT]\n\nWNCORE.ROOT — The central broadcast nexus. All frequencies converge here. The archive does not explain its own origin, only that it exists and has always existed.\n\nCrossings recorded: 14,287\nTransmissions logged: 847,332\nSignal decay detected: yes\nStatus: ONLINE / MONITORED`,
+    imageType: 'procedural', // 'procedural' | 'glitched' | 'custom'
+    imageSource: 'signal-hub', // procedural seed or URL
+    doc: 'WNCORE — Signal Cartography Archive. The primary broadcast hub through which all Siharu signals pass. Designation origin: unknown.'
+  },
+  'siharu': {
+    transcript: `[ENTITY-SIHARU-PROFILE]\n\nDesignation: SIHARU\nClassification: SIGNAL ENTITY / STRATUM-2\nAppearances in archive: 14 confirmed\nStatus: ACTIVE — MONITORED\nThreat assessment: INCONCLUSIVE\n\nCross-references suggest intelligence. Purpose unknown. Interaction protocol: OBSERVE ONLY.`,
+    imageType: 'procedural',
+    imageSource: 'entity-presence',
+    doc: 'SIHARU — Unidentified signal entity with recurring presence in the archive. Origin unclear. Appears across 14 signal branches.'
+  },
+  'protagonist': {
+    transcript: `[SIGNAL-ZERO-FRAGMENT]\n\n"He rose on the day everything went zero."\n\nTransferred to Another Sky: March 31, 2032\nOrigin: Dhaka Node (Stratum-0)\nFirst manifestation: Day 0 of divergence\nCurrent status: UNKNOWN / ACTIVE`,
+    imageType: 'procedural',
+    imageSource: 'divergence-moment',
+    doc: 'Signal-Zero. A transfer that should not exist in this archive. The file is sealed. Only fragments remain.'
+  },
+  'p01': {
+    transcript: `[NODE-09-BROADCAST]\n\n88.7 MHz — The only active transmission node.\nFull designation: NODE 09 / PATH-01\nBroadcast log entries: 1,847\nSignal strength: DECLINING\n\nThis frequency carries something. Something that might be trying to warn us.`,
+    imageType: 'glitched',
+    imageSource: 'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&h=300&fit=crop', // radio equipment
+    doc: 'NODE 09 — 88.7 FM. The sole confirmed active broadcast. Listen, if you dare.'
+  }
+};
+
+/* ════════════════════════════════════════════════════════
+   GLITCH EFFECT ENGINE — apply analog horror to images
+════════════════════════════════════════════════════════ */
+function createGlitchedImage(imageUrl, seed = 0) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    
+    img.onload = () => {
+      canvas.width = 400;
+      canvas.height = 300;
+      
+      // Draw base image
+      ctx.drawImage(img, 0, 0, 400, 300);
+      
+      // 1. Chromatic aberration — red/blue channel shift
+      const abShift = 6 + (seed % 4);
+      const imgData = ctx.getImageData(0, 0, 400, 300);
+      const data = imgData.data;
+      for (let i = 0; i < data.length; i += 4) {
+        if (Math.random() > 0.95) {
+          data[i] = Math.min(255, data[i] + 40); // boost red
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+      
+      // 2. Scanlines
+      for (let y = 0; y < 300; y += 2) {
+        ctx.fillStyle = 'rgba(0,0,0,0.08)';
+        ctx.fillRect(0, y, 400, 1);
+      }
+      
+      // 3. Random slice displacement (glitch blocks)
+      for (let i = 0; i < 3 + (seed % 3); i++) {
+        const sliceY = Math.floor(Math.random() * 280);
+        const sliceH = 2 + Math.floor(Math.random() * 8);
+        const offsetX = -12 + Math.floor(Math.random() * 24);
+        const sliceData = ctx.getImageData(0, sliceY, 400, sliceH);
+        ctx.putImageData(sliceData, offsetX, sliceY);
+      }
+      
+      // 4. Color shift overlay
+      ctx.fillStyle = `rgba(200, 71, 42, ${0.08 + (seed % 5) * 0.02})`;
+      ctx.fillRect(0, 0, 400, 300);
+      
+      // 5. Decay vignette
+      const radial = ctx.createRadialGradient(200, 150, 50, 200, 150, 300);
+      radial.addColorStop(0, 'rgba(0,0,0,0)');
+      radial.addColorStop(1, 'rgba(0,0,0,0.4)');
+      ctx.fillStyle = radial;
+      ctx.fillRect(0, 0, 400, 300);
+      
+      resolve(canvas.toDataURL());
+    };
+    
+    img.onerror = () => {
+      // Fallback if image fails to load
+      createProceduralImage('glitch-error', seed).then(resolve);
+    };
+    
+    img.src = imageUrl;
+  });
+}
+
+/* ════════════════════════════════════════════════════════
+   PROCEDURAL IMAGE GENERATOR — cosmic/signal visuals
+════════════════════════════════════════════════════════ */
+function createProceduralImage(type = 'cosmic', seed = 0) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    
+    // Seed random for consistency
+    const rng = (s) => Math.sin(s) * 10000 - Math.floor(Math.sin(s) * 10000);
+    
+    if (type === 'signal-hub') {
+      // Central hub with radiating signals
+      ctx.fillStyle = 'rgba(4,3,10,1)';
+      ctx.fillRect(0, 0, 400, 300);
+      
+      // Star field background
+      for (let i = 0; i < 80; i++) {
+        const x = (i * 37 + seed * 7) % 400;
+        const y = (i * 43 + seed * 11) % 300;
+        const size = 0.5 + rng(i + seed) * 1;
+        ctx.fillStyle = `rgba(232,228,223,${0.3 + rng(i * 2 + seed) * 0.4})`;
+        ctx.fillRect(x, y, size, size);
+      }
+      
+      // Central hub circle
+      ctx.strokeStyle = 'rgba(200,71,42,0.6)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(200, 150, 60, 0, Math.PI * 2);
+      ctx.stroke();
+      
+      // Radiating lines
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2 + seed * 0.1;
+        ctx.strokeStyle = `rgba(200,71,42,${0.3 + rng(i + seed) * 0.2})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(200, 150);
+        ctx.lineTo(200 + Math.cos(angle) * 140, 150 + Math.sin(angle) * 100);
+        ctx.stroke();
+      }
+      
+      // Scanlines
+      for (let y = 0; y < 300; y += 3) {
+        ctx.fillStyle = 'rgba(0,0,0,0.06)';
+        ctx.fillRect(0, y, 400, 1);
+      }
+    } else if (type === 'entity-presence') {
+      // Swirling entity energy
+      ctx.fillStyle = 'rgba(4,3,10,1)';
+      ctx.fillRect(0, 0, 400, 300);
+      
+      // Noise/turbulence effect
+      for (let y = 0; y < 300; y += 2) {
+        for (let x = 0; x < 400; x += 2) {
+          const noise = Math.sin(x * 0.01 + seed) * Math.cos(y * 0.01 + seed);
+          ctx.fillStyle = `rgba(148, 88, 200, ${Math.abs(noise) * 0.3})`;
+          ctx.fillRect(x, y, 2, 2);
+        }
+      }
+      
+      // Central vortex
+      ctx.strokeStyle = 'rgba(185,130,240,0.5)';
+      ctx.lineWidth = 2;
+      for (let r = 10; r < 120; r += 15) {
+        ctx.beginPath();
+        ctx.arc(200, 150, r, 0 + seed * 0.1, Math.PI * 2 + seed * 0.1);
+        ctx.stroke();
+      }
+      
+      // Scanlines
+      for (let y = 0; y < 300; y += 2) {
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.fillRect(0, y, 400, 1);
+      }
+    } else if (type === 'divergence-moment') {
+      // Split reality effect
+      ctx.fillStyle = 'rgba(4,3,10,1)';
+      ctx.fillRect(0, 0, 400, 300);
+      
+      // Left side — normal stars
+      ctx.fillStyle = 'rgba(232,228,223,0.6)';
+      for (let i = 0; i < 60; i++) {
+        const x = Math.random() * 200;
+        const y = Math.random() * 300;
+        ctx.fillRect(x, y, 1, 1);
+      }
+      
+      // Right side — corrupted stars
+      ctx.fillStyle = 'rgba(200,71,42,0.6)';
+      for (let i = 0; i < 60; i++) {
+        const x = 200 + Math.random() * 200;
+        const y = Math.random() * 300;
+        ctx.fillRect(x + (Math.random() - 0.5) * 4, y, 1, 1);
+      }
+      
+      // Vertical dividing line with corruption
+      ctx.strokeStyle = 'rgba(200,71,42,0.8)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(200, 0);
+      for (let y = 0; y < 300; y += 10) {
+        ctx.lineTo(200 + (Math.random() - 0.5) * 8, y);
+      }
+      ctx.stroke();
+      
+      // Central glow
+      const grad = ctx.createRadialGradient(200, 150, 10, 200, 150, 100);
+      grad.addColorStop(0, 'rgba(200,71,42,0.3)');
+      grad.addColorStop(1, 'rgba(200,71,42,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(100, 50, 200, 200);
+    } else {
+      // Default: cosmic noise
+      ctx.fillStyle = 'rgba(4,3,10,1)';
+      ctx.fillRect(0, 0, 400, 300);
+      
+      for (let i = 0; i < 100; i++) {
+        const x = (i * 73 + seed * 13) % 400;
+        const y = (i * 89 + seed * 17) % 300;
+        ctx.fillStyle = `rgba(200,71,42,${rng(i + seed) * 0.4})`;
+        ctx.fillRect(x, y, 2 + rng(i * 2) * 2, 2 + rng(i * 3) * 2);
+      }
+    }
+    
+    resolve(canvas.toDataURL());
+  });
+}
+
+/* Render images in modal */
+function renderNodeImage(nodeId) {
+  const details = NODE_DETAILS[nodeId];
+  if (!details) return null;
+  
+  if (details.imageType === 'procedural') {
+    return createProceduralImage(details.imageSource, nodeId.length + Date.now() % 100);
+  } else if (details.imageType === 'glitched') {
+    return createGlitchedImage(details.imageSource, nodeId.length);
+  } else if (details.imageType === 'custom') {
+    // User provides full URL to custom artwork
+    return Promise.resolve(details.imageSource);
+  }
+  return Promise.resolve(null);
+}
+
+/* Node interaction system — click to reveal */
+document.addEventListener('DOMContentLoaded', () => {
+  /* ════════════════════════════════════════════════════════
+   TERMINUS SPLASH — "me before you existed" cosmic revelation
+════════════════════════════════════════════════════════ */
+function showTerminusSplash() {
+  // Create full-screen splash container
+  const splash = document.createElement('div');
+  splash.id = 'terminus-splash';
+  splash.style.cssText = `
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s;
+    backdrop-filter: blur(8px);
+  `;
+  document.body.appendChild(splash);
+  
+  // Create canvas for cosmic imagery
+  const canvas = document.createElement('canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.position = 'absolute';
+  canvas.style.inset = '0';
+  splash.appendChild(canvas);
+  
+  const ctx = canvas.getContext('2d');
+  
+  // Draw procedural galaxy birth
+  function drawCosmos(time) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Deep space background
+    ctx.fillStyle = 'rgba(4,3,10,0.8)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // 1. Birth pulse — expanding rings
+    const pulseSize = (time / 3000) * 400;
+    ctx.strokeStyle = `rgba(200,71,42,${0.8 - (time / 3000) * 0.8})`;
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 5; i++) {
+      const radius = pulseSize - i * 40;
+      if (radius > 0) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+    
+    // 2. Galactic spiral (swirling life)
+    const spiralPoints = 200;
+    ctx.strokeStyle = `rgba(185,130,240,${0.6 * (1 - time / 3000)})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i = 0; i < spiralPoints; i++) {
+      const angle = (i / spiralPoints) * Math.PI * 8 + (time / 2000);
+      const radius = (i / spiralPoints) * 300;
+      const x = centerX + Math.cos(angle) * radius;
+      const y = centerY + Math.sin(angle) * radius;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+    
+    // 3. Star birth (particles igniting)
+    const particles = 150;
+    for (let i = 0; i < particles; i++) {
+      const seed = i * 37;
+      const angle = Math.sin(seed) * Math.PI * 2;
+      const distance = Math.cos(seed * 1.7) * 250 + (time / 20);
+      
+      const x = centerX + Math.cos(angle) * distance;
+      const y = centerY + Math.sin(angle) * distance;
+      
+      const size = Math.abs(Math.sin(seed * 2.3)) * 3;
+      const brightness = Math.max(0, 1 - (time / 3000));
+      
+      ctx.fillStyle = `rgba(232,228,223,${brightness * 0.8})`;
+      ctx.fillRect(x, y, size, size);
+    }
+    
+    // 4. Central void (black hole / origin)
+    const voidRadius = 50 + Math.sin(time / 1000) * 20;
+    ctx.fillStyle = 'rgba(0,0,0,0.9)';
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, voidRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // 5. Chromatic aberration flash
+    if (time < 500) {
+      const flashIntensity = 1 - (time / 500);
+      ctx.fillStyle = `rgba(255,255,255,${flashIntensity * 0.3})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+  
+  // Animate
+  let startTime = Date.now();
+  let animationId;
+  
+  function animate() {
+    const elapsed = Date.now() - startTime;
+    
+    if (elapsed < 3000) {
+      drawCosmos(elapsed);
+      animationId = requestAnimationFrame(animate);
+    } else {
+      // Fade out
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.remove();
+        cancelAnimationFrame(animationId);
+      }, 300);
+    }
+  }
+  
+  // Fade in
+  setTimeout(() => {
+    splash.style.opacity = '1';
+    animate();
+  }, 10);
+}
+
+
+  document.addEventListener('click', (e) => {
+    const nodeEl = e.target.closest('.node');
+    if (!nodeEl) return;
+    
+    const id = nodeEl.dataset.id;
+    
+    // SPECIAL: Terminus node "me before you existed" — show cosmic splash
+    if (id === 'terminus') {
+      showTerminusSplash();
+      return;
+    }
+    
+    // Get node data from NODES array instead of nodeMap
+    const node = NODES.find(n => n.id === id);
+    if (!node) return;
+    
+    // Prevent if node is being used for other interactions
+    if (e.target.closest('input, button, [onclick]')) return;
+    
+    // Show modal
+    modalTag.textContent = node.tag || '';
+    const isUnlocked = nodeEl.classList.contains('unlocked-node');
+    modalTitle.textContent = isUnlocked ? (node.realName || node.name) : node.name;
+    
+    let content = `<p>${node.realTip || node.tip}</p>`;
+    
+    // Add enhanced details if available
+    if (NODE_DETAILS[id]) {
+      const details = NODE_DETAILS[id];
+      
+      // Render image (procedural, glitched, or custom)
+      if (details.imageType) {
+        renderNodeImage(id).then(imgDataUrl => {
+          const img = document.createElement('img');
+          img.src = imgDataUrl;
+          img.className = 'node-modal-img';
+          img.style.display = 'block';
+          modalContent.insertBefore(img, modalContent.firstChild.nextSibling);
+        });
+      }
+      
+      if (details.transcript) content += `<div class="node-modal-transcript">${details.transcript.replace(/\n/g, '<br>')}</div>`;
+      if (details.doc) content += `<h3>// CLASSIFICATION</h3><p>${details.doc}</p>`;
+    }
+    
+    modalContent.innerHTML = content;
+    modal.classList.add('active');
+  });
+});
+
+/* ════════════════════════════════════════════════════════
+   REAL-TIME DATA SYSTEM — live signal feeds
+════════════════════════════════════════════════════════ */
+function updateRealtimeData() {
+  // Simulate live signal strength variation
+  const signalStrength = 65 + Math.sin(Date.now() / 3000) * 20;
+  document.getElementById('rt-signal').textContent = (88.7 + Math.random() * 0.3).toFixed(2) + ' MHz';
+  document.getElementById('rt-signal-bar').style.width = signalStrength + '%';
+  
+  // Missing persons count (based on lore: 173 confirmed Ghuuls)
+  const missingBase = 173;
+  const variation = Math.floor(Math.sin(Date.now() / 8000) * 8);
+  document.getElementById('rt-missing-count').textContent = missingBase + variation;
+  
+  // Outbreak progression
+  const day = 180 + Math.floor(Math.sin(Date.now() / 10000) * 3);
+  document.getElementById('rt-outbreak').textContent = 'DAY ' + day + '+';
+  document.getElementById('rt-outbreak-bar').style.width = (75 + Math.sin(Date.now() / 7000) * 12) + '%';
+  
+  // Signal integrity decay
+  const integrity = 28 + Math.random() * 18;
+  document.getElementById('rt-integrity-bar').style.width = integrity + '%';
+  
+  // Count unlocked nodes by checking DOM (don't use nodeMap)
+  const unlockedEls = document.querySelectorAll('.node.unlocked-node').length;
+  const totalNodes = NODES.length;
+  const progressPercent = totalNodes > 0 ? Math.floor((unlockedEls / totalNodes) * 100) : 0;
+  
+  // Random integrity messages with unlock progression
+  let messages = [
+    'THE VEIL CONTINUES TO FAIL. AUDIO CORRUPTED ACROSS 14 CHANNELS.',
+    'DRIFT DETECTED IN STRATUM-B. ANOTHER SKY IS COLLAPSING.',
+    'SIGNAL FRAGMENTS INDICATE IMMUNE POPULATION RISING.',
+    'HUSK MANIFESTATION ACCELERATING. CONSCIOUSNESS FAILURE IMMINENT.',
+    'YELLOW GAS OBSERVED AT COORDINATES. VISUAL CORRUPTION SPREADING.',
+    `ARCHIVE INTEGRITY: ${progressPercent}% RECOVERED`,
+    `TRANSMISSIONS INTERCEPTED: ${unlockedEls}/${totalNodes} NODES ACTIVE`
+  ];
+  if (Math.random() > 0.92) {
+    document.getElementById('rt-integrity-text').textContent = messages[Math.floor(Math.random() * messages.length)];
+  }
+}
+
+// Start real-time updates
+updateRealtimeData();
+setInterval(updateRealtimeData, 2000);
+
+/* ════════════════════════════════════════════════════════
+   RT-PANEL TOGGLE CONTROLS
+════════════════════════════════════════════════════════ */
+const rtPanel = document.getElementById('rt-panel');
+const rtToggle = document.getElementById('rt-toggle');
+const rtBackdrop = document.getElementById('rt-backdrop');
+
+rtToggle.addEventListener('click', () => {
+  rtPanel.classList.toggle('open');
+  rtToggle.classList.toggle('open');
+  rtBackdrop.classList.toggle('open');
+});
+
+rtBackdrop.addEventListener('click', () => {
+  rtPanel.classList.remove('open');
+  rtToggle.classList.remove('open');
+  rtBackdrop.classList.remove('open');
+});
+
+/* ════════════════════════════════════════════════════════
+   MOBILE NODE LIST RENDERING
+════════════════════════════════════════════════════════ */
+function renderNodeList() {
+  const grid = document.getElementById('node-list-grid');
+  const counter = document.getElementById('node-count');
+  
+  if (!grid || !counter) return;
+  
+  // Use NODES array directly, don't access nodeMap
+  if (typeof NODES === 'undefined' || !NODES || NODES.length === 0) {
+    return;
+  }
+  
+  // Clear existing cards
+  grid.innerHTML = '';
+  
+  // Count unlocked nodes by checking DOM elements created by buildNodes()
+  let unlockedCount = 0;
+  NODES.forEach(n => {
+    const nodeEl = document.querySelector(`[data-id="${n.id}"]`);
+    if (nodeEl && nodeEl.classList.contains('unlocked-node')) {
+      unlockedCount++;
+    }
+  });
+  
+  // Update counter
+  counter.textContent = `${unlockedCount} / ${NODES.length} nodes unlocked`;
+  
+  // Render each node as a card from NODES array
+  NODES.forEach(node => {
+    const n = node; // Use node directly from NODES array
+    
+    // Check if unlocked by looking for the DOM element
+    const nodeEl = document.querySelector(`[data-id="${n.id}"]`);
+    const isUnlocked = nodeEl ? nodeEl.classList.contains('unlocked-node') : false;
+    
+    const card = document.createElement('div');
+    card.className = `node-list-card ${isUnlocked ? 'nlc-unlocked' : 'nlc-locked'} ${isUnlocked ? 'node-list-card--unlocked' : 'node-list-card--locked'}`;
+    card.dataset.id = n.id;
+    
+    card.onclick = (e) => {
+      // Show modal (reuse existing modal system)
+      const modalTag = document.getElementById('node-modal-tag');
+      const modalTitle = document.getElementById('node-modal-title');
+      const modalContent = document.getElementById('node-modal-content');
+      const modal = document.getElementById('node-modal');
+      
+      modalTag.textContent = n.tag || '';
+      modalTitle.textContent = isUnlocked ? (n.realName || n.name) : n.name;
+      
+      let content = `<p>${isUnlocked ? (n.realTip || n.tip) : n.tip}</p>`;
+      
+      // Add enhanced details if available
+      if (NODE_DETAILS[n.id]) {
+        const details = NODE_DETAILS[n.id];
+        
+        // Render image (procedural, glitched, or custom)
+        if (details.imageType) {
+          renderNodeImage(n.id).then(imgDataUrl => {
+            const img = document.createElement('img');
+            img.src = imgDataUrl;
+            img.className = 'node-modal-img';
+            img.style.display = 'block';
+            if (modalContent.firstChild && modalContent.firstChild.nextSibling) {
+              modalContent.insertBefore(img, modalContent.firstChild.nextSibling);
+            }
+          });
+        }
+        
+        if (details.transcript) content += `<div class="node-modal-transcript">${details.transcript.replace(/\n/g, '<br>')}</div>`;
+        if (details.doc) content += `<h3>// CLASSIFICATION</h3><p>${details.doc}</p>`;
+      }
+      
+      modalContent.innerHTML = content;
+      modal.classList.add('active');
+    };
+    
+    card.innerHTML = `
+      <div class="nlc-tag">${n.tag || ''}</div>
+      <div class="nlc-name">${isUnlocked ? (n.realName || n.name) : n.name}</div>
+      <div class="nlc-sub">${isUnlocked ? (n.realSub || n.sub) : n.sub}</div>
+      <div class="nlc-status">
+        <div class="nlc-dot"></div>
+        <span>${isUnlocked ? 'UNLOCKED' : 'LOCKED'}</span>
+      </div>
+    `;
+    
+    grid.appendChild(card);
+  });
+}
+
+// Re-render when nodes are unlocked
+window.onNodeUnlocked = () => {
+  renderNodeList();
+};
 
 const CONNECTIONS = [
   {from:'wncore', to:'siharu', style:'conn-main'},
@@ -3610,6 +4505,8 @@ function init(){
   buildLabels();
   buildNodes();
   buildDeadAirNode();
+  // Render mobile node list after nodes are built
+  renderNodeList();
   setTimeout(() => {
     drawConnectors();
     drawMinimap();
