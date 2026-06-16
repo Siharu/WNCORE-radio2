@@ -7967,6 +7967,27 @@ async function initPage() {
 document.addEventListener('DOMContentLoaded', initPage);
 
 /* ══════════════════════════════════════════════════════
+   PAGE VISIBILITY — pause audio & animations when tab hidden
+   Saves RAM on mobile & idle tabs
+══════════════════════════════════════════════════════ */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // TAB HIDDEN: Stop ambient audio, cancel glitch reel animation
+    if (window.stopAmbient) stopAmbient(false);
+    if (window._glitchRAFId) {
+      cancelAnimationFrame(window._glitchRAFId);
+      window._glitchRAFId = null;
+    }
+  } else {
+    // TAB VISIBLE: Resume audio if user was playing it
+    // (Glitch reel will auto-restart via its own observer logic)
+    if (window._lastAmbientKey && window.playAmbient) {
+      setTimeout(() => playAmbient(window._lastAmbientKey), 100);
+    }
+  }
+});
+
+/* ══════════════════════════════════════════════════════
    GLITCH REEL — rapid-fire cosmos/life imagery on canvas
    Cycles Unsplash photos at movie-trailer speed with
    chromatic aberration + scanline glitch between frames.
@@ -8044,6 +8065,7 @@ document.addEventListener('DOMContentLoaded', initPage);
 
   function drawFrame(ts) {
     rAFId = requestAnimationFrame(drawFrame);
+    window._glitchRAFId = rAFId; // Expose for visibility listener to cancel
     const dt = ts - lastFrame;
     lastFrame = ts;
 
@@ -8950,6 +8972,7 @@ function setAmbient(key, btnEl) {
   if (_ambKey === key) { stopAmbient(); return; }
   stopAmbient(false);
   _ambKey = key;
+  window._lastAmbientKey = key; // Track for resume on tab visibility
   try {
     const ctx = _getAmbCtx();
     _ambGain = ctx.createGain();
@@ -8988,6 +9011,12 @@ function setAmbVol(v) {
   if (_ambGain && _ambCtx) {
     _ambGain.gain.linearRampToValueAtTime(_ambVol, _ambCtx.currentTime + 0.1);
   }
+}
+
+/* Resume ambient sound after page visibility change */
+function playAmbient(key) {
+  if (!key || !AMBIENT_BUILDERS[key]) return;
+  setAmbient(key);
 }
 
 function toggleReaderOpts() { document.getElementById('reader-opts-panel').classList.toggle('open'); }
