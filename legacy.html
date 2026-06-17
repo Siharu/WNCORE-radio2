@@ -4,293 +4,201 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KL883B — Planetary System Archive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 :root {
-  --accent: #8ab4d4;
-  --accent-bright: #c4e0f4;
-  --accent-dim: #3a5a74;
-  --bg: #0a0e1a;
-  --text: #8ab4d4;
-  --text-dim: rgba(138,180,212,0.3);
+  --alien-bg: #0a0a0f;
+  --alien-text: #8ab4d4;
+  --alien-dim: #3a5a74;
+  --alien-bright: #c4e0f4;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
 
 body {
+  background: var(--alien-bg);
   font-family: 'IBM Plex Mono', monospace;
-  background: radial-gradient(ellipse at center, rgba(15,20,40,0.8) 0%, var(--bg) 70%);
-  color: var(--text);
-  line-height: 1.6;
-  overflow: hidden;
+  color: var(--alien-text);
 }
 
-#system-view {
+#canvas { position: fixed; inset: 0; display: block; }
+
+#system-header {
   position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-#star-center {
-  position: absolute;
-  width: 120px;
-  height: 120px;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0 60px rgba(255,200,100,1)) drop-shadow(0 0 120px rgba(255,150,50,0.6));
-  animation: star-pulse 3s ease-in-out infinite;
-}
-
-@keyframes star-pulse {
-  0%, 100% { filter: drop-shadow(0 0 60px rgba(255,200,100,1)) drop-shadow(0 0 120px rgba(255,150,50,0.6)); }
-  50% { filter: drop-shadow(0 0 90px rgba(255,220,140,1)) drop-shadow(0 0 160px rgba(255,180,80,0.8)); }
-}
-
-.orbit-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  border-radius: 50%;
-  border: 1px solid rgba(138,180,212,0.08);
-  transform: translate(-50%, -50%);
+  top: 30px;
+  left: 30px;
+  z-index: 20;
   pointer-events: none;
 }
 
-.planet-arm {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform-origin: 0 0;
-  animation: arm-spin linear infinite;
-  pointer-events: none;
-}
-
-@keyframes arm-spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.planet-gif {
-  position: absolute;
-  border-radius: 4px;
-  image-rendering: pixelated;
-  filter: drop-shadow(0 0 10px rgba(138,180,212,0.6));
-  cursor: pointer;
-  transition: filter 0.2s;
-  animation: planet-upright linear infinite;
-}
-
-@keyframes planet-upright { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
-
-.planet-gif:hover { filter: drop-shadow(0 0 20px rgba(138,180,212,0.9)) drop-shadow(0 0 40px rgba(200,220,255,0.4)); }
-
-#sidebar-toggle {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 30;
-  padding: 12px 18px;
-  background: rgba(10,14,26,0.8);
-  border: 1px solid rgba(138,180,212,0.25);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 0.6rem;
-  letter-spacing: 2px;
+.header-line {
+  font-size: 0.55rem;
   text-transform: uppercase;
-  border-radius: 4px;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s;
+  letter-spacing: 2px;
+  color: var(--alien-dim);
+  margin-bottom: 6px;
+  opacity: 0.7;
 }
 
-#sidebar-toggle:hover {
-  border-color: var(--accent);
-  color: var(--accent-bright);
-  box-shadow: 0 0 20px rgba(138,180,212,0.15);
+.header-status {
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  color: #ff6644;
+  animation: status-pulse 1.5s ease-in-out infinite;
+  font-weight: bold;
 }
 
-#lore-sidebar {
+@keyframes status-pulse {
+  0%, 100% { opacity: 0.5; text-shadow: 0 0 10px rgba(255,100,68,0.2); }
+  50% { opacity: 1; text-shadow: 0 0 20px rgba(255,100,68,0.6); }
+}
+
+#info-panel {
   position: fixed;
-  right: -400px;
-  top: 0;
-  width: 400px;
-  height: 100vh;
-  background: rgba(10,14,26,0.95);
-  backdrop-filter: blur(20px);
-  border-left: 1px solid rgba(138,180,212,0.15);
-  z-index: 40;
-  display: flex;
-  flex-direction: column;
-  transition: right 0.3s ease;
-  overflow: hidden;
+  bottom: 30px;
+  left: 30px;
+  width: 420px;
+  max-height: 340px;
+  background: rgba(10,14,26,0.96);
+  border: 1px solid rgba(138,180,212,0.2);
+  backdrop-filter: blur(10px);
+  border-radius: 3px;
+  padding: 22px;
+  z-index: 25;
+  overflow-y: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
 }
 
-#lore-sidebar.open { right: 0; }
+#info-panel.active {
+  opacity: 1;
+  pointer-events: all;
+}
 
-#sidebar-close {
+.info-title {
+  font-size: 14px;
+  letter-spacing: 2px;
+  color: var(--alien-bright);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.info-tag {
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  color: var(--alien-dim);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+}
+
+.info-section {
+  margin-bottom: 16px;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.info-section-title {
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--alien-dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.info-body {
+  border-left: 1px solid rgba(138,180,212,0.15);
+  padding-left: 10px;
+  color: var(--alien-text);
+}
+
+#close-panel {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 10px;
+  right: 10px;
   width: 24px;
   height: 24px;
   background: none;
   border: none;
-  color: var(--text-dim);
+  color: var(--alien-dim);
   cursor: pointer;
-  font-size: 1.4rem;
-  z-index: 41;
+  font-size: 20px;
+  line-height: 1;
   transition: color 0.2s;
 }
 
-#sidebar-close:hover { color: var(--text); }
-
-#sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid rgba(138,180,212,0.1);
+#close-panel:hover {
+  color: var(--alien-bright);
 }
 
-#sidebar-title {
-  font-size: 0.7rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-dim);
-}
-
-#sidebar-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
-}
-
-.lore-entry {
-  margin-bottom: 28px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(138,180,212,0.08);
-}
-
-.lore-entry:last-child { border-bottom: none; }
-
-.lore-entry-name {
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--accent-bright);
-  margin-bottom: 8px;
-}
-
-.lore-entry-text {
-  font-size: 0.55rem;
-  line-height: 1.7;
-  color: rgba(138,180,212,0.75);
-}
-
-.lore-entry-tag {
-  font-size: 0.5rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--text-dim);
-  margin-top: 8px;
-}
-
-.human-lore {
-  background: rgba(245,238,216,0.03);
-  padding: 12px;
-  border-left: 2px solid rgba(138,180,212,0.15);
-  border-radius: 2px;
-  margin-top: 12px;
-}
-
-.human-lore-text {
-  font-size: 0.53rem;
-  line-height: 1.6;
-  color: rgba(200,220,255,0.6);
-  font-style: italic;
-}
-
-#sidebar-content::-webkit-scrollbar { width: 6px; }
-#sidebar-content::-webkit-scrollbar-track { background: transparent; }
-#sidebar-content::-webkit-scrollbar-thumb { background: rgba(138,180,212,0.2); border-radius: 3px; }
-#sidebar-content::-webkit-scrollbar-thumb:hover { background: rgba(138,180,212,0.4); }
-
-@media (max-width: 768px) {
-  #lore-sidebar { width: 100%; right: -100%; }
-  #sidebar-toggle { bottom: 14px; right: 14px; padding: 10px 14px; font-size: 0.55rem; }
-  .lore-entry { margin-bottom: 20px; padding-bottom: 16px; }
-  .lore-entry-text { font-size: 0.53rem; }
-}
-
-#sidebar-overlay {
+#controls-hint {
   position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0);
-  z-index: 35;
+  bottom: 30px;
+  right: 30px;
+  font-size: 9px;
+  letter-spacing: 1px;
+  color: var(--alien-dim);
+  text-align: right;
   pointer-events: none;
-  transition: background 0.3s;
+  z-index: 20;
+  line-height: 1.6;
 }
 
-#sidebar-overlay.visible {
-  background: rgba(0,0,0,0.4);
-  pointer-events: auto;
+#vanish-indicator {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #ff6644;
+  text-transform: uppercase;
+  animation: vanish-flicker 0.8s ease-in-out infinite;
+  z-index: 20;
 }
+
+@keyframes vanish-flicker {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: rgba(138,180,212,0.05); }
+::-webkit-scrollbar-thumb { background: rgba(138,180,212,0.2); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(138,180,212,0.4); }
 </style>
 </head>
 <body>
 
-<div id="system-view">
-  <img id="star-center" src="/assets/Cygnus-gifs/galaxy/StarNivora.gif" alt="KL883B">
-  <div class="orbit-ring" style="width:280px;height:280px"></div>
-  <div class="orbit-ring" style="width:400px;height:400px"></div>
-  <div class="orbit-ring" style="width:520px;height:520px"></div>
-  <div class="orbit-ring" style="width:640px;height:640px"></div>
-  <div class="orbit-ring" style="width:760px;height:760px"></div>
+<canvas id="canvas"></canvas>
 
-  <div class="planet-arm" style="animation-duration:8s;animation-delay:-1s">
-    <img class="planet-gif" data-planet="calyx" src="/assets/Cygnus-gifs/planets/Calyx.gif" alt="Calyx"
-         style="width:42px;height:42px;margin-left:140px;margin-top:-21px;animation-duration:8s;animation-delay:-1s">
+<div id="system-header">
+  <div class="header-line">KL883B System Archive</div>
+  <div class="header-status">⊘ OBSERVATION LOST</div>
+</div>
+
+<div id="vanish-indicator">
+  [SYSTEM VANISHED]
+</div>
+
+<div id="info-panel">
+  <button id="close-panel">✕</button>
+  <div class="info-title" id="info-title">KAGE</div>
+  <div class="info-tag" id="info-tag">Fourth circle · the origin</div>
+  <div class="info-section">
+    <div class="info-section-title">Human Record</div>
+    <div class="info-body" id="info-human"></div>
   </div>
-  <div class="planet-arm" style="animation-duration:12s;animation-delay:-3s">
-    <img class="planet-gif" data-planet="drev" src="/assets/Cygnus-gifs/planets/Drev.gif" alt="Drev"
-         style="width:46px;height:46px;margin-left:200px;margin-top:-23px;animation-duration:12s;animation-delay:-3s">
-  </div>
-  <div class="planet-arm" style="animation-duration:16s;animation-delay:-5s">
-    <img class="planet-gif" data-planet="kage" src="/assets/Cygnus-gifs/planets/KAGE.gif" alt="KAGE"
-         style="width:48px;height:48px;margin-left:260px;margin-top:-24px;animation-duration:16s;animation-delay:-5s">
-  </div>
-  <div class="planet-arm" style="animation-duration:20s;animation-delay:-7s">
-    <img class="planet-gif" data-planet="mourne" src="/assets/Cygnus-gifs/planets/Mourne.gif" alt="Mourne"
-         style="width:44px;height:44px;margin-left:320px;margin-top:-22px;animation-duration:20s;animation-delay:-7s">
-  </div>
-  <div class="planet-arm" style="animation-duration:24s;animation-delay:-9s">
-    <img class="planet-gif" data-planet="nullen" src="/assets/Cygnus-gifs/planets/Nullen.gif" alt="Nullen"
-         style="width:50px;height:50px;margin-left:380px;margin-top:-25px;animation-duration:24s;animation-delay:-9s">
-  </div>
-  <div class="planet-arm" style="animation-duration:28s;animation-delay:-11s">
-    <img class="planet-gif" data-planet="obsidis" src="/assets/Cygnus-gifs/planets/Obsidis.gif" alt="Obsidis"
-         style="width:40px;height:40px;margin-left:440px;margin-top:-20px;animation-duration:28s;animation-delay:-11s">
-  </div>
-  <div class="planet-arm" style="animation-duration:32s;animation-delay:-13s">
-    <img class="planet-gif" data-planet="orveth" src="/assets/Cygnus-gifs/planets/Orveth.gif" alt="Orveth"
-         style="width:45px;height:45px;margin-left:500px;margin-top:-22.5px;animation-duration:32s;animation-delay:-13s">
-  </div>
-  <div class="planet-arm" style="animation-duration:36s;animation-delay:-15s">
-    <img class="planet-gif" data-planet="shurn" src="/assets/Cygnus-gifs/planets/Shurn.gif" alt="Shurn"
-         style="width:47px;height:47px;margin-left:560px;margin-top:-23.5px;animation-duration:36s;animation-delay:-15s">
-  </div>
-  <div class="planet-arm" style="animation-duration:40s;animation-delay:-17s">
-    <img class="planet-gif" data-planet="thresh" src="/assets/Cygnus-gifs/planets/Thresh.gif" alt="Thresh"
-         style="width:43px;height:43px;margin-left:620px;margin-top:-21.5px;animation-duration:40s;animation-delay:-17s">
-  </div>
-  <div class="planet-arm" style="animation-duration:44s;animation-delay:-19s">
-    <img class="planet-gif" data-planet="vael" src="/assets/Cygnus-gifs/planets/Vael.gif" alt="Vael"
-         style="width:49px;height:49px;margin-left:680px;margin-top:-24.5px;animation-duration:44s;animation-delay:-19s">
+  <div class="info-section">
+    <div class="info-section-title">Observation</div>
+    <div class="info-body" id="info-alien"></div>
   </div>
 </div>
 
-<button id="sidebar-toggle">◐ Archives</button>
-<div id="sidebar-overlay"></div>
-<div id="lore-sidebar">
-  <button id="sidebar-close">×</button>
-  <div id="sidebar-header">
-    <div id="sidebar-title">KL883B System Archives</div>
-  </div>
-  <div id="sidebar-content"></div>
+<div id="controls-hint">
+  DRAG: rotate<br>
+  SCROLL: zoom<br>
+  CLICK: info
 </div>
 
 <script>
@@ -298,415 +206,194 @@ function checkLegacyLock() {
   try {
     const solved = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
     if (solved.length < 20) {
-      const lockHTML = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KL883B — ACCESS DENIED</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&display=swap');
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; }
-body {
-  background: #000;
-  color: #8ab4d4;
-  font-family: 'IBM Plex Mono', monospace;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden;
-  position: relative;
-}
-
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: 
-    repeating-linear-gradient(
-      0deg,
-      rgba(138,180,212,0.03) 0px,
-      rgba(138,180,212,0.03) 1px,
-      transparent 1px,
-      transparent 3px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgba(255,50,50,0.02) 0px,
-      rgba(255,50,50,0.02) 2px,
-      transparent 2px,
-      transparent 4px
-    );
-  pointer-events: none;
-  animation: crt-flicker 0.05s infinite;
-  z-index: 1;
-}
-
-@keyframes crt-flicker {
-  0%, 100% { opacity: 0.95; }
-  50% { opacity: 0.98; }
-}
-
-.lock-container {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  max-width: 600px;
-}
-
-.lock-logo {
-  width: 140px;
-  height: 140px;
-  margin: 0 auto 40px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* Custom restricted SVG logo */
-svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 30px rgba(138,180,212,0.4));
-  animation: logo-distort 0.15s infinite;
-}
-
-@keyframes logo-distort {
-  0%, 100% { filter: drop-shadow(0 0 30px rgba(138,180,212,0.4)); }
-  25% { filter: drop-shadow(0 0 30px rgba(138,180,212,0.4)) brightness(1.2); }
-  50% { filter: drop-shadow(0 0 50px rgba(255,50,50,0.3)) hue-rotate(10deg); }
-  75% { filter: drop-shadow(0 0 30px rgba(138,180,212,0.4)) brightness(0.9); }
-}
-
-.lock-title {
-  font-size: 2.2rem;
-  letter-spacing: 4px;
-  margin-bottom: 8px;
-  font-weight: 600;
-  text-transform: uppercase;
-  position: relative;
-  line-height: 1.3;
-  margin-bottom: 20px;
-}
-
-.glitch-line {
-  position: relative;
-  display: block;
-  height: 2.2em;
-}
-
-.glitch-line span {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  display: block;
-}
-
-.glitch-line span:nth-child(1) {
-  animation: glitch-shift-1 0.08s infinite;
-  color: #8ab4d4;
-  z-index: 3;
-}
-
-.glitch-line span:nth-child(2) {
-  animation: glitch-shift-2 0.08s infinite;
-  color: #ff3333;
-  opacity: 0;
-  z-index: 2;
-}
-
-.glitch-line span:nth-child(3) {
-  animation: glitch-shift-3 0.08s infinite;
-  color: #00ffff;
-  opacity: 0;
-  z-index: 1;
-}
-
-@keyframes glitch-shift-1 {
-  0%, 100% { transform: translateX(0) skewX(0deg); opacity: 1; }
-  20% { transform: translateX(4px) skewX(-5deg); opacity: 0.8; }
-  40% { transform: translateX(-2px) skewX(3deg); opacity: 0.6; }
-  60% { transform: translateX(3px) skewX(-2deg); opacity: 0.9; }
-  80% { transform: translateX(-1px) skewX(1deg); opacity: 0.7; }
-}
-
-@keyframes glitch-shift-2 {
-  0%, 100% { transform: translateX(-2px) skewX(0deg); opacity: 0; }
-  20% { transform: translateX(-6px) skewX(5deg); opacity: 0.4; }
-  40% { transform: translateX(2px) skewX(-3deg); opacity: 0.6; }
-  60% { transform: translateX(0px) skewX(2deg); opacity: 0.3; }
-  80% { transform: translateX(3px) skewX(-1deg); opacity: 0.5; }
-}
-
-@keyframes glitch-shift-3 {
-  0%, 100% { transform: translateX(2px) skewX(0deg); opacity: 0; }
-  20% { transform: translateX(6px) skewX(-5deg); opacity: 0.3; }
-  40% { transform: translateX(-2px) skewX(3deg); opacity: 0.5; }
-  60% { transform: translateX(-3px) skewX(-2deg); opacity: 0.4; }
-  80% { transform: translateX(-1px) skewX(1deg); opacity: 0.6; }
-}
-
-.lock-subtitle {
-  font-size: 0.75rem;
-  letter-spacing: 2.5px;
-  color: rgba(138,180,212,0.5);
-  margin-bottom: 32px;
-  text-transform: uppercase;
-  line-height: 1.9;
-}
-
-.lock-progress {
-  margin: 40px 0 35px;
-  padding: 20px;
-  border: 1px solid rgba(138,180,212,0.2);
-  border-radius: 0px;
-  background: rgba(10,14,26,0.8);
-  position: relative;
-  border-left: 3px solid rgba(138,180,212,0.4);
-}
-
-.progress-label {
-  font-size: 0.58rem;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: rgba(138,180,212,0.35);
-  margin-bottom: 14px;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 4px;
-  background: rgba(138,180,212,0.08);
-  border-radius: 0px;
-  overflow: hidden;
-  margin-bottom: 14px;
-  border: 1px solid rgba(138,180,212,0.12);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #4aa8ff 0%, #8ab4d4 50%, #4aa8ff 100%);
-  width: ${(solved.length / 20) * 100}%;
-  transition: width 0.3s;
-  box-shadow: 0 0 15px rgba(138,180,212,0.6), inset 0 0 8px rgba(255,255,255,0.2);
-  background-size: 200% 100%;
-  animation: shimmer-fill 2s linear infinite;
-}
-
-@keyframes shimmer-fill {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.progress-count {
-  font-size: 0.64rem;
-  letter-spacing: 1.5px;
-  color: rgba(138,180,212,0.7);
-  text-transform: uppercase;
-}
-
-.lock-button {
-  display: inline-block;
-  padding: 14px 32px;
-  border: 1px solid rgba(138,180,212,0.35);
-  background: rgba(10,14,26,0.7);
-  color: #8ab4d4;
-  text-decoration: none;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.63rem;
-  letter-spacing: 2.5px;
-  text-transform: uppercase;
-  cursor: pointer;
-  border-radius: 0px;
-  transition: all 0.15s;
-  margin-top: 24px;
-  position: relative;
-  overflow: hidden;
-}
-
-.lock-button::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(138,180,212,0.1), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.4s;
-}
-
-.lock-button:hover {
-  border-color: #8ab4d4;
-  color: #c4e0f4;
-  box-shadow: 0 0 25px rgba(138,180,212,0.2), inset 0 0 10px rgba(138,180,212,0.05);
-  background: rgba(10,14,26,0.9);
-}
-
-.lock-button:hover::before {
-  transform: translateX(100%);
-}
-
-.corrupted-text {
-  margin-top: 48px;
-  font-size: 0.48rem;
-  letter-spacing: 1px;
-  color: rgba(138,180,212,0.15);
-  text-transform: uppercase;
-  animation: glitch-corrupt 0.3s infinite;
-  word-spacing: 4px;
-}
-
-@keyframes glitch-corrupt {
-  0%, 100% { opacity: 0.15; text-shadow: none; }
-  25% { opacity: 0.08; text-shadow: 2px 0px rgba(255,50,50,0.3), -2px 0px rgba(0,255,255,0.3); }
-  50% { opacity: 0.2; text-shadow: -2px 0px rgba(255,50,50,0.2), 2px 0px rgba(0,255,255,0.2); }
-  75% { opacity: 0.1; text-shadow: 3px 0px rgba(255,50,50,0.25), -3px 0px rgba(0,255,255,0.25); }
-}
-
-.signal-indicator {
-  margin-top: 30px;
-  font-size: 0.55rem;
-  letter-spacing: 3px;
-  color: rgba(138,180,212,0.25);
-  text-transform: uppercase;
-}
-
-.signal-dot {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: rgba(138,180,212,0.4);
-  border-radius: 50%;
-  margin: 0 3px;
-  animation: signal-pulse 1s ease-in-out infinite;
-}
-
-.signal-dot:nth-child(2) { animation-delay: 0.2s; }
-.signal-dot:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes signal-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-</style>
-</head>
-<body>
-<div class="lock-container">
-  <div class="lock-logo">
-    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- Outer ring -->
-      <circle cx="100" cy="100" r="95" fill="none" stroke="currentColor" stroke-width="2" opacity="0.6"/>
-      <!-- Inner ring -->
-      <circle cx="100" cy="100" r="75" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"/>
-      <!-- Center dot -->
-      <circle cx="100" cy="100" r="8" fill="currentColor" opacity="0.7"/>
-      <!-- Top wedge -->
-      <path d="M 100 20 L 85 45 L 115 45 Z" fill="currentColor" opacity="0.5"/>
-      <!-- Right wedge -->
-      <path d="M 180 100 L 155 85 L 155 115 Z" fill="currentColor" opacity="0.5"/>
-      <!-- Bottom wedge -->
-      <path d="M 100 180 L 115 155 L 85 155 Z" fill="currentColor" opacity="0.5"/>
-      <!-- Left wedge -->
-      <path d="M 20 100 L 45 115 L 45 85 Z" fill="currentColor" opacity="0.5"/>
-      <!-- Crossing lines (restricted X) -->
-      <line x1="60" y1="60" x2="140" y2="140" stroke="currentColor" stroke-width="2" opacity="0.5"/>
-      <line x1="140" y1="60" x2="60" y2="140" stroke="currentColor" stroke-width="2" opacity="0.5"/>
-    </svg>
-  </div>
-
-  <div class="lock-title">
-    <div class="glitch-line">
-      <span>ACCESS DENIED</span>
-      <span>ACCESS DENIED</span>
-      <span>ACCESS DENIED</span>
-    </div>
-  </div>
-
-  <div class="lock-subtitle">
-    KL883B archives remain sealed.<br>
-    The constellations must align first.
-  </div>
-
-  <div class="lock-progress">
-    <div class="progress-label">◆ SIGNAL ACQUISITION ◆</div>
-    <div class="progress-bar">
-      <div class="progress-fill"></div>
-    </div>
-    <div class="progress-count">${solved.length} of 20 constellations traced</div>
-  </div>
-
-  <a href="/" class="lock-button">← Return Archive</a>
-
-  <div class="signal-indicator">
-    searching for signal
-    <span class="signal-dot"></span>
-    <span class="signal-dot"></span>
-    <span class="signal-dot"></span>
-  </div>
-
-  <div class="corrupted-text">▌▄▀▄▀ file_corrupted ▄▀▄▀▌</div>
-</div>
-</body>
-</html>
+      document.body.innerHTML = `
+        <style>
+          body { background: #000; display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; }
+          .lock { text-align: center; max-width: 600px; color: #8ab4d4; }
+          .lock-title { font-size: 2rem; letter-spacing: 3px; margin: 30px 0; text-transform: uppercase; }
+          .lock-body { font-size: 12px; line-height: 1.8; margin: 20px 0; opacity: 0.7; }
+          .lock-progress { margin: 30px 0; font-size: 11px; }
+          .bar { width: 200px; height: 2px; background: rgba(138,180,212,0.2); margin: 10px auto; }
+          .fill { height: 100%; background: rgba(138,180,212,0.8); width: \${solved.length * 5}%; transition: width 0.3s; }
+          .lock-hint { margin-top: 30px; font-size: 10px; letter-spacing: 1px; color: #ff6644; }
+          a { color: #8ab4d4; text-decoration: none; border-bottom: 1px solid #8ab4d4; }
+        </style>
+        <div class="lock">
+          <div class="lock-title">ACCESS DENIED</div>
+          <div class="lock-body">
+            KL883B System Archives remain sealed.<br><br>
+            The star system that transmitted the signal in 2011 vanished from all known observation coordinates shortly after contact was established. Only fragmented records remain.<br><br>
+            All access routes require verification.
+          </div>
+          <div class="lock-progress">
+            Solve all 20 constellation puzzles to unlock:
+            <div class="bar"><div class="fill"></div></div>
+            <div>\${solved.length} / 20</div>
+          </div>
+          <div class="lock-hint">Return to the Signal Archive to continue solving.</div>
+          <div style="margin-top: 40px;"><a href="/constellation.html">← Back to Constellation Archive</a></div>
+        </div>
       `;
-      document.documentElement.innerHTML = lockHTML;
       return false;
     }
     return true;
-  } catch(e) { 
-    console.error('Lock check failed:', e);
-    return false; 
+  } catch(e) {
+    return false;
   }
 }
 
-if (!checkLegacyLock()) throw new Error('Access denied');
+if (!checkLegacyLock()) {
+  // Lock screen shown
+} else {
+  const canvas = document.getElementById('canvas');
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 10000);
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x0a0a0f, 1);
+  camera.position.set(0, 15, 35);
+  camera.lookAt(0, 0, 0);
 
-const sidebarToggle = document.getElementById('sidebar-toggle');
-const sidebarClosebtn = document.getElementById('sidebar-close');
-const loreSidebar = document.getElementById('lore-sidebar');
-const sidebarOverlay = document.getElementById('sidebar-overlay');
+  // Background stars
+  const starGeo = new THREE.BufferGeometry();
+  const starCount = 3000;
+  const starPos = new Float32Array(starCount * 3);
+  for (let i = 0; i < starCount; i++) {
+    starPos[i * 3] = (Math.random() - 0.5) * 2000;
+    starPos[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+    starPos[i * 3 + 2] = (Math.random() - 0.5) * 2000;
+  }
+  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, opacity: 0.6, transparent: true });
+  const stars = new THREE.Points(starGeo, starMat);
+  scene.add(stars);
 
-sidebarToggle.addEventListener('click', () => { loreSidebar.classList.toggle('open'); sidebarOverlay.classList.toggle('visible'); });
-sidebarClosebtn.addEventListener('click', () => { loreSidebar.classList.remove('open'); sidebarOverlay.classList.remove('visible'); });
-sidebarOverlay.addEventListener('click', () => { loreSidebar.classList.remove('open'); sidebarOverlay.classList.remove('visible'); });
+  // Central star
+  const starGeometry = new THREE.SphereGeometry(1.2, 32, 32);
+  const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc66 });
+  const centralStar = new THREE.Mesh(starGeometry, starMaterial);
+  scene.add(centralStar);
 
-const loreData = {
-  calyx: { name: 'CALYX', human: 'The surface has no marks. Nothing has ever hit it. Nothing has ever happened to it. Its path around the fire is too clean to have happened by accident.', alien: 'Body classification: Hollow sphere. Mass inconsistent with size — internal structure unknown. Orbital mechanics suggest artificial origin or extreme age.', tag: 'Eighth circle · the hollow' },
-  drev: { name: 'DREV', human: 'It does not move as things should move. The face it shows the fire has not changed since the first elder looked upon it. The other face is cold beyond the word for cold.', alien: 'Tidally locked body. Extreme temperature differential between day and night sides. No explanation for observed atmospheric circulation.', tag: 'First circle · the burned one' },
-  kage: { name: 'KAGE', human: 'Water. More water than land. Air that a body could breathe. We do not know how we know this. The signal came from there.', alien: 'Earth-analog classification. Biosphere signatures detected. Origin of 88.7 FM transmission confirmed.', tag: 'Fourth circle · the origin' },
-  mourne: { name: 'MOURNE', human: 'We have stopped arguing about what lies beneath. We know something lives there in the darkness.', alien: 'Ice giant with subsurface ocean. Geothermal activity indicates internal heat source. Potential for chemosynthetic life.', tag: 'Sixth circle · the deep' },
-  nullen: { name: 'NULLEN', human: 'When it reaches the edge, everything else goes quiet. For three days no other signal reaches us from that direction. Then it returns and everything resumes.', alien: 'High albedo body. Electromagnetic interference patterns correlate with orbital position. Origin of phenomenon unknown.', tag: 'Tenth circle · the last witness' },
-  obsidis: { name: 'OBSIDIS', human: 'We see where it is by what is not there. A hole in the sky that moves. It has two companions we have tried to name four times. The names do not stay written.', alien: 'Dark body. Minimal light reflection. Gravitational lensing effects suggest massive companion objects in unstable orbit.', tag: 'Second circle · the absent one' },
-  orveth: { name: 'ORVETH', human: 'The signal bends around it. Radio waves arrive distorted. We have never understood why it has such influence on the space around it.', alien: 'Magnetic field strength exceeds prediction models. Likely magnetar or magnetic monopole effects. Surface composition: metallic ore-rich.', tag: 'Seventh circle · the magnetic' },
-  shurn: { name: 'SHURN', human: 'It moves like something is holding it up. The rings are dust and ice but they do not behave as dust and ice should.', alien: 'Ringed dwarf body. Ring composition suggests recent fragmentation event. Ring stability: anomalous.', tag: 'Fifth circle · the ringed' },
-  thresh: { name: 'THRESH', human: 'Every surface is broken. Not by time but by impact. Something very old crashed into many things. Or many things crashed into something very old.', alien: 'Heavily cratered body. Impact history spans billions of years. One crater exhibits signs of non-natural origin.', tag: 'Ninth circle · the scarred' },
-  vael: { name: 'VAEL', human: 'Each time we map it the map is wrong. There is a place at the north angle that does not change. We have stopped arguing about what this means.', alien: 'Geologically active. Consistent surface reformation. One region exhibits non-volcanic activity. Temporal anomalies detected.', tag: 'Third circle · the reborn' }
-};
+  const glowGeo = new THREE.SphereGeometry(1.5, 32, 32);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.2, depthWrite: false });
+  const starGlow = new THREE.Mesh(glowGeo, glowMat);
+  scene.add(starGlow);
 
-const sidebarContent = document.getElementById('sidebar-content');
-Object.keys(loreData).forEach(key => {
-  const lore = loreData[key];
-  const entry = document.createElement('div');
-  entry.className = 'lore-entry';
-  entry.innerHTML = `<div class="lore-entry-name">${lore.name}</div><div class="lore-entry-tag">${lore.tag}</div><div class="lore-entry-text"><strong>Human record:</strong></div><div class="human-lore"><div class="human-lore-text">${lore.human}</div></div><div class="lore-entry-text" style="margin-top:12px"><strong>Alien observation:</strong></div><div class="lore-entry-text" style="margin-top:6px">${lore.alien}</div>`;
-  sidebarContent.appendChild(entry);
-});
+  // Planet data
+  const planetData = {
+    drev: { name: 'Drev', tag: 'First circle · the burned one', distance: 8, size: 0.6, speed: 0.01, image: '/assets/Cygnus-gifs/planets/Drev.gif', human: 'It does not move as things should move. The face it shows the fire has not changed since the first elder looked upon it. The other face is cold beyond the word for cold.', alien: 'Tidally locked body. Extreme temperature differential between day and night sides. No explanation for observed atmospheric circulation.' },
+    obsidis: { name: 'Obsidis', tag: 'Second circle · the absent one', distance: 14, size: 0.4, speed: 0.005, image: '/assets/Cygnus-gifs/planets/Obsidis.gif', human: 'We see where it is by what is not there. A hole in the sky that moves. It has two companions we have tried to name four times.', alien: 'Dark body. Minimal light reflection. Gravitational lensing effects suggest massive companion objects in unstable orbit.' },
+    vael: { name: 'Vael', tag: 'Third circle · the reborn one', distance: 10, size: 0.5, speed: 0.008, image: '/assets/Cygnus-gifs/planets/Vael.gif', human: 'Each time we map it the map is wrong. There is a place at the north angle that does not change. We have stopped arguing about what this means.', alien: 'Geologically active. Consistent surface reformation. One region exhibits non-volcanic activity. Temporal anomalies detected.' },
+    kage: { name: 'KAGE', tag: 'Fourth circle · the origin', distance: 12, size: 0.7, speed: 0.007, image: '/assets/Cygnus-gifs/planets/KAGE.gif', human: 'Water. More water than land. Air that a body could breathe. We do not know how we know this. The signal came from there. We do not know if it still does.', alien: 'Earth-analog classification. Biosphere signatures detected. Origin of 88.7 FM transmission confirmed. SYSTEM STATUS: OBSERVATION LOST.' },
+    shurn: { name: 'Shurn', tag: 'Fifth circle · the ringed', distance: 18, size: 0.6, speed: 0.004, image: '/assets/Cygnus-gifs/planets/Shurn.gif', human: 'It moves like something is holding it up. The rings are dust and ice but they do not behave as dust and ice should.', alien: 'Ringed dwarf body. Ring composition suggests recent fragmentation event. Ring stability: anomalous.' },
+    mourne: { name: 'Mourne', tag: 'Sixth circle · the deep', distance: 20, size: 0.8, speed: 0.003, image: '/assets/Cygnus-gifs/planets/Mourne.gif', human: 'We have stopped arguing about what lies beneath. We know something lives there in the darkness.', alien: 'Ice giant with subsurface ocean. Geothermal activity indicates internal heat source. Potential for chemosynthetic life.' },
+    orveth: { name: 'Orveth', tag: 'Seventh circle · the magnetic', distance: 16, size: 0.6, speed: 0.005, image: '/assets/Cygnus-gifs/planets/Orveth.gif', human: 'The signal bends around it. Radio waves arrive distorted. We have never understood why it has such influence on the space around it.', alien: 'Magnetic field strength exceeds prediction models. Likely magnetar or magnetic monopole effects. Surface composition: metallic ore-rich.' },
+    calyx: { name: 'Calyx', tag: 'Eighth circle · the hollow', distance: 22, size: 0.4, speed: 0.003, image: '/assets/Cygnus-gifs/planets/Calyx.gif', human: 'It weighs too little. The surface has no marks. Nothing has ever hit it. Its path around the fire is too clean to have happened by accident.', alien: 'Body classification: Hollow sphere. Mass inconsistent with size — internal structure unknown. Orbital mechanics suggest artificial origin.' },
+    thresh: { name: 'Thresh', tag: 'Ninth circle · the scarred', distance: 24, size: 0.5, speed: 0.002, image: '/assets/Cygnus-gifs/planets/Thresh.gif', human: 'Every surface is broken. Not by time but by impact. Something very old crashed into many things. Or many things crashed into something very old.', alien: 'Heavily cratered body. Impact history spans billions of years. One crater exhibits signs of non-natural origin.' },
+    nullen: { name: 'Nullen', tag: 'Tenth circle · the last witness', distance: 26, size: 0.3, speed: 0.002, image: '/assets/Cygnus-gifs/planets/Nullen.gif', human: 'The brightest and the furthest. When it reaches the edge, everything else goes quiet. For three days no other signal reaches us from that direction.', alien: 'High albedo body. Electromagnetic interference patterns correlate with orbital position. Origin of phenomenon unknown.' }
+  };
 
-document.querySelectorAll('.planet-gif').forEach(planet => {
-  planet.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const planetName = planet.dataset.planet;
-    const lore = loreData[planetName];
-    if (lore) {
-      loreSidebar.classList.add('open');
-      sidebarOverlay.classList.add('visible');
-      const entries = sidebarContent.querySelectorAll('.lore-entry');
-      const index = Object.keys(loreData).indexOf(planetName);
-      if (entries[index]) entries[index].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const textureLoader = new THREE.TextureLoader();
+  const planets = [];
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+
+  Object.entries(planetData).forEach(([key, data]) => {
+    const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+    let material = new THREE.MeshBasicMaterial({ color: 0x666666 });
+    
+    textureLoader.load(data.image, (texture) => {
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+      planet.material = new THREE.MeshBasicMaterial({ map: texture });
+    });
+
+    const planet = new THREE.Mesh(geometry, material);
+    planet.userData = { key: key, distance: data.distance, angle: Math.random() * Math.PI * 2, speed: data.speed, data: data };
+    scene.add(planet);
+    planets.push(planet);
+
+    // Orbit ring
+    const orbitGeo = new THREE.BufferGeometry();
+    const orbitPoints = [];
+    for (let i = 0; i < 128; i++) {
+      const angle = (i / 128) * Math.PI * 2;
+      orbitPoints.push(Math.cos(angle) * data.distance, 0, Math.sin(angle) * data.distance);
+    }
+    orbitGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(orbitPoints), 3));
+    const orbitMat = new THREE.LineBasicMaterial({ color: 0x4488cc, transparent: true, opacity: 0.1 });
+    const orbitLine = new THREE.Line(orbitGeo, orbitMat);
+    scene.add(orbitLine);
+  });
+
+  let isDragging = false;
+  let previousMousePosition = { x: 0, y: 0 };
+  let rotation = { x: 0, y: 0 };
+
+  canvas.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
+  canvas.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    rotation.y += (e.clientX - previousMousePosition.x) * 0.005;
+    rotation.x += (e.clientY - previousMousePosition.y) * 0.005;
+    previousMousePosition = { x: e.clientX, y: e.clientY };
+  });
+  canvas.addEventListener('mouseup', () => { isDragging = false; });
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    camera.position.z += e.deltaY * 0.05;
+    camera.position.z = Math.max(25, Math.min(80, camera.position.z));
+  });
+
+  canvas.addEventListener('click', (event) => {
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(planets);
+    if (intersects.length > 0) {
+      const clicked = intersects[0].object;
+      const panel = document.getElementById('info-panel');
+      document.getElementById('info-title').textContent = clicked.userData.data.name;
+      document.getElementById('info-tag').textContent = clicked.userData.data.tag;
+      document.getElementById('info-human').textContent = clicked.userData.data.human;
+      document.getElementById('info-alien').textContent = clicked.userData.data.alien;
+      panel.classList.add('active');
     }
   });
-});
+
+  document.getElementById('close-panel').addEventListener('click', () => {
+    document.getElementById('info-panel').classList.remove('active');
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    planets.forEach(planet => {
+      planet.userData.angle += planet.userData.speed;
+      planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
+      planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
+      planet.rotation.x += 0.001;
+      planet.rotation.y += 0.002;
+    });
+
+    camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotation.y);
+    camera.position.applyAxisAngle(new THREE.Vector3(1, 0, 0), rotation.x);
+    rotation.x *= 0.95;
+    rotation.y *= 0.95;
+    camera.lookAt(0, 0, 0);
+
+    stars.material.opacity = 0.4 + Math.sin(Date.now() * 0.001) * 0.2;
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+}
 </script>
 
 </body>
