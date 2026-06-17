@@ -20,13 +20,12 @@
   --serif:var(--font-display);
 }
 html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono)}
-#canvas{position:fixed;inset:0;z-index:0;display:block;opacity:0;transition:opacity 1s}
+#canvas{position:fixed;inset:0;z-index:0;display:block}
 
 /* ── CYGNUS PHASES ── */
 #galaxy-phase{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
   background:#000;opacity:1;transition:opacity 0.6s;pointer-events:all}
 #galaxy-phase.hidden{opacity:0;pointer-events:none;z-index:-1}
-#galaxy-phase.waiting{opacity:0;pointer-events:none}
 #galaxy-img{max-width:90vw;max-height:90vh;cursor:pointer;filter:drop-shadow(0 0 20px rgba(74,168,255,0.3));
   transition:filter 0.3s}
 #galaxy-img:hover{filter:drop-shadow(0 0 40px rgba(74,168,255,0.6))}
@@ -37,39 +36,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   background:radial-gradient(ellipse at center,rgba(15,5,30,0.7) 0%,#000 100%)}
 #star-phase.active{display:flex}
 
-#star-container{position:relative;width:160px;height:160px;flex-shrink:0}
+#star-container{position:relative;width:320px;height:320px}
 #star-img{position:absolute;inset:0;width:100%;height:100%;
-  filter:drop-shadow(0 0 40px rgba(255,190,80,1)) drop-shadow(0 0 90px rgba(255,140,40,0.6));
-  animation:star-pulse 3s ease-in-out infinite}
-@keyframes star-pulse{
-  0%,100%{filter:drop-shadow(0 0 40px rgba(255,190,80,1)) drop-shadow(0 0 90px rgba(255,140,40,0.6))}
-  50%{filter:drop-shadow(0 0 70px rgba(255,220,120,1)) drop-shadow(0 0 130px rgba(255,180,60,0.8))}}
+  filter:drop-shadow(0 0 30px rgba(255,180,100,0.8))}
 
-/* Orbit arm: rotates around star center. translateX sets the orbit radius. */
-.planet-arm{position:absolute;top:50%;left:50%;width:0;height:0;
-  transform-origin:0 0;animation:arm-rotate linear infinite}
-/* Planet sits at the end of the arm, counter-rotates to stay upright */
-.planet-gif{position:absolute;border-radius:3px;
-  transform-origin:center center;animation:planet-upright linear infinite;
-  filter:drop-shadow(0 0 10px rgba(120,200,255,0.7))}
-@keyframes arm-rotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes planet-upright{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+.planet-orbit{position:absolute;inset:0;animation:orbit 1s linear infinite}
+.planet-gif{position:absolute;width:60px;height:60px;
+  top:-30px;left:calc(50% - 30px);
+  filter:drop-shadow(0 0 8px rgba(100,200,255,0.6))}
 
-/* Orbit ring visuals */
-.orbit-ring{position:absolute;top:50%;left:50%;border-radius:50%;
-  border:1px solid rgba(255,255,255,0.06);pointer-events:none;
-  transform:translate(-50%,-50%)}
-
-/* Star system "enter" prompt */
-#star-enter{position:fixed;bottom:12%;left:50%;transform:translateX(-50%);
-  font-size:0.52rem;letter-spacing:3.5px;color:rgba(200,220,255,0.45);
-  text-transform:uppercase;cursor:pointer;padding:10px 24px;
-  border:1px solid rgba(74,168,255,0.2);border-radius:4px;
-  background:rgba(2,2,10,0.7);transition:all 0.25s;white-space:nowrap;
-  opacity:0;animation:enter-fadein 1s ease 1.5s forwards}
-@keyframes enter-fadein{to{opacity:1}}
-#star-enter:hover{color:var(--accent);border-color:rgba(74,168,255,0.5);
-  box-shadow:0 0 20px rgba(74,168,255,0.1)}
+@keyframes orbit{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
 /* GRAIN */
 #grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.04;
@@ -369,7 +345,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="static-overlay"></div>
 
 <!-- GALAXY PHASE -->
-<div id="galaxy-phase" class="waiting">
+<div id="galaxy-phase">
   <img id="galaxy-img" src="/assets/Cygnus-gifs/galaxy/GalaxyArantus.gif" alt="Galaxy Arantus">
 </div>
 
@@ -380,36 +356,23 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div id="star-phase">
   <div id="star-container">
     <img id="star-img" src="/assets/Cygnus-gifs/galaxy/StarNivora.gif" alt="Star Nivora">
-    <!-- Orbit rings (decorative) -->
-    <div class="orbit-ring" style="width:200px;height:200px"></div>
-    <div class="orbit-ring" style="width:290px;height:290px"></div>
-    <div class="orbit-ring" style="width:380px;height:380px"></div>
-    <div class="orbit-ring" style="width:470px;height:470px"></div>
-    <div class="orbit-ring" style="width:570px;height:570px"></div>
-    <!-- Planet arms: rotate around center. Planet offset = orbit radius via margin-left.
-         animation-delay is negative so they start spread out, not all at top. -->
-    <div class="planet-arm" style="animation-name:arm-rotate;animation-duration:7s;animation-delay:-1.75s">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Kiar-88C.gif" alt="Kiar-88C"
-           style="width:36px;height:36px;margin-left:82px;margin-top:-18px;animation-name:planet-upright;animation-duration:7s;animation-delay:-1.75s">
+    <!-- Planets in orbital paths -->
+    <div class="planet-orbit" style="animation-duration:8s">
+      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Kiar-88C.gif" alt="Kiar-88C">
     </div>
-    <div class="planet-arm" style="animation-name:arm-rotate;animation-duration:11s;animation-delay:-4s">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Ameana.gif" alt="Ameana"
-           style="width:42px;height:42px;margin-left:124px;margin-top:-21px;animation-name:planet-upright;animation-duration:11s;animation-delay:-4s">
+    <div class="planet-orbit" style="animation-duration:12s;transform:rotate(90deg)">
+      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Ameana.gif" alt="Ameana">
     </div>
-    <div class="planet-arm" style="animation-name:arm-rotate;animation-duration:16s;animation-delay:-6s">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Ersetu.gif" alt="Ersetu"
-           style="width:38px;height:38px;margin-left:171px;margin-top:-19px;animation-name:planet-upright;animation-duration:16s;animation-delay:-6s">
+    <div class="planet-orbit" style="animation-duration:16s;transform:rotate(180deg)">
+      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Ersetu.gif" alt="Ersetu">
     </div>
-    <div class="planet-arm" style="animation-name:arm-rotate;animation-duration:22s;animation-delay:-9s">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Lianas.gif" alt="Lianas"
-           style="width:34px;height:34px;margin-left:218px;margin-top:-17px;animation-name:planet-upright;animation-duration:22s;animation-delay:-9s">
+    <div class="planet-orbit" style="animation-duration:20s;transform:rotate(270deg)">
+      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Lianas.gif" alt="Lianas">
     </div>
-    <div class="planet-arm" style="animation-name:arm-rotate;animation-duration:29s;animation-delay:-14s">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/ASTRA-383TB.gif" alt="ASTRA-383TB"
-           style="width:40px;height:40px;margin-left:265px;margin-top:-20px;animation-name:planet-upright;animation-duration:29s;animation-delay:-14s">
+    <div class="planet-orbit" style="animation-duration:24s;transform:rotate(45deg)">
+      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/ASTRA-383TB.gif" alt="ASTRA-383TB">
     </div>
   </div>
-  <div id="star-enter">◉ &nbsp; Approach the Signal Terminus</div>
 </div>
 
 <!-- LOCK SCREEN -->
@@ -589,9 +552,7 @@ function runSignalDecodeIntro() {
           el.classList.add('fade');
           setTimeout(() => {
             el.style.display = 'none';
-            const gp = document.getElementById('galaxy-phase');
-            gp.classList.remove('hidden', 'waiting');
-            cygnusPhase = 'galaxy';
+            startScene();
           }, 700);
         }, 2800);
       }
@@ -851,7 +812,7 @@ document.getElementById('as-code').addEventListener('click', function() {
 /* ═══════════════════════════════════════════════════════
    CYGNUS PHASE SYSTEM — Galaxy → Warp → Star System
 ═══════════════════════════════════════════════════════ */
-let cygnusPhase = 'galaxy'; // galaxy, warping, star_system, scene
+let cygnusPhase = 'galaxy'; // galaxy, warping, star_system
 let sceneStarted = false;
 
 document.getElementById('galaxy-img').addEventListener('click', () => {
@@ -860,144 +821,119 @@ document.getElementById('galaxy-img').addEventListener('click', () => {
   startWarpTransition();
 });
 
-document.getElementById('star-enter').addEventListener('click', () => {
-  if (cygnusPhase !== 'star_system') return;
-  cygnusPhase = 'scene';
-  const sp = document.getElementById('star-phase');
-  sp.style.transition = 'opacity 1s';
-  sp.style.opacity = '0';
-  setTimeout(() => {
-    sp.style.display = 'none';
-    // THREE.js scene was already init'd in background — just reveal it
-    document.getElementById('canvas').style.opacity = '1';
-    document.getElementById('ui').style.opacity = '1';
-  }, 1000);
-});
-
 function startWarpTransition() {
   const galaxyPhase = document.getElementById('galaxy-phase');
   const warpCanvas = document.getElementById('warp-canvas');
-
+  
   galaxyPhase.classList.add('hidden');
   warpCanvas.style.display = 'block';
-  warpCanvas.style.opacity = '1';
-
+  
   const ctx = warpCanvas.getContext('2d');
   warpCanvas.width = window.innerWidth;
   warpCanvas.height = window.innerHeight;
-
-  const W = warpCanvas.width, H = warpCanvas.height;
-  const cx = W / 2, cy = H / 2;
-  const maxDist = Math.hypot(cx, cy);
-
-  // Stars start near center, streak outward — classic hyperspace
-  const stars = Array.from({ length: 280 }, () => {
+  
+  const centerX = warpCanvas.width / 2;
+  const centerY = warpCanvas.height / 2;
+  const maxDistance = Math.hypot(centerX, centerY);
+  
+  // Generate stars for warp field
+  const stars = [];
+  for (let i = 0; i < 150; i++) {
     const angle = Math.random() * Math.PI * 2;
-    const startDist = 10 + Math.random() * 60; // start close to center
-    return {
-      angle,
-      startDist,
-      speed: 1.5 + Math.random() * 3.5,
-      width: 0.4 + Math.random() * 1.2,
-      color: Math.random() > 0.75
-        ? `hsl(${200 + Math.random() * 40},70%,85%)`  // some blue-white
-        : 'rgb(255,255,255)',
-    };
-  });
-
-  const WARP_DURATION = 2400;
-  let lastTime = null;
-  let elapsed = 0;
-
-  function animateWarp(now) {
-    if (!lastTime) lastTime = now;
-    const dt = now - lastTime;
-    lastTime = now;
-    elapsed = Math.min(elapsed + dt, WARP_DURATION);
-    const progress = elapsed / WARP_DURATION;
-    // ease-in: slow build then rush
-    const ease = progress * progress;
-
-    // Trail effect — semi-transparent clear
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(0, 0, W, H);
-
-    stars.forEach(s => {
-      // Current distance from center grows with progress + per-star speed
-      const dist = s.startDist + ease * s.speed * maxDist * 1.1;
-      // Streak tail length grows with speed
-      const tailLen = ease * s.speed * 120 * (0.3 + progress * 0.7);
-
-      const x1 = cx + Math.cos(s.angle) * dist;
-      const y1 = cy + Math.sin(s.angle) * dist;
-      const x0 = cx + Math.cos(s.angle) * Math.max(0, dist - tailLen);
-      const y0 = cy + Math.sin(s.angle) * Math.max(0, dist - tailLen);
-
-      // Fade in on first half, maintain through second half
-      const alpha = Math.min(1, progress * 3) * (dist < maxDist * 1.05 ? 1 : 0);
-      if (alpha <= 0) return;
-
-      const grad = ctx.createLinearGradient(x0, y0, x1, y1);
-      grad.addColorStop(0, 'rgba(0,0,0,0)');
-      grad.addColorStop(1, s.color.replace(')', `,${alpha})`).replace('rgb(', 'rgba(').replace('hsl(', 'hsla('));
-
-      ctx.beginPath();
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = s.width;
-      ctx.moveTo(x0, y0);
-      ctx.lineTo(x1, y1);
-      ctx.stroke();
+    const dist = Math.random() * maxDistance * 1.2;
+    const z = Math.random();
+    stars.push({
+      x: centerX + Math.cos(angle) * dist,
+      y: centerY + Math.sin(angle) * dist,
+      z: z,
+      size: (1 - z) * 2,
+      speed: 0.3 + Math.random() * 0.4
     });
-
-    // Central glow — builds then bursts
-    if (progress > 0.5) {
-      const burstEase = (progress - 0.5) / 0.5;
-      const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, 60 + burstEase * 300);
-      grd.addColorStop(0, `rgba(255,220,160,${0.8 * burstEase})`);
-      grd.addColorStop(0.4, `rgba(200,160,255,${0.4 * burstEase})`);
-      grd.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = grd;
-      ctx.fillRect(0, 0, W, H);
-    }
-
+  }
+  
+  let warpTime = 0;
+  const warpDuration = 2000; // 2 second warp
+  
+  function animateWarp() {
+    warpTime += 16;
+    const progress = Math.min(warpTime / warpDuration, 1);
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, warpCanvas.width, warpCanvas.height);
+    
+    // Draw converging stars
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    stars.forEach(star => {
+      const zProgress = star.z + progress * (1 - star.z);
+      const currentZ = Math.max(0.1, star.z + progress * 0.8);
+      
+      // Converge toward center
+      const convergence = progress * 0.3;
+      const x = centerX + (star.x - centerX) * (1 - convergence);
+      const y = centerY + (star.y - centerY) * (1 - convergence);
+      
+      const size = star.size * (1 + progress * 3);
+      const opacity = Math.max(0, 1 - progress);
+      
+      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    // Central glow
+    const glowSize = 100 + progress * 200;
+    const glowOpacity = 0.5 * (1 - progress);
+    ctx.fillStyle = `rgba(255, 180, 100, ${glowOpacity})`;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, glowSize, 0, Math.PI * 2);
+    ctx.fill();
+    
     if (progress < 1) {
       requestAnimationFrame(animateWarp);
     } else {
-      // White flash → star system
-      ctx.fillStyle = 'rgba(255,255,255,1)';
-      ctx.fillRect(0, 0, W, H);
-      setTimeout(() => {
-        warpCanvas.style.transition = 'opacity 0.6s';
-        warpCanvas.style.opacity = '0';
+      // Transition to star system
+      warpCanvas.style.display = 'none';
+      cygnusPhase = 'star_system';
+      document.getElementById('star-phase').classList.add('active');
+      
+      // Start the THREE.js scene in background if not started
+      if (!sceneStarted) {
+        startScene();
+        sceneStarted = true;
+        // Scene setup will prepare _startAnimationLoop
         setTimeout(() => {
-          warpCanvas.style.display = 'none';
-          warpCanvas.style.opacity = '1';
-          warpCanvas.style.transition = '';
-          cygnusPhase = 'star_system';
-          document.getElementById('star-phase').classList.add('active');
-          if (!sceneStarted) {
-            sceneStarted = true;
-            startScene();
+          if (window._startAnimationLoop) {
+            window._startAnimationLoop();
           }
-        }, 600);
-      }, 60);
+        }, 100);
+      } else if (window._startAnimationLoop) {
+        window._startAnimationLoop();
+      }
     }
   }
-
-  requestAnimationFrame(animateWarp);
+  
+  animateWarp();
 }
 
 /* ═══════════════════════════════════════════════════════
    THREE.JS SCENE
 ═══════════════════════════════════════════════════════ */
 function startScene() {
-  // Suppress the intro overlay — galaxy/warp/star phases replace it
-  const intro = document.getElementById('intro');
-  if (intro) intro.style.display = 'none';
+  // Fade out intro
+  setTimeout(() => {
+    document.getElementById('intro').classList.add('fade');
+    setTimeout(() => { document.getElementById('intro').style.display = 'none'; }, 1500);
+  }, 2000);
 
   if (typeof THREE === 'undefined') { setTimeout(startScene, 200); return; }
 
   const canvas = document.getElementById('canvas');
+  // Hide canvas during galaxy/warp phases
+  if (cygnusPhase !== 'star_system') {
+    canvas.style.display = 'none';
+  }
+  
   let W = window.innerWidth, H = window.innerHeight;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
@@ -1565,9 +1501,22 @@ function startScene() {
     }
 
     updateNodePositions();
+    
+    // Show canvas when in star_system phase
+    if (cygnusPhase === 'star_system' && canvas.style.display === 'none') {
+      canvas.style.display = 'block';
+    }
+    
     renderer.render(scene, camera);
   }
-  animate();
+  
+  // Start animation loop only if already in star_system phase
+  if (cygnusPhase === 'star_system') {
+    animate();
+  } else {
+    // Otherwise, wait for phase change
+    window._startAnimationLoop = animate;
+  }
 
   window.addEventListener('resize', () => {
     W = window.innerWidth; H = window.innerHeight;
