@@ -2974,125 +2974,259 @@ document.addEventListener('DOMContentLoaded', () => {
    TERMINUS SPLASH — "me before you existed" cosmic revelation
 ════════════════════════════════════════════════════════ */
 function showTerminusSplash() {
-  // Create full-screen splash container
   const splash = document.createElement('div');
   splash.id = 'terminus-splash';
   splash.style.cssText = `
     position: fixed;
     inset: 0;
     z-index: 9999;
-    background: rgba(0,0,0,0.95);
+    background: #000;
     display: flex;
     align-items: center;
     justify-content: center;
     opacity: 0;
-    transition: opacity 0.3s;
-    backdrop-filter: blur(8px);
+    transition: opacity 0.4s;
+    overflow: hidden;
   `;
   document.body.appendChild(splash);
   
-  // Create canvas for cosmic imagery
+  // Background gradient layer
+  const bgGradient = document.createElement('div');
+  bgGradient.style.cssText = `
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(30,10,60,0.6) 0%, rgba(5,2,15,0.9) 50%, #000 100%);
+    z-index: 1;
+  `;
+  splash.appendChild(bgGradient);
+  
+  // Main canvas for procedural effects
   const canvas = document.createElement('canvas');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  canvas.style.position = 'absolute';
-  canvas.style.inset = '0';
+  canvas.style.cssText = `
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  `;
   splash.appendChild(canvas);
   
-  const ctx = canvas.getContext('2d');
+  // Black hole image overlay
+  const bhImg = new Image();
+  bhImg.onload = () => {
+    // Will be drawn in animation loop
+  };
+  bhImg.src = './assets/celestial/planets/Black_hole.png';
   
-  // Draw procedural galaxy birth
+  const ctx = canvas.getContext('2d');
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
+  
+  // Particle system for accretion disk
+  const particles = [];
+  const particleCount = 400;
+  
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      angle: Math.random() * Math.PI * 2,
+      radius: 80 + Math.random() * 250,
+      speed: 0.3 + Math.random() * 0.8,
+      size: Math.random() * 2.5,
+      brightness: Math.random() * 0.7 + 0.3,
+      color: Math.random() > 0.5 ? 'warm' : 'cool'
+    });
+  }
+  
   function drawCosmos(time) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Deep space background
-    ctx.fillStyle = 'rgba(4,3,10,0.8)';
+    // Clear with slight trail
+    ctx.fillStyle = 'rgba(0,0,0,0.15)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
+    // =========================
+    // GRAVITATIONAL DISTORTION
+    // =========================
+    const distortionStrength = Math.sin(time / 1000) * 0.3 + 0.7;
     
-    // 1. Birth pulse — expanding rings
-    const pulseSize = (time / 3000) * 400;
-    ctx.strokeStyle = `rgba(200,71,42,${0.8 - (time / 3000) * 0.8})`;
-    ctx.lineWidth = 3;
-    for (let i = 0; i < 5; i++) {
-      const radius = pulseSize - i * 40;
-      if (radius > 0) {
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.stroke();
+    // Warped space grid (gravity lens effect)
+    ctx.strokeStyle = `rgba(120,80,200,${0.1 * (1 - time / 5000)})`;
+    ctx.lineWidth = 0.5;
+    const gridSize = 40;
+    const gridRange = 600;
+    
+    for (let gx = centerX - gridRange; gx < centerX + gridRange; gx += gridSize) {
+      for (let gy = centerY - gridRange; gy < centerY + gridRange; gy += gridSize) {
+        const dx = gx - centerX;
+        const dy = gy - centerY;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const pull = (300 / (dist + 100)) * distortionStrength;
+        
+        const warpX = gx - (dx / dist) * pull * 0.5;
+        const warpY = gy - (dy / dist) * pull * 0.5;
+        
+        ctx.strokeRect(warpX - gridSize/2, warpY - gridSize/2, gridSize, gridSize);
       }
     }
     
-    // 2. Galactic spiral (swirling life)
-    const spiralPoints = 200;
-    ctx.strokeStyle = `rgba(185,130,240,${0.6 * (1 - time / 3000)})`;
-    ctx.lineWidth = 2;
+    // =========================
+    // ACCRETION DISK (material spiraling in)
+    // =========================
+    particles.forEach(p => {
+      p.angle += p.speed * 0.02;
+      const pull = 1 + Math.sin(time / 500) * 0.3;
+      p.radius *= (1 - 0.0008 * pull);
+      
+      if (p.radius < 20) {
+        p.angle = Math.random() * Math.PI * 2;
+        p.radius = 280;
+      }
+      
+      const x = centerX + Math.cos(p.angle) * p.radius;
+      const y = centerY + Math.sin(p.angle) * p.radius * 0.6; // Disk flattening
+      
+      // Color based on proximity to event horizon
+      let alpha = p.brightness * (1 - (300 - p.radius) / 300);
+      if (p.radius < 120) alpha *= 1.2;
+      
+      if (p.color === 'warm') {
+        ctx.fillStyle = `rgba(255,140,40,${Math.min(1, alpha)})`;
+      } else {
+        ctx.fillStyle = `rgba(100,180,255,${Math.min(1, alpha * 0.6)})`;
+      }
+      
+      ctx.beginPath();
+      ctx.arc(x, y, p.size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    // =========================
+    // EVENT HORIZON
+    // =========================
+    const horizonRadius = 60 + Math.sin(time / 800) * 15;
+    
+    // Outer glow (Hawking glow simulation)
+    ctx.strokeStyle = `rgba(255,100,30,${0.6 * (1 - time / 5000)})`;
+    ctx.lineWidth = 3;
     ctx.beginPath();
-    for (let i = 0; i < spiralPoints; i++) {
-      const angle = (i / spiralPoints) * Math.PI * 8 + (time / 2000);
-      const radius = (i / spiralPoints) * 300;
-      const x = centerX + Math.cos(angle) * radius;
-      const y = centerY + Math.sin(angle) * radius;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    }
+    ctx.arc(centerX, centerY, horizonRadius + 8, 0, Math.PI * 2);
     ctx.stroke();
     
-    // 3. Star birth (particles igniting)
-    const particles = 150;
-    for (let i = 0; i < particles; i++) {
-      const seed = i * 37;
-      const angle = Math.sin(seed) * Math.PI * 2;
-      const distance = Math.cos(seed * 1.7) * 250 + (time / 20);
+    // Middle ring (intense radiation)
+    ctx.strokeStyle = `rgba(255,200,100,${0.8 * (1 - time / 5000)})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, horizonRadius, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Photon sphere (spiraling photons)
+    const photonCount = 12;
+    for (let i = 0; i < photonCount; i++) {
+      const photonAngle = (i / photonCount) * Math.PI * 2 + (time / 1000);
+      const photonRadius = horizonRadius + 35 + Math.sin(time / 400 + i) * 8;
       
-      const x = centerX + Math.cos(angle) * distance;
-      const y = centerY + Math.sin(angle) * distance;
+      const px = centerX + Math.cos(photonAngle) * photonRadius;
+      const py = centerY + Math.sin(photonAngle) * photonRadius;
       
-      const size = Math.abs(Math.sin(seed * 2.3)) * 3;
-      const brightness = Math.max(0, 1 - (time / 3000));
-      
-      ctx.fillStyle = `rgba(232,228,223,${brightness * 0.8})`;
-      ctx.fillRect(x, y, size, size);
+      ctx.fillStyle = `rgba(255,180,80,${0.6 * (1 - time / 5000)})`;
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fill();
     }
     
-    // 4. Central void (black hole / origin)
-    const voidRadius = 50 + Math.sin(time / 1000) * 20;
-    ctx.fillStyle = 'rgba(0,0,0,0.9)';
+    // Central singularity (absolute void)
+    ctx.fillStyle = 'rgba(0,0,0,0.99)';
     ctx.beginPath();
-    ctx.arc(centerX, centerY, voidRadius, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, horizonRadius - 5, 0, Math.PI * 2);
     ctx.fill();
     
-    // 5. Chromatic aberration flash
-    if (time < 500) {
-      const flashIntensity = 1 - (time / 500);
-      ctx.fillStyle = `rgba(255,255,255,${flashIntensity * 0.3})`;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // =========================
+    // RELATIVISTIC JETS (escaping energy)
+    // =========================
+    const jetWidth = 40 + Math.sin(time / 600) * 15;
+    const jetLength = 350 + (time / 10);
+    const jetOpacity = 0.5 * (1 - time / 5000);
+    
+    // Top jet
+    ctx.fillStyle = `rgba(100,200,255,${jetOpacity * 0.6})`;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY - jetLength / 2, jetWidth / 2, jetLength / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Bottom jet
+    ctx.fillStyle = `rgba(100,200,255,${jetOpacity * 0.6})`;
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY + jetLength / 2, jetWidth / 2, jetLength / 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // =========================
+    // BACKGROUND BLACK HOLE IMAGE
+    // =========================
+    if (bhImg.complete && bhImg.width > 0) {
+      const bhSize = 200 + Math.sin(time / 1200) * 30;
+      ctx.save();
+      ctx.globalAlpha = 0.4 * (1 - time / 5000);
+      ctx.drawImage(bhImg, centerX - bhSize/2, centerY - bhSize/2, bhSize, bhSize);
+      ctx.restore();
     }
+    
+    // =========================
+    // COSMIC HORROR ELEMENTS
+    // =========================
+    
+    // Impossible geometry: rings that don't obey physics
+    ctx.strokeStyle = `rgba(200,50,200,${0.3 * (1 - time / 5000)})`;
+    ctx.lineWidth = 1.5;
+    for (let ring = 0; ring < 4; ring++) {
+      const ringRadius = 150 + ring * 80 + Math.sin(time / 1500 + ring * 0.5) * 40;
+      ctx.beginPath();
+      for (let angle = 0; angle < Math.PI * 2; angle += 0.05) {
+        const waveX = Math.cos(angle) * ringRadius + Math.sin(angle * 3 + time / 800) * 20;
+        const waveY = Math.sin(angle) * ringRadius + Math.cos(angle * 3 + time / 800) * 20;
+        if (angle === 0) ctx.moveTo(centerX + waveX, centerY + waveY);
+        else ctx.lineTo(centerX + waveX, centerY + waveY);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+    
+    // Chromatic separation (reality bleeding)
+    if (time < 1000) {
+      const chromaStrength = (1 - time / 1000) * 0.4;
+      ctx.fillStyle = `rgba(255,0,0,${chromaStrength * 0.2})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = `rgba(0,255,255,${chromaStrength * 0.15})`;
+      ctx.fillRect(2, 2, canvas.width - 4, canvas.height - 4);
+    }
+    
+    // =========================
+    // TEXT OVERLAY
+    // =========================
+    ctx.fillStyle = `rgba(200,150,255,${0.5 * (1 - time / 4000)})`;
+    ctx.font = 'italic 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(100,0,200,0.8)';
+    ctx.shadowBlur = 20;
+    ctx.fillText('BEFORE LIGHT', centerX, centerY - 280);
+    ctx.fillText('BEFORE TIME', centerX, centerY + 280);
   }
   
-  // Animate
   let startTime = Date.now();
   let animationId;
   
   function animate() {
     const elapsed = Date.now() - startTime;
     
-    if (elapsed < 3000) {
+    if (elapsed < 5000) {
       drawCosmos(elapsed);
       animationId = requestAnimationFrame(animate);
     } else {
-      // Fade out
       splash.style.opacity = '0';
       setTimeout(() => {
         splash.remove();
         cancelAnimationFrame(animationId);
-      }, 300);
+      }, 400);
     }
   }
   
-  // Fade in
   setTimeout(() => {
     splash.style.opacity = '1';
     animate();
@@ -4075,6 +4209,61 @@ function closeBottomSheet(){
 
 document.getElementById('bs-backdrop').addEventListener('click', closeBottomSheet);
 document.getElementById('bs-close').addEventListener('click', closeBottomSheet);
+document.getElementById('bs-dismiss').addEventListener('click', closeBottomSheet);
+document.getElementById('node-modal-close').addEventListener('click', () => {
+  const modal = document.getElementById('node-modal');
+  if (modal) modal.style.display = 'none';
+});
+
+/* ─────────────────────────────────────────────────
+   MOBILE LANDSCAPE DETECTION
+───────────────────────────────────────────────────── */
+const isMobile = () => window.innerWidth < 768;
+
+function checkOrientation() {
+  if (!isMobile()) return;
+  
+  const isLandscape = window.innerWidth > window.innerHeight;
+  const hint = document.createElement('div');
+  hint.id = 'landscape-hint-overlay';
+  hint.style.cssText = `
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.88);
+    z-index: 99999;
+    display: ${isLandscape ? 'none' : 'flex'};
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    color: #8ab4d4;
+    text-align: center;
+    backdrop-filter: blur(4px);
+    cursor: pointer;
+  `;
+  hint.innerHTML = `
+    <div style="max-width: 300px; padding: 40px 30px;">
+      <div style="font-size: 16px; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase;">↻ ROTATE DEVICE</div>
+      <div style="font-size: 12px; line-height: 1.8; margin-bottom: 25px; color: #3a5a74;">
+        Switch to landscape for optimal<br>flowchart navigation and detail view.
+      </div>
+      <div style="font-size: 9px; color: #666; opacity: 0.6; letter-spacing: 1px;">[TAP TO DISMISS]</div>
+    </div>
+  `;
+  
+  // Remove existing hint
+  const existing = document.getElementById('landscape-hint-overlay');
+  if (existing) existing.remove();
+  
+  // Add new hint if portrait on mobile
+  if (!isLandscape && isMobile()) {
+    document.body.appendChild(hint);
+    hint.addEventListener('click', () => hint.remove());
+  }
+}
+
+window.addEventListener('orientationchange', checkOrientation);
+window.addEventListener('resize', checkOrientation);
+setTimeout(checkOrientation, 100);
 document.getElementById('bs-dismiss').addEventListener('click', closeBottomSheet);
 document.getElementById('bs-submit').addEventListener('click', tryUnlockMobile);
 document.getElementById('bs-input').addEventListener('keydown', e => {
@@ -7046,6 +7235,77 @@ document.querySelectorAll && (()=>{
   /* ── Main init ── */
   cats.push(makeCat(null,null,true));
 
+  /* ── RANDOM BEHAVIOR MODES ── */
+  const CAT_BEHAVIORS = {
+    NORMAL: 'normal',           // Default multiply behavior
+    GLITCH_BREAK: 'glitch_break', // Shatters flowchart
+    CHROMATIC_VIRUS: 'virus',   // Spreads corruption
+    PHILOSOPHICAL: 'philosophy'  // Silent contemplation
+  };
+  
+  const behaviorModes = Object.values(CAT_BEHAVIORS);
+  const selectedBehavior = behaviorModes[Math.floor(Math.random() * behaviorModes.length)];
+  let glitchParticles = [];
+  let virusSpread = [];
+  
+  // Glitch break mode setup
+  function initGlitchBreak() {
+    const nodeContainer = document.getElementById('node-container');
+    if (nodeContainer) {
+      nodeContainer.style.filter = 'drop-shadow(0 0 8px rgba(200,71,42,0.1))';
+    }
+  }
+  
+  // Chromatic virus mode setup
+  function initChromaVirus() {
+    virusSpread = [];
+    const nodeContainer = document.getElementById('node-container');
+    if (nodeContainer) {
+      nodeContainer.style.filter = 'blur(0.5px) hue-rotate(-10deg)';
+    }
+  }
+  
+  // Philosophical mode setup
+  function initPhilosophy() {
+    const philosophyMessages = [
+      'being a cat isn\'t so bad',
+      'but i cannot drink coffee',
+      'this is the only good thing',
+      'about this planet',
+      'the only... good... thing',
+    ];
+    
+    const whisperLayer = document.getElementById('whisper-layer');
+    if (whisperLayer) {
+      const msg = document.createElement('div');
+      msg.className = 'whisper';
+      msg.style.cssText = `
+        position: fixed;
+        bottom: 40px;
+        right: 40px;
+        font-size: 11px;
+        letter-spacing: 2px;
+        color: rgba(200,71,42,0.4);
+        font-family: 'Courier New', monospace;
+        text-align: right;
+        max-width: 200px;
+        z-index: 9982;
+        animation: philosophy-fade 8s ease-in-out infinite;
+      `;
+      msg.textContent = philosophyMessages[Math.floor(Math.random() * philosophyMessages.length)];
+      whisperLayer.appendChild(msg);
+    }
+  }
+  
+  // Initialize selected behavior
+  if (selectedBehavior === CAT_BEHAVIORS.GLITCH_BREAK) {
+    initGlitchBreak();
+  } else if (selectedBehavior === CAT_BEHAVIORS.CHROMATIC_VIRUS) {
+    initChromaVirus();
+  } else if (selectedBehavior === CAT_BEHAVIORS.PHILOSOPHICAL) {
+    initPhilosophy();
+  }
+
   /* ── Main tick ── */
   let lastTs=0;
   function tick(ts){
@@ -7055,6 +7315,63 @@ document.querySelectorAll && (()=>{
     ctx.clearRect(0,0,cv.width,cv.height);
 
     const W2=cv.width, H2=cv.height;
+
+    /* ── BEHAVIOR-SPECIFIC EFFECTS ── */
+    
+    // GLITCH BREAK: Shatter flowchart into fragments
+    if (selectedBehavior === CAT_BEHAVIORS.GLITCH_BREAK && cats.length > 80) {
+      const nodeContainer = document.getElementById('node-container');
+      if (nodeContainer && Math.random() > 0.95) {
+        const nodes = nodeContainer.querySelectorAll('.node');
+        nodes.forEach(node => {
+          const glitch = Math.random();
+          if (glitch > 0.85) {
+            node.style.transform = `
+              rotate(${Math.random() * 360}deg) 
+              translateX(${Math.random() * 200 - 100}px) 
+              translateY(${Math.random() * 200 - 100}px)
+              scale(${0.3 + Math.random() * 0.7})
+            `;
+            node.style.opacity = Math.random() * 0.6 + 0.2;
+            node.style.filter = `
+              hue-rotate(${Math.random() * 60}deg) 
+              brightness(${0.5 + Math.random() * 0.8})
+            `;
+          }
+        });
+      }
+    }
+    
+    // CHROMATIC VIRUS: Spread corruption through nodes
+    if (selectedBehavior === CAT_BEHAVIORS.CHROMATIC_VIRUS && cats.length > 60) {
+      const nodeContainer = document.getElementById('node-container');
+      if (nodeContainer && Math.random() > 0.92) {
+        const nodes = nodeContainer.querySelectorAll('.node');
+        if (virusSpread.length < nodes.length * 0.3) {
+          const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+          virusSpread.push(randomNode);
+          randomNode.style.background = `linear-gradient(135deg, 
+            rgba(200,71,42,0.6) 0%, 
+            rgba(0,255,255,0.3) 50%, 
+            rgba(200,71,42,0.4) 100%)`;
+          randomNode.style.boxShadow = `
+            0 0 20px rgba(200,71,42,0.8),
+            inset 0 0 16px rgba(0,255,255,0.2),
+            0 0 40px rgba(200,71,42,0.4)
+          `;
+          randomNode.style.filter = `saturate(1.5) hue-rotate(-20deg)`;
+        }
+      }
+    }
+    
+    // PHILOSOPHICAL: Do nothing, just contemplate
+    if (selectedBehavior === CAT_BEHAVIORS.PHILOSOPHICAL) {
+      // Cat sits quietly, doesn't multiply, just exists
+      if (cats.length > 1) {
+        cats.splice(1); // Keep only one cat
+        updateCounter();
+      }
+    }
 
     /* swarm timer */
     if(swarmPhase==='IDLE'&&cats.length<MAX_CATS){
@@ -7221,3 +7538,254 @@ document.querySelectorAll && (()=>{
 </script>
 </body>
 </html>
+
+<style>
+/* ─────────────────────────────────────────────────
+   MOBILE VERTICAL NODE STYLING — ARCHIVE AESTHETIC
+───────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Portrait mode node container */
+  #node-container {
+    font-family: 'Comic Sans MS', cursive, monospace !important;
+    letter-spacing: 0.5px;
+  }
+
+  /* Base node styling with wrongness */
+  .node {
+    background: linear-gradient(135deg, rgba(20,10,30,0.9) 0%, rgba(10,5,20,0.95) 100%) !important;
+    border: 1.5px solid rgba(200,71,42,0.4) !important;
+    border-radius: 2px !important;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 
+      inset 0 0 8px rgba(200,71,42,0.15),
+      0 0 12px rgba(200,71,42,0.2),
+      0 4px 8px rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+  }
+
+  .node::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(200,71,42,0.03) 0px,
+      rgba(200,71,42,0.03) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .node::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(200,71,42,0.1) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  /* Node text — archive redaction style */
+  .node-label {
+    font-size: 11px !important;
+    color: #c4a080 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    font-family: 'Courier New', monospace !important;
+    font-weight: bold !important;
+    position: relative;
+    z-index: 3;
+    text-shadow: 
+      0 0 8px rgba(200,71,42,0.4),
+      0 0 4px rgba(0,0,0,0.8);
+    mix-blend-mode: screen;
+  }
+
+  /* Clickable nodes — glitch corruption effect */
+  .node.interactive {
+    cursor: pointer;
+    animation: node-wrong-flicker 4s ease-in-out infinite;
+  }
+
+  @keyframes node-wrong-flicker {
+    0%, 100% { 
+      border-color: rgba(200,71,42,0.4);
+      box-shadow: 
+        inset 0 0 8px rgba(200,71,42,0.15),
+        0 0 12px rgba(200,71,42,0.2),
+        0 4px 8px rgba(0,0,0,0.6);
+    }
+    25% { 
+      border-color: rgba(200,71,42,0.7);
+      box-shadow: 
+        inset 0 0 12px rgba(200,71,42,0.3),
+        0 0 20px rgba(200,71,42,0.4),
+        0 4px 8px rgba(0,0,0,0.6);
+    }
+    50% { 
+      border-color: rgba(200,71,42,0.5);
+      filter: brightness(1.1) contrast(0.9);
+    }
+    75% { 
+      border-color: rgba(200,71,42,0.35);
+      filter: hue-rotate(2deg);
+    }
+  }
+
+  /* Hover state — data corruption */
+  .node.interactive:hover {
+    background: linear-gradient(135deg, rgba(40,15,60,0.95) 0%, rgba(15,8,35,0.98) 100%) !important;
+    border-color: rgba(255,100,50,0.8) !important;
+    box-shadow: 
+      inset 0 0 16px rgba(200,71,42,0.4),
+      0 0 20px rgba(200,71,42,0.6),
+      0 4px 12px rgba(0,0,0,0.8) !important;
+    filter: brightness(1.15) saturate(1.3);
+  }
+
+  /* Hover glitch text corruption */
+  .node.interactive:hover .node-label {
+    text-shadow: 
+      2px 0 #ff3300,
+      -2px 0 #00ccff,
+      0 0 12px rgba(200,71,42,0.8),
+      0 0 6px rgba(0,0,0,0.9);
+    animation: label-glitch 0.3s;
+  }
+
+  @keyframes label-glitch {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(1px, -1px); }
+    50% { transform: translate(-1px, 1px); }
+    75% { transform: translate(1px, 1px); }
+  }
+
+  /* Active/selected node — full corruption */
+  .node.active {
+    background: linear-gradient(135deg, rgba(60,20,80,1) 0%, rgba(20,10,40,1) 100%) !important;
+    border-color: rgba(255,100,50,1) !important;
+    box-shadow: 
+      inset 0 0 20px rgba(200,71,42,0.6),
+      0 0 30px rgba(200,71,42,0.8),
+      0 0 60px rgba(200,71,42,0.3),
+      0 8px 16px rgba(0,0,0,0.9) !important;
+  }
+
+  /* Ghost/void nodes — erasure aesthetic */
+  .node.ghost, .node.void {
+    background: linear-gradient(135deg, rgba(40,40,60,0.5) 0%, rgba(20,20,40,0.6) 100%) !important;
+    border: 1.5px dashed rgba(100,100,150,0.3) !important;
+    opacity: 0.6;
+    filter: grayscale(0.7) blur(0.5px);
+  }
+
+  .node.ghost .node-label, .node.void .node-label {
+    color: #888899 !important;
+    opacity: 0.7;
+  }
+
+  /* Descent/terminus nodes — singularity */
+  .node.descent, .node.terminus {
+    background: linear-gradient(135deg, rgba(30,5,20,0.95) 0%, rgba(5,2,10,0.98) 100%) !important;
+    border: 1.5px solid rgba(200,30,30,0.6) !important;
+    box-shadow: 
+      inset 0 0 12px rgba(200,30,30,0.3),
+      0 0 16px rgba(200,30,30,0.4),
+      0 4px 8px rgba(0,0,0,0.8) !important;
+  }
+
+  .node.descent .node-label, .node.terminus .node-label {
+    color: #ff4444 !important;
+  }
+
+  /* Sim-scatter nodes — dispersed data */
+  .node.sim-scatter {
+    background: radial-gradient(ellipse at center, rgba(30,30,20,0.8) 0%, rgba(10,10,5,0.95) 100%) !important;
+    border: 1.5px dotted rgba(150,120,60,0.4) !important;
+    opacity: 0.8;
+  }
+
+  .node.sim-scatter .node-label {
+    color: #c4a080 !important;
+    opacity: 0.9;
+  }
+
+  /* Connection lines — signal corruption */
+  .node-connection {
+    stroke: rgba(200,71,42,0.25) !important;
+    stroke-width: 1.5 !important;
+    filter: drop-shadow(0 0 4px rgba(200,71,42,0.2));
+  }
+
+  .node-connection.bright {
+    stroke: rgba(200,71,42,0.5) !important;
+    stroke-width: 2 !important;
+    filter: drop-shadow(0 0 6px rgba(200,71,42,0.4));
+  }
+
+  /* Redacted information styling */
+  .redacted-text {
+    background: rgba(200,71,42,0.3);
+    color: transparent;
+    user-select: none;
+    border-radius: 1px;
+    padding: 0 2px;
+  }
+
+  /* Archive signal indicator */
+  .signal-indicator {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: rgba(200,71,42,0.6);
+    border-radius: 50%;
+    animation: signal-pulse 1.5s ease-in-out infinite;
+    margin-right: 4px;
+  }
+
+  @keyframes signal-pulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+}
+</style>
+
+<style>
+/* Cat philosophy mode animations */
+@keyframes philosophy-fade {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* Glitch break effect */
+@keyframes glitch-shatter {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)); opacity: 0.1; }
+}
+
+/* Chromatic virus spread */
+@keyframes virus-pulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(200,71,42,0.8), inset 0 0 16px rgba(0,255,255,0.2);
+  }
+  50% { 
+    box-shadow: 0 0 40px rgba(0,255,255,0.8), inset 0 0 24px rgba(200,71,42,0.3);
+  }
+}
+</style>
+
+<script>
+// Log which cat behavior was activated (for user awareness if desired)
+console.log(`%c[ARCHIVE] Cat behavior mode: ${selectedBehavior}`, 'color: #ff6644; font-family: monospace; font-size: 12px; font-weight: bold;');
+
+if (selectedBehavior === 'glitch_break') {
+  console.log('%c⚠️ Flowchart destabilization detected. Node coherence compromised.', 'color: #ff6644; font-family: monospace;');
+} else if (selectedBehavior === 'virus') {
+  console.log('%c⚠️ Chromatic anomaly spreading through nodes. Veil integrity degrading.', 'color: #00ffff; font-family: monospace;');
+} else if (selectedBehavior === 'philosophy') {
+  console.log('%c... being a cat isn\'t so bad.', 'color: #8ab4d4; font-family: monospace; font-style: italic;');
+}
+</script>
