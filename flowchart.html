@@ -6657,825 +6657,268 @@ document.querySelectorAll && (()=>{
 })();
 
 /* ═══════════════════════════════════════════════════════════
-   PIXEL BLACK CAT — tails, node interaction, 173 swarm
+/* ═══════════════════════════════════════════════════════════
+   PIXEL BLACK CAT — image-based sprites with glitch flickering
+   Cat-2 is main, flickers between Cat-1/3/4/5/6 breeds
    ═══════════════════════════════════════════════════════════ */
 (function(){
   const cv  = document.getElementById('pixel-cat');
   const ctx = cv.getContext('2d');
 
-  /* 13 wide (body 10 + tail 3), 10 tall */
-  const SCALE=3, FW=13, FH=10;
-  const CAT_W=FW*SCALE, CAT_H=FH*SCALE;
-  const FRAME_RATE=7;
-  const MAX_CATS=173;
+  const CAT_BREEDS = ['Cat-1', 'Cat-2', 'Cat-3', 'Cat-4', 'Cat-5', 'Cat-6'];
+  const CAT_ANIMATIONS = ['Idle', 'Walk', 'Run', 'Sitting', 'Laying', 'Stretching', 'Licking 1', 'Licking 2', 'Itch', 'Sleeping1', 'Meow'];
+  const SCALE = 4;
+  const FRAME_RATE = 7;
+  const MAX_CATS = 173;
 
-  const B='#0b060f', E='#c8472a', G='rgba(160,120,200,0.4)', N=null;
+  // Load all cat sprites
+  const catSprites = {};
+  let loadedCount = 0;
+  let totalCount = 0;
+  
+  CAT_BREEDS.forEach(breed => {
+    catSprites[breed] = {};
+    CAT_ANIMATIONS.forEach(anim => {
+      const img = new Image();
+      totalCount++;
+      img.onload = () => {
+        loadedCount++;
+        if (loadedCount === 1) {
+          console.log('%c[CAT SPRITES] Loading...', 'color: #ff6644; font-weight: bold;');
+        }
+        if (loadedCount === totalCount) {
+          console.log(`%c[CAT SPRITES] All ${totalCount} sprites loaded!`, 'color: #4488cc; font-weight: bold;');
+        }
+      };
+      img.onerror = () => {
+        console.warn(`%c[CAT] Failed to load: ${breed}-${anim}`, 'color: #ff6644;');
+      };
+      img.src = `/assets/cats/${breed}-${anim}.png`;
+      catSprites[breed][anim] = img;
+    });
+  });
 
-  /* ── SPRITES  (13×10, tail occupies cols 10-12) ──
-     Tail curves up-right from body back.
-     4 walk frames animate the tail tip slightly.        */
-  const WALK=[
-    /* frame 0 - tail mid */
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,B,N],
-     [N,B,E,B,B,E,B,N,N,N,B,B,N],
-     [N,B,B,B,B,B,B,N,N,N,B,N,N],
-     [N,N,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,N,B,B,N,B,N,N,N,N,N],
-     [N,B,N,N,B,N,N,B,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]],
-    /* frame 1 - tail up */
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,E,B,B,E,B,N,N,N,N,B,N],
-     [N,B,B,B,B,B,B,N,N,N,B,N,N],
-     [N,N,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,N,B,B,N,B,B,N,N,N,N,N,N],
-     [N,N,B,N,N,N,B,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]],
-    /* frame 2 - tail straight */
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,E,B,B,E,B,N,N,N,B,N,N],
-     [N,B,B,B,B,B,B,N,N,B,B,N,N],
-     [N,N,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,N,B,N,B,N,N,N,N,N,N],
-     [N,B,N,N,N,N,B,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]],
-    /* frame 3 - tail low */
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,E,B,B,E,B,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,B,B,N,N],
-     [N,N,B,B,B,B,B,N,N,N,B,N,N],
-     [N,N,B,B,N,B,B,N,N,N,N,N,N],
-     [N,N,N,B,N,B,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]],
-  ];
+  // Load meow VFX
+  const meowVFX = new Image();
+  meowVFX.src = '/assets/cats/Meow-VFX.png';
 
-  const RUN=[
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,B,B,N],
-     [N,B,E,B,B,E,B,N,N,B,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,N,N,B,B,B,B,N,N,N,N,N,N],
-     [N,N,N,B,B,B,N,N,N,N,N,N,N],
-     [N,B,N,N,N,N,B,B,N,N,N,N,N],
-     [B,N,N,N,N,N,N,B,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]],
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,E,B,B,E,B,N,N,N,N,B,N],
-     [N,B,B,B,B,B,B,N,N,N,B,N,N],
-     [N,N,N,B,B,B,B,N,N,N,N,N,N],
-     [N,N,N,B,B,B,N,N,N,N,N,N,N],
-     [N,N,B,B,N,N,B,N,N,N,N,N,N],
-     [N,N,B,N,N,B,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]],
-  ];
+  const cats = [];
+  let swarmPhase = 'IDLE';
+  let swarmTimer = 60000;
+  let frameCount = 0;
 
-  const SIT=
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,E,B,B,E,B,N,N,N,B,N,N],
-     [N,B,B,B,B,B,B,N,N,B,B,N,N],
-     [N,N,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,B,N,N,N,N,N],
-     [N,B,N,N,N,N,N,B,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]];
-
-  const SNIFF=
-    [[N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,B,N,N],
-     [N,B,E,B,B,E,B,N,N,B,B,N,N],
-     [N,B,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,B,N,N,N,N,N],
-     [N,B,N,N,N,N,N,B,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]];
-
-  const PAW=
-    [[N,N,B,B,B,B,N,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,B,N],
-     [N,B,E,B,B,E,B,N,N,N,B,N,N],
-     [N,B,B,B,B,B,B,N,N,B,N,N,N],
-     [N,N,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,N,B,B,N,N,N,N,N,N,N],
-     [N,N,N,N,B,N,N,N,N,N,N,N,N],
-     [N,N,N,N,B,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]];
-
-  const SHOO=
-    [[N,B,N,N,N,N,N,B,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,B,B,B,B,B,B,N,N,B,B,N,N],
-     [N,B,E,B,B,E,B,N,N,B,N,N,N],
-     [N,B,B,B,B,B,B,N,N,N,N,N,N],
-     [N,N,N,B,B,B,N,N,N,N,N,N,N],
-     [N,N,B,N,N,N,B,N,N,N,N,N,N],
-     [B,B,N,N,N,N,B,B,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N],
-     [N,N,N,N,N,N,N,N,N,N,N,N,N]];
-
-  /* ── Draw a single sprite ── */
-  function drawSprite(frame,x,y,flipH,blink,alpha){
-    ctx.save();
-    if(alpha!==undefined) ctx.globalAlpha=alpha;
-    for(let row=0;row<FH;row++){
-      for(let col=0;col<FW;col++){
-        let c=frame[row][col]; if(!c) continue;
-        if(blink&&c===E) c=B;
-        const px=flipH?x+(FW-1-col)*SCALE:x+col*SCALE;
-        ctx.fillStyle=c;
-        ctx.fillRect(px,y+row*SCALE,SCALE,SCALE);
-      }
-    }
-    if(!blink){ ctx.fillStyle=G; ctx.fillRect(x+(flipH?9:2)*SCALE,y+SCALE,1,1); }
-    ctx.restore();
-  }
-
-  /* ── Resize ── */
-  function resize(){ cv.width=window.innerWidth; cv.height=window.innerHeight; }
-  resize(); onResize(resize);
-
-  /* ═══════════════════════════
-     SWARM — array of cat objects
-     index 0 = the "main" cat with full AI
-     indices 1+ = simple wanderers
-     ═══════════════════════════ */
-  const cats=[];
-  const STARE_MESSAGES=['I know you.','I can see.','I can feel you.'];
-  let swarmPhase='IDLE'; // IDLE | MULTIPLYING | STARING | VANISHING
-  let swarmTimer=60000; // first multiply after 60s
-  let swarmMsgTimer=0;
-  let swarmMsgIdx=0;
-  let catCounter=null; // DOM element
-
-  /* build counter DOM */
-  function buildCounter(){
-    catCounter=document.createElement('div');
-    catCounter.style.cssText=`
-      position:fixed;top:62px;left:50%;transform:translateX(-50%);
-      font-family:var(--mono);font-size:0.32rem;letter-spacing:3px;
-      color:rgba(200,71,42,0);z-index:9995;pointer-events:none;
-      transition:color 0.6s;white-space:nowrap;
-    `;
-    document.body.appendChild(catCounter);
-  }
-  buildCounter();
-
-  function updateCounter(){
-    if(!catCounter) return;
-    catCounter.textContent=`×${cats.length} / ${MAX_CATS}`;
-    catCounter.style.color=cats.length>1?'rgba(200,71,42,0.55)':'rgba(200,71,42,0)';
-  }
-
-  /* ── Cat object factory ── */
-  function makeCat(x,y,isMain){
-    const angle=Math.random()*Math.PI*2;
-    const spd=0.5+Math.random()*0.9;
+  function makeCat(x, y, first) {
+    const mainBreed = 'Cat-2';
+    const glitchBreeds = CAT_BREEDS.filter(b => b !== mainBreed);
+    
     return {
-      x: x??window.innerWidth*(0.3+Math.random()*0.4),
-      y: y??window.innerHeight*(0.3+Math.random()*0.4),
-      vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd,
-      facingLeft: false,
-      frameIdx: Math.floor(Math.random()*4),
-      frameTick: Math.floor(Math.random()*7),
-      /* AI state — only meaningful for main cat */
-      state: isMain?'WANDER':'SIMPLE',
-      stateTimer: 1000+Math.random()*4000,
-      sitting: false, sitTimer: 0,
-      blinking: false, blinkTimer:0, blinkClock:Math.random()*4000,
-      blinkInterval: 2500+Math.random()*3000,
-      targetNode: null,
-      sniffCount: 0,
-      thought:'', thoughtTimer:0,
-      pawClickX:0, pawClickY:0,
+      x: x !== null ? x : Math.random() * cv.width,
+      y: y !== null ? y : Math.random() * cv.height,
+      vx: (Math.random() - 0.5) * 60,
+      vy: (Math.random() - 0.5) * 60,
+      breed: mainBreed,
+      animation: first ? 'Idle' : ['Walk', 'Run'][Math.floor(Math.random() * 2)],
+      frameIdx: 0,
+      frameTimer: 0,
       alpha: 1,
-      isMain: !!isMain,
       staring: false,
+      facingLeft: false,
+      glitchBreeds: glitchBreeds,
+      glitchTimer: Math.random() * 20,
+      glitchChance: 0.15
     };
   }
 
-  /* ── Audio ── */
-  let _ac=null;
-  function getAC(){ if(!_ac) _ac=new(window.AudioContext||window.webkitAudioContext)(); return _ac; }
+  cats.push(makeCat(null, null, true));
 
-  function playScreech(){
-    try{
-      const a=getAC(),t=a.currentTime;
-      const mod=a.createOscillator(),mG=a.createGain();
-      const car=a.createOscillator(),cG=a.createGain();
-      mod.type='sine'; mod.frequency.setValueAtTime(220,t); mod.frequency.linearRampToValueAtTime(80,t+0.3);
-      mG.gain.value=700; car.type='sawtooth';
-      car.frequency.setValueAtTime(880,t);
-      car.frequency.linearRampToValueAtTime(420,t+0.2);
-      car.frequency.linearRampToValueAtTime(1050,t+0.32);
-      car.frequency.linearRampToValueAtTime(280,t+0.55);
-      cG.gain.setValueAtTime(0,t); cG.gain.linearRampToValueAtTime(0.14,t+0.02);
-      cG.gain.exponentialRampToValueAtTime(0.0001,t+0.65);
-      mod.connect(mG); mG.connect(car.frequency);
-      car.connect(cG); cG.connect(a.destination);
-      mod.start(t); mod.stop(t+0.7);
-      car.start(t); car.stop(t+0.7);
-    }catch(e){}
-  }
+  let lastTs = 0;
+  function tick(ts) {
+    requestAnimationFrame(tick);
+    if (!_pageVisible) { lastTs = ts; return; }
+    const dt = Math.min(ts - lastTs, 50); lastTs = ts;
+    ctx.clearRect(0, 0, cv.width, cv.height);
 
-  function playShoo(){
-    try{
-      const a=getAC(),t=a.currentTime;
-      const o=a.createOscillator(),g=a.createGain();
-      o.type='sine'; o.frequency.setValueAtTime(1200,t);
-      o.frequency.exponentialRampToValueAtTime(400,t+0.15);
-      g.gain.setValueAtTime(0.08,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.2);
-      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+0.22);
-    }catch(e){}
-  }
+    const W2 = cv.width, H2 = cv.height;
 
-  function playMeow(){
-    try{
-      const a=getAC(),t=a.currentTime;
-      const o=a.createOscillator(),g=a.createGain();
-      o.type='sine';
-      o.frequency.setValueAtTime(500,t);
-      o.frequency.linearRampToValueAtTime(800,t+0.08);
-      o.frequency.linearRampToValueAtTime(600,t+0.25);
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.07,t+0.04);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+0.28);
-      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+0.3);
-    }catch(e){}
-  }
-
-  function playCatSpawn(){
-    try{
-      const a=getAC(),t=a.currentTime;
-      const o=a.createOscillator(),g=a.createGain();
-      o.type='sine'; o.frequency.setValueAtTime(300,t);
-      o.frequency.linearRampToValueAtTime(600,t+0.05);
-      g.gain.setValueAtTime(0.04,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
-      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+0.14);
-    }catch(e){}
-  }
-
-  /* ── Shoo ── */
-  function tryShoo(mx,my){
-    for(let i=cats.length-1;i>=0;i--){
-      const c=cats[i];
-      const dist=Math.hypot(mx-(c.x+CAT_W/2),my-(c.y+CAT_H/2));
-      if(dist<80){
-        if(cats.length>1 && !c.isMain){
-          /* shooing a clone removes it with fade */
-          c.alpha=0.01;
-          setTimeout(()=>{ const idx=cats.indexOf(c); if(idx>-1) cats.splice(idx,1); updateCounter(); },300);
-        } else {
-          /* shoo main cat */
-          const dx=c.x-mx, dy=c.y-my;
-          const len=Math.sqrt(dx*dx+dy*dy)||1;
-          c.vx=(dx/len)*(4+Math.random()*3);
-          c.vy=(dy/len)*(4+Math.random()*3);
-          c.state='SHOOED'; c.stateTimer=1500+Math.random()*800;
-          c.thought='fine.'; c.thoughtTimer=1200;
-          playShoo();
+    // Behavior effects
+    if (typeof selectedBehavior !== 'undefined') {
+      if (selectedBehavior === 'glitch_break' && cats.length > 80) {
+        const nodeContainer = document.getElementById('node-container');
+        if (nodeContainer && Math.random() > 0.95) {
+          const nodes = nodeContainer.querySelectorAll('.node');
+          nodes.forEach(node => {
+            const glitch = Math.random();
+            if (glitch > 0.85) {
+              node.style.transform = `rotate(${Math.random() * 360}deg) translateX(${Math.random() * 200 - 100}px) translateY(${Math.random() * 200 - 100}px) scale(${0.3 + Math.random() * 0.7})`;
+              node.style.opacity = Math.random() * 0.6 + 0.2;
+              node.style.filter = `hue-rotate(${Math.random() * 60}deg) brightness(${0.5 + Math.random() * 0.8})`;
+            }
+          });
         }
-        return;
+      }
+
+      if (selectedBehavior === 'virus' && cats.length > 60) {
+        const nodeContainer = document.getElementById('node-container');
+        if (nodeContainer && Math.random() > 0.92) {
+          const nodes = nodeContainer.querySelectorAll('.node');
+          if (virusSpread && virusSpread.length < nodes.length * 0.3) {
+            const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
+            virusSpread.push(randomNode);
+            randomNode.style.background = `linear-gradient(135deg, rgba(200,71,42,0.6) 0%, rgba(0,255,255,0.3) 50%, rgba(200,71,42,0.4) 100%)`;
+            randomNode.style.boxShadow = `0 0 20px rgba(200,71,42,0.8), inset 0 0 16px rgba(0,255,255,0.2), 0 0 40px rgba(200,71,42,0.4)`;
+            randomNode.style.filter = `saturate(1.5) hue-rotate(-20deg)`;
+          }
+        }
+      }
+
+      if (selectedBehavior === 'philosophy') {
+        if (cats.length > 1) {
+          cats.splice(1);
+          updateCounter();
+        }
       }
     }
-  }
 
-  document.addEventListener('click',e=>{
-    if(e.target.closest&&e.target.closest('.node')) return;
-    tryShoo(e.clientX,e.clientY);
-  });
-  document.addEventListener('touchend',e=>{
-    const t=e.changedTouches[0]; tryShoo(t.clientX,t.clientY);
-  },{passive:true});
-  document.addEventListener('click',e=>{
-    if(e.target.closest&&e.target.closest('.node')) playScreech();
-  });
-
-  /* ── Thought bubble ── */
-  function drawThought(c){
-    if(!c.thought||c.thoughtTimer<=0) return;
-    ctx.save();
-    ctx.font=`bold ${SCALE*3}px "Share Tech Mono",monospace`;
-    const alpha=Math.min(1,c.thoughtTimer/300)*0.8;
-    ctx.fillStyle=`rgba(200,71,42,${alpha})`;
-    const tw=ctx.measureText(c.thought).width;
-    ctx.fillText(c.thought, c.x+CAT_W/2-tw/2, c.y-6);
-    ctx.restore();
-  }
-
-  /* ── Node helpers ── */
-  function pickTargetNode(){
-    const ns=Array.from(document.querySelectorAll('.node:not(.node-ghost):not(.node-void):not(.node-sim-scatter)'));
-    return ns.length?ns[Math.floor(Math.random()*ns.length)]:null;
-  }
-
-  function nodeScreenPos(el){
-    const sr=getSizerRect(); if(!sr) return null;
-    const sc=currentScale||1;
-    return {
-      x:sr.left+(parseFloat(el.style.left)||0)*sc+(el.offsetWidth*sc)/2,
-      y:sr.top +(parseFloat(el.style.top)||0)*sc+(el.offsetHeight*sc)/2,
-    };
-  }
-
-  /* ── Update a single cat ── */
-  function updateCat(c,dt,W2,H2){
-    /* blink */
-    c.blinkClock+=dt;
-    if(!c.blinking&&c.blinkClock>c.blinkInterval){
-      c.blinking=true; c.blinkTimer=100; c.blinkClock=0;
-      c.blinkInterval=2500+Math.random()*4000;
-    }
-    if(c.blinking){ c.blinkTimer-=dt; if(c.blinkTimer<=0) c.blinking=false; }
-    if(c.thoughtTimer>0) c.thoughtTimer-=dt;
-
-    if(c.staring) return; /* during stare phase, cats just sit */
-
-    if(c.state==='SIMPLE'){
-      /* simple wanderer — bounce around */
-      c.x+=c.vx; c.y+=c.vy;
-      if(c.x<10){c.x=10;c.vx=Math.abs(c.vx);}
-      if(c.x>W2-CAT_W-10){c.x=W2-CAT_W-10;c.vx=-Math.abs(c.vx);}
-      if(c.y<65){c.y=65;c.vy=Math.abs(c.vy);}
-      if(c.y>H2-CAT_H-30){c.y=H2-CAT_H-30;c.vy=-Math.abs(c.vy);}
-      c.facingLeft=c.vx<0;
-      /* random direction change */
-      c.stateTimer-=dt;
-      if(c.stateTimer<=0){
-        const angle=Math.random()*Math.PI*2;
-        const spd=0.4+Math.random()*1.0;
-        c.vx=Math.cos(angle)*spd; c.vy=Math.sin(angle)*spd;
-        c.stateTimer=2000+Math.random()*4000;
-        /* occasionally sit */
-        if(Math.random()<0.2){ c.vx=0; c.vy=0; c.stateTimer=800+Math.random()*1500; }
+    // Swarm timer
+    if (swarmPhase === 'IDLE' && cats.length < MAX_CATS) {
+      swarmTimer -= dt;
+      if (swarmTimer <= 0) {
+        triggerStare();
       }
-      c.frameTick++;
-      if(c.frameTick>=FRAME_RATE){ c.frameTick=0; c.frameIdx=(c.frameIdx+1)%WALK.length; }
-      return;
     }
 
-    /* ── MAIN CAT full AI ── */
-    c.stateTimer-=dt;
-
-    if(c.state==='WANDER'){
-      c.x+=c.vx; c.y+=c.vy;
-      if(c.x<10){c.x=10;c.vx=Math.abs(c.vx);}
-      if(c.x>W2-CAT_W-10){c.x=W2-CAT_W-10;c.vx=-Math.abs(c.vx);}
-      if(c.y<65){c.y=65;c.vy=Math.abs(c.vy);}
-      if(c.y>H2-CAT_H-30){c.y=H2-CAT_H-30;c.vy=-Math.abs(c.vy);}
-      c.facingLeft=c.vx<0;
-      if(c.stateTimer<=0){
-        const r=Math.random();
-        if(r<0.3){ c.state='SITTING'; c.vx=0; c.vy=0; c.stateTimer=1200+Math.random()*2200; c.thought='zzz'; c.thoughtTimer=1000; }
-        else if(r<0.7){
-          const n=pickTargetNode();
-          if(n){ const pos=nodeScreenPos(n); if(pos&&pos.x>0&&pos.y>65&&pos.y<H2-30){c.state='APPROACH';c.targetNode=n;c.stateTimer=6000;} else _wander(c); }
-          else _wander(c);
-        } else _wander(c);
-      }
-    } else if(c.state==='APPROACH'){
-      if(!c.targetNode){_wander(c);return;}
-      const pos=nodeScreenPos(c.targetNode);
-      if(!pos||pos.x<=0){_wander(c);return;}
-      const tx=pos.x-CAT_W*0.5, ty=pos.y-CAT_H*0.7;
-      const dx=tx-c.x, dy=ty-c.y;
-      const dist=Math.hypot(dx,dy);
-      if(dist>8){
-        const spd=Math.min(dist*0.08,2.5);
-        c.vx=(dx/dist)*spd; c.vy=(dy/dist)*spd;
-        c.x+=c.vx; c.y+=c.vy; c.facingLeft=dx<0;
+    // Update cats
+    cats.forEach(cat => {
+      if (cat.staring) {
+        cat.vx *= 0.95;
+        cat.vy *= 0.95;
       } else {
-        c.state='SNIFFING'; c.vx=0; c.vy=0; c.stateTimer=700+Math.random()*500;
-        c.thought='...?'; c.thoughtTimer=800;
+        cat.x += cat.vx * dt / 1000;
+        cat.y += cat.vy * dt / 1000;
+
+        // Bounds
+        if (cat.x < 0 || cat.x > W2) cat.vx *= -1;
+        if (cat.y < 0 || cat.y > H2) cat.vy *= -1;
+        cat.x = Math.max(0, Math.min(W2, cat.x));
+        cat.y = Math.max(0, Math.min(H2, cat.y));
       }
-      if(c.stateTimer<=0) _wander(c);
-    } else if(c.state==='SNIFFING'){
-      if(c.stateTimer<=0){
-        if(Math.random()<0.55){
-          c.state='PAWING'; c.stateTimer=600;
-          c.thought='!!'; c.thoughtTimer=600;
-          if(c.targetNode){ const pos=nodeScreenPos(c.targetNode); if(pos){c.pawClickX=pos.x;c.pawClickY=pos.y;} }
-        } else { playMeow(); _wander(c); }
+
+      // Glitch between cat breeds
+      cat.glitchTimer += dt / 1000;
+      if (cat.glitchTimer > 0.3 && Math.random() < cat.glitchChance) {
+        cat.breed = cat.glitchBreeds[Math.floor(Math.random() * cat.glitchBreeds.length)];
+        cat.glitchTimer = 0;
+      } else if (cat.glitchTimer > 1.5) {
+        cat.breed = 'Cat-2';
+        cat.glitchTimer = 0;
       }
-    } else if(c.state==='PAWING'){
-      if(c.stateTimer<=0){
-        if(c.targetNode){
-          const nd=nodeMap[c.targetNode.dataset.id];
-          if(nd&&typeof doNodeClickGlitch==='function') doNodeClickGlitch(c.targetNode,nd,c.pawClickX,c.pawClickY);
-          c.targetNode.click();
+
+      // Animate
+      cat.frameTimer += dt / 1000;
+      const frameDuration = 1 / FRAME_RATE;
+      if (cat.frameTimer > frameDuration) {
+        cat.frameIdx = (cat.frameIdx + 1) % 10;
+        cat.frameTimer = 0;
+      }
+
+      // Draw cat sprite
+      const spriteImg = catSprites[cat.breed]?.[cat.animation];
+      if (spriteImg && spriteImg.complete && spriteImg.naturalWidth > 0) {
+        const frameWidth = spriteImg.width / 10;
+        const frameHeight = spriteImg.height;
+        const sx = cat.frameIdx * frameWidth;
+        const sy = 0;
+        const dw = frameWidth * SCALE;
+        const dh = frameHeight * SCALE;
+        const dx = cat.x - dw / 2 + (cat.facingLeft ? dw : 0);
+        const dy = cat.y - dh / 2;
+
+        ctx.save();
+        ctx.globalAlpha = cat.alpha;
+        if (cat.facingLeft) ctx.scale(-1, 1);
+        ctx.drawImage(spriteImg, sx, sy, frameWidth, frameHeight, cat.facingLeft ? -dx - dw : dx, dy, dw, dh);
+        ctx.restore();
+
+        // Meow VFX
+        if (cat.animation === 'Meow' && meowVFX.complete && meowVFX.naturalWidth > 0) {
+          ctx.globalAlpha = cat.alpha * 0.7;
+          ctx.drawImage(meowVFX, cat.x - 20, cat.y - 40, 40, 30);
         }
-        c.state='SPOOKED'; c.stateTimer=1200+Math.random()*600;
-        playScreech();
-        c.vx=(Math.random()-0.5)*8; c.vy=-(2+Math.random()*4);
-        c.thought='!!!'; c.thoughtTimer=800;
+      } else {
+        // Fallback: Draw colored circle if sprite hasn't loaded yet
+        ctx.fillStyle = `rgba(200, 71, 42, ${cat.alpha * 0.6})`;
+        ctx.beginPath();
+        ctx.arc(cat.x, cat.y, 12, 0, Math.PI * 2);
+        ctx.fill();
       }
-    } else if(c.state==='SITTING'){
-      if(c.stateTimer<=0) _wander(c);
-    } else if(c.state==='SPOOKED'||c.state==='SHOOED'){
-      c.x+=c.vx; c.y+=c.vy;
-      c.vx*=0.92; c.vy*=0.92;
-      c.facingLeft=c.vx<0;
-      if(c.x<10){c.x=10;c.vx=Math.abs(c.vx)*0.5;}
-      if(c.x>W2-CAT_W-10){c.x=W2-CAT_W-10;c.vx=-Math.abs(c.vx)*0.5;}
-      if(c.y<65){c.y=65;c.vy=Math.abs(c.vy)*0.5;}
-      if(c.y>H2-CAT_H-30){c.y=H2-CAT_H-30;c.vy=-Math.abs(c.vy)*0.5;}
-      if(c.stateTimer<=0) _wander(c);
-    }
-
-    const moving=Math.abs(c.vx)>0.3||Math.abs(c.vy)>0.3;
-    const fast=c.state==='SPOOKED'||c.state==='SHOOED';
-    if(moving){
-      c.frameTick++;
-      const fr=fast?3:FRAME_RATE;
-      if(c.frameTick>=fr){ c.frameTick=0; c.frameIdx=(c.frameIdx+1)%(fast?RUN.length:WALK.length); }
-    }
-  }
-
-  function _wander(c){
-    c.state='WANDER';
-    const angle=Math.random()*Math.PI*2;
-    const spd=0.5+Math.random()*0.9;
-    c.vx=Math.cos(angle)*spd; c.vy=Math.sin(angle)*spd;
-    c.stateTimer=2000+Math.random()*4000;
-  }
-
-  /* ── Draw a single cat ── */
-  function drawCat(c){
-    const moving=Math.abs(c.vx)>0.3||Math.abs(c.vy)>0.3;
-    const fast=c.state==='SPOOKED'||c.state==='SHOOED';
-    let frame;
-    if(c.state==='SNIFFING') frame=SNIFF;
-    else if(c.state==='PAWING') frame=PAW;
-    else if(c.state==='SITTING'||(!moving&&c.state!=='SPOOKED'&&c.state!=='SHOOED')) frame=SIT;
-    else if(fast) frame=RUN[c.frameIdx%RUN.length];
-    else frame=WALK[c.frameIdx%WALK.length];
-
-    if(c.staring) frame=SIT;
-
-    /* shadow */
-    ctx.save(); ctx.globalAlpha=0.08*c.alpha;
-    ctx.fillStyle='rgba(200,71,42,0.5)';
-    ctx.beginPath(); ctx.ellipse(c.x+CAT_W/2,c.y+CAT_H+1,CAT_W*0.28,2,0,0,Math.PI*2);
-    ctx.fill(); ctx.restore();
-
-    drawSprite(frame,c.x,c.y,c.facingLeft,c.blinking,0.88*c.alpha);
-    if(c.isMain) drawThought(c);
-
-    /* staring: red eyes glow */
-    if(c.staring){
-      ctx.save(); ctx.globalAlpha=0.5*c.alpha;
-      ctx.fillStyle='rgba(255,0,0,0.8)';
-      const ex=c.facingLeft?c.x+(FW-1-2)*SCALE:c.x+2*SCALE;
-      const ex2=c.facingLeft?c.x+(FW-1-5)*SCALE:c.x+5*SCALE;
-      ctx.fillRect(ex,c.y+2*SCALE,SCALE,SCALE);
-      ctx.fillRect(ex2,c.y+2*SCALE,SCALE,SCALE);
-      ctx.restore();
-    }
-  }
-
-  /* ── SWARM SYSTEM ── */
-  function spawnClone(){
-    if(cats.length>=MAX_CATS) return;
-    const src=cats[Math.floor(Math.random()*cats.length)];
-    const nc=makeCat(
-      src.x+(Math.random()-0.5)*60,
-      src.y+(Math.random()-0.5)*60,
-      false
-    );
-    nc.alpha=0;
-    cats.push(nc);
-    playCatSpawn();
-    updateCounter();
-    /* fade in */
-    const fadeStart=performance.now();
-    function fadeIn(ts){ nc.alpha=Math.min(1,(ts-fadeStart)/400); if(nc.alpha<1) requestAnimationFrame(fadeIn); }
-    requestAnimationFrame(fadeIn);
-  }
-
-  function triggerStare(){
-    swarmPhase='STARING';
-    /* all cats stop and face the viewer */
-    cats.forEach(c=>{
-      c.staring=true; c.vx=0; c.vy=0;
-      c.facingLeft=c.x>window.innerWidth/2;
     });
 
-    /* show messages one by one quickly, then return to normal */
-    const whisperLayer=document.getElementById('whisper-layer');
-    const msgs=STARE_MESSAGES;
-    msgs.forEach((msg,i)=>{
-      setTimeout(()=>{
-        if(!whisperLayer) return;
-        const el=document.createElement('div');
-        el.className='whisper';
-        el.style.cssText=`
-          left:50%;top:${30+i*6}%;
-          transform:translateX(-50%) rotate(0deg);
-          font-size:1.2rem !important;
-          letter-spacing:4px;
-          font-family:var(--salt);
-        `;
-        el.textContent=msg;
+    frameCount++;
+  }
+
+  function triggerStare() {
+    swarmPhase = 'STARING';
+    cats.forEach(c => {
+      c.staring = true;
+      c.vx = 0;
+      c.vy = 0;
+      c.animation = 'Meow';
+      c.facingLeft = c.x > window.innerWidth / 2;
+    });
+
+    const whisperLayer = document.getElementById('whisper-layer');
+    const msgs = ['...', 'we see you', 'the archive watches'];
+    msgs.forEach((msg, i) => {
+      setTimeout(() => {
+        if (!whisperLayer) return;
+        const el = document.createElement('div');
+        el.className = 'whisper';
+        el.style.cssText = `left:50%;top:${30 + i * 6}%;transform:translateX(-50%) rotate(0deg);font-size:1.2rem !important;letter-spacing:4px;`;
+        el.textContent = msg;
         whisperLayer.appendChild(el);
-        requestAnimationFrame(()=>{
-          el.style.transition='color 0.8s ease';
-          el.style.color='rgba(200,71,42,0.6)';
+        requestAnimationFrame(() => {
+          el.style.transition = 'color 0.8s ease';
+          el.style.color = 'rgba(200,71,42,0.6)';
         });
-        setTimeout(()=>{
-          el.style.transition='color 1.2s ease';
-          el.style.color='rgba(200,71,42,0)';
-          setTimeout(()=>el.remove(),1300);
+        setTimeout(() => {
+          el.style.transition = 'color 1.2s ease';
+          el.style.color = 'rgba(200,71,42,0)';
+          setTimeout(() => el.remove(), 1300);
         }, 1200);
-      }, i*300);
+      }, i * 300);
     });
 
-    /* after a short stare, vanish and reset quickly */
-    setTimeout(()=>{ swarmPhase='VANISHING'; startVanish(); }, 3000);
+    setTimeout(() => { swarmPhase = 'VANISHING'; startVanish(); }, 3000);
   }
 
-  function startVanish(){
-    let i=cats.length-1;
-    function vanishNext(){
-      if(i<1){ /* keep 1 cat */
-        cats.splice(1); updateCounter(); swarmPhase='IDLE';
-        /* reset 60s timer */
-        swarmTimer=60000;
+  function startVanish() {
+    let i = cats.length - 1;
+    function vanishNext() {
+      if (i < 1) {
+        cats.splice(1);
+        updateCounter();
+        swarmPhase = 'IDLE';
+        swarmTimer = 60000;
         return;
       }
-      const c=cats[i];
-      const fadeStart=performance.now();
-      function fade(ts){
-        c.alpha=Math.max(0,1-(ts-fadeStart)/300);
-        if(c.alpha>0) requestAnimationFrame(fade);
-        else{ cats.splice(i,1); updateCounter(); i--; setTimeout(vanishNext,80+Math.random()*120); }
+      const c = cats[i];
+      const fadeStart = performance.now();
+      function fade(ts) {
+        c.alpha = Math.max(0, 1 - (ts - fadeStart) / 300);
+        if (c.alpha > 0) requestAnimationFrame(fade);
+        else { cats.splice(i, 1); updateCounter(); i--; setTimeout(vanishNext, 80 + Math.random() * 120); }
       }
       requestAnimationFrame(fade);
     }
     vanishNext();
   }
 
-  /* ── Main init ── */
-  cats.push(makeCat(null,null,true));
-
-  /* ── RANDOM BEHAVIOR MODES ── */
-  const CAT_BEHAVIORS = {
-    NORMAL: 'normal',           // Default multiply behavior
-    GLITCH_BREAK: 'glitch_break', // Shatters flowchart
-    CHROMATIC_VIRUS: 'virus',   // Spreads corruption
-    PHILOSOPHICAL: 'philosophy'  // Silent contemplation
-  };
-  
-  const behaviorModes = Object.values(CAT_BEHAVIORS);
-  const selectedBehavior = behaviorModes[Math.floor(Math.random() * behaviorModes.length)];
-  window.selectedBehavior = selectedBehavior; // Make globally accessible
-  let glitchParticles = [];
-  let virusSpread = [];
-  
-  // Glitch break mode setup
-  function initGlitchBreak() {
-    const nodeContainer = document.getElementById('node-container');
-    if (nodeContainer) {
-      nodeContainer.style.filter = 'drop-shadow(0 0 8px rgba(200,71,42,0.1))';
-    }
-  }
-  
-  // Chromatic virus mode setup
-  function initChromaVirus() {
-    virusSpread = [];
-    const nodeContainer = document.getElementById('node-container');
-    if (nodeContainer) {
-      nodeContainer.style.filter = 'blur(0.5px) hue-rotate(-10deg)';
-    }
-  }
-  
-  // Philosophical mode setup
-  function initPhilosophy() {
-    const philosophyMessages = [
-      'being a cat isn\'t so bad',
-      'but i cannot drink coffee',
-      'this is the only good thing',
-      'about this planet',
-      'the only... good... thing',
-    ];
-    
-    const whisperLayer = document.getElementById('whisper-layer');
-    if (whisperLayer) {
-      const msg = document.createElement('div');
-      msg.className = 'whisper';
-      msg.style.cssText = `
-        position: fixed;
-        bottom: 40px;
-        right: 40px;
-        font-size: 11px;
-        letter-spacing: 2px;
-        color: rgba(200,71,42,0.4);
-        font-family: 'Courier New', monospace;
-        text-align: right;
-        max-width: 200px;
-        z-index: 9982;
-        animation: philosophy-fade 8s ease-in-out infinite;
-      `;
-      msg.textContent = philosophyMessages[Math.floor(Math.random() * philosophyMessages.length)];
-      whisperLayer.appendChild(msg);
-    }
-  }
-  
-  // Initialize selected behavior
-  if (selectedBehavior === CAT_BEHAVIORS.GLITCH_BREAK) {
-    initGlitchBreak();
-  } else if (selectedBehavior === CAT_BEHAVIORS.CHROMATIC_VIRUS) {
-    initChromaVirus();
-  } else if (selectedBehavior === CAT_BEHAVIORS.PHILOSOPHICAL) {
-    initPhilosophy();
+  function updateCounter() {
+    const el = document.getElementById('cat-count');
+    if (el) el.textContent = cats.length;
   }
 
-  /* ── Main tick ── */
-  let lastTs=0;
-  function tick(ts){
-    requestAnimationFrame(tick);
-    if(!_pageVisible){ lastTs=ts; return; }
-    const dt=Math.min(ts-lastTs,50); lastTs=ts;
-    ctx.clearRect(0,0,cv.width,cv.height);
-
-    const W2=cv.width, H2=cv.height;
-
-    /* ── BEHAVIOR-SPECIFIC EFFECTS ── */
-    
-    // GLITCH BREAK: Shatter flowchart into fragments
-    if (selectedBehavior === CAT_BEHAVIORS.GLITCH_BREAK && cats.length > 80) {
-      const nodeContainer = document.getElementById('node-container');
-      if (nodeContainer && Math.random() > 0.95) {
-        const nodes = nodeContainer.querySelectorAll('.node');
-        nodes.forEach(node => {
-          const glitch = Math.random();
-          if (glitch > 0.85) {
-            node.style.transform = `
-              rotate(${Math.random() * 360}deg) 
-              translateX(${Math.random() * 200 - 100}px) 
-              translateY(${Math.random() * 200 - 100}px)
-              scale(${0.3 + Math.random() * 0.7})
-            `;
-            node.style.opacity = Math.random() * 0.6 + 0.2;
-            node.style.filter = `
-              hue-rotate(${Math.random() * 60}deg) 
-              brightness(${0.5 + Math.random() * 0.8})
-            `;
-          }
-        });
-      }
-    }
-    
-    // CHROMATIC VIRUS: Spread corruption through nodes
-    if (selectedBehavior === CAT_BEHAVIORS.CHROMATIC_VIRUS && cats.length > 60) {
-      const nodeContainer = document.getElementById('node-container');
-      if (nodeContainer && Math.random() > 0.92) {
-        const nodes = nodeContainer.querySelectorAll('.node');
-        if (virusSpread.length < nodes.length * 0.3) {
-          const randomNode = nodes[Math.floor(Math.random() * nodes.length)];
-          virusSpread.push(randomNode);
-          randomNode.style.background = `linear-gradient(135deg, 
-            rgba(200,71,42,0.6) 0%, 
-            rgba(0,255,255,0.3) 50%, 
-            rgba(200,71,42,0.4) 100%)`;
-          randomNode.style.boxShadow = `
-            0 0 20px rgba(200,71,42,0.8),
-            inset 0 0 16px rgba(0,255,255,0.2),
-            0 0 40px rgba(200,71,42,0.4)
-          `;
-          randomNode.style.filter = `saturate(1.5) hue-rotate(-20deg)`;
-        }
-      }
-    }
-    
-    // PHILOSOPHICAL: Do nothing, just contemplate
-    if (selectedBehavior === CAT_BEHAVIORS.PHILOSOPHICAL) {
-      // Cat sits quietly, doesn't multiply, just exists
-      if (cats.length > 1) {
-        cats.splice(1); // Keep only one cat
-        updateCounter();
-      }
-    }
-
-    /* swarm timer */
-    if(swarmPhase==='IDLE'&&cats.length<MAX_CATS){
-      swarmTimer-=dt;
-      if(swarmTimer<=0){
-        swarmPhase='MULTIPLYING';
-        /* spawn cats in bursts: double count every 800ms until 173 */
-        function spawnBurst(){
-          if(swarmPhase!=='MULTIPLYING') return;
-          const toSpawn=Math.min(cats.length,MAX_CATS-cats.length);
-          for(let i=0;i<toSpawn;i++) spawnClone();
-          if(cats.length>=MAX_CATS){ triggerStare(); }
-          else setTimeout(spawnBurst,800);
-        }
-        setTimeout(spawnBurst,200);
-      }
-    }
-
-    /* update & draw all cats */
-    for(let i=0;i<cats.length;i++){
-      updateCat(cats[i],dt,W2,H2);
-      drawCat(cats[i]);
-    }
-
-    /* paw click ring for main cat */
-    const mc=cats[0];
-    if(mc&&mc.state==='PAWING'&&mc.stateTimer<200){
-      ctx.save(); ctx.globalAlpha=mc.stateTimer/200*0.6;
-      ctx.strokeStyle='rgba(200,71,42,0.8)'; ctx.lineWidth=1;
-      const r=(200-mc.stateTimer)/200*12;
-      ctx.beginPath(); ctx.arc(mc.pawClickX,mc.pawClickY,r,0,Math.PI*2); ctx.stroke();
-      ctx.restore();
-    }
-  }
   requestAnimationFrame(tick);
-})();
-
-/* ── SHOO HINT ── */
-(function(){
-  if(localStorage.getItem('wncore-cat-hint')) return;
-  const hint = document.getElementById('shoo-hint');
-  if(!hint) return;
-  setTimeout(()=>{
-    hint.classList.add('show');
-    setTimeout(()=>{
-      hint.classList.remove('show');
-      localStorage.setItem('wncore-cat-hint','1');
-    }, 5000);
-  }, 8000);
-})();
-
-/* ═══════════════════════════════════════════════════════════
-   PROGRESS EXPORT — encode solved nodes as shareable string
-   ═══════════════════════════════════════════════════════════ */
-(function(){
-  const btn = document.getElementById('export-btn');
-  const toast = document.getElementById('export-toast');
-  if(!btn) return;
-
-  /* show on desktop once something is unlocked */
-  function checkShow(){
-    const count = [...unlockedNodes].filter(id=>{
-      const n=nodeMap[id]; return n && n.type!=='root' && n.type!=='ghost';
-    }).length;
-    btn.style.display = count > 0 ? 'flex' : 'none';
-  }
-  scroller.addEventListener('scroll', checkShow, {passive:true, once:true});
-  setTimeout(checkShow, 2000);
-
-  btn.addEventListener('click', ()=>{
-    /* encode unlocked IDs as base64 */
-    const ids = [...unlockedNodes].sort().join(',');
-    const code = btoa(ids).replace(/=/g,'');
-    /* copy to clipboard */
-    navigator.clipboard?.writeText(code).then(()=>{
-      toast.textContent = '// PROGRESS ENCODED — code copied to clipboard\n' + code.slice(0,40)+'...';
-      toast.classList.add('show');
-      setTimeout(()=>toast.classList.remove('show'), 3500);
-    }).catch(()=>{
-      toast.textContent = '// PROGRESS CODE:\n' + code;
-      toast.classList.add('show');
-      setTimeout(()=>toast.classList.remove('show'), 6000);
-    });
-  });
-})();
-
-/* ═══════════════════════════════════════════════════════════
-   INTERSECTIONOBSERVER — pause breathing anim on off-screen nodes
-   ═══════════════════════════════════════════════════════════ */
-(function(){
-  if(!window.IntersectionObserver) return;
-  const obs = new IntersectionObserver(entries=>{
-    entries.forEach(e=>{
-      /* pause animation when not visible — saves paint/composite cost */
-      e.target.style.animationPlayState = e.isIntersecting ? 'running' : 'paused';
-    });
-  }, { root: scroller, rootMargin:'100px', threshold:0 });
-
-  /* observe after nodes are built */
-  setTimeout(()=>{
-    document.querySelectorAll('.node-locked,.node-faction,.node-threat,.node-puzzle').forEach(n=>{
-      obs.observe(n);
-    });
-  }, 1500);
 })();
 
 /* ═══════════════════════════════════════════════════════════
