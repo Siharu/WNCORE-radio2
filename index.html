@@ -313,6 +313,14 @@ try {
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
     About
   </a>
+  <a href="community.html" onclick="toggleMobileMenu();" title="Community">
+    <span class="nav-glitch-ball" aria-hidden="true" style="display:inline-flex;gap:2px;margin-right:8px;">
+      <span class="gb"></span>
+      <span class="gb"></span>
+      <span class="gb"></span>
+    </span>
+    <span>Community</span>
+  </a>
   <div class="mobile-nav-divider"></div>
   <!-- Aberrant Star — flowchart link (mobile) -->
   <button id="aber-star-mobile" class="mobile-aber-link" onclick="openFlowchart();toggleMobileMenu();return false">
@@ -3132,7 +3140,7 @@ function debounce(name, fn, delay = 500) {
     if (ms) ms.classList.toggle('unlocked', unlocked);
     if (ms && ms.querySelector('.nav-aberrant-star')) ms.querySelector('.nav-aberrant-star').classList.toggle('locked', !unlocked);
     if (ml) ml.textContent = unlocked ? 'Signal Cartography — CLASSIFIED ↗' : 'Signal Cartography — CLASSIFIED';
-    if (msub) msub.textContent = unlocked ? 'flowchart.html' : 'complete a constellation to unlock';
+    if (msub) msub.textContent = unlocked ? '↗ Access Granted' : 'complete a constellation to unlock';
   }
 
   window.openFlowchart = function() {
