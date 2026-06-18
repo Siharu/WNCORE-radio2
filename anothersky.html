@@ -2681,15 +2681,38 @@ body.fs3 #ch-body { font-size: 1.42rem; }
 .ced-ch-item.active .ced-ch-name { color: rgba(255,200,180,0.96); }
 .ced-ch-item.active .ced-ch-num { color: rgba(200,71,42,0.55); }
 
-/* Published / draft badge */
+/* Published / draft badge — now clickable for quick toggle */
 .ced-ch-status {
   font-size: 0.17rem; letter-spacing: 2px; text-transform: uppercase;
-  padding: 1px 5px; align-self: center;
+  padding: 3px 6px; align-self: center;
   border: 1px solid transparent;
   grid-column: 2; grid-row: 1 / 3;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s ease;
 }
-.ced-ch-status.pub  { color: rgba(60,200,100,0.55); border-color: rgba(60,200,100,0.18); }
-.ced-ch-status.draft{ color: rgba(200,130,0,0.55);  border-color: rgba(200,130,0,0.18); }
+.ced-ch-status.pub  { 
+  color: rgba(60,200,100,0.65); 
+  border-color: rgba(60,200,100,0.25);
+  background: rgba(60,200,100,0.04);
+}
+.ced-ch-status.pub:hover {
+  color: rgba(60,200,100,0.9);
+  border-color: rgba(60,200,100,0.5);
+  background: rgba(60,200,100,0.12);
+  box-shadow: 0 0 6px rgba(60,200,100,0.15);
+}
+.ced-ch-status.draft{ 
+  color: rgba(200,130,0,0.65);  
+  border-color: rgba(200,130,0,0.25);
+  background: rgba(200,130,0,0.04);
+}
+.ced-ch-status.draft:hover {
+  color: rgba(200,130,0,0.9);
+  border-color: rgba(200,130,0,0.5);
+  background: rgba(200,130,0,0.12);
+  box-shadow: 0 0 6px rgba(200,130,0,0.15);
+}
 
 /* ── LORE DROPBOX — left panel section ─────────────────────── */
 #ced-lore-section {
@@ -8672,6 +8695,19 @@ document.addEventListener('keydown', e => {
     if (isAdmin) openUpload(); else openLogin();
     return;
   }
+  // Ctrl+P — quick publish toggle for current chapter
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    e.preventDefault();
+    const modalOpen = document.getElementById('upload-modal')?.classList.contains('open');
+    if (modalOpen && cedEditId) {
+      const ch = chapters.find(c => c.id === cedEditId);
+      if (ch) {
+        const badge = document.querySelector(`.ced-ch-item[data-ch-id="${cedEditId}"] .ced-ch-status`);
+        if (badge) cedQuickTogglePublish(cedEditId, { target: badge, stopPropagation: () => {} });
+      }
+    }
+    return;
+  }
   if (document.querySelector('.modal.open')) return;
   if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)) return;
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(1);
@@ -9600,7 +9636,7 @@ function cedRenderList() {
       <span class="ced-ch-num">${story.prefix}-${String(ch.chapter_num).padStart(2,'0')}</span>
       <span class="ced-ch-name">${ch.title}</span>
       <span class="ced-ch-num" style="margin-top:2px;opacity:0.5">${words} words</span>
-      <span class="ced-ch-status ${isPub ? 'pub' : 'draft'}">${isPub ? '● PUB' : '○ DRAFT'}</span>`;
+      <span class="ced-ch-status ${isPub ? 'pub' : 'draft'}" onclick="cedQuickTogglePublish(${ch.id},event)" title="Click to toggle publish status">${isPub ? '● PUB' : '○ DRAFT'}</span>`;
     item.onclick = () => cedLoadChapter(globalIdx);
     cedInitDrag(item, globalIdx);
     list.appendChild(item);
@@ -9645,6 +9681,42 @@ function cedLoadChapter(idx) {
     try { loreTa.value = localStorage.getItem(cedLoreKey()) || ''; } catch { loreTa.value = ''; }
     cedUpdateLoreStatus();
   }
+}
+
+/* ── QUICK PUBLISH TOGGLE — click status badge to toggle without opening editor ── */
+async function cedQuickTogglePublish(chId, event) {
+  event.stopPropagation();
+  const ch = chapters.find(c => c.id === chId);
+  if (!ch) return;
+  
+  // Toggle publish state
+  const newState = ch.is_published === false; // if false, set true; otherwise set false
+  
+  // Update UI immediately (optimistic)
+  const badge = event.target;
+  badge.classList.toggle('pub', newState);
+  badge.classList.toggle('draft', !newState);
+  badge.textContent = newState ? '● PUB' : '○ DRAFT';
+  
+  // Push to backend
+  const { error } = await sb.from('chapters').update({ is_published: newState }).eq('id', chId);
+  
+  if (error) {
+    console.error('Publish toggle failed:', error);
+    // Revert UI
+    badge.classList.toggle('pub', !newState);
+    badge.classList.toggle('draft', newState);
+    badge.textContent = !newState ? '● PUB' : '○ DRAFT';
+    alert('Failed to toggle publish status');
+    return;
+  }
+  
+  // Update local chapters array
+  ch.is_published = newState;
+  
+  // Show brief feedback
+  badge.style.animation = 'none';
+  setTimeout(() => { badge.style.animation = 'pulse 0.4s ease'; }, 10);
 }
 
 function cedNewChapter() {
