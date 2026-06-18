@@ -3823,74 +3823,194 @@ body.rm-focus #as-sidebar:hover { opacity: 1; }
 ══════════════════════════════════════════════════════ */
 #ssp-admin-bar {
   display: none;
-  align-items: center; gap: 10px;
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
-  letter-spacing: 3px; color: rgba(200,71,42,0.5);
-  text-transform: uppercase;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  margin-top: 28px;
+  background: linear-gradient(135deg, rgba(20,10,5,0.4) 0%, rgba(10,5,2,0.3) 100%);
+  border: 1px solid rgba(200,71,42,0.15);
+  border-radius: 4px;
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.03);
 }
 #ssp-admin-bar.show { display: flex; }
 
-#ssp-edit-toggle, #ssp-add-card {
-  background: transparent;
-  border: 1px solid rgba(200,71,42,0.3);
-  color: rgba(200,71,42,0.6);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.22rem;
-  letter-spacing: 3px; text-transform: uppercase;
-  padding: 6px 14px; cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
+#ssp-admin-bar::before {
+  content: '⚙️ ADMIN CONTROL PANEL';
+  display: block;
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.28rem;
+  letter-spacing: 2px;
+  color: rgba(200,71,42,0.7);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(200,71,42,0.1);
 }
-#ssp-edit-toggle:hover, #ssp-add-card:hover { border-color: var(--red); color: var(--red); }
-#ssp-edit-toggle.active { border-color: var(--red); color: var(--red); background: rgba(200,0,0,0.08); }
+
+#ssp-admin-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+#ssp-edit-toggle, #ssp-add-card {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(200,71,42,0.08) 0%, rgba(200,71,42,0.04) 100%);
+  border: 1px solid rgba(200,71,42,0.25);
+  color: rgba(200,71,42,0.7);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.24rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  font-weight: 500;
+}
+#ssp-edit-toggle:hover, #ssp-add-card:hover {
+  border-color: rgba(200,71,42,0.5);
+  color: rgba(200,71,42,0.95);
+  background: rgba(200,71,42,0.12);
+  box-shadow: 0 2px 8px rgba(200,71,42,0.08);
+}
+#ssp-edit-toggle.active {
+  border-color: var(--red);
+  color: #fff;
+  background: linear-gradient(135deg, rgba(200,0,0,0.18) 0%, rgba(200,0,0,0.08) 100%);
+  box-shadow: 0 0 16px rgba(200,71,42,0.15), inset 0 1px 0 rgba(255,255,255,0.05);
+}
 
 .ssp-edit-overlay {
   display: none;
-  position: absolute; inset: 0; z-index: 20;
-  flex-direction: column; justify-content: flex-start;
-  padding: 10px 10px 12px; gap: 5px;
-  background: rgba(0,0,0,0.88);
-  backdrop-filter: blur(6px);
+  position: absolute; 
+  inset: 0; 
+  z-index: 20;
+  flex-direction: column; 
+  justify-content: flex-start;
+  padding: 14px;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(5,2,1,0.95) 0%, rgba(10,5,2,0.92) 100%);
+  backdrop-filter: blur(12px);
+  border-radius: 3px;
+  border: 1px solid rgba(200,71,42,0.2);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 8px 32px rgba(0,0,0,0.6);
 }
 .ssp-card.admin-mode .ssp-edit-overlay { display: flex; }
 
 .ssp-edit-field {
-  background: rgba(10,0,0,0.9);
-  border: 1px solid rgba(200,71,42,0.3);
-  border-left: 2px solid rgba(200,71,42,0.5);
-  color: rgba(212,197,176,0.9);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.26rem;
-  letter-spacing: 2px; padding: 5px 7px;
-  outline: none; width: 100%; box-sizing: border-box;
-  -webkit-appearance: none; appearance: none;
+  background: linear-gradient(135deg, rgba(20,10,5,0.3) 0%, rgba(10,5,2,0.3) 100%);
+  border: 1px solid rgba(200,71,42,0.2);
+  border-left: 2px solid rgba(200,71,42,0.4);
+  color: rgba(220,200,180,0.95);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.27rem;
+  letter-spacing: 1px;
+  padding: 9px 11px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 2px;
+  transition: all 0.15s ease;
 }
-.ssp-edit-field::placeholder { color: rgba(200,71,42,0.25); }
-.ssp-edit-field:focus { border-color: rgba(200,71,42,0.8); border-left-color: var(--red); }
+.ssp-edit-field::placeholder { 
+  color: rgba(200,71,42,0.3);
+  font-size: 0.26rem;
+}
+.ssp-edit-field:focus { 
+  border-color: rgba(200,71,42,0.5);
+  border-left-color: var(--red);
+  background: linear-gradient(135deg, rgba(30,15,10,0.5) 0%, rgba(15,8,3,0.4) 100%);
+  color: #fff;
+  box-shadow: 0 0 12px rgba(200,71,42,0.12), inset 0 0 8px rgba(200,71,42,0.05);
+}
 
 select.ssp-edit-field {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(200,71,42,0.6)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(200,71,42,0.5)'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 7px center;
-  padding-right: 22px; cursor: pointer;
+  background-position: right 9px center;
+  padding-right: 24px;
+  cursor: pointer;
 }
 select.ssp-edit-field option {
-  background: #0a0000; color: rgba(212,197,176,0.9);
+  background: #0a0500;
+  color: rgba(220,200,180,0.95);
 }
 
-.ssp-edit-row { display: flex; gap: 5px; }
-.ssp-edit-row .ssp-edit-field { flex: 1; }
+.ssp-edit-row {
+  display: flex;
+  gap: 10px;
+}
+.ssp-edit-row .ssp-edit-field {
+  flex: 1;
+}
 
 .ssp-edit-save {
   margin-top: 4px;
-  background: rgba(200,0,0,0.12);
-  border: 1px solid rgba(200,0,0,0.45);
-  color: rgba(200,71,42,0.85);
-  font-family: var(--font-mono,'IBM Plex Mono'); font-size: 0.22rem;
-  letter-spacing: 3px; text-transform: uppercase;
-  padding: 7px; cursor: pointer; width: 100%;
-  transition: background 0.15s, color 0.15s;
+  background: linear-gradient(135deg, rgba(200,0,0,0.15) 0%, rgba(200,0,0,0.08) 100%);
+  border: 1px solid rgba(200,0,0,0.35);
+  color: rgba(240,100,80,0.9);
+  font-family: var(--font-mono,'IBM Plex Mono');
+  font-size: 0.24rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 2px;
+  font-weight: 500;
+  transition: all 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
-.ssp-edit-save:hover { background: rgba(200,0,0,0.28); color: #fff; border-color: var(--red); }
+.ssp-edit-save:hover {
+  background: linear-gradient(135deg, rgba(200,0,0,0.28) 0%, rgba(200,0,0,0.15) 100%);
+  color: #fff;
+  border-color: rgba(200,0,0,0.6);
+  box-shadow: 0 4px 12px rgba(200,0,0,0.15);
+}
 
-</style>
+/* ──────────────────────────────────────────────────────
+   MOBILE ADMIN PANEL OPTIMIZATIONS
+──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  #ssp-admin-bar {
+    gap: 14px;
+    padding: 16px;
+    margin-top: 20px;
+  }
+  
+  #ssp-admin-buttons {
+    gap: 10px;
+  }
+  
+  #ssp-edit-toggle, #ssp-add-card {
+    padding: 12px 14px;
+    font-size: 0.22rem;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .ssp-edit-overlay {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .ssp-edit-field {
+    font-size: 0.26rem;
+    padding: 10px 9px;
+    min-height: 40px;
+  }
+  
+  .ssp-edit-save {
+    min-height: 44px;
+    padding: 12px 14px;
+  }
+}</style>
 </head>
 <body>
 
@@ -3958,9 +4078,10 @@ select.ssp-edit-field option {
     <div id="ssp-eyebrow">LOGBOOK DRIFTERS ARCHIVE // SIGNAL INTERCEPT // SELECT TRANSMISSION</div>
     <div id="ssp-title">CHOOSE<br><span class="ssp-red">YOUR SIGNAL</span></div>
     <div id="ssp-admin-bar">
-      <span>// ADMIN</span>
-      <button id="ssp-edit-toggle" onclick="sspToggleEdit()">EDIT CARDS</button>
-      <button id="ssp-add-card" onclick="sspAddCard()">+ ADD STORY</button>
+      <div id="ssp-admin-buttons">
+        <button id="ssp-edit-toggle" onclick="sspToggleEdit()">✏️ EDIT MODE</button>
+        <button id="ssp-add-card" onclick="sspAddCard()">➕ NEW STORY</button>
+      </div>
     </div>
     <div id="ssp-grid">
       <!-- populated by sspRender() -->
