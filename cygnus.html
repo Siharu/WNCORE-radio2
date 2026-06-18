@@ -3,321 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WNCORE — CYGNUS X-1 / BLACK HOLE ARCHIVE</title>
-<meta name="robots" content="noindex">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<title>Cygnus X-1 — Black Hole Archive</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="stylesheet" href="/cygnus.css">
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#02020a;
-  --text:#ddeeff;
-  --text2:rgba(200,220,255,0.6);
-  --text3:rgba(200,220,255,0.25);
-  --accent:#4aa8ff;
-  --accent2:#a0d4ff;
-  --glow:#1a6fff;
-  --mono:var(--font-mono);
-  --serif:var(--font-display);
-}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono)}
-#canvas{position:fixed;inset:0;z-index:0;display:block}
-
-/* ── CYGNUS PHASES ── */
 #galaxy-phase{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;
   background:#000;opacity:1;transition:opacity 0.6s;pointer-events:all}
 #galaxy-phase.hidden{opacity:0;pointer-events:none;z-index:-1}
 #galaxy-img{max-width:90vw;max-height:90vh;cursor:pointer;filter:drop-shadow(0 0 20px rgba(74,168,255,0.3));
   transition:filter 0.3s}
 #galaxy-img:hover{filter:drop-shadow(0 0 40px rgba(74,168,255,0.6))}
-
 #warp-canvas{position:fixed;inset:0;z-index:11;display:none}
-
 #star-phase{position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;
   background:radial-gradient(ellipse at center,rgba(15,5,30,0.7) 0%,#000 100%)}
 #star-phase.active{display:flex}
-
-#star-container{position:relative;width:320px;height:320px}
+#star-container{position:relative;width:320px;height:320px;z-index:13;pointer-events:none}
 #star-img{position:absolute;inset:0;width:100%;height:100%;
   filter:drop-shadow(0 0 30px rgba(255,180,100,0.8))}
-
-.planet-orbit{position:absolute;inset:0;animation:orbit 1s linear infinite}
-.planet-gif{position:absolute;width:60px;height:60px;
-  top:-30px;left:calc(50% - 30px);
-  filter:drop-shadow(0 0 8px rgba(100,200,255,0.6))}
-
-@keyframes orbit{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-
-/* GRAIN */
-#grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0.04;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:256px}
-#scanlines{position:fixed;inset:0;z-index:2;pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,10,30,0.05) 2px,rgba(0,10,30,0.05) 4px)}
-
-/* ── GLITCH OVERLAY on canvas ── */
-#glitch-canvas{position:fixed;inset:0;z-index:3;pointer-events:none;opacity:0;transition:opacity 0.1s}
-@keyframes glitch-shift{
-  0%{transform:translate(0,0);opacity:1}
-  10%{transform:translate(-4px,2px);opacity:0.8}
-  20%{transform:translate(3px,-3px);opacity:0.9}
-  30%{transform:translate(-2px,4px);opacity:0.7}
-  40%{transform:translate(5px,-1px);opacity:0.85}
-  50%{transform:translate(-3px,3px);opacity:0.6}
-  60%{transform:translate(2px,-4px);opacity:0.9}
-  70%{transform:translate(-5px,1px);opacity:0.75}
-  80%{transform:translate(4px,2px);opacity:0.85}
-  90%{transform:translate(-1px,-3px);opacity:0.7}
-  100%{transform:translate(0,0);opacity:1}
-}
-#glitch-canvas.active{opacity:1;animation:glitch-shift 0.08s step-end infinite}
-.glitch-bar{position:fixed;left:0;right:0;z-index:4;pointer-events:none;height:3px;background:rgba(74,168,255,0.6);opacity:0;transition:opacity 0.05s}
-.glitch-bar.show{opacity:1}
-#static-overlay{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:0;
-  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size:128px;transition:opacity 0.15s;mix-blend-mode:screen}
-#static-overlay.active{opacity:0.18}
-
-/* ── SIGNAL DECODE INTRO ── */
-#signal-decode{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
-  background:var(--bg);pointer-events:none;opacity:0;transition:opacity 0.6s}
-#signal-decode.show{opacity:1;pointer-events:all}
-#signal-decode.fade{opacity:0;pointer-events:none}
-#sd-inner{text-align:center;max-width:560px;padding:0 28px}
-#sd-freq{font-size:0.52rem;letter-spacing:4px;color:rgba(74,168,255,0.4);margin-bottom:20px;text-transform:uppercase}
-#sd-line{font-family:var(--serif);font-style:italic;font-size:1.6rem;color:var(--text);line-height:1.5;min-height:2.4rem}
-#sd-cursor{display:inline-block;width:2px;height:1.2em;background:var(--accent);vertical-align:middle;margin-left:2px;animation:sd-blink 0.7s step-end infinite}
-@keyframes sd-blink{0%,100%{opacity:1}50%{opacity:0}}
-#sd-source{font-size:0.5rem;letter-spacing:3px;color:var(--text3);margin-top:16px;text-transform:uppercase;
-  opacity:0;transition:opacity 0.8s}
-#sd-source.show{opacity:1}
-
-/* ── LOCK SCREEN ── */
-#lockscreen{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
-  background:radial-gradient(ellipse at center,rgba(0,20,60,0.96) 0%,rgba(2,2,10,0.99) 70%);
-  backdrop-filter:blur(6px);transition:opacity 1.2s}
-#lockscreen.hidden{opacity:0;pointer-events:none}
-#lock-box{text-align:center;max-width:500px;padding:0 28px}
-#lock-icon{font-size:3.5rem;margin-bottom:24px;opacity:0.35;
-  animation:lock-breathe 4s ease-in-out infinite;
-  filter:drop-shadow(0 0 24px rgba(74,168,255,0.4))}
-@keyframes lock-breathe{0%,100%{opacity:0.35;transform:scale(1)}50%{opacity:0.55;transform:scale(1.04)}}
-#lock-title{font-family:var(--serif);font-style:italic;font-size:2.6rem;margin-bottom:6px;
-  background:linear-gradient(135deg,#4aa8ff 0%,#a0d4ff 50%,#4aa8ff 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-size:200% 100%;animation:shimmer 5s ease infinite}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-#lock-sub{font-size:0.58rem;letter-spacing:3.5px;color:var(--text3);margin-bottom:36px;text-transform:uppercase}
-#lock-progress-label{font-size:0.6rem;letter-spacing:2px;color:var(--text2);margin-bottom:12px;text-transform:uppercase}
-#lock-bar-wrap{width:100%;height:2px;background:rgba(74,168,255,0.08);border-radius:2px;margin-bottom:10px;
-  position:relative;overflow:hidden}
-#lock-bar-wrap::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(74,168,255,0.3),transparent);
-  animation:bar-scan 3s ease-in-out infinite}
-@keyframes bar-scan{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-#lock-bar{height:100%;background:linear-gradient(90deg,#1a6fff,#4aa8ff,#a0d4ff);border-radius:2px;
-  transition:width 0.8s cubic-bezier(0.16,1,0.3,1);position:relative;z-index:1}
-#lock-count{font-size:0.72rem;color:var(--accent);margin-bottom:28px;letter-spacing:1px}
-#lock-hint{font-size:0.6rem;color:var(--text3);line-height:1.9;font-style:italic;margin-bottom:28px;
-  border-left:2px solid rgba(74,168,255,0.12);padding-left:16px;text-align:left}
-#lock-back{display:inline-block;padding:10px 22px;
-  border:1px solid rgba(74,168,255,0.2);border-radius:6px;color:var(--text3);
-  font-family:var(--mono);font-size:0.6rem;letter-spacing:2px;text-decoration:none;
-  transition:all 0.25s;text-transform:uppercase}
-#lock-back:hover{border-color:var(--accent);color:var(--accent);box-shadow:0 0 20px rgba(74,168,255,0.1)}
-
-
-/* ── INTRO ── */
-#intro{position:fixed;inset:0;z-index:50;background:var(--bg);
-  display:flex;align-items:center;justify-content:center;
-  transition:opacity 1.4s cubic-bezier(0.16,1,0.3,1)}
-#intro.fade{opacity:0;pointer-events:none}
-#intro-inner{text-align:center}
-#intro-text{font-family:var(--serif);font-style:italic;font-size:2.2rem;color:var(--text);
-  opacity:0;animation:intro-rise 2.2s ease forwards 0.4s;line-height:1.3}
-#intro-sub{font-size:0.55rem;letter-spacing:4px;color:var(--text3);margin-top:14px;
-  opacity:0;animation:intro-rise 1.8s ease forwards 1.6s;text-transform:uppercase}
-#intro-line{width:1px;height:0;background:rgba(74,168,255,0.3);margin:20px auto 0;
-  animation:intro-line-grow 1.5s ease forwards 1s}
-@keyframes intro-rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-@keyframes intro-line-grow{to{height:40px}}
-
-/* ── HEADER ── */
-#hd{position:fixed;top:0;left:0;right:0;z-index:10;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 24px;border-bottom:1px solid rgba(74,168,255,0.07);
-  background:rgba(2,2,10,0.75);backdrop-filter:blur(20px)}
-#hd-left{display:flex;align-items:center;gap:14px}
-#hd-logo{font-family:var(--serif);font-size:1rem;color:var(--text);letter-spacing:-0.5px;text-decoration:none}
-#hd-sep{width:1px;height:14px;background:rgba(74,168,255,0.12)}
-#hd-title{font-size:0.56rem;letter-spacing:3px;color:var(--text3);text-transform:uppercase}
-#hd-right{display:flex;align-items:center;gap:16px}
-#hd-status{font-size:0.56rem;letter-spacing:1.5px;color:var(--text3)}
-#hd-status span{color:var(--accent2)}
-#hd-back{font-size:0.58rem;letter-spacing:1.5px;color:var(--text3);text-decoration:none;
-  padding:5px 12px;border:1px solid rgba(74,168,255,0.12);border-radius:4px;
-  transition:all 0.18s;text-transform:uppercase}
-#hd-back:hover{color:var(--text);border-color:rgba(74,168,255,0.35)}
-
-/* ── LORE NODES ── */
-.lore-node{position:fixed;z-index:8;pointer-events:all;cursor:pointer;
-  width:40px;height:40px;transform:translate(-50%,-50%)}
-.lore-node-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  box-shadow:0 0 14px rgba(74,168,255,0.9);transition:all 0.2s}
-.lore-node-ring{position:absolute;inset:0;border-radius:50%;
-  border:1px solid rgba(74,168,255,0.5);animation:node-pulse 2.8s ease-out infinite}
-.lore-node-ring2{position:absolute;inset:-7px;border-radius:50%;
-  border:1px solid rgba(74,168,255,0.18);animation:node-pulse 2.8s ease-out infinite 0.9s}
-.lore-node:hover .lore-node-dot{background:#fff;width:11px;height:11px;
-  box-shadow:0 0 24px rgba(74,168,255,1)}
-.lore-node-label{position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
-  font-size:0.48rem;letter-spacing:2px;color:rgba(200,220,255,0.4);white-space:nowrap;
-  pointer-events:none;text-transform:uppercase;background:rgba(2,2,10,0.6);
-  padding:2px 6px;border-radius:3px}
-@keyframes node-pulse{0%{transform:scale(1);opacity:0.9}100%{transform:scale(2.5);opacity:0}}
-
-/* ── ENCRYPTED NODE (special red glow) ── */
-.lore-node.encrypted .lore-node-dot{background:#ff3333;box-shadow:0 0 14px rgba(255,50,50,0.9)}
-.lore-node.encrypted .lore-node-ring{border-color:rgba(255,50,50,0.5)}
-.lore-node.encrypted .lore-node-ring2{border-color:rgba(255,50,50,0.18)}
-.lore-node.encrypted:hover .lore-node-dot{background:#ff8888;box-shadow:0 0 24px rgba(255,50,50,1)}
-.lore-node.encrypted .lore-node-label{color:rgba(255,150,150,0.6)}
-
-/* ── SIGNAL WORLD NODE ── */
-.lore-node.planet-node .lore-node-dot{background:#44ffaa;box-shadow:0 0 14px rgba(68,255,170,0.9)}
-.lore-node.planet-node .lore-node-ring{border-color:rgba(68,255,170,0.5)}
-.lore-node.planet-node .lore-node-ring2{border-color:rgba(68,255,170,0.18)}
-.lore-node.planet-node:hover .lore-node-dot{background:#aaffdd;box-shadow:0 0 24px rgba(68,255,170,1)}
-.lore-node.planet-node .lore-node-label{color:rgba(100,255,180,0.6)}
-
-/* ── LORE PANEL ── */
-#lore-panel{position:fixed;right:0;top:57px;bottom:0;width:320px;z-index:9;
-  border-left:1px solid rgba(74,168,255,0.07);background:rgba(2,2,10,0.88);
-  backdrop-filter:blur(20px);display:flex;flex-direction:column;
-  transform:translateX(100%);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1)}
-#lore-panel.open{transform:translateX(0)}
-#lore-panel.encrypted-panel{border-left-color:rgba(255,50,50,0.15);background:rgba(10,2,2,0.92)}
-#lore-panel.planet-panel{border-left-color:rgba(68,255,170,0.1);background:rgba(2,10,8,0.92)}
-#lp-header{padding:22px 20px 18px;border-bottom:1px solid rgba(74,168,255,0.07);
-  display:flex;align-items:flex-start;justify-content:space-between}
-#lore-panel.encrypted-panel #lp-header{border-bottom-color:rgba(255,50,50,0.1)}
-#lore-panel.planet-panel #lp-header{border-bottom-color:rgba(68,255,170,0.08)}
-#lp-signal{font-size:0.5rem;letter-spacing:2.5px;color:var(--accent);margin-bottom:6px;text-transform:uppercase}
-#lore-panel.encrypted-panel #lp-signal{color:#ff4444}
-#lore-panel.planet-panel #lp-signal{color:#44ffaa}
-#lp-title{font-family:var(--serif);font-style:italic;font-size:1.2rem;line-height:1.3;max-width:230px}
-#lp-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:0.9rem;
-  padding:6px;transition:color 0.15s;flex-shrink:0;margin-left:8px;margin-top:2px}
-#lp-close:hover{color:var(--text)}
-#lp-body{flex:1;padding:20px;overflow-y:auto;display:flex;flex-direction:column;gap:18px;
-  scrollbar-width:thin;scrollbar-color:rgba(74,168,255,0.12) transparent}
-#lp-body::-webkit-scrollbar{width:3px}
-#lp-body::-webkit-scrollbar-thumb{background:rgba(74,168,255,0.12)}
-.lp-row-label{font-size:0.5rem;letter-spacing:2.5px;color:var(--text3);margin-bottom:6px;text-transform:uppercase}
-.lp-row-val{font-size:0.66rem;color:var(--text2);line-height:1.75}
-#lp-lore-text{font-size:0.7rem;color:var(--text2);line-height:1.95;font-style:italic;
-  border-left:2px solid rgba(74,168,255,0.2);padding-left:14px;min-height:60px}
-#lore-panel.encrypted-panel #lp-lore-text{border-left-color:rgba(255,50,50,0.25);color:rgba(255,180,180,0.8)}
-#lore-panel.planet-panel #lp-lore-text{border-left-color:rgba(68,255,170,0.2);color:rgba(180,255,220,0.8)}
-#lp-code-wrap{margin-top:auto}
-#lp-code{font-size:0.56rem;letter-spacing:2.5px;color:var(--text3);
-  background:rgba(74,168,255,0.03);padding:10px 14px;border-radius:5px;
-  border:1px solid rgba(74,168,255,0.1);cursor:pointer;transition:all 0.2s;text-align:center;
-  display:block;text-transform:uppercase}
-#lp-code:hover{border-color:rgba(74,168,255,0.3);color:var(--accent2)}
-#lore-panel.encrypted-panel #lp-code{background:rgba(255,50,50,0.03);border-color:rgba(255,50,50,0.12);color:rgba(255,120,120,0.5)}
-#lore-panel.encrypted-panel #lp-code:hover{border-color:rgba(255,50,50,0.35);color:#ff4444}
-#lp-progress{height:1px;background:rgba(74,168,255,0.07);margin-top:16px}
-#lp-progress-fill{height:100%;background:linear-gradient(90deg,var(--glow),var(--accent));
-  transition:width 0.5s;width:0%}
-
-/* ── DATA HUD ── */
-#data-hud{position:fixed;left:24px;bottom:64px;z-index:8;
-  display:flex;flex-direction:column;gap:5px;opacity:0;
-  animation:hud-fadein 1s ease forwards 0.5s}
-@keyframes hud-fadein{to{opacity:1}}
-.data-row{display:flex;gap:12px;align-items:baseline;font-size:0.56rem}
-.data-label{color:var(--text3);letter-spacing:1.5px;min-width:108px;text-transform:uppercase}
-.data-val{color:var(--accent2);letter-spacing:0.3px}
-.data-val.pulse{animation:val-pulse 3s ease-in-out infinite}
-@keyframes val-pulse{0%,100%{opacity:1}50%{opacity:0.45}}
-
-/* ── BOTTOM HUD ── */
-#bottom-hud{position:fixed;bottom:0;left:0;right:0;z-index:10;
-  padding:10px 24px;border-top:1px solid rgba(74,168,255,0.05);
-  background:rgba(2,2,10,0.75);backdrop-filter:blur(14px);
-  display:flex;align-items:center;justify-content:space-between;
-  font-size:0.55rem;letter-spacing:1px;color:var(--text3);text-transform:uppercase}
-#bh-node-counter{color:var(--accent)}
-#bh-time{font-variant-numeric:tabular-nums}
-
-/* ── NODE BADGE ── */
-#node-badge{position:fixed;right:24px;bottom:64px;z-index:8;
-  display:flex;align-items:center;gap:8px;font-size:0.56rem;color:var(--text3);
-  opacity:0;animation:hud-fadein 1s ease forwards 0.8s}
-#node-badge-dots{display:flex;gap:5px}
-.nb-dot{width:6px;height:6px;border-radius:50%;background:rgba(74,168,255,0.15);
-  transition:all 0.4s}
-.nb-dot.lit{background:var(--accent);box-shadow:0 0 8px rgba(74,168,255,0.8)}
-.nb-dot.lit-red{background:#ff3333;box-shadow:0 0 8px rgba(255,50,50,0.8)}
-.nb-dot.lit-green{background:#44ffaa;box-shadow:0 0 8px rgba(68,255,170,0.7)}
-
-/* ── TOOLTIP ── */
-#tooltip{position:fixed;z-index:20;pointer-events:none;
-  background:rgba(2,2,10,0.94);border:1px solid rgba(74,168,255,0.2);
-  border-radius:7px;padding:9px 14px;font-size:0.6rem;color:var(--text2);
-  opacity:0;transition:opacity 0.18s;max-width:210px;line-height:1.6;
-  box-shadow:0 4px 24px rgba(0,0,0,0.5)}
-#tooltip.visible{opacity:1}
-
-/* ── ALL NODES ACCESSED ── */
-#all-solved{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;
-  background:rgba(2,2,10,0.92);backdrop-filter:blur(8px);
-  opacity:0;pointer-events:none;transition:opacity 0.8s}
-#all-solved.show{opacity:1;pointer-events:all}
-#as-box{text-align:center;max-width:480px;padding:0 28px}
-#as-icon{font-size:3rem;color:var(--accent);margin-bottom:20px;
-  filter:drop-shadow(0 0 30px rgba(74,168,255,0.5))}
-#as-title{font-family:var(--serif);font-style:italic;font-size:1.8rem;margin-bottom:10px;
-  background:linear-gradient(135deg,#4aa8ff,#fff,#4aa8ff);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
-#as-text{font-size:0.65rem;color:var(--text2);line-height:1.8;margin-bottom:24px;font-style:italic;
-  border-left:2px solid rgba(74,168,255,0.2);padding-left:14px;text-align:left}
-#as-code{font-size:0.6rem;letter-spacing:3px;color:var(--text3);
-  background:rgba(74,168,255,0.04);padding:12px 20px;border-radius:6px;
-  border:1px solid rgba(74,168,255,0.15);cursor:pointer;transition:all 0.2s;display:inline-block}
-#as-code:hover{border-color:rgba(74,168,255,0.4);color:var(--accent)}
-#as-close{display:block;margin-top:20px;font-size:0.58rem;letter-spacing:1.5px;
-  color:var(--text3);cursor:pointer;transition:color 0.2s;text-decoration:none;text-transform:uppercase}
-#as-close:hover{color:var(--text)}
-
-/* ── RESPONSIVE ── */
-@media(max-width:768px){
-  html,body{overflow-x:hidden;max-width:100vw}
-  #lore-panel{width:100%;right:0;top:auto;bottom:52px;height:60vh;
-    border-left:none;border-top:1px solid rgba(74,168,255,0.1);
-    transform:translateY(100%)}
-  #lore-panel.open{transform:translateY(0)}
-  #data-hud{display:none}
-  #hd-status{display:none}
-  #node-badge{display:none}
-  .lore-node-label{display:none}
-  #hd{padding:10px 14px;box-sizing:border-box;max-width:100vw}
-  #hd-title{display:none}
-}
-
-/* ── LUCID PIXEL ICONS ── */
-.lucid-icon {
-  display: inline-block; vertical-align: middle; flex-shrink: 0;
-  image-rendering: pixelated;
-  filter: brightness(0) invert(1) sepia(1) saturate(4) hue-rotate(310deg);
-}
 </style>
-  <link rel="stylesheet" href="/fonts.css">
 </head>
 <body>
 
-<!-- SIGNAL DECODE INTRO -->
 <div id="signal-decode">
   <div id="sd-inner">
     <div id="sd-freq">88.7 FM — CYGNUS X-1 // TRANSMISSION RECEIVED // 2011-03-14</div>
@@ -326,7 +32,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
 </div>
 
-<!-- INTRO -->
 <div id="intro">
   <div id="intro-inner">
     <div id="intro-text">Cygnus X-1</div>
@@ -344,55 +49,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
 <div class="glitch-bar" id="glitch-bar3" style="top:78%"></div>
 <div id="static-overlay"></div>
 
-<!-- GALAXY PHASE -->
 <div id="galaxy-phase">
   <img id="galaxy-img" src="/assets/Cygnus-gifs/galaxy/GalaxyArantus.gif" alt="Galaxy Arantus">
 </div>
 
-<!-- WARP TRANSITION -->
 <canvas id="warp-canvas"></canvas>
 
-<!-- STAR SYSTEM PHASE -->
 <div id="star-phase">
   <div id="star-container">
     <img id="star-img" src="/assets/Cygnus-gifs/galaxy/StarNivora.gif" alt="Star Nivora">
-    <!-- Planets in orbital paths -->
-    <div class="planet-orbit" style="animation-duration:8s">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Kiar-88C.gif" alt="Kiar-88C">
-    </div>
-    <div class="planet-orbit" style="animation-duration:12s;transform:rotate(90deg)">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Ameana.gif" alt="Ameana">
-    </div>
-    <div class="planet-orbit" style="animation-duration:16s;transform:rotate(180deg)">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Ersetu.gif" alt="Ersetu">
-    </div>
-    <div class="planet-orbit" style="animation-duration:20s;transform:rotate(270deg)">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/Lianas.gif" alt="Lianas">
-    </div>
-    <div class="planet-orbit" style="animation-duration:24s;transform:rotate(45deg)">
-      <img class="planet-gif" src="/assets/Cygnus-gifs/planets/ASTRA-383TB.gif" alt="ASTRA-383TB">
-    </div>
   </div>
 </div>
 
-<!-- LOCK SCREEN -->
-<div id="lockscreen">
-  <div id="lock-box">
-    <div id="lock-icon">◎</div>
-    <div id="lock-title">Cygnus X-1</div>
-    <div id="lock-sub">Signal Terminus — Access Restricted</div>
-    <div id="lock-progress-label">Constellation Archive Completion</div>
-    <div id="lock-bar-wrap"><div id="lock-bar" style="width:0%"></div></div>
-    <div id="lock-count"><span id="lock-solved">0</span> / 20 Constellations Solved</div>
-    <div id="lock-hint">
-      The black hole at the heart of Cygnus has been transmitting since before NODE 09 existed.<br><br>
-      Solve all 20 constellation puzzles in the signal archive to receive the final transmission.
-    </div>
-    <a id="lock-back" href="/constellation.html"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Return to Signal Archive</a>
-  </div>
-</div>
-
-<!-- HEADER -->
 <header id="hd">
   <div id="hd-left">
     <a href="/" id="hd-logo">WNCORE</a>
@@ -405,135 +73,304 @@ html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(
   </div>
 </header>
 
-<!-- LORE NODES (8 total — 7 base + 1 encrypted) -->
 <div class="lore-node" id="node-0" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Signal Log</div></div>
-<div class="lore-node" id="node-1" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Obsedia File</div></div>
-<div class="lore-node" id="node-2" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Terminus</div></div>
-<div class="lore-node" id="node-3" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">2007 Signal</div></div>
-<div class="lore-node" id="node-4" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Incident Zero</div></div>
-<div class="lore-node" id="node-5" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Signal_Kage</div></div>
-<div class="lore-node" id="node-6" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Anne</div></div>
-<div class="lore-node planet-node" id="node-planet" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Signal World</div></div>
-<div class="lore-node encrypted" id="node-enc" style="display:none"><div class="lore-node-ring"></div><div class="lore-node-ring2"></div><div class="lore-node-dot"></div><div class="lore-node-label">Encrypted</div></div>
+<div id="lockscreen" style="display:none"></div>
+<div id="lore-panel" style="display:none"></div>
 
-<!-- LORE PANEL -->
-<aside id="lore-panel">
-  <div id="lp-header">
-    <div>
-      <div id="lp-signal">—</div>
-      <div id="lp-title">—</div>
-    </div>
-    <button id="lp-close" aria-label="Close"><img src="/assets/lucid/Exit.png" alt="Close" class="lucid-icon" style="width:11px;height:11px;vertical-align:middle"></button>
-  </div>
-  <div id="lp-body">
-    <div>
-      <div class="lp-row-label">Classification</div>
-      <div class="lp-row-val" id="lp-class">—</div>
-    </div>
-    <div>
-      <div class="lp-row-label">Transmission</div>
-      <div id="lp-lore-text">—</div>
-    </div>
-    <div id="lp-code-wrap">
-      <div class="lp-row-label">Archive Code</div>
-      <div id="lp-code">—</div>
-    </div>
-    <div id="lp-progress"><div id="lp-progress-fill"></div></div>
-  </div>
-</aside>
-
-<!-- DATA HUD -->
-<div id="data-hud">
-  <div class="data-row"><span class="data-label">Object</span><span class="data-val">Cygnus X-1</span></div>
-  <div class="data-row"><span class="data-label">Type</span><span class="data-val">Stellar Black Hole</span></div>
-  <div class="data-row"><span class="data-label">Mass</span><span class="data-val pulse">14.8 ± 1.0 M☉</span></div>
-  <div class="data-row"><span class="data-label">Spin</span><span class="data-val pulse">&gt;0.95 a*</span></div>
-  <div class="data-row"><span class="data-label">Distance</span><span class="data-val">6,070 LY</span></div>
-  <div class="data-row"><span class="data-label">Companion</span><span class="data-val">HDE 226868 (O9.7Iab)</span></div>
-  <div class="data-row"><span class="data-label">Signal World</span><span class="data-val pulse">ORBITING — TX ACTIVE</span></div>
-  <div class="data-row"><span class="data-label">X-Ray Lum.</span><span class="data-val pulse">~2×10³⁷ erg/s</span></div>
-  <div class="data-row"><span class="data-label">NODE 09 Ref</span><span class="data-val">CYG-X1-TERMINUS</span></div>
-  <div class="data-row"><span class="data-label">First Signal</span><span class="data-val" style="color:#ffaa44">2007 — DECODED 2011</span></div>
-</div>
-
-<!-- NODE BADGE -->
-<div id="node-badge">
-  <div id="node-badge-dots"></div>
-  <span id="nb-label">0 / 7 Nodes</span>
-</div>
-
-<!-- BOTTOM HUD -->
-<div id="bottom-hud">
-  <span>Drag to Rotate · Scroll to Zoom</span>
-  <span><span id="bh-node-counter">0</span> / 7 Signal Nodes Accessed</span>
-  <span id="bh-time">T+00:00:00</span>
-</div>
-
-<!-- TOOLTIP -->
-<div id="tooltip"></div>
-
-<!-- ALL NODES OVERLAY -->
-<div id="all-solved">
-  <div id="as-box">
-    <div id="as-icon">◉</div>
-    <div id="as-title">Terminus Reached</div>
-    <div id="as-text">
-      This is where the signal archive ends. Not because we ran out of signals, but because beyond Cygnus X-1 the transmissions become incoherent — not broken, not silent, but structured in a way we cannot parse. NODE 09 has been attempting to decode the terminus transmission since 2013. Progress: indeterminate. The black hole does not transmit. The black hole is what remains after transmission ends. You have mapped all 20 constellations. You have reached the event horizon. What happens next is not in the archive.
-    </div>
-    <div id="as-code">ARG-CYGX1-TERMINUS-FINAL</div>
-    <a href="#" id="as-close" onclick="document.getElementById('all-solved').classList.remove('show');return false"><img src="/assets/lucid/Left-Arrow.png" alt="" class="lucid-icon" style="width:10px;height:10px;vertical-align:middle;margin-right:4px">Continue Observing</a>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/bundle.js" defer></script>
 <script>
-'use strict';
+let cygnusPhase = 'galaxy';
+let sceneStarted = false;
 
-/* ═══════════════════════════════════════════════════════
-   LOCK CHECK
-═══════════════════════════════════════════════════════ */
-const TOTAL_REQUIRED = 20;
-const REQUIRED_IDS = [
-  'orion','cygnus','scorpius','cassiopeia','ursamajor','lyra','perseus',
-  'aquila','gemini','leo','andromeda','draco','centaurus','libra','aquarius',
-  'corvus','piscis','lepus','telescopium','monoceros'
-];
+document.getElementById('galaxy-img').addEventListener('click', () => {
+  if (cygnusPhase !== 'galaxy') return;
+  cygnusPhase = 'warping';
+  startWarpTransition();
+});
 
-function getSolvedCount() {
-  try {
-    const solved = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
-    return { count: solved.length, ids: solved };
-  } catch(e) { return { count: 0, ids: [] }; }
-}
-
-
-function checkLock() {
-  const { count } = getSolvedCount();
-  const pct = Math.min(100, (count / TOTAL_REQUIRED) * 100);
-  document.getElementById('lock-solved').textContent = count;
-  document.getElementById('lock-bar').style.width = pct + '%';
-  if (count >= TOTAL_REQUIRED) {
-    const ls = document.getElementById('lockscreen');
-    ls.style.transition = 'opacity 1.5s';
-    ls.style.opacity = '0';
-    setTimeout(() => {
-      ls.style.display = 'none';
-      runSignalDecodeIntro();
-    }, 1500);
-    return true;
+function startWarpTransition() {
+  const galaxyPhase = document.getElementById('galaxy-phase');
+  const warpCanvas = document.getElementById('warp-canvas');
+  galaxyPhase.classList.add('hidden');
+  warpCanvas.style.display = 'block';
+  
+  const ctx = warpCanvas.getContext('2d');
+  warpCanvas.width = window.innerWidth;
+  warpCanvas.height = window.innerHeight;
+  
+  const centerX = warpCanvas.width / 2;
+  const centerY = warpCanvas.height / 2;
+  const maxDistance = Math.hypot(centerX, centerY);
+  
+  const stars = [];
+  for (let i = 0; i < 150; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = Math.random() * maxDistance * 1.2;
+    stars.push({
+      x: centerX + Math.cos(angle) * dist,
+      y: centerY + Math.sin(angle) * dist,
+      z: Math.random(),
+      size: (1 - Math.random() * 0.5) * 2,
+      speed: 0.3 + Math.random() * 0.4
+    });
   }
-  return false;
+  
+  let warpTime = 0;
+  const warpDuration = 2000;
+  
+  function animateWarp() {
+    warpTime += 16;
+    const progress = Math.min(warpTime / warpDuration, 1);
+    
+    ctx.fillStyle = '#000';
+    ctx.fillRect(0, 0, warpCanvas.width, warpCanvas.height);
+    
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    stars.forEach(star => {
+      const convergence = progress * 0.3;
+      const x = centerX + (star.x - centerX) * (1 - convergence);
+      const y = centerY + (star.y - centerY) * (1 - convergence);
+      const size = star.size * (1 + progress * 3);
+      const opacity = Math.max(0, 1 - progress);
+      
+      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    const glowSize = 100 + progress * 200;
+    const glowOpacity = 0.5 * (1 - progress);
+    ctx.fillStyle = `rgba(255, 180, 100, ${glowOpacity})`;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, glowSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    if (progress < 1) {
+      requestAnimationFrame(animateWarp);
+    } else {
+      warpCanvas.style.display = 'none';
+      cygnusPhase = 'star_system';
+      document.getElementById('star-phase').classList.add('active');
+      
+      if (!sceneStarted) {
+        startScene();
+        sceneStarted = true;
+        setTimeout(() => {
+          if (window._startAnimationLoop) window._startAnimationLoop();
+        }, 100);
+      }
+    }
+  }
+  
+  animateWarp();
 }
 
-checkLock();
+function startScene() {
+  setTimeout(() => {
+    document.getElementById('intro').classList.add('fade');
+    setTimeout(() => { document.getElementById('intro').style.display = 'none'; }, 1500);
+  }, 2000);
 
-/* ═══════════════════════════════════════════════════════
-   SIGNAL DECODE INTRO — typewriter of the 2007 message
-═══════════════════════════════════════════════════════ */
+  if (typeof THREE === 'undefined') { setTimeout(startScene, 200); return; }
+
+  const canvas = document.getElementById('canvas');
+  if (cygnusPhase !== 'star_system') canvas.style.display = 'none';
+  
+  let W = window.innerWidth, H = window.innerHeight;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x02020a, 1);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.25;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(52, W / H, 0.01, 2000);
+  camera.position.set(0, 12, 20);
+  camera.lookAt(0, 0, 0);
+
+  // Background stars
+  const count = 4000;
+  const geo = new THREE.BufferGeometry();
+  const pos = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(2 * Math.random() - 1);
+    const r = 380 + Math.random() * 220;
+    pos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+    pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+    pos[i*3+2] = r * Math.cos(phi);
+  }
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.8 });
+  scene.add(new THREE.Points(geo, starMat));
+
+  // FULL BLACK HOLE SYSTEM
+  const horizonGeo = new THREE.SphereGeometry(1, 48, 48);
+  const horizonMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const horizon = new THREE.Mesh(horizonGeo, horizonMat);
+  scene.add(horizon);
+
+  // Event horizon glow rings
+  const glow1Geo = new THREE.SphereGeometry(1.3, 48, 48);
+  const glow1Mat = new THREE.MeshBasicMaterial({ color: 0xff6644, transparent: true, opacity: 0.4, depthWrite: false });
+  const glow1 = new THREE.Mesh(glow1Geo, glow1Mat);
+  scene.add(glow1);
+
+  const glow2Geo = new THREE.SphereGeometry(1.6, 48, 48);
+  const glow2Mat = new THREE.MeshBasicMaterial({ color: 0xff8822, transparent: true, opacity: 0.2, depthWrite: false });
+  const glow2 = new THREE.Mesh(glow2Geo, glow2Mat);
+  scene.add(glow2);
+
+  // Accretion disk particles
+  const diskParticles = [];
+  for (let i = 0; i < 400; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const radius = 5 + Math.random() * 8;
+    diskParticles.push({
+      angle: angle,
+      radius: radius,
+      speed: 0.008 + Math.random() * 0.012,
+      y: (Math.random() - 0.5) * 1.5,
+      size: Math.random() * 0.15,
+      color: Math.random() > 0.5 ? 0xff8844 : 0xffcc88
+    });
+  }
+
+  // Photon sphere (orbiting photons)
+  const photonPoints = [];
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2;
+    photonPoints.push({
+      angle: angle,
+      radius: 2.2,
+      speed: 0.015
+    });
+  }
+
+  // Relativistic jets
+  const jetGeo = new THREE.ConeGeometry(0.8, 8, 16);
+  const jetMat = new THREE.MeshBasicMaterial({ color: 0x88ccff, transparent: true, opacity: 0.3 });
+  const jetTop = new THREE.Mesh(jetGeo, jetMat);
+  jetTop.position.z = 4;
+  scene.add(jetTop);
+  
+  const jetBottom = new THREE.Mesh(jetGeo, jetMat);
+  jetBottom.position.z = -4;
+  jetBottom.rotation.x = Math.PI;
+  scene.add(jetBottom);
+
+  // ORBITING PLANETS
+  const planetData = [
+    { name: 'Kiar-88C', distance: 13.5, angle: 0, speed: 0.006, size: 0.6, image: '/assets/Cygnus-gifs/planets/Kiar-88C.gif' },
+    { name: 'Ameana', distance: 15, angle: Math.PI * 0.5, speed: 0.004, size: 0.5, image: '/assets/Cygnus-gifs/planets/Ameana.gif' },
+    { name: 'Ersetu', distance: 14, angle: Math.PI, speed: 0.005, size: 0.55, image: '/assets/Cygnus-gifs/planets/Ersetu.gif' },
+    { name: 'Lianas', distance: 16, angle: Math.PI * 1.5, speed: 0.0038, size: 0.45, image: '/assets/Cygnus-gifs/planets/Lianas.gif' },
+    { name: 'ASTRA-383TB', distance: 14.5, angle: Math.PI * 0.25, speed: 0.0055, size: 0.52, image: '/assets/Cygnus-gifs/planets/ASTRA-383TB.gif' }
+  ];
+
+  const textureLoader = new THREE.TextureLoader();
+  const planets = [];
+
+  planetData.forEach(data => {
+    const geometry = new THREE.SphereGeometry(data.size, 32, 32);
+    let material = new THREE.MeshBasicMaterial({ color: 0x8888bb });
+    
+    textureLoader.load(data.image, (texture) => {
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+      planet.material = new THREE.MeshBasicMaterial({ map: texture });
+    });
+
+    const planet = new THREE.Mesh(geometry, material);
+    planet.userData = { distance: data.distance, angle: data.angle, speed: data.speed };
+    scene.add(planet);
+    planets.push(planet);
+  });
+
+  let spherical = { theta: 0.3, phi: 1.3, r: 14 };
+  let isDragging = false, lastMouse = { x: 0, y: 0 };
+
+  function updateCamera() {
+    camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
+    camera.position.y = spherical.r * Math.cos(spherical.phi);
+    camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
+    camera.lookAt(0, 0, 0);
+  }
+
+  canvas.addEventListener('mousedown', (e) => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
+  canvas.addEventListener('mousemove', (e) => {
+    if (isDragging) {
+      spherical.theta += (e.clientX - lastMouse.x) * 0.01;
+      spherical.phi += (e.clientY - lastMouse.y) * 0.01;
+      spherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, spherical.phi));
+      lastMouse = { x: e.clientX, y: e.clientY };
+      updateCamera();
+    }
+  });
+  canvas.addEventListener('mouseup', () => { isDragging = false; });
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    spherical.r = Math.max(5, Math.min(50, spherical.r + e.deltaY * 0.05));
+    updateCamera();
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+
+    if (cygnusPhase === 'star_system' && canvas.style.display === 'none') {
+      canvas.style.display = 'block';
+    }
+
+    // Animate disk particles
+    diskParticles.forEach(p => {
+      p.angle += p.speed;
+    });
+
+    // Animate photon sphere
+    photonPoints.forEach(pp => {
+      pp.angle += pp.speed;
+    });
+
+    // Orbit planets
+    planets.forEach(planet => {
+      planet.userData.angle += planet.userData.speed;
+      planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
+      planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
+      planet.position.y = Math.sin(planet.userData.angle * 0.5) * 2;
+      planet.rotation.x += 0.001;
+      planet.rotation.y += 0.002;
+    });
+
+    // Auto rotate if not dragging
+    if (!isDragging) { spherical.theta += 0.0010; updateCamera(); }
+
+    // Animate jets
+    jetTop.material.opacity = 0.2 + Math.sin(Date.now() * 0.001) * 0.1;
+    jetBottom.material.opacity = 0.2 + Math.sin(Date.now() * 0.001) * 0.1;
+
+    // Animate glows
+    glow1.rotation.z += 0.0005;
+    glow2.rotation.z -= 0.0003;
+
+    renderer.render(scene, camera);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    W = window.innerWidth; H = window.innerHeight;
+    camera.aspect = W / H; camera.updateProjectionMatrix();
+    renderer.setSize(W, H);
+  });
+
+  window._startAnimationLoop = () => {};
+}
+
 function runSignalDecodeIntro() {
   const el = document.getElementById('signal-decode');
   const textEl = document.getElementById('sd-text');
-  const sourceEl = document.getElementById('sd-source');
   el.classList.add('show');
 
   const fullText = '"They lied to us. Send help. Any way possible. No matter who is out there."';
@@ -546,7 +383,7 @@ function runSignalDecodeIntro() {
       i++;
       if (i > fullText.length) {
         clearInterval(interval);
-        sourceEl.classList.add('show');
+        document.getElementById('sd-source').classList.add('show');
         setTimeout(() => {
           el.classList.remove('show');
           el.classList.add('fade');
@@ -560,982 +397,19 @@ function runSignalDecodeIntro() {
   }, 600);
 }
 
-/* ═══════════════════════════════════════════════════════
-   GLITCH ENGINE
-═══════════════════════════════════════════════════════ */
-let glitchActive = false;
-let glitchTimeout = null;
-
-function triggerGlitch(intensity = 1, duration = 1800) {
-  if (glitchActive) return;
-  glitchActive = true;
-
-  const gc = document.getElementById('glitch-canvas');
-  const so = document.getElementById('static-overlay');
-  const bars = ['glitch-bar1','glitch-bar2','glitch-bar3'].map(id => document.getElementById(id));
-
-  gc.classList.add('active');
-  so.classList.add('active');
-
-  // Randomly flash bars
-  const barInterval = setInterval(() => {
-    bars.forEach(b => {
-      b.style.top = Math.random() * 90 + '%';
-      b.classList.toggle('show', Math.random() > 0.5);
-    });
-    // If scene exists, corrupt the black hole visuals
-    if (window._sceneGlitch) window._sceneGlitch(intensity);
-  }, 80);
-
-  glitchTimeout = setTimeout(() => {
-    clearInterval(barInterval);
-    gc.classList.remove('active');
-    so.classList.remove('active');
-    bars.forEach(b => b.classList.remove('show'));
-    if (window._sceneGlitch) window._sceneGlitch(0);
-    glitchActive = false;
-  }, duration);
+function checkLock() {
+  try {
+    const solved = JSON.parse(localStorage.getItem('wncore-constellation-solved') || '[]');
+    if (solved.length >= 20) {
+      runSignalDecodeIntro();
+      return true;
+    }
+  } catch(e) {}
+  return false;
 }
 
-/* ═══════════════════════════════════════════════════════
-   TYPEWRITER FUNCTION
-═══════════════════════════════════════════════════════ */
-function typewriterText(el, text, speed = 18, onDone) {
-  el.textContent = '';
-  let i = 0;
-  const interval = setInterval(() => {
-    el.textContent = text.slice(0, i);
-    i++;
-    if (i > text.length) {
-      clearInterval(interval);
-      if (onDone) onDone();
-    }
-  }, speed);
-}
-
-/* ═══════════════════════════════════════════════════════
-   LORE DATA — 7 nodes + 1 encrypted
-═══════════════════════════════════════════════════════ */
-const LORE_NODES = [
-  {
-    id: 0,
-    signal: 'CYG-X1 // SIGNAL LOG 001',
-    title: 'First Contact',
-    classification: 'Priority Transmission · Obsedia Clearance 5',
-    glitch: false,
-    text: `Cygnus X-1 was the first black hole candidate ever identified — 1964. We did not know what it was. We named it for what it did: emit X-rays. The name preceded the understanding by a decade. NODE 09 has operated on the same principle since its founding. We name things first. Understanding follows, if it comes at all.`,
-    code: 'ARG-CYGX1-001-FIRST'
-  },
-  {
-    id: 1,
-    signal: 'CYG-X1 // OBSEDIA FILE 7-TERMINUS',
-    title: 'The Companion',
-    classification: 'Restricted · Signal_Kage Annotation',
-    glitch: false,
-    text: `HDE 226868 — the blue supergiant companion. It feeds the black hole with stellar wind at a rate of 10⁻⁶ solar masses per year. But the companion is not alone. A world orbits in the system — tidal-locked, atmosphere degrading, surface still transmitting. SIGNAL_KAGE wrote in 2019: "the companion does not know it is being consumed. The world does not know it is dying. Both continue as if nothing has changed. We have not told them."`,
-    code: 'ARG-CYGX1-007-COMPANION'
-  },
-  {
-    id: 2,
-    signal: 'CYG-X1 // TERMINUS BROADCAST',
-    title: 'The Final Signal',
-    classification: 'WNCORE Archive — End Sequence',
-    glitch: true,
-    text: `This is where the signal archive ends. Not because we ran out of signals, but because beyond Cygnus X-1 the transmissions become incoherent — not broken, not silent, but structured in a way we cannot parse. NODE 09 has been attempting to decode the terminus transmission since 2013. Progress: indeterminate. The black hole does not transmit. The black hole is what remains after transmission ends. You have mapped all 20 constellations. You have reached the event horizon. What happens next is not in the archive.`,
-    code: 'ARG-CYGX1-TERMINUS-FINAL'
-  },
-  {
-    id: 3,
-    signal: 'CYG-X1 // ARCHIVE 2007-SIGNAL',
-    title: 'The First Transmission',
-    classification: 'Historical Record · NODE 09 Origin File',
-    glitch: true,
-    text: `2007. An anomalous signal detected originating from the direction of Cygnus. The frequency matched no known natural source. WNCORE did not exist yet — it was a single operator, a receiver, and a notebook. The signal was not decoded until 2011. What it said: "They lied to us. Send help. Any way possible. No matter who is out there." We do not know who sent it. We do not know who they are referring to. We built the entire archive trying to find out. We have not found out.`,
-    code: 'ARG-CYGX1-2007-ORIGIN'
-  },
-  {
-    id: 4,
-    signal: 'CYG-X1 // INCIDENT ZERO — CLASSIFIED',
-    title: 'The First Ghuul',
-    classification: 'OBSEDIA Clearance 6 — Incident Zero',
-    glitch: true,
-    text: `The first confirmed Ghuul was not a stranger. She was someone's mother. Age 68. Survivor of the 1971 independence war. Survivor of Bhola. Survivor of famines and coups and a husband who left when her son was two months old. She survived everything the 20th century threw at her. Two weeks into the outbreak she was bitten — by both a zombie and an infected, simultaneously. The body usually cannot handle it. Hers did. Body turned pure white from skin to hair. Eyes flickering between brown and black. She did not harm her son. She ran. She watched him from a distance for weeks. We do not know if she understood what she had become. We do not know if she still does.`,
-    code: 'ARG-CYGX1-INC0-FIRSTGHUUL'
-  },
-  {
-    id: 5,
-    signal: 'CYG-X1 // SIGNAL_KAGE ANNOTATIONS',
-    title: 'Signal_Kage',
-    classification: 'Internal Correspondence · NODE 09 Archivist',
-    glitch: false,
-    text: `SIGNAL_KAGE is not a name. It is a designation. The archivist who annotated the Cygnus files between 2014 and 2031 used it as a signature on every entry. Gender unknown. Location unknown. The annotations stopped on March 31, 2032 — the same date S arrived in the world of Another Sky. The last annotation reads: "One named Gienah flies south. One named Gienah flies north. Between them: the sky. Between the signals: silence." We do not know if SIGNAL_KAGE disappeared. We do not know if they became something else. We do not know if they were ever only one person.`,
-    code: 'ARG-CYGX1-KAGE-LAST'
-  },
-  {
-    id: 6,
-    signal: 'CYG-X1 // MISSING PERSONS FILE — ANNE',
-    title: 'Anne',
-    classification: 'The Nine — Subject One · Clearance Unknown',
-    glitch: true,
-    text: `Ex-girlfriend. Filipino. Artist, dancer, singer. They met online and dated six years long distance. She broke up with S to focus on her goals — climbing the political structure of her country to fix the corruption she'd seen since childhood. She told him to wait and build himself. He didn't fully understand. When S was transferred to the world of Another Sky on March 31st, every photograph of Anne vanished from his phone and his hard drives. Every conversation — gone. Her face had calmed him during his worst days. Now he can't remember exactly what she looked like. He is looking for her. He does not know yet that looking for Anne and looking for the source of the 2007 signal may be the same search.`,
-    code: 'ARG-CYGX1-ANNE-NINE01'
-  }
-];
-
-// Encrypted node — only revealed after all 7 are accessed
-const ENCRYPTED_NODE = {
-  signal: 'CYG-X1 // ██████ — DECRYPTION PARTIAL',
-  title: '████████',
-  classification: '██████████ — OBSEDIA CLEARANCE ██',
-  glitch: true,
-  text: `The signal from 2007 was not the first. There was an earlier one. 1947. The receiver was a radio operator in a small town in New Mexico. He wrote down what he heard and buried the notebook under his house before anyone could take it. The house is still there. It is currently inside a quarantine zone. The notebook may still be there. What the 1947 signal said is not in any archive we have access to. SIGNAL_KAGE wrote one annotation about it in 2028: "if the 2007 signal was a reply, then what was the question?" We have been asking that since. We have not stopped.`,
-  code: 'ARG-CYGX1-1947-PRIOR'
-};
-
-let nodesAccessed = new Set();
-const TOTAL_NODES = 7;
-
-function updateNodeBadge() {
-  const count = nodesAccessed.size;
-  document.getElementById('bh-node-counter').textContent = count;
-  document.getElementById('nb-label').textContent = count + ' / ' + TOTAL_NODES + ' Nodes';
-  document.getElementById('lp-progress-fill').style.width = ((count / TOTAL_NODES) * 100) + '%';
-
-  // Rebuild dots
-  const dotsEl = document.getElementById('node-badge-dots');
-  dotsEl.innerHTML = '';
-  for (let i = 0; i < TOTAL_NODES; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'nb-dot';
-    dot.id = 'nb-' + i;
-    if (nodesAccessed.has(i)) {
-      const node = LORE_NODES[i];
-      dot.classList.add(node.glitch ? 'lit-red' : 'lit');
-    }
-    dotsEl.appendChild(dot);
-  }
-
-  // Reveal encrypted node after all 7 accessed
-  if (count >= TOTAL_NODES && !nodesAccessed.has('enc')) {
-    setTimeout(() => {
-      const encEl = document.getElementById('node-enc');
-      if (encEl) {
-        encEl.style.display = 'block';
-        // Glitch flash to announce it
-        triggerGlitch(1.5, 1200);
-      }
-    }, 800);
-  }
-
-  if (count >= TOTAL_NODES) {
-    setTimeout(() => document.getElementById('all-solved').classList.add('show'), 1200);
-  }
-}
-
-function openLorePanel(idxOrKey) {
-  const isEnc = idxOrKey === 'enc';
-  const node = isEnc ? ENCRYPTED_NODE : LORE_NODES[idxOrKey];
-  if (!isEnc) nodesAccessed.add(idxOrKey); else nodesAccessed.add('enc');
-  updateNodeBadge();
-
-  const panel = document.getElementById('lore-panel');
-  panel.className = '';
-  if (isEnc) panel.classList.add('encrypted-panel');
-  else if (idxOrKey === 'planet') panel.classList.add('planet-panel');
-  panel.classList.add('open');
-
-  document.getElementById('lp-signal').textContent = node.signal;
-  document.getElementById('lp-title').textContent = node.title;
-  document.getElementById('lp-class').textContent = node.classification;
-
-  // Typewriter reveal
-  const textEl = document.getElementById('lp-lore-text');
-  textEl.textContent = '';
-  typewriterText(textEl, node.text, 16);
-
-  const codeEl = document.getElementById('lp-code');
-  codeEl.textContent = node.code;
-  codeEl.onclick = () => {
-    navigator.clipboard?.writeText(node.code).catch(() => {});
-    const orig = codeEl.textContent;
-    codeEl.textContent = 'Copied ✓';
-    setTimeout(() => codeEl.textContent = orig, 2200);
-  };
-
-  // Trigger glitch on the black hole for incident/past nodes
-  if (node.glitch) {
-    setTimeout(() => triggerGlitch(1, 2200), 300);
-  }
-}
-
-// Planet node
-const PLANET_LORE = {
-  signal: 'CYG-X1 // SIGNAL WORLD — ORBITAL DOSSIER',
-  title: 'The Transmitting World',
-  classification: 'Uncharted Body · Tidal-Locked · Atmosphere: Degrading',
-  glitch: true,
-  text: `Designation: CYG-X1-b (unofficial). No formal catalog entry exists. The world is approximately 0.8 Earth radii, tidal-locked to the black hole. The day side faces the accretion disk permanently — temperature ~340K and rising. The night side is frozen. The terminator zone is where the signal originates.\n\nAtmosphere is being stripped by X-ray flux at a rate that gives it perhaps 600 more years. The surface still transmits. We do not know how old the transmitter is. We do not know who built it. The 2007 and 2011 signals originated from this world's terminator zone at 88.7 MHz. Whatever is transmitting has been doing so for longer than our civilization has existed.\n\nWe have named the signal source on this world "OBSEDIA-TERMINUS." We do not know what it means. We named it first.`,
-  code: 'ARG-CYGX1-WORLD-DOSSIER'
-};
-
-function openPlanetPanel() {
-  nodesAccessed.add('planet');
-  const panel = document.getElementById('lore-panel');
-  panel.className = 'planet-panel open';
-  document.getElementById('lp-signal').textContent = PLANET_LORE.signal;
-  document.getElementById('lp-title').textContent = PLANET_LORE.title;
-  document.getElementById('lp-class').textContent = PLANET_LORE.classification;
-  const textEl = document.getElementById('lp-lore-text');
-  textEl.textContent = '';
-  typewriterText(textEl, PLANET_LORE.text, 14);
-  const codeEl = document.getElementById('lp-code');
-  codeEl.textContent = PLANET_LORE.code;
-  codeEl.onclick = () => {
-    navigator.clipboard?.writeText(PLANET_LORE.code).catch(() => {});
-    const orig = codeEl.textContent;
-    codeEl.textContent = 'Copied ✓';
-    setTimeout(() => codeEl.textContent = orig, 2200);
-  };
-  if (PLANET_LORE.glitch) setTimeout(() => triggerGlitch(0.8, 1600), 300);
-}
-
-document.getElementById('lp-close').addEventListener('click', () => {
-  document.getElementById('lore-panel').classList.remove('open');
-});
-document.getElementById('as-code').addEventListener('click', function() {
-  navigator.clipboard?.writeText(this.textContent).catch(() => {});
-  const orig = this.textContent;
-  this.textContent = 'Copied ✓';
-  setTimeout(() => this.textContent = orig, 2200);
-});
-
-/* ═══════════════════════════════════════════════════════
-   CYGNUS PHASE SYSTEM — Galaxy → Warp → Star System
-═══════════════════════════════════════════════════════ */
-let cygnusPhase = 'galaxy'; // galaxy, warping, star_system
-let sceneStarted = false;
-
-document.getElementById('galaxy-img').addEventListener('click', () => {
-  if (cygnusPhase !== 'galaxy') return;
-  cygnusPhase = 'warping';
-  startWarpTransition();
-});
-
-function startWarpTransition() {
-  const galaxyPhase = document.getElementById('galaxy-phase');
-  const warpCanvas = document.getElementById('warp-canvas');
-  
-  galaxyPhase.classList.add('hidden');
-  warpCanvas.style.display = 'block';
-  
-  const ctx = warpCanvas.getContext('2d');
-  warpCanvas.width = window.innerWidth;
-  warpCanvas.height = window.innerHeight;
-  
-  const centerX = warpCanvas.width / 2;
-  const centerY = warpCanvas.height / 2;
-  const maxDistance = Math.hypot(centerX, centerY);
-  
-  // Generate stars for warp field
-  const stars = [];
-  for (let i = 0; i < 150; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const dist = Math.random() * maxDistance * 1.2;
-    const z = Math.random();
-    stars.push({
-      x: centerX + Math.cos(angle) * dist,
-      y: centerY + Math.sin(angle) * dist,
-      z: z,
-      size: (1 - z) * 2,
-      speed: 0.3 + Math.random() * 0.4
-    });
-  }
-  
-  let warpTime = 0;
-  const warpDuration = 2000; // 2 second warp
-  
-  function animateWarp() {
-    warpTime += 16;
-    const progress = Math.min(warpTime / warpDuration, 1);
-    
-    ctx.fillStyle = '#000';
-    ctx.fillRect(0, 0, warpCanvas.width, warpCanvas.height);
-    
-    // Draw converging stars
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-    stars.forEach(star => {
-      const zProgress = star.z + progress * (1 - star.z);
-      const currentZ = Math.max(0.1, star.z + progress * 0.8);
-      
-      // Converge toward center
-      const convergence = progress * 0.3;
-      const x = centerX + (star.x - centerX) * (1 - convergence);
-      const y = centerY + (star.y - centerY) * (1 - convergence);
-      
-      const size = star.size * (1 + progress * 3);
-      const opacity = Math.max(0, 1 - progress);
-      
-      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    
-    // Central glow
-    const glowSize = 100 + progress * 200;
-    const glowOpacity = 0.5 * (1 - progress);
-    ctx.fillStyle = `rgba(255, 180, 100, ${glowOpacity})`;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, glowSize, 0, Math.PI * 2);
-    ctx.fill();
-    
-    if (progress < 1) {
-      requestAnimationFrame(animateWarp);
-    } else {
-      // Transition to star system
-      warpCanvas.style.display = 'none';
-      cygnusPhase = 'star_system';
-      document.getElementById('star-phase').classList.add('active');
-      
-      // Start the THREE.js scene in background if not started
-      if (!sceneStarted) {
-        startScene();
-        sceneStarted = true;
-        // Scene setup will prepare _startAnimationLoop
-        setTimeout(() => {
-          if (window._startAnimationLoop) {
-            window._startAnimationLoop();
-          }
-        }, 100);
-      } else if (window._startAnimationLoop) {
-        window._startAnimationLoop();
-      }
-    }
-  }
-  
-  animateWarp();
-}
-
-/* ═══════════════════════════════════════════════════════
-   THREE.JS SCENE
-═══════════════════════════════════════════════════════ */
-function startScene() {
-  // Fade out intro
-  setTimeout(() => {
-    document.getElementById('intro').classList.add('fade');
-    setTimeout(() => { document.getElementById('intro').style.display = 'none'; }, 1500);
-  }, 2000);
-
-  if (typeof THREE === 'undefined') { setTimeout(startScene, 200); return; }
-
-  const canvas = document.getElementById('canvas');
-  // Hide canvas during galaxy/warp phases
-  if (cygnusPhase !== 'star_system') {
-    canvas.style.display = 'none';
-  }
-  
-  let W = window.innerWidth, H = window.innerHeight;
-
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-  renderer.setSize(W, H);
-  renderer.setClearColor(0x02020a, 1);
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.25;
-
-  const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(52, W / H, 0.01, 2000);
-
-  /* ─── BACKGROUND STARS ─── */
-  (() => {
-    const count = 4000;
-    const geo = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = 380 + Math.random() * 220;
-      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i*3+2] = r * Math.cos(phi);
-      const b = 0.15 + Math.random() * 0.75;
-      const t = Math.random();
-      col[i*3]   = b * (t > 0.65 ? 0.7 : 0.85);
-      col[i*3+1] = b * (t > 0.65 ? 0.85 : 0.93);
-      col[i*3+2] = b;
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    scene.add(new THREE.Points(geo, new THREE.PointsMaterial({
-      vertexColors: true, size: 0.28, sizeAttenuation: true,
-      transparent: true, opacity: 0.88
-    })));
-  })();
-
-  /* ─── MILKY WAY BAND ─── */
-  (() => {
-    const geo = new THREE.TorusGeometry(290, 65, 10, 90);
-    const mat = new THREE.MeshBasicMaterial({
-      color: 0x07152a, transparent: true, opacity: 0.22,
-      depthWrite: false, side: THREE.DoubleSide
-    });
-    const mesh = new THREE.Mesh(geo, mat);
-    mesh.rotation.x = Math.PI / 2.2;
-    mesh.rotation.z = 0.3;
-    scene.add(mesh);
-  })();
-
-  /* ─── EVENT HORIZON ─── */
-  const horizonMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
-  const horizon = new THREE.Mesh(new THREE.SphereGeometry(1.0, 64, 64), horizonMat);
-  scene.add(horizon);
-
-  /* ─── PHOTON SPHERE ─── */
-  const photonMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.95 });
-  const photon = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.014, 20, 220), photonMat);
-  photon.rotation.x = Math.PI / 2;
-  scene.add(photon);
-  [0.055, 0.10, 0.18].forEach((thickness, i) => {
-    const g = new THREE.Mesh(new THREE.TorusGeometry(1.5, thickness, 8, 220),
-      new THREE.MeshBasicMaterial({ color: [0xbbddff, 0x5599ee, 0x2244aa][i], transparent: true,
-        opacity: [0.35, 0.18, 0.08][i], depthWrite: false }));
-    g.rotation.x = Math.PI / 2;
-    scene.add(g);
-  });
-
-  /* ─── ACCRETION DISK ─── */
-  const diskGroup = new THREE.Group();
-  scene.add(diskGroup);
-  const diskMats = [];
-  [
-    { inner: 1.52, outer: 1.95, color: 0xffffff,  opacity: 0.98 },
-    { inner: 1.88, outer: 2.5,  color: 0xddeeff,  opacity: 0.75 },
-    { inner: 2.3,  outer: 4.0,  color: 0x88bbff,  opacity: 0.45 },
-    { inner: 3.6,  outer: 6.2,  color: 0x3377cc,  opacity: 0.26 },
-    { inner: 5.5,  outer: 8.5,  color: 0x183a60,  opacity: 0.16 },
-    { inner: 7.8,  outer: 11.5, color: 0x0c1e35,  opacity: 0.09 },
-  ].forEach(l => {
-    const mat = new THREE.MeshBasicMaterial({
-      color: l.color, transparent: true, opacity: l.opacity,
-      side: THREE.DoubleSide, depthWrite: false
-    });
-    diskMats.push(mat);
-    diskGroup.add(new THREE.Mesh(new THREE.RingGeometry(l.inner, l.outer, 160, 10), mat));
-  });
-
-  // Hot inner ring
-  const hotRingGeo = new THREE.RingGeometry(1.51, 1.88, 300, 4);
-  const hotRingMat = new THREE.MeshBasicMaterial({ color: 0xeef8ff, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false });
-  (() => {
-    const posAttr = hotRingGeo.attributes.position;
-    for (let i = 0; i < posAttr.count; i++) {
-      const x = posAttr.getX(i), y = posAttr.getY(i);
-      const angle = Math.atan2(y, x);
-      const wobble = 1 + 0.006 * Math.sin(angle * 14 + 0.3);
-      posAttr.setX(i, x * wobble);
-      posAttr.setY(i, y * wobble);
-    }
-    posAttr.needsUpdate = true;
-  })();
-  diskGroup.add(new THREE.Mesh(hotRingGeo, hotRingMat));
-
-  /* ─── DISK PARTICLES ─── */
-  (() => {
-    const count = 18000;
-    const geo = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 3);
-    const col = new Float32Array(count * 3);
-    const origPos = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const r = 1.6 + Math.pow(Math.random(), 0.45) * 10.0;
-      const angle = Math.random() * Math.PI * 2;
-      const height = (Math.random() - 0.5) * 0.10 * (r / 3.5);
-      pos[i*3] = r * Math.cos(angle); pos[i*3+1] = height; pos[i*3+2] = r * Math.sin(angle);
-      origPos[i*3] = pos[i*3]; origPos[i*3+1] = pos[i*3+1]; origPos[i*3+2] = pos[i*3+2];
-      const t = Math.min(1, (r - 1.6) / 9.5);
-      col[i*3] = 0.65 + (1-t)*0.35; col[i*3+1] = 0.78 + (1-t)*0.22; col[i*3+2] = 1.0;
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    const pts = new THREE.Points(geo, new THREE.PointsMaterial({
-      vertexColors: true, sizeAttenuation: true, size: 0.038, transparent: true, opacity: 0.55, depthWrite: false
-    }));
-    scene.add(pts);
-    scene._diskParticles = { geo, origPos, count };
-  })();
-
-  /* ─── GRAVITATIONAL LENSING ─── */
-  [
-    { r: 1.08, color: 0x4477bb, op: 0.28 },
-    { r: 1.20, color: 0x2a5599, op: 0.16 },
-    { r: 1.34, color: 0x142855, op: 0.09 },
-    { r: 1.45, color: 0x061428, op: 0.05 },
-  ].forEach(({ r, color, op }) => {
-    scene.add(new THREE.Mesh(new THREE.SphereGeometry(r, 48, 48),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false, side: THREE.BackSide })));
-  });
-  scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.04, 64, 64),
-    new THREE.MeshBasicMaterial({ color: 0x99ccff, transparent: true, opacity: 0.42, depthWrite: false, side: THREE.BackSide })));
-
-  /* ─── RELATIVISTIC JETS ─── */
-  (() => {
-    [1, -1].forEach(dir => {
-      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 0.34, 9, 36, 1, true),
-        new THREE.MeshBasicMaterial({ color: 0x3388ff, transparent: true, opacity: 0.10, depthWrite: false, side: THREE.DoubleSide }));
-      mesh.position.y = dir * 4.5;
-      mesh.rotation.z = dir > 0 ? 0 : Math.PI;
-      scene.add(mesh);
-      const coreMesh = new THREE.Mesh(new THREE.CylinderGeometry(0, 0.08, 8, 20, 1, true),
-        new THREE.MeshBasicMaterial({ color: 0xaaddff, transparent: true, opacity: 0.55, depthWrite: false }));
-      coreMesh.position.y = dir * 4;
-      coreMesh.rotation.z = dir > 0 ? 0 : Math.PI;
-      scene.add(coreMesh);
-    });
-    const jCount = 4000;
-    const jGeo = new THREE.BufferGeometry();
-    const jPos = new Float32Array(jCount * 3);
-    const origJPos = new Float32Array(jCount * 3);
-    for (let i = 0; i < jCount; i++) {
-      const t = Math.random(); const dir = Math.random() > 0.5 ? 1 : -1;
-      const spread = t * 0.35; const angle = Math.random() * Math.PI * 2;
-      jPos[i*3] = Math.cos(angle)*spread*0.5; jPos[i*3+1] = dir*(1.05+t*7.8); jPos[i*3+2] = Math.sin(angle)*spread*0.5;
-      origJPos[i*3] = jPos[i*3]; origJPos[i*3+1] = jPos[i*3+1]; origJPos[i*3+2] = jPos[i*3+2];
-    }
-    jGeo.setAttribute('position', new THREE.BufferAttribute(jPos, 3));
-    scene._jetParticles = { geo: jGeo, origPos: origJPos, count: jCount };
-    scene.add(new THREE.Points(jGeo, new THREE.PointsMaterial({
-      color: 0x77bbff, size: 0.035, sizeAttenuation: true, transparent: true, opacity: 0.45, depthWrite: false
-    })));
-  })();
-
-  /* ─── WARP RINGS ─── */
-  for (let i = 0; i < 6; i++) {
-    const mesh = new THREE.Mesh(new THREE.TorusGeometry(1.85 + i * 0.22, 0.006 - i * 0.0008, 8, 280),
-      new THREE.MeshBasicMaterial({ color: 0x5588bb, transparent: true, opacity: 0.12 - i * 0.016, depthWrite: false }));
-    mesh.rotation.x = Math.PI / 2;
-    scene.add(mesh);
-  }
-
-  /* ─── DOPPLER BRIGHTENING ─── */
-  diskGroup.add(new THREE.Mesh(new THREE.RingGeometry(1.55, 3.2, 120, 4, -0.6, 1.2),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false })));
-
-  /* ─── COMPANION STAR HDE 226868 ─── */
-  const companionGroup = new THREE.Group();
-  scene.add(companionGroup);
-  (() => {
-    // Blue supergiant — large, hot, blue-white
-    const starGeo = new THREE.SphereGeometry(1.1, 32, 32);
-    const starMat = new THREE.MeshBasicMaterial({ color: 0x88ccff });
-    const star = new THREE.Mesh(starGeo, starMat);
-    companionGroup.add(star);
-
-    // Outer atmosphere glow
-    [
-      { r: 1.3, color: 0x5599ee, op: 0.22 },
-      { r: 1.55, color: 0x2255aa, op: 0.12 },
-      { r: 1.9, color: 0x112244, op: 0.06 },
-    ].forEach(({ r, color, op }) => {
-      companionGroup.add(new THREE.Mesh(new THREE.SphereGeometry(r, 24, 24),
-        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: op, depthWrite: false, side: THREE.BackSide })));
-    });
-
-    // Stellar wind particles flowing toward black hole
-    const windCount = 3000;
-    const windGeo = new THREE.BufferGeometry();
-    const windPos = new Float32Array(windCount * 3);
-    const windOrigPos = new Float32Array(windCount * 3);
-    for (let i = 0; i < windCount; i++) {
-      // Start near companion surface, spread outward
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = 1.2 + Math.random() * 8;
-      windPos[i*3] = r * Math.sin(phi) * Math.cos(theta);
-      windPos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      windPos[i*3+2] = r * Math.cos(phi);
-      windOrigPos[i*3] = windPos[i*3];
-      windOrigPos[i*3+1] = windPos[i*3+1];
-      windOrigPos[i*3+2] = windPos[i*3+2];
-    }
-    windGeo.setAttribute('position', new THREE.BufferAttribute(windPos, 3));
-    const windPts = new THREE.Points(windGeo, new THREE.PointsMaterial({
-      color: 0x88ccff, size: 0.04, sizeAttenuation: true, transparent: true, opacity: 0.35, depthWrite: false
-    }));
-    companionGroup.add(windPts);
-    scene._companionWind = { geo: windGeo, origPos: windOrigPos, count: windCount, pts: windPts };
-  })();
-
-  // Companion orbit
-  const COMPANION_ORBIT = 22;
-  let companionAngle = 0.6;
-
-  /* ─── SIGNAL WORLD ─── */
-  const planetGroup = new THREE.Group();
-  scene.add(planetGroup);
-  let planetPulse, planetAtmoMat, planetGlitchGeo, planetGlitchPts, planetDebris;
-  let pulsePhase = 0, glitchTimer = 0;
-  (() => {
-    const planetMat = new THREE.MeshBasicMaterial({ color: 0x1a3a4a });
-    const planet = new THREE.Mesh(new THREE.SphereGeometry(0.38, 48, 48), planetMat);
-    planetGroup.add(planet);
-    [{ lat:0.6,lon:1.2,s:0.18,c:0x0d2218 },{ lat:-0.3,lon:2.8,s:0.14,c:0x0a1e14 },
-     { lat:0.9,lon:4.5,s:0.12,c:0x0c2016 },{ lat:-0.7,lon:0.4,s:0.10,c:0x091c12 },
-     { lat:0.2,lon:3.6,s:0.16,c:0x0b1f15 }].forEach(({ lat, lon, s, c }) => {
-      const patch = new THREE.Mesh(new THREE.SphereGeometry(s, 8, 8), new THREE.MeshBasicMaterial({ color: c }));
-      patch.position.set(0.39*Math.cos(lat)*Math.cos(lon), 0.39*Math.sin(lat), 0.39*Math.cos(lat)*Math.sin(lon));
-      planet.add(patch);
-    });
-
-    planetAtmoMat = new THREE.MeshBasicMaterial({ color: 0x1a5544, transparent: true, opacity: 0.18, depthWrite: false, side: THREE.BackSide });
-    planetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.44, 32, 32), planetAtmoMat));
-    planetGroup.add(new THREE.Mesh(new THREE.SphereGeometry(0.52, 24, 24),
-      new THREE.MeshBasicMaterial({ color: 0x0a2a20, transparent: true, opacity: 0.08, depthWrite: false, side: THREE.BackSide })));
-
-    const debrisMat = new THREE.MeshBasicMaterial({ color: 0x336655, transparent: true, opacity: 0.28, depthWrite: false });
-    planetDebris = new THREE.Mesh(new THREE.TorusGeometry(0.55, 0.018, 6, 80), debrisMat);
-    planetDebris.rotation.x = Math.PI / 2 + 0.3;
-    planetGroup.add(planetDebris);
-
-    const pulseMat = new THREE.MeshBasicMaterial({ color: 0x44ffaa, transparent: true, opacity: 0.0, depthWrite: false });
-    planetPulse = new THREE.Mesh(new THREE.TorusGeometry(0.6, 0.006, 6, 60), pulseMat);
-    planetPulse.rotation.x = Math.PI / 2;
-    planetGroup.add(planetPulse);
-    scene._pulseMat = pulseMat;
-
-    const glitchN = 200;
-    planetGlitchGeo = new THREE.BufferGeometry();
-    const gpos = new Float32Array(glitchN * 3);
-    for (let i = 0; i < glitchN; i++) {
-      const theta = Math.random()*Math.PI*2, phi = Math.acos(2*Math.random()-1), r = 0.40+Math.random()*0.04;
-      gpos[i*3]=r*Math.sin(phi)*Math.cos(theta); gpos[i*3+1]=r*Math.sin(phi)*Math.sin(theta); gpos[i*3+2]=r*Math.cos(phi);
-    }
-    planetGlitchGeo.setAttribute('position', new THREE.BufferAttribute(gpos, 3));
-    planetGlitchPts = new THREE.Points(planetGlitchGeo, new THREE.PointsMaterial({
-      color: 0x55ffbb, size: 0.012, sizeAttenuation: true, transparent: true, opacity: 0.6, depthWrite: false
-    }));
-    planetGroup.add(planetGlitchPts);
-    planet.userData.isPlanet = true;
-  })();
-
-  const PLANET_ORBIT_R = 13.5;
-  const PLANET_ORBIT_SPEED = 0.006;
-  let planetOrbitAngle = 1.2;
-
-  /* ─── GLITCH ENGINE — scene side ─── */
-  let glitchIntensity = 0;
-  window._sceneGlitch = (intensity) => {
-    glitchIntensity = intensity;
-    // Corrupt horizon color
-    if (intensity > 0) {
-      const r = Math.random(); const g = Math.random() * 0.1;
-      horizonMat.color.setRGB(r * 0.15 * intensity, g * intensity, r * 0.25 * intensity);
-      // Jitter disk materials
-      diskMats.forEach(m => {
-        m.opacity = Math.random() * intensity * 0.4 + 0.05;
-      });
-      photonMat.color.setRGB(0.8 + Math.random()*0.2, 0.4 + Math.random()*0.3, 0.2 + Math.random()*0.5);
-      photonMat.opacity = 0.5 + Math.random() * 0.5;
-    } else {
-      // Restore
-      horizonMat.color.setHex(0x000000);
-      diskMats.forEach((m, i) => {
-        m.opacity = [0.98, 0.75, 0.45, 0.26, 0.16, 0.09, 0.9][i];
-      });
-      photonMat.color.setHex(0xffffff);
-      photonMat.opacity = 0.95;
-    }
-  };
-
-  /* ─── ORBIT CONTROLS ─── */
-  let spherical = { theta: 0.3, phi: 1.3, r: 14 };
-  let isDragging = false, lastMouse = { x: 0, y: 0 };
-  if ('ontouchstart' in window) spherical.r = 11;
-
-  function updateCamera() {
-    camera.position.x = spherical.r * Math.sin(spherical.phi) * Math.sin(spherical.theta);
-    camera.position.y = spherical.r * Math.cos(spherical.phi);
-    camera.position.z = spherical.r * Math.sin(spherical.phi) * Math.cos(spherical.theta);
-    camera.lookAt(0, 0, 0);
-  }
-  updateCamera();
-
-  canvas.addEventListener('mousedown', e => { isDragging = true; lastMouse = { x: e.clientX, y: e.clientY }; });
-  window.addEventListener('mouseup', () => { isDragging = false; });
-  window.addEventListener('mousemove', e => {
-    if (!isDragging) return;
-    spherical.theta -= (e.clientX - lastMouse.x) * 0.006;
-    spherical.phi = Math.max(0.25, Math.min(Math.PI - 0.25, spherical.phi + (e.clientY - lastMouse.y) * 0.005));
-    lastMouse = { x: e.clientX, y: e.clientY };
-    updateCamera();
-  });
-  canvas.addEventListener('wheel', e => {
-    spherical.r = Math.max(4, Math.min(30, spherical.r + e.deltaY * 0.02));
-    updateCamera();
-  }, { passive: true });
-
-  let lastTouchDist = 0;
-  canvas.addEventListener('touchstart', e => {
-    if (e.touches.length === 1) { isDragging = true; lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }
-    if (e.touches.length === 2) {
-      isDragging = false;
-      const dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
-      lastTouchDist = Math.sqrt(dx*dx + dy*dy);
-    }
-  }, { passive: true });
-  canvas.addEventListener('touchmove', e => {
-    if (e.touches.length === 1 && isDragging) {
-      spherical.theta -= (e.touches[0].clientX - lastMouse.x) * 0.006;
-      spherical.phi = Math.max(0.25, Math.min(Math.PI - 0.25, spherical.phi + (e.touches[0].clientY - lastMouse.y) * 0.005));
-      lastMouse = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-      updateCamera();
-    }
-    if (e.touches.length === 2) {
-      const dx = e.touches[0].clientX - e.touches[1].clientX, dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      spherical.r = Math.max(4, Math.min(28, spherical.r - (dist - lastTouchDist) * 0.04));
-      lastTouchDist = dist;
-      updateCamera();
-    }
-  }, { passive: true });
-
-  /* ─── LORE NODE 3D POSITIONS ─── */
-  const nodeData = [
-    { angle: 0.8,  radius: 5.5, height:  0.9  }, // 0 — first contact
-    { angle: 2.5,  radius: 4.1, height: -1.1  }, // 1 — companion
-    { angle: 4.3,  radius: 7.0, height:  0.3  }, // 2 — terminus
-    { angle: 1.6,  radius: 9.0, height:  2.0  }, // 3 — 2007 signal
-    { angle: 3.3,  radius: 6.2, height: -1.8  }, // 4 — incident zero
-    { angle: 5.5,  radius: 5.0, height:  1.4  }, // 5 — signal_kage
-    { angle: 0.2,  radius: 7.8, height: -0.6  }, // 6 — anne
-  ];
-  // Encrypted node — near edge of disk
-  const encNodeData = { angle: 2.9, radius: 10.5, height: 0.8 };
-  // Planet node — follows planet (updated each frame)
-  let planetNodeScreen = { x: -999, y: -999, visible: false };
-
-  const tooltip = document.getElementById('tooltip');
-  function showTooltip(text, x, y) { tooltip.textContent = text; tooltip.style.left = (x+16)+'px'; tooltip.style.top = (y-10)+'px'; tooltip.classList.add('visible'); }
-  function hideTooltip() { tooltip.classList.remove('visible'); }
-
-  const nodeLabels = [
-    'Signal Log 001 — First Contact',
-    'Obsedia File 7 — The Companion',
-    'Terminus Broadcast',
-    '2007 — The First Transmission',
-    'Incident Zero — The First Ghuul',
-    'Signal_Kage — Last Annotations',
-    'Anne — The Nine, Subject One'
-  ];
-
-  for (let i = 0; i < 7; i++) {
-    const el = document.getElementById('node-' + i);
-    el.addEventListener('click', () => openLorePanel(i));
-    el.addEventListener('mouseenter', e => showTooltip(nodeLabels[i], e.clientX, e.clientY));
-    el.addEventListener('mouseleave', hideTooltip);
-  }
-  const encEl = document.getElementById('node-enc');
-  encEl.addEventListener('click', () => openLorePanel('enc'));
-  encEl.addEventListener('mouseenter', e => showTooltip('ENCRYPTED — CLEARANCE UNKNOWN', e.clientX, e.clientY));
-  encEl.addEventListener('mouseleave', hideTooltip);
-
-  const planetNodeEl = document.getElementById('node-planet');
-  planetNodeEl.addEventListener('click', openPlanetPanel);
-  planetNodeEl.addEventListener('mouseenter', e => showTooltip('Signal World — CYG-X1-b', e.clientX, e.clientY));
-  planetNodeEl.addEventListener('mouseleave', hideTooltip);
-
-  function updateNodePositions() {
-    const cW = window.innerWidth, cH = window.innerHeight;
-
-    // Static lore nodes
-    nodeData.forEach((nd, i) => {
-      const wp = new THREE.Vector3(nd.radius * Math.cos(nd.angle), nd.height, nd.radius * Math.sin(nd.angle));
-      wp.project(camera);
-      const x = (wp.x * 0.5 + 0.5) * cW, y = (-wp.y * 0.5 + 0.5) * cH;
-      const el = document.getElementById('node-' + i);
-      if (wp.z < 1) { el.style.display = 'block'; el.style.left = x+'px'; el.style.top = y+'px'; }
-      else el.style.display = 'none';
-    });
-
-    // Encrypted node
-    if (nodesAccessed.size >= TOTAL_NODES) {
-      const ep = new THREE.Vector3(encNodeData.radius * Math.cos(encNodeData.angle), encNodeData.height, encNodeData.radius * Math.sin(encNodeData.angle));
-      ep.project(camera);
-      const x = (ep.x * 0.5 + 0.5) * cW, y = (-ep.y * 0.5 + 0.5) * cH;
-      if (ep.z < 1) { encEl.style.left = x+'px'; encEl.style.top = y+'px'; }
-    }
-
-    // Planet node — follows planet in world space
-    const pp = planetGroup.position.clone();
-    pp.project(camera);
-    const px = (pp.x * 0.5 + 0.5) * cW, py = (-pp.y * 0.5 + 0.5) * cH;
-    if (pp.z < 1) {
-      planetNodeEl.style.display = 'block';
-      planetNodeEl.style.left = (px + 20) + 'px'; // offset slightly from center
-      planetNodeEl.style.top = (py - 30) + 'px';
-    } else {
-      planetNodeEl.style.display = 'none';
-    }
-  }
-
-  /* ─── ANIMATION LOOP ─── */
-  let time = 0;
-
-  function animate() {
-    requestAnimationFrame(animate);
-    time += 0.005;
-
-    if (!isDragging) { spherical.theta += 0.0010; updateCamera(); }
-
-    diskGroup.rotation.y = time * 0.16;
-
-    // Disk particles Keplerian
-    if (scene._diskParticles) {
-      const { geo, origPos, count } = scene._diskParticles;
-      const pPos = geo.attributes.position.array;
-      if (!scene._diskAngles) {
-        scene._diskAngles = new Float32Array(count);
-        for (let i = 0; i < count; i++) scene._diskAngles[i] = Math.atan2(origPos[i*3+2], origPos[i*3]);
-      }
-      for (let i = 0; i < count; i++) {
-        const x0 = origPos[i*3], z0 = origPos[i*3+2], r = Math.sqrt(x0*x0+z0*z0);
-        const speed = 0.007 / Math.max(0.5, r * 0.38);
-        scene._diskAngles[i] += speed;
-        pPos[i*3] = r * Math.cos(scene._diskAngles[i]);
-        pPos[i*3+2] = r * Math.sin(scene._diskAngles[i]);
-      }
-      geo.attributes.position.needsUpdate = true;
-    }
-
-    // Jet particles
-    if (scene._jetParticles) {
-      const { geo, origPos, count } = scene._jetParticles;
-      const pPos = geo.attributes.position.array;
-      if (!scene._jetT) scene._jetT = new Float32Array(count).map(() => Math.random());
-      for (let i = 0; i < count; i++) {
-        scene._jetT[i] += 0.004;
-        if (scene._jetT[i] > 1) scene._jetT[i] -= 1;
-        const t = scene._jetT[i], dir = origPos[i*3+1] > 0 ? 1 : -1;
-        const angle = Math.atan2(origPos[i*3+2], origPos[i*3]) + time * 0.3 * dir;
-        const r = Math.sqrt(origPos[i*3]*origPos[i*3]+origPos[i*3+2]*origPos[i*3+2]);
-        pPos[i*3] = r * Math.cos(angle);
-        pPos[i*3+1] = dir * (1.05 + t * 7.8);
-        pPos[i*3+2] = r * Math.sin(angle);
-      }
-      geo.attributes.position.needsUpdate = true;
-    }
-
-    // Companion star orbit
-    companionAngle += 0.0008;
-    companionGroup.position.set(
-      COMPANION_ORBIT * Math.cos(companionAngle),
-      Math.sin(companionAngle * 0.3) * 1.5,
-      COMPANION_ORBIT * Math.sin(companionAngle)
-    );
-    companionGroup.lookAt(0, 0, 0);
-
-    // Stellar wind — particles stream from companion toward black hole
-    if (scene._companionWind) {
-      const { geo, count } = scene._companionWind;
-      const pPos = geo.attributes.position.array;
-      if (!scene._windT) scene._windT = new Float32Array(count).map(() => Math.random());
-      for (let i = 0; i < count; i++) {
-        scene._windT[i] += 0.003;
-        if (scene._windT[i] > 1) scene._windT[i] = 0;
-        const t = scene._windT[i];
-        // Lerp from companion position toward black hole (origin)
-        const cx = companionGroup.position.x, cy = companionGroup.position.y, cz = companionGroup.position.z;
-        const spread = (1 - t) * 1.8;
-        const rx = (Math.random() - 0.5) * spread, ry = (Math.random() - 0.5) * spread * 0.4, rz = (Math.random() - 0.5) * spread;
-        pPos[i*3]   = cx * (1 - t) + rx;
-        pPos[i*3+1] = cy * (1 - t) + ry;
-        pPos[i*3+2] = cz * (1 - t) + rz;
-      }
-      geo.attributes.position.needsUpdate = true;
-    }
-
-    // Planet orbit
-    planetOrbitAngle += PLANET_ORBIT_SPEED;
-    pulsePhase += 0.04;
-    glitchTimer += 0.005;
-    const px = PLANET_ORBIT_R * Math.cos(planetOrbitAngle);
-    const pz = PLANET_ORBIT_R * 0.75 * Math.sin(planetOrbitAngle);
-    const py2 = Math.sin(planetOrbitAngle * 0.7) * PLANET_ORBIT_R * 0.15 * Math.sin(0.28);
-    planetGroup.position.set(px, py2, pz);
-    planetGroup.lookAt(0, 0, 0);
-
-    // Pulse
-    const pScale = 1 + (pulsePhase % (Math.PI * 2)) / (Math.PI * 0.4);
-    const pOp = Math.max(0, 0.5 - (pulsePhase % (Math.PI * 2)) / (Math.PI * 1.2));
-    planetPulse.scale.setScalar(Math.min(pScale, 3.5));
-    if (scene._pulseMat) scene._pulseMat.opacity = pOp * 0.55;
-
-    // Planet glitch
-    if (glitchTimer > 0.08) {
-      glitchTimer = 0;
-      planetGlitchPts.material.opacity = Math.random() > 0.3 ? 0.6 + Math.random() * 0.4 : 0.0;
-      const arr = planetGlitchGeo.attributes.position.array;
-      const jc = Math.floor(Math.random() * 8);
-      for (let i = 0; i < jc; i++) {
-        const idx = Math.floor(Math.random() * 200) * 3;
-        arr[idx]   += (Math.random()-0.5)*0.06;
-        arr[idx+1] += (Math.random()-0.5)*0.06;
-        arr[idx+2] += (Math.random()-0.5)*0.06;
-      }
-      planetGlitchGeo.attributes.position.needsUpdate = true;
-    }
-    if (planetAtmoMat) planetAtmoMat.opacity = 0.14 + Math.sin(pulsePhase * 2.3) * 0.06;
-    if (planetDebris) planetDebris.rotation.z += 0.002;
-
-    // Scene-level glitch effect — subtle continuous corruption when glitchIntensity > 0
-    if (glitchIntensity > 0) {
-      horizon.position.set(
-        (Math.random()-0.5)*0.08*glitchIntensity,
-        (Math.random()-0.5)*0.08*glitchIntensity,
-        (Math.random()-0.5)*0.08*glitchIntensity
-      );
-      diskGroup.rotation.x = (Math.random()-0.5)*0.04*glitchIntensity;
-    } else {
-      horizon.position.set(0,0,0);
-      diskGroup.rotation.x = 0;
-    }
-
-    updateNodePositions();
-    
-    // Show canvas when in star_system phase
-    if (cygnusPhase === 'star_system' && canvas.style.display === 'none') {
-      canvas.style.display = 'block';
-    }
-    
-    renderer.render(scene, camera);
-  }
-  
-  // Start animation loop only if already in star_system phase
-  if (cygnusPhase === 'star_system') {
-    animate();
-  } else {
-    // Otherwise, wait for phase change
-    window._startAnimationLoop = animate;
-  }
-
-  window.addEventListener('resize', () => {
-    W = window.innerWidth; H = window.innerHeight;
-    camera.aspect = W / H; camera.updateProjectionMatrix();
-    renderer.setSize(W, H);
-  });
-}
-
-/* ─── MISSION TIMER ─── */
-const startTime = Date.now();
-setInterval(() => {
-  const s = Math.floor((Date.now() - startTime) / 1000);
-  const h = String(Math.floor(s / 3600)).padStart(2, '0');
-  const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
-  const sec = String(s % 60).padStart(2, '0');
-  const el = document.getElementById('bh-time');
-  if (el) el.textContent = `T+${h}:${m}:${sec}`;
-}, 1000);
+checkLock();
 </script>
-  <script src="/font-glitch.js" defer></script>
+<script src="/font-glitch.js" defer></script>
 </body>
 </html>
