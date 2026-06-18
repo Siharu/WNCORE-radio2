@@ -4218,7 +4218,6 @@ document.getElementById('node-modal-close').addEventListener('click', () => {
 /* ─────────────────────────────────────────────────
    MOBILE LANDSCAPE DETECTION
 ───────────────────────────────────────────────────── */
-const isMobile = () => window.innerWidth < 768;
 
 function checkOrientation() {
   if (!isMobile()) return;
@@ -7245,6 +7244,7 @@ document.querySelectorAll && (()=>{
   
   const behaviorModes = Object.values(CAT_BEHAVIORS);
   const selectedBehavior = behaviorModes[Math.floor(Math.random() * behaviorModes.length)];
+  window.selectedBehavior = selectedBehavior; // Make globally accessible
   let glitchParticles = [];
   let virusSpread = [];
   
@@ -7779,13 +7779,99 @@ document.querySelectorAll && (()=>{
 
 <script>
 // Log which cat behavior was activated (for user awareness if desired)
-console.log(`%c[ARCHIVE] Cat behavior mode: ${selectedBehavior}`, 'color: #ff6644; font-family: monospace; font-size: 12px; font-weight: bold;');
+const behaviorText = '[ARCHIVE] Cat behavior mode: ' + (window.selectedBehavior || 'unknown');
+console.log('%c' + behaviorText, 'color: #ff6644; font-family: monospace; font-size: 12px; font-weight: bold;');
 
-if (selectedBehavior === 'glitch_break') {
+if (window.selectedBehavior === 'glitch_break') {
   console.log('%c⚠️ Flowchart destabilization detected. Node coherence compromised.', 'color: #ff6644; font-family: monospace;');
-} else if (selectedBehavior === 'virus') {
+} else if (window.selectedBehavior === 'virus') {
   console.log('%c⚠️ Chromatic anomaly spreading through nodes. Veil integrity degrading.', 'color: #00ffff; font-family: monospace;');
-} else if (selectedBehavior === 'philosophy') {
+} else if (window.selectedBehavior === 'philosophy') {
   console.log('%c... being a cat isn\'t so bad.', 'color: #8ab4d4; font-family: monospace; font-style: italic;');
 }
+
+/* ── MOBILE SIGNAL CUBE TOGGLE ── */
+(function(){
+  const cubeWrap = document.getElementById('signal-cube-wrap');
+  if (!cubeWrap) return;
+  
+  // Create toggle button if mobile
+  if (window.innerWidth <= 768) {
+    const toggle = document.createElement('button');
+    toggle.id = 'signal-cube-toggle';
+    toggle.textContent = '■ SIG_CUBE';
+    toggle.style.cssText = 'position:fixed;bottom:60px;right:20px;z-index:9995;background:rgba(200,71,42,0.2);border:1px solid rgba(200,71,42,0.5);color:var(--txt3);padding:6px 10px;font-family:var(--mono);font-size:0.4rem;cursor:pointer;transition:all 0.2s;';
+    toggle.onclick = (e) => {
+      e.stopPropagation();
+      const isOpen = cubeWrap.classList.contains('open');
+      if (isOpen) {
+        cubeWrap.classList.remove('open');
+        toggle.style.background = 'rgba(200,71,42,0.2)';
+      } else {
+        cubeWrap.classList.add('open');
+        toggle.style.background = 'rgba(200,71,42,0.4)';
+      }
+    };
+    toggle.onmouseover = () => toggle.style.borderColor = 'rgba(200,71,42,0.8)';
+    toggle.onmouseout = () => toggle.style.borderColor = 'rgba(200,71,42,0.5)';
+    document.body.appendChild(toggle);
+    
+    // Start closed
+    cubeWrap.classList.remove('open');
+  }
+  
+  // Close on background click
+  document.addEventListener('click', (e) => {
+    if (!cubeWrap.contains(e.target) && !e.target.id.includes('signal-cube') && cubeWrap.classList.contains('open')) {
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        cubeWrap.classList.remove('open');
+        const toggle = document.getElementById('signal-cube-toggle');
+        if (toggle) toggle.style.background = 'rgba(200,71,42,0.2)';
+      }
+    }
+  });
+})();
+
+/* ── ZOMBIE-PROOF SAFE HAVEN LOCATION GLITCH ── */
+(function(){
+  const SAFE_HAVENS = [
+    { name: 'KAGE-RIFT BUNKER', region: 'Obsidian Chasm', coords: '78.4521 N, 15.3482 E', desc: 'Deep polar magnetic anomaly — EMF interference renders undead inert' },
+    { name: 'THRESHOLD-3 REDOUBT', region: 'Atacama Deep', coords: '23.4567 S, 68.2341 W', desc: 'Underground fortress in driest region — minimal zombie migration' },
+    { name: 'VAEL SANCTUARY', region: 'Mariana Depths', coords: '11.3521 N, 142.5916 E', desc: 'Abyssal sealed facility — pressure prevents reanimation' },
+    { name: 'NULLEN OUTPOST', region: 'Antarctic Grid-7', coords: '71.2789 S, 123.4561 E', desc: 'Permafrost stasis — subzero temperatures preserve corpse dormancy' },
+    { name: 'OBSEDIA VAULT', region: 'Gobi Deep-Struct', coords: '41.1234 N, 103.8765 E', desc: 'Desert basilica sealed 400m underground — no surface incursion' },
+    { name: 'LIANAS CITADEL', region: 'Baikal Underground', coords: '53.8956 N, 104.2345 E', desc: 'Beneath world\'s deepest freshwater — isolation via geological moat' },
+    { name: 'THRESH REPOSITORY', region: 'Dead Sea Basin', coords: '31.5001 N, 35.5000 E', desc: 'Salt crystalline vault — caustic environment neutralizes vectors' },
+    { name: 'SHURN ARCHIVE', region: 'Carlsbad Subterranean', coords: '32.1389 N, 104.4008 W', desc: 'Limestone cavern network — labyrinth prevents coordinated undead assault' },
+    { name: 'ERSETU NODE', region: 'Lut Desert Sink', coords: '33.9342 N, 58.4400 E', desc: 'Geothermal vents maintain 60°C — viral substrate degrades at temp' },
+    { name: 'CALYX STATION', region: 'Kamchatka Fault', coords: '56.7891 N, 160.2341 E', desc: 'Volcanic plateau — lava tunnels sealed at magnetic north pole' },
+    { name: 'AMEANA REFUGE', region: 'Taklamakan Void', coords: '39.5234 N, 84.1567 E', desc: 'Ancient city buried 1000 years — resealed for third containment' },
+    { name: 'ASTRA-383TB SITE', region: 'Atacama Radio Silent Zone', coords: '24.2201 S, 67.4892 W', desc: 'Maximum EMF disruption — communication blackout = isolation guarantee' },
+  ];
+
+  function glitchCoordinates() {
+    const haven = SAFE_HAVENS[Math.floor(Math.random() * SAFE_HAVENS.length)];
+    const coordsEl = document.getElementById('rt-coords');
+    const regionEl = document.querySelector('div[style*="color:var(--txt3)"]');
+    
+    if (coordsEl) {
+      coordsEl.textContent = haven.coords;
+      coordsEl.style.opacity = '0.7';
+      setTimeout(() => coordsEl.style.opacity = '1', 100);
+    }
+    
+    if (regionEl && regionEl.innerHTML.includes('DHAKA')) {
+      regionEl.innerHTML = `${haven.name} / ${haven.region}<div style="font-size:0.35rem;margin-top:2px;color:rgba(200,71,42,0.4);">${haven.desc}</div>`;
+    }
+  }
+  
+  // Initial glitch on page load
+  setTimeout(glitchCoordinates, 2000);
+  
+  // Re-glitch on refresh cycle (every 8-15 seconds)
+  setInterval(glitchCoordinates, 8000 + Math.random() * 7000);
+  
+  window.glitchCoordinates = glitchCoordinates; // Expose for cat behavior triggers
+})();
 </script>
