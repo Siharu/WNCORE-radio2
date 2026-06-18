@@ -6667,7 +6667,7 @@ document.querySelectorAll && (()=>{
 
   const CAT_BREEDS = ['Cat-1', 'Cat-2', 'Cat-3', 'Cat-4', 'Cat-5', 'Cat-6'];
   const CAT_ANIMATIONS = ['Idle', 'Walk', 'Run', 'Sitting', 'Laying', 'Stretching', 'Licking 1', 'Licking 2', 'Itch', 'Sleeping1', 'Meow'];
-  const SCALE = 4;
+  const SCALE = 0.6;
   const FRAME_RATE = 7;
   const MAX_CATS = 173;
 
@@ -6848,7 +6848,7 @@ document.querySelectorAll && (()=>{
         // Fallback: Draw colored circle if sprite hasn't loaded yet
         ctx.fillStyle = `rgba(200, 71, 42, ${cat.alpha * 0.6})`;
         ctx.beginPath();
-        ctx.arc(cat.x, cat.y, 12, 0, Math.PI * 2);
+        ctx.arc(cat.x, cat.y, 2, 0, Math.PI * 2);
         ctx.fill();
       }
     });
