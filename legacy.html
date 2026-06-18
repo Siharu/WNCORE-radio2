@@ -59,17 +59,18 @@ body {
   bottom: 30px;
   left: 30px;
   width: 420px;
-  max-height: 340px;
-  background: rgba(10,14,26,0.96);
-  border: 1px solid rgba(138,180,212,0.2);
-  backdrop-filter: blur(10px);
-  border-radius: 3px;
-  padding: 22px;
+  max-height: 380px;
+  background: rgba(10,14,26,0.97);
+  border: 1px solid rgba(138,180,212,0.25);
+  backdrop-filter: blur(12px);
+  border-radius: 2px;
+  padding: 24px;
   z-index: 25;
   overflow-y: auto;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s;
+  box-shadow: 0 0 30px rgba(10,14,26,0.6), inset 0 0 1px rgba(138,180,212,0.1);
 }
 
 #info-panel.active {
@@ -78,11 +79,12 @@ body {
 }
 
 .info-title {
-  font-size: 14px;
-  letter-spacing: 2px;
+  font-size: 15px;
+  letter-spacing: 2.5px;
   color: var(--alien-bright);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-transform: uppercase;
+  font-weight: bold;
 }
 
 .info-tag {
@@ -91,45 +93,55 @@ body {
   color: var(--alien-dim);
   margin-bottom: 16px;
   text-transform: uppercase;
+  border-bottom: 1px solid rgba(138,180,212,0.1);
+  padding-bottom: 10px;
 }
 
 .info-section {
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   font-size: 11px;
-  line-height: 1.7;
+  line-height: 1.75;
 }
 
 .info-section-title {
-  font-size: 9px;
-  letter-spacing: 1px;
+  font-size: 8px;
+  letter-spacing: 2px;
   color: var(--alien-dim);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  font-weight: 600;
 }
 
 .info-body {
-  border-left: 1px solid rgba(138,180,212,0.15);
-  padding-left: 10px;
+  border-left: 2px solid rgba(138,180,212,0.2);
+  padding-left: 12px;
   color: var(--alien-text);
+  line-height: 1.8;
 }
 
 #close-panel {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 14px;
+  right: 14px;
   width: 24px;
   height: 24px;
   background: none;
-  border: none;
+  border: 1px solid rgba(138,180,212,0.3);
   color: var(--alien-dim);
   cursor: pointer;
-  font-size: 20px;
+  font-size: 16px;
   line-height: 1;
-  transition: color 0.2s;
+  border-radius: 2px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #close-panel:hover {
   color: var(--alien-bright);
+  border-color: rgba(138,180,212,0.6);
+  background: rgba(138,180,212,0.1);
 }
 
 #controls-hint {
@@ -243,7 +255,7 @@ function checkLegacyLock() {
 }
 
 if (!checkLegacyLock()) {
-  // Lock screen shown
+  // Lock shown
 } else {
   const canvas = document.getElementById('canvas');
   const scene = new THREE.Scene();
@@ -253,46 +265,105 @@ if (!checkLegacyLock()) {
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setClearColor(0x0a0a0f, 1);
-  camera.position.set(0, 15, 35);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  camera.position.set(0, 25, 35);
   camera.lookAt(0, 0, 0);
 
-  // Background stars
-  const starGeo = new THREE.BufferGeometry();
-  const starCount = 3000;
-  const starPos = new Float32Array(starCount * 3);
-  for (let i = 0; i < starCount; i++) {
-    starPos[i * 3] = (Math.random() - 0.5) * 2000;
-    starPos[i * 3 + 1] = (Math.random() - 0.5) * 2000;
-    starPos[i * 3 + 2] = (Math.random() - 0.5) * 2000;
+  /* ─────────────────────────────────────────────────
+     GALAXY BACKGROUND
+  ───────────────────────────────────────────────────── */
+  const canvas2d = document.createElement('canvas');
+  canvas2d.width = 2048;
+  canvas2d.height = 2048;
+  const ctx = canvas2d.getContext('2d');
+  
+  // Create galaxy texture procedurally
+  const imageData = ctx.createImageData(canvas2d.width, canvas2d.height);
+  const data = imageData.data;
+  
+  for (let i = 0; i < data.length; i += 4) {
+    data[i] = Math.random() * 20;     // R
+    data[i + 1] = Math.random() * 15; // G
+    data[i + 2] = Math.random() * 30; // B
+    data[i + 3] = 255;                // A
   }
-  starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
-  const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.5, opacity: 0.6, transparent: true });
-  const stars = new THREE.Points(starGeo, starMat);
-  scene.add(stars);
+  
+  // Add nebula clouds
+  for (let i = 0; i < 5000; i++) {
+    const x = Math.floor(Math.random() * canvas2d.width);
+    const y = Math.floor(Math.random() * canvas2d.height);
+    const idx = (y * canvas2d.width + x) * 4;
+    data[idx] += Math.random() * 100;
+    data[idx + 1] += Math.random() * 80;
+    data[idx + 2] += Math.random() * 120;
+  }
+  
+  ctx.putImageData(imageData, 0, 0);
+  const galaxyTexture = new THREE.CanvasTexture(canvas2d);
+  const bgGeo = new THREE.SphereGeometry(900, 32, 32);
+  const bgMat = new THREE.MeshBasicMaterial({ map: galaxyTexture, side: THREE.BackSide });
+  const background = new THREE.Mesh(bgGeo, bgMat);
+  scene.add(background);
 
-  // Central star
-  const starGeometry = new THREE.SphereGeometry(1.2, 32, 32);
-  const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffcc66 });
-  const centralStar = new THREE.Mesh(starGeometry, starMaterial);
-  scene.add(centralStar);
+  /* ─────────────────────────────────────────────────
+     LIGHTING
+  ───────────────────────────────────────────────────── */
+  const ambientLight = new THREE.AmbientLight(0x404050, 0.8);
+  scene.add(ambientLight);
 
-  const glowGeo = new THREE.SphereGeometry(1.5, 32, 32);
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.2, depthWrite: false });
-  const starGlow = new THREE.Mesh(glowGeo, glowMat);
-  scene.add(starGlow);
+  const starLight = new THREE.PointLight(0xffcc88, 2.5, 200);
+  starLight.position.set(0, 0, 0);
+  scene.add(starLight);
 
-  // Planet data
+  /* ─────────────────────────────────────────────────
+     CENTRAL STAR WITH GLOW
+  ───────────────────────────────────────────────────── */
+  const starGeo = new THREE.SphereGeometry(2, 64, 64);
+  const starMat = new THREE.MeshPhongMaterial({
+    color: 0xffaa44,
+    emissive: 0xff8822,
+    emissiveIntensity: 0.8,
+    shininess: 10
+  });
+  const star = new THREE.Mesh(starGeo, starMat);
+  scene.add(star);
+
+  // Star glow halo
+  const glowGeo = new THREE.SphereGeometry(3, 64, 64);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: 0xffaa44,
+    transparent: true,
+    opacity: 0.15,
+    depthWrite: false
+  });
+  const glow1 = new THREE.Mesh(glowGeo, glowMat);
+  scene.add(glow1);
+
+  const glow2Geo = new THREE.SphereGeometry(5, 64, 64);
+  const glow2Mat = new THREE.MeshBasicMaterial({
+    color: 0xff6622,
+    transparent: true,
+    opacity: 0.08,
+    depthWrite: false
+  });
+  const glow2 = new THREE.Mesh(glow2Geo, glow2Mat);
+  scene.add(glow2);
+
+  /* ─────────────────────────────────────────────────
+     PLANET DATA WITH CODEX
+  ───────────────────────────────────────────────────── */
   const planetData = {
-    drev: { name: 'Drev', tag: 'First circle · the burned one', distance: 8, size: 0.6, speed: 0.01, image: '/assets/Cygnus-gifs/planets/Drev.gif', human: 'It does not move as things should move. The face it shows the fire has not changed since the first elder looked upon it. The other face is cold beyond the word for cold.', alien: 'Tidally locked body. Extreme temperature differential between day and night sides. No explanation for observed atmospheric circulation.' },
-    obsidis: { name: 'Obsidis', tag: 'Second circle · the absent one', distance: 14, size: 0.4, speed: 0.005, image: '/assets/Cygnus-gifs/planets/Obsidis.gif', human: 'We see where it is by what is not there. A hole in the sky that moves. It has two companions we have tried to name four times.', alien: 'Dark body. Minimal light reflection. Gravitational lensing effects suggest massive companion objects in unstable orbit.' },
-    vael: { name: 'Vael', tag: 'Third circle · the reborn one', distance: 10, size: 0.5, speed: 0.008, image: '/assets/Cygnus-gifs/planets/Vael.gif', human: 'Each time we map it the map is wrong. There is a place at the north angle that does not change. We have stopped arguing about what this means.', alien: 'Geologically active. Consistent surface reformation. One region exhibits non-volcanic activity. Temporal anomalies detected.' },
-    kage: { name: 'KAGE', tag: 'Fourth circle · the origin', distance: 12, size: 0.7, speed: 0.007, image: '/assets/Cygnus-gifs/planets/KAGE.gif', human: 'Water. More water than land. Air that a body could breathe. We do not know how we know this. The signal came from there. We do not know if it still does.', alien: 'Earth-analog classification. Biosphere signatures detected. Origin of 88.7 FM transmission confirmed. SYSTEM STATUS: OBSERVATION LOST.' },
-    shurn: { name: 'Shurn', tag: 'Fifth circle · the ringed', distance: 18, size: 0.6, speed: 0.004, image: '/assets/Cygnus-gifs/planets/Shurn.gif', human: 'It moves like something is holding it up. The rings are dust and ice but they do not behave as dust and ice should.', alien: 'Ringed dwarf body. Ring composition suggests recent fragmentation event. Ring stability: anomalous.' },
-    mourne: { name: 'Mourne', tag: 'Sixth circle · the deep', distance: 20, size: 0.8, speed: 0.003, image: '/assets/Cygnus-gifs/planets/Mourne.gif', human: 'We have stopped arguing about what lies beneath. We know something lives there in the darkness.', alien: 'Ice giant with subsurface ocean. Geothermal activity indicates internal heat source. Potential for chemosynthetic life.' },
-    orveth: { name: 'Orveth', tag: 'Seventh circle · the magnetic', distance: 16, size: 0.6, speed: 0.005, image: '/assets/Cygnus-gifs/planets/Orveth.gif', human: 'The signal bends around it. Radio waves arrive distorted. We have never understood why it has such influence on the space around it.', alien: 'Magnetic field strength exceeds prediction models. Likely magnetar or magnetic monopole effects. Surface composition: metallic ore-rich.' },
-    calyx: { name: 'Calyx', tag: 'Eighth circle · the hollow', distance: 22, size: 0.4, speed: 0.003, image: '/assets/Cygnus-gifs/planets/Calyx.gif', human: 'It weighs too little. The surface has no marks. Nothing has ever hit it. Its path around the fire is too clean to have happened by accident.', alien: 'Body classification: Hollow sphere. Mass inconsistent with size — internal structure unknown. Orbital mechanics suggest artificial origin.' },
-    thresh: { name: 'Thresh', tag: 'Ninth circle · the scarred', distance: 24, size: 0.5, speed: 0.002, image: '/assets/Cygnus-gifs/planets/Thresh.gif', human: 'Every surface is broken. Not by time but by impact. Something very old crashed into many things. Or many things crashed into something very old.', alien: 'Heavily cratered body. Impact history spans billions of years. One crater exhibits signs of non-natural origin.' },
-    nullen: { name: 'Nullen', tag: 'Tenth circle · the last witness', distance: 26, size: 0.3, speed: 0.002, image: '/assets/Cygnus-gifs/planets/Nullen.gif', human: 'The brightest and the furthest. When it reaches the edge, everything else goes quiet. For three days no other signal reaches us from that direction.', alien: 'High albedo body. Electromagnetic interference patterns correlate with orbital position. Origin of phenomenon unknown.' }
+    drev: { name: 'Drev', tag: 'First circle · the burned one', distance: 8, size: 0.6, speed: 0.01, yOffset: -1.5, color: 0xaa5533, image: '/assets/Cygnus-gifs/planets/Drev.gif', human: 'It does not move as things should move. The face it shows the fire has not changed since the first elder looked upon it. The other face is cold beyond the word for cold. Between them, a ridge that hums. We do not go to the ridge.', alien: 'Tidally locked body. Extreme temperature differential between day and night sides. No explanation for observed atmospheric circulation.' },
+    obsidis: { name: 'Obsidis', tag: 'Second circle · the absent one', distance: 14, size: 0.4, speed: 0.005, yOffset: 1.2, color: 0x222233, image: '/assets/Cygnus-gifs/planets/Obsidis.gif', human: 'We see where it is by what is not there. A hole in the sky that moves. The instruments that watch it send back only warmth. No light. It is there. We know it is there. It has two companions we have tried to name four times. The names do not stay written.', alien: 'Dark body. Minimal light reflection. Gravitational lensing effects suggest massive companion objects in unstable orbit.' },
+    vael: { name: 'Vael', tag: 'Third circle · the reborn one', distance: 10, size: 0.5, speed: 0.008, yOffset: -0.8, color: 0xff9944, image: '/assets/Cygnus-gifs/planets/Vael.gif', human: 'Each time we map it the map is wrong. This is not error. It is always being made new. There is a place at the north angle that does not change. We have argued for generations about what this means. We do not agree. We have stopped arguing.', alien: 'Geologically active. Consistent surface reformation. One region exhibits non-volcanic activity. Temporal anomalies detected.' },
+    kage: { name: 'KAGE', tag: 'Fourth circle · the origin', distance: 12, size: 0.7, speed: 0.007, yOffset: 1.0, color: 0x4488cc, image: '/assets/Cygnus-gifs/planets/KAGE.gif', human: 'Water. More water than land. Air that a body could breathe. We do not know how we know this. No instrument we have built should reach that far. The signal came from there. We were not surprised. We had always believed something lived there. We do not know if it still does.', alien: 'Earth-analog classification. Biosphere signatures detected. Origin of 88.7 FM transmission confirmed. SYSTEM STATUS: OBSERVATION LOST.' },
+    shurn: { name: 'Shurn', tag: 'Fifth circle · the ringed', distance: 18, size: 0.6, speed: 0.004, yOffset: -1.8, color: 0xccaa66, image: '/assets/Cygnus-gifs/planets/Shurn.gif', human: 'It moves like something is holding it up. The rings are dust and ice but they do not behave as dust and ice should.', alien: 'Ringed dwarf body. Ring composition suggests recent fragmentation event. Ring stability: anomalous.' },
+    mourne: { name: 'Mourne', tag: 'Sixth circle · the deep', distance: 20, size: 0.8, speed: 0.003, yOffset: 1.5, color: 0x4466bb, image: '/assets/Cygnus-gifs/planets/Mourne.gif', human: 'We have stopped arguing about what lies beneath. We know something lives there in the darkness.', alien: 'Ice giant with subsurface ocean. Geothermal activity indicates internal heat source. Potential for chemosynthetic life.' },
+    orveth: { name: 'Orveth', tag: 'Seventh circle · the magnetic', distance: 16, size: 0.6, speed: 0.005, yOffset: -1.2, color: 0xff8844, image: '/assets/Cygnus-gifs/planets/Orveth.gif', human: 'The signal bends around it. Radio waves arrive distorted. We have never understood why it has such influence on the space around it.', alien: 'Magnetic field strength exceeds prediction models. Likely magnetar or magnetic monopole effects. Surface composition: metallic ore-rich.' },
+    calyx: { name: 'Calyx', tag: 'Eighth circle · the hollow', distance: 22, size: 0.4, speed: 0.003, yOffset: 0.9, color: 0xdddddd, image: '/assets/Cygnus-gifs/planets/Calyx.gif', human: 'It weighs too little. A thing that size should weigh more. We dropped the calculation and redid it eight times. We got the same answer. The surface has no marks. Nothing has ever hit it. Nothing has ever happened to it. Its path around the fire is too clean to have happened by accident.', alien: 'Body classification: Hollow sphere. Mass inconsistent with size — internal structure unknown. Orbital mechanics suggest artificial origin or extreme age.' },
+    thresh: { name: 'Thresh', tag: 'Ninth circle · the scarred', distance: 24, size: 0.5, speed: 0.002, yOffset: -1.6, color: 0x888888, image: '/assets/Cygnus-gifs/planets/Thresh.gif', human: 'Every surface is broken. Not by time but by impact. Something very old crashed into many things. Or many things crashed into something very old.', alien: 'Heavily cratered body. Impact history spans billions of years. One crater exhibits signs of non-natural origin.' },
+    nullen: { name: 'Nullen', tag: 'Tenth circle · the last witness', distance: 26, size: 0.3, speed: 0.002, yOffset: 1.3, color: 0xffffcc, image: '/assets/Cygnus-gifs/planets/Nullen.gif', human: 'The brightest and the furthest. When it reaches the edge, everything else goes quiet. Not blocked. Not absorbed. Quiet. For three days no other signal reaches us from that direction. Then it returns and everything resumes. We have been waiting eighteen years for someone to explain this. No one has.', alien: 'High albedo body. Electromagnetic interference patterns correlate with orbital position. Origin of phenomenon unknown.' }
   };
 
   const textureLoader = new THREE.TextureLoader();
@@ -301,29 +372,53 @@ if (!checkLegacyLock()) {
   const mouse = new THREE.Vector2();
 
   Object.entries(planetData).forEach(([key, data]) => {
-    const geometry = new THREE.SphereGeometry(data.size, 32, 32);
-    let material = new THREE.MeshBasicMaterial({ color: 0x666666 });
+    const geometry = new THREE.SphereGeometry(data.size, 48, 48);
+    const material = new THREE.MeshPhongMaterial({
+      color: data.color,
+      emissive: new THREE.Color(data.color).multiplyScalar(0.3),
+      shininess: 20,
+      wireframe: false
+    });
     
     textureLoader.load(data.image, (texture) => {
       texture.magFilter = THREE.NearestFilter;
       texture.minFilter = THREE.NearestFilter;
-      planet.material = new THREE.MeshBasicMaterial({ map: texture });
+      planet.material.map = texture;
+      planet.material.needsUpdate = true;
     });
 
     const planet = new THREE.Mesh(geometry, material);
-    planet.userData = { key: key, distance: data.distance, angle: Math.random() * Math.PI * 2, speed: data.speed, data: data };
+    
+    const inclination = (Math.random() - 0.5) * 0.4;
+    const initialAngle = Math.random() * Math.PI * 2;
+    const eccentricity = Math.random() * 0.15;
+    
+    planet.userData = {
+      key: key,
+      distance: data.distance,
+      angle: initialAngle,
+      speed: data.speed,
+      inclination: inclination,
+      eccentricity: eccentricity,
+      data: data
+    };
+    
     scene.add(planet);
     planets.push(planet);
 
-    // Orbit ring
+    // Orbit ring with glow
     const orbitGeo = new THREE.BufferGeometry();
     const orbitPoints = [];
-    for (let i = 0; i < 128; i++) {
-      const angle = (i / 128) * Math.PI * 2;
-      orbitPoints.push(Math.cos(angle) * data.distance, 0, Math.sin(angle) * data.distance);
+    for (let i = 0; i < 256; i++) {
+      const angle = (i / 256) * Math.PI * 2;
+      const currentDistance = data.distance * (1 - eccentricity * 0.5 + eccentricity * 0.5 * Math.cos(angle));
+      const x = Math.cos(angle) * currentDistance;
+      const z = Math.sin(angle) * currentDistance;
+      const y = Math.sin(angle) * inclination * data.distance * 0.4;
+      orbitPoints.push(x, y, z);
     }
     orbitGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(orbitPoints), 3));
-    const orbitMat = new THREE.LineBasicMaterial({ color: 0x4488cc, transparent: true, opacity: 0.1 });
+    const orbitMat = new THREE.LineBasicMaterial({ color: 0xffaa44, transparent: true, opacity: 0.25, linewidth: 2 });
     const orbitLine = new THREE.Line(orbitGeo, orbitMat);
     scene.add(orbitLine);
   });
@@ -332,18 +427,26 @@ if (!checkLegacyLock()) {
   let previousMousePosition = { x: 0, y: 0 };
   let rotation = { x: 0, y: 0 };
 
-  canvas.addEventListener('mousedown', (e) => { isDragging = true; previousMousePosition = { x: e.clientX, y: e.clientY }; });
+  canvas.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    previousMousePosition = { x: e.clientX, y: e.clientY };
+  });
+
   canvas.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
     rotation.y += (e.clientX - previousMousePosition.x) * 0.005;
     rotation.x += (e.clientY - previousMousePosition.y) * 0.005;
     previousMousePosition = { x: e.clientX, y: e.clientY };
   });
-  canvas.addEventListener('mouseup', () => { isDragging = false; });
+
+  canvas.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+
   canvas.addEventListener('wheel', (e) => {
     e.preventDefault();
     camera.position.z += e.deltaY * 0.05;
-    camera.position.z = Math.max(25, Math.min(80, camera.position.z));
+    camera.position.z = Math.max(20, Math.min(100, camera.position.z));
   });
 
   canvas.addEventListener('click', (event) => {
@@ -351,13 +454,15 @@ if (!checkLegacyLock()) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(planets);
+    
     if (intersects.length > 0) {
       const clicked = intersects[0].object;
+      const data = clicked.userData.data;
       const panel = document.getElementById('info-panel');
-      document.getElementById('info-title').textContent = clicked.userData.data.name;
-      document.getElementById('info-tag').textContent = clicked.userData.data.tag;
-      document.getElementById('info-human').textContent = clicked.userData.data.human;
-      document.getElementById('info-alien').textContent = clicked.userData.data.alien;
+      document.getElementById('info-title').textContent = data.name;
+      document.getElementById('info-tag').textContent = data.tag;
+      document.getElementById('info-human').textContent = data.human;
+      document.getElementById('info-alien').textContent = data.alien;
       panel.classList.add('active');
     }
   });
@@ -368,21 +473,28 @@ if (!checkLegacyLock()) {
 
   function animate() {
     requestAnimationFrame(animate);
+
+    // Orbit planets
     planets.forEach(planet => {
       planet.userData.angle += planet.userData.speed;
       planet.position.x = Math.cos(planet.userData.angle) * planet.userData.distance;
       planet.position.z = Math.sin(planet.userData.angle) * planet.userData.distance;
-      planet.rotation.x += 0.001;
-      planet.rotation.y += 0.002;
+      planet.position.y = planet.userData.data.yOffset + Math.sin(planet.userData.angle * 0.5) * (planet.userData.distance * 0.15);
+      planet.rotation.x += 0.0005;
+      planet.rotation.y += 0.001;
     });
 
+    // Camera rotation
     camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotation.y);
     camera.position.applyAxisAngle(new THREE.Vector3(1, 0, 0), rotation.x);
     rotation.x *= 0.95;
     rotation.y *= 0.95;
     camera.lookAt(0, 0, 0);
 
-    stars.material.opacity = 0.4 + Math.sin(Date.now() * 0.001) * 0.2;
+    // Animate star glow
+    glow1.rotation.z += 0.0005;
+    glow2.rotation.z -= 0.0003;
+
     renderer.render(scene, camera);
   }
 
