@@ -694,6 +694,20 @@ try {
         <div class="fc-meta as-fc-meta">LOGBOOK DRIFTERS &middot; WORLD -2 &middot; 2032</div>
         <div class="fc-now as-fc-now">The sky is wrong. <em>Are you from this world?</em></div>
       </article>
+
+      <!-- DRIFTER'S LOG CARD -->
+      <article class="featured-card featured-card--drifter" id="drifter-log-card" role="button" aria-label="Drifter's Log — Navigator Network Feed" onclick="drifterLogClick()">
+        <div class="fc-listeners drifter-signal-tag">NAVIGATOR NETWORK &middot; FEED ACTIVE</div>
+        <div class="fc-cover-wrap">
+          <div class="fc-cover-img drifter-tower-cover" id="drifter-tower-wrap">
+            <img src="images/navigator-tower.png" alt="Navigator Tower" class="drifter-tower-img" id="drifter-tower-img" />
+            <canvas id="drifter-static-canvas" aria-hidden="true"></canvas>
+          </div>
+        </div>
+        <div class="fc-name drifter-fc-name">Drifter's Log</div>
+        <div class="fc-meta drifter-fc-meta">NAVIGATOR NETWORK &middot; SURVEILLANCE ARCHIVE &middot; ONGOING</div>
+        <div class="fc-now drifter-fc-now"><span id="drifter-log-status">Awaiting feed transmission&hellip;</span></div>
+      </article>
     </div>
 
     <div class="section-hd">
@@ -3671,6 +3685,269 @@ html[data-theme="paper"] #page-anime [style*="color:var(--text3)"] {
       renderGrid();
     }
   };
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════
+     DRIFTER'S LOG — Card Styles & Static Engine
+════════════════════════════════════════════════ -->
+<style>
+/* ── Base card ── */
+.featured-card--drifter {
+  background: #02050a;
+  border: 1px solid rgba(0, 90, 60, 0.28);
+  cursor: pointer;
+  transition: border-color 0.35s, box-shadow 0.35s, transform 0.25s;
+  position: relative;
+}
+.featured-card--drifter:hover {
+  border-color: rgba(0, 200, 100, 0.55);
+  box-shadow: 0 0 36px rgba(0, 180, 80, 0.10), 0 8px 32px rgba(0,0,0,0.65);
+  transform: translateY(-3px);
+}
+
+/* ── Signal tag ── */
+.drifter-signal-tag {
+  font-family: var(--font-mono, 'IBM Plex Mono') !important;
+  font-size: 0.42rem !important;
+  letter-spacing: 2.5px !important;
+  color: rgba(0, 200, 90, 0.55) !important;
+  text-transform: uppercase;
+}
+
+/* ── Cover image container ── */
+.drifter-tower-cover {
+  background: #000 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+/* ── Tower image ── */
+.drifter-tower-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+/* ── Static canvas overlay ── */
+#drifter-static-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  transition: opacity 0.15s;
+}
+.drifter-static-active #drifter-static-canvas {
+  opacity: 0.32;
+}
+/* Hover: always show faint static */
+.featured-card--drifter:hover #drifter-static-canvas {
+  opacity: 0.18;
+}
+
+/* ── Text ── */
+.drifter-fc-name {
+  color: #00cc66 !important;
+  letter-spacing: 0.3px;
+}
+.drifter-fc-meta {
+  color: rgba(0, 160, 70, 0.50) !important;
+}
+.drifter-fc-now {
+  background: rgba(0, 10, 5, 0.75) !important;
+  color: rgba(0, 220, 100, 0.70) !important;
+  border: 1px solid rgba(0, 80, 40, 0.45) !important;
+  font-family: var(--font-mono, 'IBM Plex Mono') !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.5px;
+  font-style: normal !important;
+}
+
+/* ── Scan-line flicker on active ── */
+@keyframes drifterScanFlicker {
+  0%   { opacity: 0.32; }
+  25%  { opacity: 0.38; }
+  50%  { opacity: 0.28; }
+  75%  { opacity: 0.40; }
+  100% { opacity: 0.32; }
+}
+.drifter-static-active #drifter-static-canvas {
+  animation: drifterScanFlicker 0.12s steps(1) infinite;
+}
+
+/* ── Pulsing border on active ── */
+@keyframes drifterBorderPulse {
+  0%,100% { border-color: rgba(0,200,90,0.55); }
+  50%      { border-color: rgba(0,255,110,0.85); }
+}
+.featured-card--drifter.drifter-static-active {
+  animation: drifterBorderPulse 0.4s ease-in-out infinite;
+}
+
+/* ── Status text blink ── */
+@keyframes drifterStatusBlink {
+  0%,49%  { opacity: 1; }
+  50%,100%{ opacity: 0.3; }
+}
+.drifter-static-active #drifter-log-status {
+  animation: drifterStatusBlink 0.35s steps(1) infinite;
+}
+</style>
+
+<script>
+/* ══════════════════════════════════════════════
+   DRIFTER'S LOG — Static Canvas + Audio Engine
+════════════════════════════════════════════════ */
+(function () {
+  'use strict';
+
+  /* ── Canvas noise renderer ── */
+  function initStaticCanvas() {
+    const canvas = document.getElementById('drifter-static-canvas');
+    if (!canvas) return;
+    const wrap = document.getElementById('drifter-tower-wrap');
+
+    function resize() {
+      canvas.width  = wrap.offsetWidth  || 200;
+      canvas.height = wrap.offsetHeight || 200;
+    }
+    resize();
+    new ResizeObserver(resize).observe(wrap);
+
+    const ctx = canvas.getContext('2d');
+    let rafId = null;
+    let active = false;
+
+    function drawNoise() {
+      const w = canvas.width, h = canvas.height;
+      const img = ctx.createImageData(w, h);
+      const d = img.data;
+      // Scanline static — vary intensity per line
+      for (let y = 0; y < h; y++) {
+        const lineIntensity = Math.random() < 0.08 ? 255 : 0; // rare bright lines
+        for (let x = 0; x < w; x++) {
+          const i = (y * w + x) * 4;
+          const v = lineIntensity || (Math.random() < 0.35 ? Math.random() * 200 : 0);
+          d[i] = d[i+1] = d[i+2] = v;
+          d[i+3] = 255;
+        }
+      }
+      ctx.putImageData(img, 0, 0);
+    }
+
+    function loop() {
+      drawNoise();
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function start() {
+      if (!active) { active = true; loop(); }
+    }
+    function stop() {
+      active = false;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    return { start, stop };
+  }
+
+  /* ── Web Audio static burst ── */
+  let audioCtx = null;
+  function playStaticBurst(durationSec) {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx  = audioCtx;
+      const buf  = ctx.createBuffer(1, ctx.sampleRate * durationSec, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1);
+
+      const src    = ctx.createBufferSource();
+      src.buffer   = buf;
+
+      // Band-pass: ~300 Hz – 4 kHz to sound like old radio
+      const bp     = ctx.createBiquadFilter();
+      bp.type      = 'bandpass';
+      bp.frequency.value = 1200;
+      bp.Q.value         = 0.7;
+
+      const gain   = ctx.createGain();
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.28, ctx.currentTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + durationSec);
+
+      src.connect(bp);
+      bp.connect(gain);
+      gain.connect(ctx.destination);
+      src.start();
+      src.stop(ctx.currentTime + durationSec);
+    } catch(e) { /* silent fail if audio blocked */ }
+  }
+
+  /* ── Main click handler ── */
+  let staticEngine = null;
+  let burstTimer   = null;
+
+  window.drifterLogClick = function () {
+    if (!staticEngine) staticEngine = initStaticCanvas();
+    if (!staticEngine) return;
+
+    const card = document.getElementById('drifter-log-card');
+    const statusEl = document.getElementById('drifter-log-status');
+
+    // Play burst + show static
+    playStaticBurst(1.4);
+    card.classList.add('drifter-static-active');
+    staticEngine.start();
+
+    const phrases = [
+      'FEED INCOMING — DRIFTER-7 ON APPROACH',
+      'Signal acquired. Uploading archive&hellip;',
+      'Navigator Network: 3 feeds active',
+      'DRIFTER LOG — TRANSMISSION OPEN',
+      'Connection stable. Recording&hellip;',
+    ];
+    if (statusEl) statusEl.innerHTML = phrases[Math.floor(Math.random() * phrases.length)];
+
+    clearTimeout(burstTimer);
+    burstTimer = setTimeout(() => {
+      card.classList.remove('drifter-static-active');
+      staticEngine.stop();
+      if (statusEl) statusEl.innerHTML = 'Awaiting feed transmission&hellip;';
+      // Navigate to feed after static clears
+      setTimeout(() => {
+        window.location.href = '/navigator';
+      }, 200);
+    }, 1400);
+  };
+
+  /* ── Hover: faint static preview ── */
+  document.addEventListener('DOMContentLoaded', function () {
+    const card = document.getElementById('drifter-log-card');
+    if (!card) return;
+    let hoverEngine = null;
+
+    card.addEventListener('mouseenter', () => {
+      if (!hoverEngine) hoverEngine = initStaticCanvas();
+      if (hoverEngine) hoverEngine.start();
+    });
+    card.addEventListener('mouseleave', () => {
+      if (hoverEngine) hoverEngine.stop();
+    });
+    // Touch devices — brief static on touchstart
+    card.addEventListener('touchstart', () => {
+      if (!hoverEngine) hoverEngine = initStaticCanvas();
+      if (hoverEngine) hoverEngine.start();
+    }, { passive: true });
+  });
 })();
 </script>
 
