@@ -6,405 +6,553 @@
 <title>NAVIGATOR // FEED — WNCORE</title>
 <link rel="icon" href="/favicon.ico">
 <link rel="stylesheet" href="/fonts.css">
-
-<!-- WNCORE design tokens so Navigator inherits the exact same variable set -->
 <link rel="stylesheet" href="/style.css">
-
 <style>
-  /* ── reset only what navigator needs — don't fight style.css ── */
   #nav-app *{ box-sizing:border-box; }
-
   :root{
-    --nav-void:     #0e0d0b;
-    --nav-floor:    #161412;
-    --nav-paper:    #f0ede8;
-    --nav-paper-dim:#8a8278;
-    --nav-rust:     #c8472a;
-    --nav-rust-dim: #5c2114;
-    --nav-sick:     #1e3a28;
-    --nav-sick-bright:#22c55e;
-    --nav-line:     rgba(255,255,255,0.07);
-    --nav-warn:     #e8753a;
+    --nv:#0e0d0b; --nf:#161412; --np:#f0ede8; --nd:#8a8278;
+    --nr:#c8472a; --nrd:#5c2114; --ns:#1e3a28; --nsb:#22c55e;
+    --nl:rgba(255,255,255,0.07); --nw:#e8753a; --namb:#d4a843;
   }
 
-  /* ── Back bar ── */
+  /* ── topbar ── */
   #nav-topbar{
-    position:fixed;
-    top:0; left:0; right:0;
-    z-index:100;
-    height:36px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    padding:0 14px;
-    background:rgba(14,13,11,0.92);
-    border-bottom:1px solid var(--nav-line);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-    font-family:var(--font-mono);
-    font-size:10px;
-    letter-spacing:0.12em;
-    color:var(--nav-paper-dim);
+    position:fixed; top:0; left:0; right:0; z-index:200;
+    height:32px; display:flex; align-items:center; gap:12px;
+    padding:0 12px; background:rgba(14,13,11,0.96);
+    border-bottom:1px solid var(--nl); backdrop-filter:blur(8px);
+    font-family:var(--font-mono); font-size:10px; letter-spacing:0.12em; color:var(--nd);
   }
-  #nav-topbar a{
-    color:var(--nav-paper-dim);
-    text-decoration:none;
-    display:flex;
-    align-items:center;
-    gap:6px;
-    transition:color 0.15s;
-  }
-  #nav-topbar a:hover{ color:var(--nav-sick-bright); }
+  #nav-topbar a{ color:var(--nd); text-decoration:none; display:flex; align-items:center; gap:5px; transition:color 0.15s; }
+  #nav-topbar a:hover{ color:var(--nsb); }
   #nav-topbar .sep{ opacity:0.25; }
-  #nav-topbar .breadcrumb-current{ color:var(--nav-paper); }
+  #nav-topbar .bc{ color:var(--np); }
 
-  /* ── Full-screen app shell — pushed below topbar ── */
+  /* ── top command bar ── */
+  #nav-cmdbar{
+    position:fixed; top:32px; left:0; right:0; z-index:199;
+    height:28px; display:flex; align-items:center; gap:0;
+    background:#080906; border-bottom:1px solid var(--nl);
+    font-family:var(--font-mono); font-size:9px; letter-spacing:0.1em;
+    overflow:hidden;
+  }
+  .cmd-cell{
+    padding:0 12px; height:100%; display:flex; align-items:center; gap:6px;
+    border-right:1px solid var(--nl); white-space:nowrap; flex-shrink:0;
+  }
+  .cmd-cell .lbl{ color:var(--nd); }
+  .cmd-cell .val{ color:var(--np); }
+  .cmd-cell .val.ok { color:var(--nsb); }
+  .cmd-cell .val.warn{ color:var(--nw); }
+  .cmd-cell .val.crit{ color:var(--nr); }
+  .cmd-cell .val.amb { color:var(--namb); }
+  #cmd-tower-dot{
+    width:6px; height:6px; border-radius:50%; background:var(--nsb);
+    animation:cmdBlink 2s steps(1) infinite;
+  }
+  @keyframes cmdBlink{ 0%,49%{opacity:1} 50%,100%{opacity:0.2} }
+
+  /* ── app shell ── */
   #nav-app{
-    position:fixed;
-    top:36px; left:0; right:0; bottom:0;
-    display:flex;
-    flex-direction:column;
-    background:var(--nav-void);
-    color:var(--nav-paper);
-    font-family:var(--font-body);
-    overflow:hidden;
-    user-select:none;
+    position:fixed; top:60px; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column;
+    background:var(--nv); color:var(--np);
+    font-family:var(--font-body); overflow:hidden; user-select:none;
   }
 
-  /* ── Header ── */
-  #nav-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:baseline;
-    padding:8px 16px;
-    border-bottom:1px solid var(--nav-line);
-    flex-shrink:0;
+  /* ── main layout ── */
+  #nav-main{ flex:1; display:flex; min-height:0; overflow:hidden; }
+
+  /* ── LEFT intel panel ── */
+  #nav-intel{
+    width:160px; flex-shrink:0; border-right:1px solid var(--nl);
+    display:flex; flex-direction:column;
+    background:linear-gradient(180deg,rgba(20,30,20,0.5),transparent);
     font-family:var(--font-mono);
-    font-size:11px;
-    letter-spacing:0.05em;
   }
-  #nav-header .title{
-    color:var(--nav-paper);
-    font-size:12px;
-    letter-spacing:0.15em;
+  .intel-section{
+    padding:8px 10px; border-bottom:1px solid var(--nl);
   }
-  #nav-header .title span{ color:var(--nav-rust); }
-  #nav-header .meta{
-    color:var(--nav-paper-dim);
-    display:flex;
-    gap:16px;
-    align-items:center;
-    flex-wrap:wrap;
+  .intel-section .sec-title{
+    font-size:8px; letter-spacing:0.2em; color:var(--nd);
+    text-transform:uppercase; margin-bottom:6px;
   }
-  #nav-header .meta b{ color:var(--nav-sick-bright); font-weight:normal; }
-  #nav-header .meta b.warn{ color:var(--nav-warn); }
-  #nav-header .meta b.crit{ color:var(--nav-rust); }
+  .intel-row{
+    display:flex; justify-content:space-between; align-items:center;
+    margin-bottom:4px; font-size:9px;
+  }
+  .intel-row .k{ color:var(--nd); }
+  .intel-row .v{ color:var(--np); }
+  .intel-row .v.ok  { color:var(--nsb); }
+  .intel-row .v.warn{ color:var(--nw); }
+  .intel-row .v.crit{ color:var(--nr); }
+  .intel-row .v.amb { color:var(--namb); }
 
-  /* ── Main layout ── */
-  #nav-main{
-    flex:1;
-    display:flex;
-    min-height:0;
-    overflow:hidden;
+  /* mini bar */
+  .mini-bar{ height:3px; background:var(--nrd); margin-top:2px; overflow:hidden; }
+  .mini-bar-fill{ height:100%; background:var(--nsb); transition:width 0.4s, background 0.4s; }
+
+  /* personality badge */
+  #intel-personality{
+    font-size:8px; letter-spacing:0.12em; color:var(--namb);
+    border:1px solid rgba(212,168,67,0.3); padding:2px 5px;
+    display:inline-block; margin-top:4px;
   }
 
-  /* ── Stage ── */
+  /* ── stage ── */
   #nav-stage-wrap{
-    flex:1;
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    flex:1; display:flex; align-items:center; justify-content:center;
     position:relative;
-    background:
-      radial-gradient(ellipse at 50% 40%, rgba(58,74,63,0.10), transparent 60%),
-      var(--nav-void);
+    background:radial-gradient(ellipse at 50% 40%,rgba(58,74,63,0.08),transparent 60%),var(--nv);
     overflow:hidden;
   }
   canvas#nav-stage{
-    background:var(--nav-floor);
-    box-shadow: 0 0 0 1px var(--nav-line), 0 0 60px rgba(0,0,0,0.6) inset;
-    image-rendering:pixelated;
-    max-width:100%;
-    max-height:100%;
+    background:var(--nf); image-rendering:pixelated;
+    box-shadow:0 0 0 1px var(--nl),0 0 60px rgba(0,0,0,0.6) inset;
+    max-width:100%; max-height:100%;
   }
   canvas#nav-stage.crt-warn{
-    box-shadow: 0 0 0 1px var(--nav-rust), 0 0 60px rgba(176,74,53,0.25) inset;
+    box-shadow:0 0 0 1px var(--nr),0 0 60px rgba(176,74,53,0.25) inset;
+  }
+  canvas#nav-stage.crt-low{
+    filter:contrast(1.05) brightness(0.95) saturate(0.8);
   }
 
-  /* ── Hint ── */
+  /* scanline overlay */
+  #nav-scanlines{
+    position:absolute; inset:0; pointer-events:none; z-index:5;
+    background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
+    opacity:0.4;
+  }
+
   #nav-hint{
-    position:absolute;
-    bottom:12px;
-    left:50%;
-    transform:translateX(-50%);
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--nav-paper-dim);
-    letter-spacing:0.08em;
-    pointer-events:none;
-    text-align:center;
-    width:90%;
-    line-height:1.5;
+    position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
+    font-family:var(--font-mono); font-size:9px; color:var(--nd);
+    letter-spacing:0.08em; pointer-events:none; text-align:center; width:90%; line-height:1.5;
   }
-  #nav-hint b{ color:var(--nav-paper); }
 
-  /* ── Logbook ── */
-  #nav-logbook{
-    width:300px;
-    flex-shrink:0;
-    border-left:1px solid var(--nav-line);
-    display:flex;
-    flex-direction:column;
-    background:linear-gradient(180deg, rgba(58,74,63,0.04), transparent 12%);
-  }
-  #nav-logbook-header{
-    padding:10px 14px 8px;
-    border-bottom:1px solid var(--nav-line);
-    flex-shrink:0;
+  /* ── bottom console ── */
+  #nav-console{
+    height:38px; border-top:1px solid var(--nl);
+    display:flex; align-items:center; gap:6px; padding:0 10px;
+    background:#060805; flex-shrink:0; overflow-x:auto;
     font-family:var(--font-mono);
   }
-  #nav-logbook-header .label{
-    font-size:10px;
-    letter-spacing:0.15em;
-    color:var(--nav-paper-dim);
+  #nav-console::-webkit-scrollbar{ display:none; }
+  .con-label{ font-size:8px; letter-spacing:0.15em; color:var(--nd); margin-right:4px; flex-shrink:0; }
+  .con-btn{
+    font-family:var(--font-mono); font-size:8px; letter-spacing:0.1em;
+    padding:3px 8px; border:1px solid; cursor:pointer; white-space:nowrap;
+    flex-shrink:0; transition:all 0.15s; background:transparent;
   }
-  #nav-logbook-header .count{
-    font-size:16px;
-    color:var(--nav-paper);
-    margin-top:2px;
-  }
-  #nav-logbook-header .count span{ color:var(--nav-sick-bright); }
+  .con-btn.green { border-color:rgba(34,197,94,0.4); color:var(--nsb); }
+  .con-btn.green:hover { border-color:var(--nsb); background:rgba(34,197,94,0.08); }
+  .con-btn.amber { border-color:rgba(212,168,67,0.4); color:var(--namb); }
+  .con-btn.amber:hover { border-color:var(--namb); background:rgba(212,168,67,0.08); }
+  .con-btn.red   { border-color:rgba(200,71,42,0.4); color:var(--nr); }
+  .con-btn.red:hover   { border-color:var(--nr); background:rgba(200,71,42,0.08); }
+  .con-btn.disabled{ opacity:0.25; cursor:not-allowed; pointer-events:none; }
+  .con-sep{ width:1px; height:18px; background:var(--nl); flex-shrink:0; margin:0 2px; }
 
-  #nav-entries{
-    flex:1;
-    overflow-y:auto;
-    padding:6px 0;
+  /* console flash feedback */
+  #con-feedback{
+    font-size:8px; letter-spacing:0.1em; color:var(--nsb);
+    opacity:0; transition:opacity 0.2s; flex-shrink:0; margin-left:6px;
   }
-  #nav-entries::-webkit-scrollbar{ width:4px; }
-  #nav-entries::-webkit-scrollbar-thumb{ background:var(--nav-line); }
+  #con-feedback.show{ opacity:1; }
 
-  .nav-entry{
-    padding:8px 14px;
-    border-bottom:1px solid var(--nav-line);
-    animation:navEntryIn 0.28s ease;
+  /* ── RIGHT archive panel ── */
+  #nav-archive{
+    width:260px; flex-shrink:0; border-left:1px solid var(--nl);
+    display:flex; flex-direction:column;
+    background:linear-gradient(180deg,rgba(58,74,63,0.04),transparent 12%);
+  }
+
+  /* tabs */
+  #archive-tabs{
+    display:flex; border-bottom:1px solid var(--nl); flex-shrink:0;
     font-family:var(--font-mono);
   }
-  .nav-entry.husk-entry .nav-entry-name{ color:var(--nav-rust); }
-  @keyframes navEntryIn{
-    from{ opacity:0; transform:translateX(6px); }
-    to  { opacity:1; transform:translateX(0); }
+  .arc-tab{
+    flex:1; padding:6px 4px; text-align:center;
+    font-size:8px; letter-spacing:0.1em; color:var(--nd);
+    cursor:pointer; border-right:1px solid var(--nl);
+    transition:color 0.15s, background 0.15s;
   }
-  .nav-entry-et  { font-size:9px; color:var(--nav-paper-dim); letter-spacing:0.05em; }
-  .nav-entry-name{ font-size:12px; color:var(--nav-paper); margin:2px 0 3px; letter-spacing:0.03em; }
-  .nav-entry-desc{ font-size:10px; color:var(--nav-paper-dim); line-height:1.5; }
+  .arc-tab:last-child{ border-right:none; }
+  .arc-tab.active{ color:var(--nsb); background:rgba(34,197,94,0.06); }
+  .arc-tab:hover:not(.active){ color:var(--np); }
 
-  #nav-entries-empty{
-    padding:18px 14px;
-    font-family:var(--font-mono);
-    font-size:10px;
-    color:var(--nav-paper-dim);
-    line-height:1.6;
+  /* tab panes */
+  .arc-pane{ display:none; flex:1; flex-direction:column; overflow:hidden; }
+  .arc-pane.active{ display:flex; }
+
+  #arc-entries, #arc-drifters, #arc-husks, #arc-deaths{
+    flex:1; overflow-y:auto; padding:4px 0;
   }
+  #arc-entries::-webkit-scrollbar,
+  #arc-drifters::-webkit-scrollbar,
+  #arc-husks::-webkit-scrollbar,
+  #arc-deaths::-webkit-scrollbar{ width:3px; }
+  #arc-entries::-webkit-scrollbar-thumb,
+  #arc-drifters::-webkit-scrollbar-thumb,
+  #arc-husks::-webkit-scrollbar-thumb,
+  #arc-deaths::-webkit-scrollbar-thumb{ background:var(--nl); }
+
+  /* archive count bar */
+  .arc-count-bar{
+    padding:6px 10px; border-bottom:1px solid var(--nl);
+    font-family:var(--font-mono); font-size:9px; color:var(--nd); flex-shrink:0;
+  }
+  .arc-count-bar span{ color:var(--nsb); }
+
+  /* entry cards */
+  .arc-entry{
+    padding:6px 10px; border-bottom:1px solid var(--nl);
+    animation:arcIn 0.25s ease; font-family:var(--font-mono);
+  }
+  .arc-entry.husk-e .arc-name{ color:var(--nr); }
+  .arc-entry.death-e .arc-name{ color:var(--nr); }
+  .arc-entry.incident-e .arc-name{ color:var(--nw); }
+  @keyframes arcIn{ from{opacity:0;transform:translateX(5px)} to{opacity:1;transform:none} }
+  .arc-ts  { font-size:8px; color:var(--nd); letter-spacing:0.05em; }
+  .arc-name{ font-size:11px; color:var(--np); margin:2px 0; letter-spacing:0.03em; }
+  .arc-desc{ font-size:9px; color:var(--nd); line-height:1.5; }
+  .arc-tag { font-size:7px; letter-spacing:0.15em; border:1px solid; display:inline-block;
+             padding:1px 4px; margin-top:3px; }
+  .arc-tag.green{ color:var(--nsb); border-color:rgba(34,197,94,0.3); }
+  .arc-tag.red  { color:var(--nr);  border-color:rgba(200,71,42,0.3); }
+  .arc-tag.amb  { color:var(--namb);border-color:rgba(212,168,67,0.3); }
+
+  .arc-empty{
+    padding:16px 10px; font-family:var(--font-mono);
+    font-size:9px; color:var(--nd); line-height:1.6;
+  }
+
+  /* drifter file card */
+  .drifter-file{
+    padding:8px 10px; border-bottom:1px solid var(--nl);
+    font-family:var(--font-mono); animation:arcIn 0.25s ease;
+  }
+  .drifter-file .df-id{ font-size:8px; color:var(--nd); }
+  .drifter-file .df-name{ font-size:12px; color:var(--np); margin:2px 0 4px; }
+  .drifter-file .df-row{ font-size:8px; color:var(--nd); margin-bottom:2px; }
+  .drifter-file .df-row span{ color:var(--np); }
+  .drifter-file .df-trait{
+    font-size:7px; letter-spacing:0.12em; color:var(--namb);
+    border:1px solid rgba(212,168,67,0.25); padding:1px 4px;
+    display:inline-block; margin-right:3px; margin-top:3px;
+  }
+  .drifter-file.deceased .df-name{ color:var(--nr); }
+  .drifter-file.deceased .df-id::after{ content:' [DECEASED]'; color:var(--nr); }
+
+  /* husk file card */
+  .husk-file{
+    padding:8px 10px; border-bottom:1px solid var(--nl);
+    font-family:var(--font-mono); animation:arcIn 0.25s ease;
+  }
+  .husk-file .hf-class{ font-size:8px; color:var(--nr); letter-spacing:0.15em; }
+  .husk-file .hf-name{ font-size:12px; color:var(--np); margin:2px 0 4px; }
+  .husk-file .hf-row{ font-size:8px; color:var(--nd); margin-bottom:2px; }
+  .husk-file .hf-row span{ color:var(--np); }
+  .husk-file .threat-bar{ margin-top:4px; }
 
   /* ── VN overlay ── */
   #nav-vn-overlay{
-    position:absolute;
-    inset:0;
-    background:rgba(10,12,10,0.85);
-    display:none;
-    align-items:flex-end;
-    justify-content:center;
-    z-index:20;
-    padding:32px 20px;
+    position:absolute; inset:0; background:rgba(10,12,10,0.88);
+    display:none; align-items:flex-end; justify-content:center;
+    z-index:20; padding:28px 18px;
   }
   #nav-vn-overlay.show{ display:flex; }
   #nav-vn-box{
-    width:100%;
-    max-width:600px;
-    background:var(--nav-void);
-    border:1px solid var(--nav-paper-dim);
+    width:100%; max-width:560px;
+    background:var(--nv); border:1px solid var(--nd);
   }
   #nav-vn-speaker{
-    padding:7px 14px;
-    border-bottom:1px solid var(--nav-line);
-    font-family:var(--font-mono);
-    font-size:10px;
-    letter-spacing:0.15em;
-    color:var(--nav-sick-bright);
-    display:flex;
-    justify-content:space-between;
+    padding:6px 12px; border-bottom:1px solid var(--nl);
+    font-family:var(--font-mono); font-size:9px; letter-spacing:0.15em;
+    color:var(--nsb); display:flex; justify-content:space-between;
   }
-  #nav-vn-speaker .ch{ color:var(--nav-paper-dim); font-size:9px; }
+  #nav-vn-speaker.is-drifter{ color:var(--nw); }
+  #nav-vn-speaker .ch{ color:var(--nd); font-size:8px; }
+  #nav-vn-body{
+    display:flex; align-items:flex-start; gap:10px;
+    padding:12px 12px 0;
+  }
+  #nav-vn-portrait{
+    width:52px; height:52px; flex:none;
+    image-rendering:pixelated; object-fit:cover;
+    background:var(--nf); border:1px solid var(--nl);
+    display:none;
+  }
+  #nav-vn-portrait.show{ display:block; }
   #nav-vn-text{
-    padding:16px 14px;
-    font-family:var(--font-body);
-    font-size:13px;
-    line-height:1.7;
-    color:var(--nav-paper);
-    min-height:64px;
+    flex:1; padding:0 0 14px; font-family:var(--font-body); font-size:13px;
+    line-height:1.7; color:var(--np); min-height:60px;
   }
   #nav-vn-continue{
-    padding:6px 14px 10px;
-    text-align:right;
-    font-family:var(--font-mono);
-    font-size:9px;
-    color:var(--nav-paper-dim);
-    letter-spacing:0.1em;
-    cursor:pointer;
+    padding:5px 12px 9px; text-align:right; font-family:var(--font-mono);
+    font-size:8px; color:var(--nd); letter-spacing:0.1em; cursor:pointer;
   }
-  #nav-vn-continue:hover{ color:var(--nav-rust); }
+  #nav-vn-continue:hover{ color:var(--nr); }
   #nav-vn-continue::after{ content:" ▸"; }
 
-  /* ── End overlay ── */
+  /* ── end overlay ── */
   #nav-end-overlay{
-    position:absolute;
-    inset:0;
-    background:rgba(10,12,10,0.94);
-    display:none;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
-    text-align:center;
-    z-index:10;
-    padding:24px;
+    position:absolute; inset:0; background:rgba(10,12,10,0.96);
+    display:none; align-items:center; justify-content:center;
+    flex-direction:column; text-align:center; z-index:10; padding:24px;
   }
   #nav-end-overlay.show{ display:flex; }
-  #nav-end-title{
-    font-family:var(--font-display, var(--font-mono));
-    font-size:13px;
-    letter-spacing:0.2em;
-    margin-bottom:12px;
+
+  /* incident report style */
+  #nav-end-report{
+    border:1px solid var(--nl); padding:20px 24px; max-width:440px; width:100%;
+    font-family:var(--font-mono); text-align:left;
   }
-  #nav-end-title.lost   { color:var(--nav-rust); }
-  #nav-end-title.timeout{ color:var(--nav-warn); }
-  #nav-end-sub{
-    font-family:var(--font-mono);
-    font-size:11px;
-    color:var(--nav-paper-dim);
-    max-width:400px;
-    line-height:1.8;
-    margin-bottom:20px;
+  #nav-end-report .rep-head{
+    font-size:8px; letter-spacing:0.2em; color:var(--nd);
+    border-bottom:1px solid var(--nl); padding-bottom:8px; margin-bottom:12px;
+    display:flex; justify-content:space-between;
   }
-  #nav-end-sub b{ color:var(--nav-paper); }
+  #nav-end-report .rep-type{ font-size:11px; letter-spacing:0.15em; margin-bottom:10px; }
+  #nav-end-report .rep-type.lost   { color:var(--nr); }
+  #nav-end-report .rep-type.timeout{ color:var(--nw); }
+  #nav-end-report .rep-row{
+    font-size:9px; color:var(--nd); margin-bottom:5px;
+    display:flex; gap:8px;
+  }
+  #nav-end-report .rep-row .rk{ min-width:120px; }
+  #nav-end-report .rep-row .rv{ color:var(--np); }
+  #nav-end-report .rep-summary{
+    margin-top:10px; padding-top:10px; border-top:1px solid var(--nl);
+    font-size:9px; color:var(--nd); line-height:1.6;
+  }
+  #nav-end-report .rep-summary b{ color:var(--np); }
   #nav-next-btn{
-    background:transparent;
-    border:1px solid var(--nav-paper-dim);
-    color:var(--nav-paper);
-    font-family:var(--font-mono);
-    font-size:10px;
-    letter-spacing:0.1em;
-    padding:7px 16px;
-    cursor:pointer;
+    margin-top:16px; background:transparent; border:1px solid var(--nd);
+    color:var(--np); font-family:var(--font-mono); font-size:9px;
+    letter-spacing:0.1em; padding:6px 14px; cursor:pointer;
     transition:border-color 0.15s, color 0.15s;
   }
-  #nav-next-btn:hover{ border-color:var(--nav-sick-bright); color:var(--nav-sick-bright); }
+  #nav-next-btn:hover{ border-color:var(--nsb); color:var(--nsb); }
 
-  /* ── Signal bar ── */
+  /* ── perspective switch transition ── */
+  #nav-mode-overlay{
+    position:absolute; inset:0; background:#000;
+    display:none; align-items:center; justify-content:center;
+    z-index:30; overflow:hidden;
+  }
+  #nav-mode-overlay.show{ display:flex; }
+  #nav-mode-static{
+    position:absolute; inset:0; width:100%; height:100%;
+    image-rendering:pixelated; opacity:0;
+    transition:opacity 0.12s linear;
+  }
+  #nav-mode-static.on{ opacity:1; }
+  #nav-mode-label{
+    position:relative; font-family:var(--font-display); color:var(--np);
+    font-size:clamp(18px,5vw,32px); letter-spacing:0.12em; text-align:center;
+    opacity:0; transition:opacity 0.6s ease; text-shadow:0 0 18px rgba(232,117,58,0.45);
+  }
+  #nav-mode-label.show{ opacity:1; }
+  #nav-mode-label .sub{
+    display:block; margin-top:8px; font-family:var(--font-mono); font-size:10px;
+    letter-spacing:0.2em; color:var(--nd); text-shadow:none;
+  }
+
+  /* ── signal bar in cmdbar ── */
   #nav-signal-bar{
-    width:72px;
-    height:5px;
-    background:var(--nav-rust-dim);
-    display:inline-block;
-    position:relative;
-    overflow:hidden;
-    vertical-align:middle;
-    margin-left:5px;
+    width:60px; height:4px; background:var(--nrd);
+    display:inline-block; overflow:hidden; vertical-align:middle; margin-left:4px;
   }
   #nav-signal-fill{
-    height:100%;
-    width:100%;
-    background:var(--nav-sick-bright);
+    height:100%; width:100%; background:var(--nsb);
     transition:width 0.3s linear, background 0.3s;
   }
 
-  /* ── MOBILE layout ── */
-  @media (max-width: 640px){
-    #nav-logbook{ display:none; } /* collapsed on small screens */
-    #nav-stage-wrap{ flex:1; }
-
-    /* floating logbook toggle */
-    #nav-logbook-toggle{
-      display:flex;
+  /* ── MOBILE ── */
+  @media(max-width:700px){
+    #nav-intel{ display:none; }
+    #nav-archive{ display:none; }
+    #nav-mob-toggle{
+      display:flex; position:fixed; bottom:50px; right:10px;
+      z-index:50; gap:6px;
     }
   }
-  #nav-logbook-toggle{
-    display:none;
-    position:fixed;
-    bottom:16px;
-    right:16px;
-    z-index:50;
-    background:var(--nav-void);
-    border:1px solid var(--nav-sick-bright);
-    color:var(--nav-sick-bright);
-    font-family:var(--font-mono);
-    font-size:10px;
-    letter-spacing:0.1em;
-    padding:7px 12px;
-    cursor:pointer;
+  #nav-mob-toggle{ display:none; }
+  .mob-btn{
+    background:var(--nv); border:1px solid var(--nsb); color:var(--nsb);
+    font-family:var(--font-mono); font-size:9px; letter-spacing:0.1em;
+    padding:5px 10px; cursor:pointer;
   }
-  #nav-logbook.mobile-open{
-    display:flex;
-    position:fixed;
-    inset:36px 0 0 0;
-    width:100%;
-    z-index:80;
-    background:var(--nav-void);
-    border-left:none;
-    border-top:1px solid var(--nav-line);
+  #nav-archive.mobile-open{
+    display:flex; position:fixed; inset:60px 0 38px 0;
+    width:100%; z-index:80; border-left:none; border-top:1px solid var(--nl);
   }
-  #nav-logbook-close{
-    display:none;
-    padding:8px 14px;
-    font-family:var(--font-mono);
-    font-size:10px;
-    letter-spacing:0.1em;
-    color:var(--nav-rust);
-    cursor:pointer;
-    border-bottom:1px solid var(--nav-line);
-    flex-shrink:0;
+  @media(max-width:700px){
+    #nav-vn-overlay{ padding:12px 8px; }
+    #nav-cmdbar .cmd-cell:nth-child(n+5){ display:none; }
+    #nav-console .con-btn{ font-size:7px; padding:2px 6px; }
   }
-  #nav-logbook.mobile-open #nav-logbook-close{ display:block; }
-  @media (max-width: 640px){
-    #nav-vn-overlay{ padding:16px 10px; }
-    #nav-header .meta{ gap:8px; font-size:9px; }
-    #nav-header .title{ font-size:10px; }
-  }
+
+/* ── Husk Catalog ── */
+.catalog-entry{
+  border-bottom:1px solid var(--nl);
+  font-family:var(--font-mono);
+}
+.catalog-header{
+  padding:8px 10px 6px;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  transition:background 0.15s;
+}
+.catalog-header:hover{ background:rgba(255,255,255,0.03); }
+.catalog-header .ch-id{ font-size:8px; color:var(--nd); letter-spacing:0.15em; }
+.catalog-header .ch-name{ font-size:12px; color:var(--np); margin-top:2px; }
+.catalog-header .ch-threat{
+  font-size:8px; letter-spacing:0.1em;
+  padding:2px 5px; border:1px solid;
+}
+.catalog-header .ch-threat.t1{ color:#22c55e; border-color:rgba(34,197,94,0.3); }
+.catalog-header .ch-threat.t2{ color:var(--namb); border-color:rgba(212,168,67,0.3); }
+.catalog-header .ch-threat.t3{ color:var(--nw); border-color:rgba(232,117,58,0.3); }
+.catalog-header .ch-threat.t4{ color:var(--nr); border-color:rgba(200,71,42,0.3); }
+.catalog-body{
+  display:none;
+  padding:0 10px 10px;
+}
+.catalog-body.open{ display:block; }
+
+/* sprite preview canvas */
+.catalog-sprite-wrap{
+  margin:6px 0;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.catalog-sprite-canvas{
+  image-rendering:pixelated;
+  background:rgba(0,0,0,0.4);
+  border:1px solid var(--nl);
+  flex-shrink:0;
+}
+.catalog-sprite-label{
+  font-size:8px; color:var(--nd); letter-spacing:0.1em; line-height:1.8;
+}
+
+.catalog-field{ font-size:9px; color:var(--nd); margin-bottom:4px; line-height:1.5; }
+.catalog-field b{ color:var(--np); }
+.catalog-field .danger{ color:var(--nr); }
+.catalog-field .safe{ color:var(--nsb); }
+.catalog-field .warn{ color:var(--nw); }
+.catalog-psych{
+  margin-top:6px; padding:6px 8px;
+  background:rgba(255,255,255,0.03);
+  border-left:2px solid rgba(212,168,67,0.4);
+  font-size:8px; color:var(--nd); line-height:1.6; font-style:italic;
+}
+.catalog-status{
+  margin-top:5px; font-size:7px; letter-spacing:0.15em;
+  padding:2px 5px; display:inline-block; border:1px solid;
+}
+.catalog-status.active{ color:var(--nr); border-color:rgba(200,71,42,0.4); }
+.catalog-status.rare  { color:var(--namb); border-color:rgba(212,168,67,0.4); }
+.catalog-status.early { color:var(--nd); border-color:rgba(138,130,120,0.3); }
 </style>
 </head>
 <body>
 
-<!-- ── Back navigation bar ── -->
+<!-- topbar -->
 <div id="nav-topbar">
   <a href="/">
-    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
+    <svg width="9" height="9" viewBox="0 0 10 10" fill="none" aria-hidden="true">
       <path d="M7 1L3 5L7 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
-    WNCORE RADIO
+    WNCORE
   </a>
   <span class="sep">·</span>
-  <span class="breadcrumb-current">NAVIGATOR // FEED</span>
+  <span class="bc" id="nav-mode-breadcrumb">NAVIGATOR // FEED</span>
 </div>
 
-<!-- ── App shell ── -->
-<div id="nav-app">
-
-  <div id="nav-header">
-    <div class="title">NAVIGATOR // <span>FEED ACTIVE</span></div>
-    <div class="meta">
-      <span>DRIFTER <b id="nav-drifter-num">01</b></span>
-      <span>SIGNAL <b id="nav-sig-pct">100%</b><span id="nav-signal-bar"><span id="nav-signal-fill"></span></span></span>
-    </div>
+<!-- top command bar -->
+<div id="nav-cmdbar">
+  <div class="cmd-cell">
+    <span class="lbl">WATCH</span>
+    <span class="val" id="cmd-watch">001</span>
   </div>
+  <div class="cmd-cell">
+    <span class="lbl">DRIFTER</span>
+    <span class="val" id="cmd-drifter">—</span>
+  </div>
+  <div class="cmd-cell">
+    <span class="lbl">ELAPSED</span>
+    <span class="val" id="cmd-elapsed">00:00</span>
+  </div>
+  <div class="cmd-cell">
+    <span class="lbl">SIGNAL</span>
+    <span class="val ok" id="cmd-signal">100%</span>
+    <span id="nav-signal-bar"><span id="nav-signal-fill"></span></span>
+  </div>
+  <div class="cmd-cell">
+    <span class="lbl">WEATHER</span>
+    <span class="val amb" id="cmd-weather">—</span>
+  </div>
+  <div class="cmd-cell">
+    <span class="lbl">RELAY</span>
+    <span class="val ok" id="cmd-relay">STABLE</span>
+  </div>
+  <div class="cmd-cell">
+    <span class="lbl">TOWER</span>
+    <span id="cmd-tower-dot"></span>
+    <span class="val ok" id="cmd-tower">ONLINE</span>
+  </div>
+</div>
 
+<!-- app shell -->
+<div id="nav-app">
   <div id="nav-main">
 
-    <!-- Stage -->
+    <!-- LEFT: intel panel -->
+    <div id="nav-intel">
+      <div class="intel-section">
+        <div class="sec-title">SURVIVOR INTEL</div>
+        <div class="intel-row"><span class="k">DRIFTER</span><span class="v" id="intel-id">—</span></div>
+        <div class="intel-row"><span class="k">STATUS</span><span class="v ok" id="intel-status">ACTIVE</span></div>
+        <div class="intel-row"><span class="k">FLOOR</span><span class="v" id="intel-floor">B1</span></div>
+        <div id="intel-personality">—</div>
+      </div>
+      <div class="intel-section">
+        <div class="sec-title">VITALS</div>
+        <div class="intel-row"><span class="k">HEART</span><span class="v ok" id="intel-hr">72 BPM</span></div>
+        <div class="mini-bar"><div class="mini-bar-fill" id="intel-hr-bar" style="width:60%"></div></div>
+        <div class="intel-row" style="margin-top:6px"><span class="k">STRESS</span><span class="v ok" id="intel-stress">LOW</span></div>
+        <div class="mini-bar"><div class="mini-bar-fill" id="intel-stress-bar" style="width:15%"></div></div>
+        <div class="intel-row" style="margin-top:6px"><span class="k">THREAT</span><span class="v ok" id="intel-threat">NONE</span></div>
+        <div class="mini-bar"><div class="mini-bar-fill" id="intel-threat-bar" style="width:0%"></div></div>
+      </div>
+      <div class="intel-section">
+        <div class="sec-title">OBJECTIVE</div>
+        <div style="font-size:9px;color:var(--nd);line-height:1.5" id="intel-obj">Awaiting feed…</div>
+      </div>
+      <div class="intel-section">
+        <div class="sec-title">HUSK CONTACT</div>
+        <div class="intel-row"><span class="k">SIGHTED</span><span class="v ok" id="intel-husk-seen">NO</span></div>
+        <div class="intel-row"><span class="k">TYPE</span><span class="v" id="intel-husk-type">UNKNOWN</span></div>
+        <div class="intel-row"><span class="k">PROXIMITY</span><span class="v ok" id="intel-husk-prox">CLEAR</span></div>
+      </div>
+    </div>
+
+    <!-- CENTER: stage -->
     <div id="nav-stage-wrap">
+      <div id="nav-scanlines"></div>
       <canvas id="nav-stage" width="640" height="480"></canvas>
 
       <div id="nav-hint">
-        you are not in control — observe, and the logbook writes itself
-        <br><b>tap anywhere</b> to enable audio · <b>LOG</b> button shows discoveries
+        observe the feed — the archive writes itself
+        <br><b>tap</b> to enable audio · <b>ARCHIVE</b> tab for all logs
       </div>
 
       <!-- VN dialogue -->
@@ -414,582 +562,1470 @@
             <span id="nav-vn-name">HANDLER</span>
             <span class="ch" id="nav-vn-channel">88.7 // ENCRYPTED RELAY</span>
           </div>
-          <div id="nav-vn-text"></div>
+          <div id="nav-vn-body">
+            <img id="nav-vn-portrait" src="" alt="" />
+            <div id="nav-vn-text"></div>
+          </div>
           <div id="nav-vn-continue">continue</div>
         </div>
       </div>
 
-      <!-- End of watch -->
+      <!-- end of watch — incident report format -->
       <div id="nav-end-overlay">
-        <div id="nav-end-title" class="lost">SIGNAL LOST</div>
-        <div id="nav-end-sub"></div>
-        <button id="nav-next-btn">SWITCH FEED</button>
+        <div id="nav-end-report">
+          <div class="rep-head">
+            <span>NAVIGATOR NETWORK // INCIDENT REPORT</span>
+            <span id="rep-timestamp">—</span>
+          </div>
+          <div class="rep-type" id="rep-type">SIGNAL LOST</div>
+          <div class="rep-row"><span class="rk">DRIFTER DESIGNATION</span><span class="rv" id="rep-drifter">—</span></div>
+          <div class="rep-row"><span class="rk">WATCH NUMBER</span><span class="rv" id="rep-watch">—</span></div>
+          <div class="rep-row"><span class="rk">CAUSE OF TERMINATION</span><span class="rv" id="rep-cause">—</span></div>
+          <div class="rep-row"><span class="rk">ITEMS RECOVERED</span><span class="rv" id="rep-items">—</span></div>
+          <div class="rep-row"><span class="rk">HUSK ENCOUNTERS</span><span class="rv" id="rep-husks">—</span></div>
+          <div class="rep-row"><span class="rk">ELAPSED TIME</span><span class="rv" id="rep-elapsed">—</span></div>
+          <div class="rep-row"><span class="rk">BODY STATUS</span><span class="rv" id="rep-body">—</span></div>
+          <div class="rep-summary" id="rep-summary">—</div>
+        </div>
+        <button id="nav-next-btn">▸ SWITCH FEED</button>
+        <div id="rep-teaser" style="margin-top:10px;font-family:var(--font-mono);font-size:8px;color:var(--nd);letter-spacing:0.1em;opacity:0.7"></div>
+      </div>
+
+      <!-- perspective switch transition — static burst then mode label -->
+      <div id="nav-mode-overlay">
+        <canvas id="nav-mode-static"></canvas>
+        <div id="nav-mode-label"></div>
       </div>
     </div>
 
-    <!-- Logbook panel -->
-    <div id="nav-logbook">
-      <div id="nav-logbook-close" onclick="navToggleLogbook()">✕ CLOSE LOG</div>
-      <div id="nav-logbook-header">
-        <div class="label">SURVIVOR LOGBOOK — SHARED</div>
-        <div class="count">
-          <span id="nav-found-count">0</span> ENTRIES · <span id="nav-watch-count">0</span> WATCHES
+    <!-- RIGHT: archive panel -->
+    <div id="nav-archive">
+      <div id="archive-tabs">
+        <div class="arc-tab active" onclick="switchTab('log')">LOG</div>
+        <div class="arc-tab" onclick="switchTab('drifters')">FILES</div>
+        <div class="arc-tab" onclick="switchTab('husks')">HUSKS</div>
+        <div class="arc-tab" onclick="switchTab('deaths')">DEATHS</div>
+        <div class="arc-tab" onclick="switchTab('catalog')">CATALOG</div>
+      </div>
+
+      <!-- LOG tab -->
+      <div class="arc-pane active" id="pane-log">
+        <div class="arc-count-bar">
+          <span id="arc-entry-count">0</span> entries · <span id="arc-watch-count">0</span> watches
+        </div>
+        <div id="arc-entries">
+          <div class="arc-empty">No entries yet.<br>Feed hasn't started.</div>
         </div>
       </div>
-      <div id="nav-entries">
-        <div id="nav-entries-empty">No entries yet. Feed hasn't started.</div>
+
+      <!-- DRIFTER FILES tab -->
+      <div class="arc-pane" id="pane-drifters">
+        <div class="arc-count-bar">
+          <span id="arc-drifter-count">0</span> drifters on record
+        </div>
+        <div id="arc-drifters">
+          <div class="arc-empty">No drifter files yet.</div>
+        </div>
+      </div>
+
+      <!-- HUSK FILES tab -->
+      <div class="arc-pane" id="pane-husks">
+        <div class="arc-count-bar">
+          <span id="arc-husk-count">0</span> husk classifications
+        </div>
+        <div id="arc-husks">
+          <div class="arc-empty">No husk contacts logged.</div>
+        </div>
+      </div>
+
+      <!-- DEATH FILES tab -->
+      <div class="arc-pane" id="pane-deaths">
+        <div class="arc-count-bar">
+          <span id="arc-death-count">0</span> confirmed losses
+        </div>
+        <div id="arc-deaths">
+          <div class="arc-empty">No deaths on record.</div>
+        </div>
       </div>
     </div>
 
   </div><!-- /nav-main -->
 
+  <!-- bottom console -->
+  <div id="nav-console">
+    <span class="con-label">INTERVENTIONS //</span>
+    <button class="con-btn green" id="con-reveal"   onclick="conAction('REVEAL LOOT','Nearby items highlighted.',true,null,2,'con-reveal')">REVEAL LOOT <span style="opacity:0.5">·2</span></button>
+    <button class="con-btn amber" id="con-ping"     onclick="conAction('PING DANGER','Husk marked on feed.',true,null,3,'con-ping')">PING DANGER <span style="opacity:0.5">·3</span></button>
+    <button class="con-btn green" id="con-boost"    onclick="conAction('BOOST SIGNAL','Signal +8%.',false,function(){signalPct=Math.min(100,signalPct+8);},5,'con-boost')">BOOST SIG <span style="opacity:0.5">·5</span></button>
+    <button class="con-btn amber" id="con-door"     onclick="conAction('POWER DOOR','Security door cycled.',true,null,4,'con-door')">POWER DOOR <span style="opacity:0.5">·4</span></button>
+    <button class="con-btn red"   id="con-alarm"    onclick="conAction('ALARM','Husk rerouted.',true,function(){if(husk&&currentRoom)pickHuskTarget();},6,'con-alarm')">ALARM <span style="opacity:0.5">·6</span></button>
+    <button class="con-btn red"   id="con-override" onclick="conAction('EMERGENCY OVERRIDE','All systems forced online.',true,function(){signalPct=Math.min(100,signalPct+4);if(husk&&currentRoom)pickHuskTarget();},12,'con-override')">OVERRIDE <span style="opacity:0.5">·12</span></button>
+    <div class="con-sep"></div>
+    <button class="con-btn green disabled" id="con-thermal">THERMAL <span style="opacity:0.5">LOCKED</span></button>
+    <button class="con-btn green disabled" id="con-drone">DRONE CAM <span style="opacity:0.5">LOCKED</span></button>
+    <span id="con-feedback"></span>
+  </div>
+
 </div><!-- /nav-app -->
 
-<!-- Mobile logbook toggle -->
-<button id="nav-logbook-toggle" onclick="navToggleLogbook()">LOG ▸</button>
+<!-- mobile archive toggle -->
+<div id="nav-mob-toggle">
+  <button class="mob-btn" onclick="navToggleArchive()">ARCHIVE ▸</button>
+</div>
 
-<!-- font-glitch already in root — reference matches WNCORE convention -->
 <script src="/font-glitch.js"></script>
-
 <script>
 (function(){
-  'use strict';
+'use strict';
 
-  /* ── Mobile logbook toggle ── */
-  window.navToggleLogbook = function(){
-    const lb = document.getElementById('nav-logbook');
-    lb.classList.toggle('mobile-open');
-    const btn = document.getElementById('nav-logbook-toggle');
-    btn.textContent = lb.classList.contains('mobile-open') ? '✕ CLOSE' : 'LOG ▸';
-  };
-
-  /* ── Canvas sizing — fills available space on any screen ── */
-  const canvas = document.getElementById('nav-stage');
-  const ctx    = canvas.getContext('2d');
-  const BASE_W = 640, BASE_H = 480;
-  let scaleX = 1, scaleY = 1;
-
-  function resizeCanvas(){
-    const wrap = document.getElementById('nav-stage-wrap');
-    const maxW  = wrap.clientWidth  - 8;
-    const maxH  = wrap.clientHeight - 8;
-    const ratio = Math.min(maxW / BASE_W, maxH / BASE_H, 1);
-    canvas.style.width  = Math.floor(BASE_W * ratio) + 'px';
-    canvas.style.height = Math.floor(BASE_H * ratio) + 'px';
-    scaleX = scaleY = ratio; // uniform scale
-  }
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  // ── Room definition ────────────────────────────────────────────
-  const room = {
-    walls: [
-      {x:80,  y:70,  w:120, h:30},
-      {x:430, y:60,  w:140, h:40},
-      {x:60,  y:340, w:90,  h:90},
-      {x:480, y:300, w:110, h:60},
-      {x:280, y:200, w:90,  h:50},
-    ],
-    bounds: {x:24, y:24, w:BASE_W-48, h:BASE_H-48}
-  };
-
-  const ITEM_TEMPLATES = [
-    {id:'cassette',   x:120, y:110, name:'CASSETTE — UNLABELED',        desc:'Magnetic tape, half-rewound. Someone stopped this mid-play.'},
-    {id:'journal',    x:520, y:340, name:'FIELD JOURNAL',               desc:'Last entry dated Day 7. Handwriting gets worse toward the end.'},
-    {id:'radio_part', x:500, y:95,  name:'RELAY COIL (SCAVENGED)',      desc:'Pulled from a unit that isn\u2019t this one. Still warm.'},
-    {id:'photo',      x:90,  y:400, name:'PHOTOGRAPH, WATER-DAMAGED',   desc:'Three faces. Only one is still legible.'},
-    {id:'flashlight', x:330, y:430, name:'FLASHLIGHT, DEAD',            desc:'Battery corroded into the housing. Not coming back on.'},
-    {id:'note',       x:580, y:120, name:'SCRAP NOTE, PINNED',          desc:'\u201cIF YOU\u2019RE READING THIS THE TOWER STILL WORKS.\u201d No signature.'},
-    {id:'keycard',    x:40,  y:230, name:'WNCORE STAFF KEYCARD',        desc:'Photo scratched off. Clearance strip still reads valid.'},
-    {id:'bottle',     x:330, y:120, name:'EMPTY WATER BOTTLE',          desc:'Tipped over. Dust ring around where it used to stand upright.'}
-  ];
-
-  // ── Dialogue pools ─────────────────────────────────────────────
-  const DIALOGUE = {
-    greeting: [
-      "Feed\u2019s up. You\u2019re seeing what the relay sees \u2014 nothing more.",
-      "Connection\u2019s stable. Remember: you watch, you log. That\u2019s the whole job.",
-      "Picture\u2019s a little soft today. Should clear once the Drifter starts moving.",
-      "Channel\u2019s open. Don\u2019t talk back, the link only goes one way."
-    ],
-    briefing: [
-      "This one\u2019s new to the route. Hasn\u2019t learned where the tower\u2019s blind spots are yet.",
-      "Whatever they find down there gets written up for the network. Could save someone\u2019s life. Could save yours, next watch.",
-      "You\u2019re not the only one watching tonight, but you\u2019re the only one watching this Drifter. Don\u2019t lose them.",
-      "Logbook Drifters and Navigators don\u2019t talk to each other directly. We just feed the same network. That\u2019s the arrangement."
-    ],
-    watch_start: [
-      "Eyes on. Whatever happens, you write it down.",
-      "Feed\u2019s live. Stay quiet, stay watching.",
-      "Alright. Let\u2019s see what\u2019s still standing down there."
-    ],
-    husk_sighted_first: [
-      "Hold on \u2014 you\u2019re not alone in there.",
-      "Something\u2019s moving that isn\u2019t the Drifter.",
-      "There. Bottom of the frame. Tell me that\u2019s not what I think it is."
-    ],
-    husk_near_miss: [
-      "Too close. Too close \u2014 keep watching, there\u2019s nothing else you can do.",
-      "If they turn around now they\u2019ll see it. Just\u2014 watch.",
-      "You can\u2019t warn them. You know that. Watch anyway."
-    ],
-    watch_lost_caught: [
-      "Feed\u2019s gone dark. That\u2019s\u2014 that\u2019s not a connection problem.",
-      "I\u2019m not going to pretend that was anything other than what it looked like.",
-      "Log what you saw. The route, the pattern, all of it. Somebody else walks that ground next."
-    ],
-    watch_lost_timeout: [
-      "Signal\u2019s gone. Tower\u2019s overloaded, probably \u2014 happens more than anyone admits.",
-      "We lost the feed clean. No telling what happened after the static took it.",
-      "That\u2019s the relay, not the Drifter. They might still be out there. We just can\u2019t see it anymore."
-    ],
-    next_drifter: [
-      "New feed coming up. Different person, same tower, same rules.",
-      "Switching channels. This one\u2019s route looks rougher.",
-      "Alright. Eyes back open. Next one\u2019s already moving."
-    ]
-  };
-  function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
-
-  // ── Audio engine ───────────────────────────────────────────────
-  const SFX = (function(){
-    let actx = null;
-    let staticGain, staticSrc;
-    let huskDroneGain, huskDroneOsc1, huskDroneOsc2;
-    let unlocked = false;
-
-    function getCtx(){
-      if(!actx){
-        try{ actx = new (window.AudioContext||window.webkitAudioContext)(); }
-        catch(e){ return null; }
-      }
-      return actx;
-    }
-    function unlock(){
-      if(unlocked) return;
-      const c = getCtx(); if(!c) return;
-      if(c.state === 'suspended') c.resume();
-      unlocked = true;
-      startStaticBed();
-      startHuskDrone();
-    }
-    function noiseBuffer(c, seconds, color){
-      const n = Math.max(1, Math.floor(seconds * c.sampleRate));
-      const buf = c.createBuffer(1, n, c.sampleRate);
-      const d = buf.getChannelData(0);
-      if(color === 'white'){
-        for(let i=0;i<n;i++) d[i] = Math.random()*2-1;
-      } else {
-        let last = 0;
-        for(let i=0;i<n;i++){
-          const w = Math.random()*2-1;
-          d[i] = (last + 0.02*w)/1.02; last = d[i]; d[i] *= 3.2;
-        }
-      }
-      return buf;
-    }
-    function startStaticBed(){
-      const c = getCtx(); if(!c) return;
-      staticSrc = c.createBufferSource();
-      staticSrc.buffer = noiseBuffer(c, 2, 'brown');
-      staticSrc.loop = true;
-      staticGain = c.createGain();
-      staticGain.gain.value = 0.015;
-      staticSrc.connect(staticGain);
-      staticGain.connect(c.destination);
-      staticSrc.start();
-    }
-    function setStaticIntensity(sig01){
-      if(!staticGain) return;
-      staticGain.gain.setTargetAtTime(0.012 + (1-sig01)*0.09, getCtx().currentTime, 0.4);
-    }
-    function startHuskDrone(){
-      const c = getCtx(); if(!c) return;
-      huskDroneGain = c.createGain();
-      huskDroneGain.gain.value = 0;
-      huskDroneOsc1 = c.createOscillator(); huskDroneOsc1.type = 'sine'; huskDroneOsc1.frequency.value = 42;
-      huskDroneOsc2 = c.createOscillator(); huskDroneOsc2.type = 'sine'; huskDroneOsc2.frequency.value = 44.5;
-      huskDroneOsc1.connect(huskDroneGain);
-      huskDroneOsc2.connect(huskDroneGain);
-      huskDroneGain.connect(c.destination);
-      huskDroneOsc1.start(); huskDroneOsc2.start();
-    }
-    function setHuskDroneProximity(t){
-      if(!huskDroneGain) return;
-      huskDroneGain.gain.setTargetAtTime(Math.max(0,Math.min(0.16,t*t*0.16)), getCtx().currentTime, 0.25);
-    }
-    function tickPickup(){
-      const c = getCtx(); if(!c) return;
-      const o = c.createOscillator(), g = c.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(880, c.currentTime);
-      o.frequency.exponentialRampToValueAtTime(1320, c.currentTime+0.06);
-      g.gain.setValueAtTime(0.06, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+0.12);
-      o.connect(g); g.connect(c.destination);
-      o.start(); o.stop(c.currentTime+0.13);
-    }
-    function tickHuskSighting(){
-      const c = getCtx(); if(!c) return;
-      const o = c.createOscillator(), g = c.createGain();
-      o.type = 'triangle';
-      o.frequency.setValueAtTime(180, c.currentTime);
-      o.frequency.exponentialRampToValueAtTime(90, c.currentTime+0.25);
-      g.gain.setValueAtTime(0.09, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+0.3);
-      o.connect(g); g.connect(c.destination);
-      o.start(); o.stop(c.currentTime+0.3);
-    }
-    function catchStinger(){
-      const c = getCtx(); if(!c) return;
-      const now = c.currentTime;
-      // layer 1 — noise burst through waveshaper
-      const noise = c.createBufferSource();
-      noise.buffer = noiseBuffer(c, 0.9, 'white');
-      const shaper = c.createWaveShaper();
-      const curve = new Float32Array(256);
-      for(let i=0;i<256;i++){ const x=(i/255)*2-1; curve[i]=Math.tanh(x*6); }
-      shaper.curve = curve;
-      const nf = c.createBiquadFilter(); nf.type='bandpass'; nf.frequency.value=1400; nf.Q.value=0.7;
-      const ng = c.createGain();
-      ng.gain.setValueAtTime(0.22,now); ng.gain.exponentialRampToValueAtTime(0.0001,now+0.7);
-      noise.connect(shaper); shaper.connect(nf); nf.connect(ng); ng.connect(c.destination);
-      noise.start(now); noise.stop(now+0.9);
-      // layer 2 — descending tone
-      const drop = c.createOscillator(); drop.type='sawtooth';
-      drop.frequency.setValueAtTime(380,now); drop.frequency.exponentialRampToValueAtTime(48,now+0.5);
-      const dg = c.createGain();
-      dg.gain.setValueAtTime(0.0001,now); dg.gain.exponentialRampToValueAtTime(0.18,now+0.04);
-      dg.gain.exponentialRampToValueAtTime(0.0001,now+0.65);
-      drop.connect(dg); dg.connect(c.destination);
-      drop.start(now); drop.stop(now+0.7);
-      // layer 3 — sub thud
-      const sub = c.createOscillator(); sub.type='sine';
-      sub.frequency.setValueAtTime(70,now); sub.frequency.exponentialRampToValueAtTime(28,now+0.4);
-      const sg = c.createGain();
-      sg.gain.setValueAtTime(0.3,now); sg.gain.exponentialRampToValueAtTime(0.0001,now+0.5);
-      sub.connect(sg); sg.connect(c.destination);
-      sub.start(now); sub.stop(now+0.5);
-      if(huskDroneGain) huskDroneGain.gain.setTargetAtTime(0,now,0.05);
-    }
-    function timeoutDropout(){
-      const c = getCtx(); if(!c) return;
-      const now = c.currentTime;
-      const noise = c.createBufferSource();
-      noise.buffer = noiseBuffer(c, 1.2, 'white');
-      const f = c.createBiquadFilter(); f.type='lowpass';
-      f.frequency.setValueAtTime(2200,now); f.frequency.exponentialRampToValueAtTime(220,now+1.1);
-      const g = c.createGain();
-      g.gain.setValueAtTime(0.10,now); g.gain.exponentialRampToValueAtTime(0.0001,now+1.2);
-      noise.connect(f); f.connect(g); g.connect(c.destination);
-      noise.start(now); noise.stop(now+1.2);
-    }
-    return { unlock, setStaticIntensity, setHuskDroneProximity, tickPickup, tickHuskSighting, catchStinger, timeoutDropout };
-  })();
-
-  window.addEventListener('pointerdown', SFX.unlock, {once:true});
-  window.addEventListener('keydown',     SFX.unlock, {once:true});
-
-  // ── State ──────────────────────────────────────────────────────
-  const S = { INTRO:'INTRO', WATCHING:'WATCHING', WATCH_END:'WATCH_END' };
-  let gameState = S.INTRO;
-  let drifterNum = 0, watchCount = 0, totalLogged = 0;
-  let drifter, husk, items, foundIds, huskSighted, huskWasNear;
-  let signalPct = 100, signalDrainPerSec = 2.0;
-  let lastFrameTime = performance.now();
-
-  // ── VN system ─────────────────────────────────────────────────
-  let vnQueue = [], vnIndex = 0;
-  function queueVN(lines){
-    vnQueue = lines; vnIndex = 0; showVNLine();
-    document.getElementById('nav-vn-overlay').classList.add('show');
-  }
-  function showVNLine(){
-    const l = vnQueue[vnIndex];
-    document.getElementById('nav-vn-name').textContent = l.speaker || 'HANDLER';
-    document.getElementById('nav-vn-text').textContent = l.text;
-  }
-  function advanceVN(){
-    vnIndex++;
-    if(vnIndex >= vnQueue.length){
-      document.getElementById('nav-vn-overlay').classList.remove('show');
-      startWatch(); return;
-    }
-    showVNLine();
-  }
-  document.getElementById('nav-vn-overlay').addEventListener('click', advanceVN);
-
-  function buildIntroSequence(){
-    if(drifterNum === 1) return [
-      {speaker:'HANDLER', text:pick(DIALOGUE.greeting)},
-      {speaker:'HANDLER', text:pick(DIALOGUE.briefing)},
-      {speaker:'HANDLER', text:pick(DIALOGUE.watch_start)},
-    ];
-    return [
-      {speaker:'HANDLER', text:pick(DIALOGUE.next_drifter)},
-      {speaker:'HANDLER', text:pick(DIALOGUE.watch_start)},
-    ];
-  }
-
-  // ── Geometry helpers ───────────────────────────────────────────
-  function rand(min,max){ return Math.random()*(max-min)+min; }
-  function rectsOverlapCircle(cx,cy,r,rect){
-    const cx2 = Math.max(rect.x, Math.min(cx, rect.x+rect.w));
-    const cy2 = Math.max(rect.y, Math.min(cy, rect.y+rect.h));
-    return (cx-cx2)**2 + (cy-cy2)**2 < r*r;
-  }
-  function pointBlocked(x,y,r){
-    const b = room.bounds;
-    if(x-r < b.x || x+r > b.x+b.w || y-r < b.y || y+r > b.y+b.h) return true;
-    return room.walls.some(w => rectsOverlapCircle(x,y,r,w));
-  }
-
-  // ── Spawn watch ───────────────────────────────────────────────
-  function spawnWatch(){
-    drifterNum++; watchCount++;
-    document.getElementById('nav-drifter-num').textContent = String(drifterNum).padStart(2,'0');
-    document.getElementById('nav-watch-count').textContent = watchCount;
-
-    items = ITEM_TEMPLATES.map(t=>({...t}));
-    foundIds = new Set(); huskSighted = false; huskWasNear = false;
-    signalPct = 100; signalDrainPerSec = rand(1.4, 2.2);
-
-    drifter = { x:120, y:250, r:9, target:null, speed:rand(2.0,2.6), facing:'down', pauseTimer:0 };
-    pickNewDrifterTarget();
-    husk = { x:560, y:420, r:10, target:null, speed:rand(0.8,1.2), facing:'down', pauseTimer:0, detectRadius:70 };
-    pickNewHuskTarget();
-
-    gameState = S.INTRO;
-    queueVN(buildIntroSequence());
-  }
-
-  function pickNewDrifterTarget(){
-    const unfound = items.filter(it=>!foundIds.has(it.id));
-    let tx, ty;
-    if(unfound.length && Math.random()<0.65){
-      const it = unfound[Math.floor(Math.random()*unfound.length)];
-      tx = it.x+rand(-10,10); ty = it.y+rand(-10,10);
-      if(pointBlocked(tx,ty,drifter.r)){ tx=it.x; ty=it.y; }
-    }
-    if(!tx || pointBlocked(tx,ty,drifter.r)){
-      let att=0;
-      do{ tx=rand(room.bounds.x+20,room.bounds.x+room.bounds.w-20); ty=rand(room.bounds.y+20,room.bounds.y+room.bounds.h-20); att++; }
-      while(pointBlocked(tx,ty,drifter.r) && att<20);
-    }
-    drifter.target = {x:tx, y:ty};
-  }
-  function pickNewHuskTarget(){
-    let tx,ty,att=0;
-    do{ tx=rand(room.bounds.x+20,room.bounds.x+room.bounds.w-20); ty=rand(room.bounds.y+20,room.bounds.y+room.bounds.h-20); att++; }
-    while(pointBlocked(tx,ty,husk.r) && att<20);
-    husk.target={x:tx,y:ty};
-  }
-
-  // ── Entity movement ───────────────────────────────────────────
-  function moveToward(entity, dt){
-    if(entity.pauseTimer > 0){ entity.pauseTimer -= dt; return; }
-    if(!entity.target) return;
-    const dx=entity.target.x-entity.x, dy=entity.target.y-entity.y;
-    const dist = Math.hypot(dx,dy);
-    if(dist < 6){ entity.pauseTimer=rand(0.15,0.5); entity.stuckTime=0; return 'arrived'; }
-    const nx=dx/dist, ny=dy/dist;
-    if(Math.abs(nx)>Math.abs(ny)) entity.facing=nx>0?'right':'left';
-    else entity.facing=ny>0?'down':'up';
-    let sx=entity.x+nx*entity.speed*dt*60, sy=entity.y+ny*entity.speed*dt*60;
-    if(pointBlocked(sx,entity.y,entity.r)) sx=entity.x;
-    if(pointBlocked(entity.x,sy,entity.r)) sy=entity.y;
-    if(!pointBlocked(sx,sy,entity.r)){
-      const moved=Math.hypot(sx-entity.x,sy-entity.y);
-      entity.x=sx; entity.y=sy;
-      entity.stuckTime = moved>0.05 ? 0 : (entity.stuckTime||0)+dt;
-    } else { entity.stuckTime=(entity.stuckTime||0)+dt; }
-    if(entity.stuckTime>0.8){ entity.stuckTime=0; return 'arrived'; }
-  }
-
-  // ── Logbook ───────────────────────────────────────────────────
-  const entriesEl = document.getElementById('nav-entries');
-  let dayMinute = 47;
-  function nextTimestamp(){
-    dayMinute += Math.floor(Math.random()*9)+3;
-    let h=23, m=dayMinute;
-    while(m>=60){ m-=60; h=(h+1)%24; }
-    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
-  }
-  function logEntry(name, desc, isHusk){
-    const empty = document.getElementById('nav-entries-empty');
-    if(empty) empty.remove();
-    const el = document.createElement('div');
-    el.className = 'nav-entry' + (isHusk ? ' husk-entry' : '');
-    el.innerHTML = `<div class="nav-entry-et">${nextTimestamp()} — WATCH ${String(drifterNum).padStart(2,'0')}</div>
-      <div class="nav-entry-name">${name}</div>
-      <div class="nav-entry-desc">${desc}</div>`;
-    entriesEl.prepend(el);
-    totalLogged++;
-    document.getElementById('nav-found-count').textContent = totalLogged;
-  }
-
-  // ── Pickup / Husk checks ──────────────────────────────────────
-  function checkItemPickup(){
-    for(const item of items){
-      if(foundIds.has(item.id)) continue;
-      if(Math.hypot(drifter.x-item.x, drifter.y-item.y) < 30){
-        foundIds.add(item.id);
-        logEntry(item.name, item.desc, false);
-        SFX.tickPickup();
-      }
-    }
-  }
-
-  let flashTimer = null;
-  function flashVNLine(text){
-    const box = document.getElementById('nav-vn-overlay');
-    if(box.classList.contains('show')) return;
-    document.getElementById('nav-vn-name').textContent = 'HANDLER';
-    document.getElementById('nav-vn-text').textContent = text;
-    box.classList.add('show');
-    document.getElementById('nav-vn-continue').style.display = 'none';
-    box.style.pointerEvents = 'none';
-    if(flashTimer) clearTimeout(flashTimer);
-    flashTimer = setTimeout(()=>{
-      box.classList.remove('show');
-      box.style.pointerEvents = '';
-      document.getElementById('nav-vn-continue').style.display = '';
-    }, 2600);
-  }
-
-  function checkHuskProximity(){
-    const d = Math.hypot(husk.x-drifter.x, husk.y-drifter.y);
-    const near = d < husk.detectRadius;
-    SFX.setHuskDroneProximity(Math.max(0, 1-(d/(husk.detectRadius*1.4))));
-    if(near && !huskSighted){
-      huskSighted = true;
-      logEntry('HUSK SIGHTING — LOGGED FOR NETWORK', `Observed near grid position (${Math.round(husk.x)}, ${Math.round(husk.y)}). Movement pattern noted for future routes.`, true);
-      flashVNLine(pick(DIALOGUE.husk_sighted_first));
-      SFX.tickHuskSighting();
-    }
-    if(near && !huskWasNear){ huskWasNear=true; flashVNLine(pick(DIALOGUE.husk_near_miss)); }
-    if(!near) huskWasNear = false;
-    return d < (husk.r + drifter.r + 4);
-  }
-
-  // ── Watch end ─────────────────────────────────────────────────
-  function endWatch(reason){
-    gameState = S.WATCH_END;
-    if(flashTimer){ clearTimeout(flashTimer); flashTimer=null; }
-    const vnBox = document.getElementById('nav-vn-overlay');
-    vnBox.classList.remove('show');
-    vnBox.style.pointerEvents='';
-    document.getElementById('nav-vn-continue').style.display='';
-
-    const title = document.getElementById('nav-end-title');
-    const sub   = document.getElementById('nav-end-sub');
-    if(reason === 'caught'){
-      title.textContent = 'FEED LOST \u2014 DRIFTER GONE';
-      title.className = 'lost';
-      sub.innerHTML = pick(DIALOGUE.watch_lost_caught) + `<br><br><b>${foundIds.size} item(s)</b> and the husk\u2019s pattern are now in the shared logbook.`;
-      SFX.catchStinger();
-    } else {
-      title.textContent = 'SIGNAL LOST';
-      title.className = 'timeout';
-      sub.innerHTML = pick(DIALOGUE.watch_lost_timeout) + `<br><br><b>${foundIds.size} item(s)</b> logged before the feed dropped.`;
-      SFX.timeoutDropout();
-    }
-    document.getElementById('nav-end-overlay').classList.add('show');
-  }
-  document.getElementById('nav-next-btn').addEventListener('click', ()=>{
-    document.getElementById('nav-end-overlay').classList.remove('show');
-    spawnWatch();
+/* ── tab switcher ── */
+window.switchTab = function(name){
+  document.querySelectorAll('.arc-tab').forEach((t,i)=>{
+    const names=['log','drifters','husks','deaths','catalog'];
+    t.classList.toggle('active', names[i]===name);
   });
-  function startWatch(){ gameState = S.WATCHING; }
+  document.querySelectorAll('.arc-pane').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pane-'+name).classList.add('active');
+};
 
-  // ── Update ────────────────────────────────────────────────────
-  function update(dt){
-    if(gameState !== S.WATCHING) return;
-    if(moveToward(drifter,dt)==='arrived') pickNewDrifterTarget();
-    if(moveToward(husk,dt)==='arrived')    pickNewHuskTarget();
-    checkItemPickup();
-    const caught = checkHuskProximity();
+/* ── mobile archive toggle ── */
+window.navToggleArchive = function(){
+  const a = document.getElementById('nav-archive');
+  a.classList.toggle('mobile-open');
+  document.querySelector('#nav-mob-toggle .mob-btn').textContent =
+    a.classList.contains('mobile-open') ? '✕ CLOSE' : 'ARCHIVE ▸';
+};
 
-    signalPct -= signalDrainPerSec*dt;
-    const clamped = Math.max(0, Math.round(signalPct));
-    const fill = document.getElementById('nav-signal-fill');
-    const pctEl = document.getElementById('nav-sig-pct');
-    pctEl.textContent = clamped + '%';
-    fill.style.width = clamped + '%';
-    pctEl.className = clamped<20 ? 'crit' : (clamped<45 ? 'warn' : '');
-    fill.style.background = clamped<20 ? 'var(--nav-rust)' : (clamped<45 ? 'var(--nav-warn)' : 'var(--nav-sick-bright)');
-    canvas.classList.toggle('crt-warn', clamped<20);
-    SFX.setStaticIntensity(clamped/100);
+window.closeMobileArchive = function(){
+  const a = document.getElementById('nav-archive');
+  if(!a.classList.contains('mobile-open')) return;
+  a.classList.remove('mobile-open');
+  document.querySelector('#nav-mob-toggle .mob-btn').textContent = 'ARCHIVE ▸';
+};
 
-    if(caught){ endWatch('caught'); return; }
-    if(signalPct <= 0){ endWatch('timeout'); return; }
+/* ── console action feedback ── */
+let conCooldown = false;
+const CON_COOLDOWNS = {};
+window.conAction = function(label, msg, logIt, fn, sigCost, btnId){
+  if(gameState !== 'WATCHING') return;
+  if(gameMode !== 'NAVIGATOR') return;
+  if(btnId && CON_COOLDOWNS[btnId]) return;
+  if(sigCost && signalPct < sigCost){ 
+    const fb=document.getElementById('con-feedback');
+    fb.textContent='// INSUFFICIENT SIGNAL';fb.classList.add('show');
+    setTimeout(()=>fb.classList.remove('show'),1400);return;
+  }
+  if(sigCost) signalPct = Math.max(0, signalPct - sigCost);
+  if(fn) fn();
+  const fb = document.getElementById('con-feedback');
+  fb.textContent = '// ' + label + ' — ' + msg;
+  fb.classList.add('show');
+  if(logIt) logArcEntry('INTERVENTION: '+label, msg, 'incident');
+  SFX.tickPickup();
+  // per-button cooldown
+  if(btnId){
+    CON_COOLDOWNS[btnId]=true;
+    const el=document.getElementById(btnId);
+    if(el){ el.classList.add('disabled'); el.style.opacity='0.3'; }
+    const cd = sigCost ? sigCost*1200 : 2200;
+    setTimeout(()=>{
+      CON_COOLDOWNS[btnId]=false;
+      if(el){ el.classList.remove('disabled'); el.style.opacity=''; }
+    }, cd);
+  }
+  setTimeout(()=>fb.classList.remove('show'), 2000);
+};
+
+/* ── canvas ── */
+const canvas = document.getElementById('nav-stage');
+const ctx    = canvas.getContext('2d');
+const BW = 640, BH = 480;
+
+function resizeCanvas(){
+  const wrap = document.getElementById('nav-stage-wrap');
+  const r = Math.min((wrap.clientWidth-8)/BW, (wrap.clientHeight-8)/BH, 1);
+  canvas.style.width  = Math.floor(BW*r)+'px';
+  canvas.style.height = Math.floor(BH*r)+'px';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+/* ── personalities ── */
+const PERSONALITIES = [
+  { name:'CURIOUS',    speedMod:1.1, pauseMod:0.6, desc:'Investigates everything. Lingers near items.' },
+  { name:'COWARD',     speedMod:0.8, pauseMod:1.4, desc:'Hesitates often. Avoids open ground.' },
+  { name:'BRAVE',      speedMod:1.3, pauseMod:0.4, desc:'Moves fast, pauses rarely. High risk tolerance.' },
+  { name:'METHODICAL', speedMod:0.9, pauseMod:1.0, desc:'Systematic. Clears room section by section.' },
+  { name:'PARANOID',   speedMod:1.0, pauseMod:2.0, desc:'Stops frequently. Doubles back often.' },
+  { name:'GREEDY',     speedMod:1.2, pauseMod:0.5, desc:'Prioritizes items aggressively.' },
+  { name:'LEADER',     speedMod:1.1, pauseMod:0.8, desc:'Steady and deliberate. High stress threshold.' },
+  { name:'SELFISH',    speedMod:1.4, pauseMod:0.3, desc:'Fast mover. Leaves nothing for others.' },
+];
+
+/* ── husk types ── */
+const HUSK_TYPES = [
+  { id:'STALKER',  color:'#8b2020', detectRadius:65, speed:[0.7,1.1],
+    behavior:'Tracks survivors slowly. Persistent pursuit once locked on.',
+    weakness:'Loses target when survivor breaks line of sight for 5+ seconds.' },
+  { id:'WATCHER',  color:'#5a3a8a', detectRadius:90, speed:[0.3,0.6],
+    behavior:'Moves only when unobserved. Freezes if the feed catches it directly.',
+    weakness:'Keep the camera on it. It cannot advance while watched.' },
+  { id:'BLIND',    color:'#4a3a1a', detectRadius:50, speed:[1.0,1.4],
+    behavior:'Cannot see. Reacts to sound — footsteps, item pickup, alarms.',
+    weakness:'Survivor must remain stationary to avoid detection.' },
+  { id:'MIMIC',    color:'#1a4a3a', detectRadius:55, speed:[0.9,1.2],
+    behavior:'Imitates human voices. May sound like a survivor calling for help.',
+    weakness:'Does not respond to radio contact. Silence is the tell.' },
+  { id:'BURROWER', color:'#3a2a0a', detectRadius:45, speed:[1.1,1.5],
+    behavior:'Travels through thin walls. Conventional routes offer no protection.',
+    weakness:'Cannot burrow through reinforced structures. Seek hardened rooms.' },
+];
+
+/* ── weather pool ── */
+const WEATHERS = ['CLEAR','OVERCAST','FOG HEAVY','ACID RAIN','DEAD CALM','STATIC STORM','DUST EVENT'];
+
+/* ── drifter name pool ── */
+const DRIFTER_NAMES = [
+  'RAEL','SONA','KITE','DRIFT-7','MORA','ECHO-3','VENN','LASK',
+  'TIRO','AXIS','FENN','GREY','NOVA-2','PIKE','QUEN','SHIV',
+];
+
+/* ── rooms pool (simple variant set for this prototype) ── */
+const ROOM_VARIANTS = [
+  { name:'PROCESSING FLOOR B1', walls:[
+    {x:80,y:70,w:120,h:30},{x:430,y:60,w:140,h:40},
+    {x:60,y:340,w:90,h:90},{x:480,y:300,w:110,h:60},{x:280,y:200,w:90,h:50}
+  ]},
+  { name:'RELAY STATION 3', walls:[
+    {x:50,y:50,w:200,h:20},{x:400,y:80,w:30,h:160},
+    {x:150,y:300,w:160,h:25},{x:500,y:250,w:80,h:120},{x:260,y:160,w:40,h:80}
+  ]},
+  { name:'ARCHIVE SUBLEVEL', walls:[
+    {x:100,y:100,w:80,h:80},{x:350,y:50,w:180,h:25},
+    {x:480,y:180,w:30,h:200},{x:80,y:320,w:120,h:30},{x:230,y:230,w:120,h:40}
+  ]},
+  { name:'COMMUNICATIONS HUB', walls:[
+    {x:60,y:60,w:40,h:200},{x:200,y:60,w:240,h:25},
+    {x:530,y:60,w:50,h:160},{x:120,y:350,w:300,h:25},{x:300,y:180,w:80,h:80}
+  ]},
+];
+
+const ITEM_POOL = [
+  {id:'cassette',   name:'CASSETTE — UNLABELED',      desc:'Magnetic tape, half-rewound. Someone stopped this mid-play.'},
+  {id:'journal',    name:'FIELD JOURNAL',             desc:'Last entry dated Day 7. Handwriting gets worse toward the end.'},
+  {id:'radio_part', name:'RELAY COIL (SCAVENGED)',    desc:'Pulled from a unit that isn\u2019t this one. Still warm.'},
+  {id:'photo',      name:'PHOTOGRAPH, WATER-DAMAGED', desc:'Three faces. Only one is still legible.'},
+  {id:'flashlight', name:'FLASHLIGHT, DEAD',          desc:'Battery corroded into the housing. Not coming back on.'},
+  {id:'note',       name:'SCRAP NOTE, PINNED',        desc:'\u201cIF YOU\u2019RE READING THIS THE TOWER STILL WORKS.\u201d No signature.'},
+  {id:'keycard',    name:'WNCORE STAFF KEYCARD',      desc:'Photo scratched off. Clearance strip still reads valid.'},
+  {id:'bottle',     name:'EMPTY WATER BOTTLE',        desc:'Tipped over. Dust ring around where it used to stand upright.'},
+  {id:'medkit',     name:'MEDKIT, PARTIAL',           desc:'Two bandages and an empty syringe. Someone got here first.'},
+  {id:'map',        name:'HAND-DRAWN FLOOR MAP',      desc:'Exits marked in red. One is crossed out.'},
+  {id:'radio',      name:'HANDHELD RADIO, DEAD',      desc:'Last frequency locked to 88.7. The dial is melted shut.'},
+  {id:'blueprint',  name:'STRUCTURAL BLUEPRINT',      desc:'Basement level. Someone has circled a room labeled SECURE.'},
+];
+
+/* ── dialogue pools (expanded with GDD philosophy) ── */
+const DIALOGUE = {
+  greeting:[
+    {text:"Feed\u2019s up. You\u2019re seeing what the relay sees \u2014 nothing more.", emotion:'calm'},
+    {text:"Connection\u2019s stable. Remember: you watch, you log. That\u2019s the whole job.", emotion:'calm'},
+    {text:"Picture\u2019s a little soft today. Should clear once the Drifter starts moving.", emotion:'doubt'},
+    {text:"Channel\u2019s open. Don\u2019t talk back, the link only goes one way.", emotion:'calm'},
+    {text:"We\u2019re not here to save anyone. We\u2019re here to learn enough that the next person survives.", emotion:'thoughtfulness'},
+  ],
+  briefing:[
+    {text:"This one\u2019s new to the route. Hasn\u2019t learned where the tower\u2019s blind spots are yet.", emotion:'thoughtfulness'},
+    {text:"Whatever they find down there gets written up for the network. Could save someone\u2019s life. Could save yours, next watch.", emotion:'thoughtfulness'},
+    {text:"You\u2019re not the only one watching tonight, but you\u2019re the only one watching this Drifter. Don\u2019t lose them.", emotion:'calm'},
+    {text:"Logbook Drifters and Navigators don\u2019t talk to each other directly. We just feed the same network. That\u2019s the arrangement.", emotion:'calm'},
+    {text:"Every item they recover, every route they walk, every thing that kills them \u2014 it all goes in the archive. Nothing is wasted.", emotion:'thoughtfulness'},
+    {text:"You\u2019re not the hero here. Nobody is. You\u2019re a small part of a dying network trying to preserve something before it\u2019s all gone.", emotion:'sadness'},
+  ],
+  watch_start:[
+    {text:"Eyes on. Whatever happens, you write it down.", emotion:'calm'},
+    {text:"Feed\u2019s live. Stay quiet, stay watching.", emotion:'talk'},
+    {text:"Alright. Let\u2019s see what\u2019s still standing down there.", emotion:'thoughtfulness'},
+    {text:"The world keeps moving whether we watch or not. We watch anyway.", emotion:'sadness'},
+    {text:"Most survival games ask if you can stay alive. We ask what you can learn before the next person dies.", emotion:'thoughtfulness'},
+  ],
+  husk_sighted_first:[
+    {text:"Hold on \u2014 you\u2019re not alone in there.", emotion:'astonishment'},
+    {text:"Something\u2019s moving that isn\u2019t the Drifter.", emotion:'fear'},
+    {text:"There. Bottom of the frame. Tell me that\u2019s not what I think it is.", emotion:'fear'},
+    {text:"Contact. Log it \u2014 behavior, movement pattern, everything.", emotion:'talk'},
+    {text:"New contact. This one goes in the Husk files.", emotion:'doubt'},
+  ],
+  husk_near_miss:[
+    {text:"Too close. Too close \u2014 keep watching, there\u2019s nothing else you can do.", emotion:'fear'},
+    {text:"If they turn around now they\u2019ll see it. Just\u2014 watch.", emotion:'fear'},
+    {text:"You can\u2019t warn them. You know that. Watch anyway.", emotion:'doubt'},
+    {text:"Log the position. Log the speed. Even if this goes wrong, that data matters.", emotion:'talk'},
+    {text:"Breathe. Your job is to watch and record. Do your job.", emotion:'discomfort'},
+  ],
+  watch_lost_caught:[
+    {text:"Feed\u2019s gone dark. That\u2019s\u2014 that\u2019s not a connection problem.", emotion:'sadness'},
+    {text:"I\u2019m not going to pretend that was anything other than what it looked like.", emotion:'sadness'},
+    {text:"Log what you saw. The route, the pattern, all of it. Somebody else walks that ground next.", emotion:'thoughtfulness'},
+    {text:"Death isn\u2019t failure here. It\u2019s data. It has to be.", emotion:'sadness'},
+    {text:"File\u2019s closed on this Drifter. They go in the archive now. They don\u2019t disappear.", emotion:'sadness'},
+  ],
+  watch_lost_timeout:[
+    {text:"Signal\u2019s gone. Tower\u2019s overloaded, probably \u2014 happens more than anyone admits.", emotion:'doubt'},
+    {text:"We lost the feed clean. No telling what happened after the static took it.", emotion:'doubt'},
+    {text:"That\u2019s the relay, not the Drifter. They might still be out there. We just can\u2019t see it anymore.", emotion:'thoughtfulness'},
+    {text:"Signal collapse. The network is\u2026 it\u2019s not holding like it used to.", emotion:'doubt'},
+    {text:"Feed terminated. Whatever they found stays in the logbook.", emotion:'sadness'},
+  ],
+  next_drifter:[
+    {text:"New feed coming up. Different person, same tower, same rules.", emotion:'calm'},
+    {text:"Switching channels. This one\u2019s route looks rougher.", emotion:'talk'},
+    {text:"Alright. Eyes back open. Next one\u2019s already moving.", emotion:'sadness'},
+    {text:"One more feed. That\u2019s all this ever is. One more feed.", emotion:'sadness'},
+    {text:"New Drifter incoming. New personality. Pay attention to how they move.", emotion:'talk'},
+  ],
+};
+
+/* ── portrait system ── */
+const HANDLER_PORTRAITS = {
+  aggression:'/assets/navigator/portraits/handler/aggression.png',
+  astonishment:'/assets/navigator/portraits/handler/astonishment.png',
+  awkwardness:'/assets/navigator/portraits/handler/awkwardness.png',
+  calm:'/assets/navigator/portraits/handler/calm.png',
+  cry:'/assets/navigator/portraits/handler/cry.png',
+  disgust:'/assets/navigator/portraits/handler/disgust.png',
+  doubt:'/assets/navigator/portraits/handler/doubt.png',
+  discomfort:'/assets/navigator/portraits/handler/dscomfort.png', // source asset filename is misspelled — key stays correct
+  embarrassment:'/assets/navigator/portraits/handler/embarrassment.png',
+  eye_rolling:'/assets/navigator/portraits/handler/eye_rolling.png',
+  fear:'/assets/navigator/portraits/handler/fear.png',
+  sadness:'/assets/navigator/portraits/handler/sadness.png',
+  scream:'/assets/navigator/portraits/handler/scream.png',
+  skepticism:'/assets/navigator/portraits/handler/skepticism.png',
+  smile:'/assets/navigator/portraits/handler/smile.png',
+  talk:'/assets/navigator/portraits/handler/talk.png',
+  thoughtfulness:'/assets/navigator/portraits/handler/thoughtfulness.png',
+  laughter:'/assets/navigator/portraits/handler/laughter.png',
+};
+const DRIFTER_PORTRAIT_SETS = ['swat_1','swat_2','swat_3'];
+function drifterPortraitPath(set, emotion){
+  return `/assets/navigator/portraits/drifter/${set}/${emotion}.png`; // emotion is one of: aggression, calm, sadness, smile, special, talk
+}
+let currentDrifterPortraitSet = 'swat_1'; // randomized per watch in spawnWatch()
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function handlerLine(pool){ const d=pick(pool); return {speaker:'HANDLER',text:d.text,emotion:d.emotion}; }
+
+/* ── procedural Drifter dialogue ── */
+/* Drifters don't get hand-written lines like the Handler — these are short, context-triggered
+   field mutters, picked at random per event and tagged with one of the 6 SWAT emotions. */
+const DRIFTER_LINES = {
+  item_pickup:[
+    {text:"Supplies. Didn\u2019t expect to find anything good in here.", emotion:'smile'},
+    {text:"Got it. Logging the find.", emotion:'calm'},
+    {text:"Small win. I\u2019ll take it.", emotion:'smile'},
+    {text:"Useful. Adding it to the pack.", emotion:'calm'},
+  ],
+  near_miss:[
+    {text:"Dang it \u2014 almost got caught there.", emotion:'aggression'},
+    {text:"Too close. Too close.", emotion:'aggression'},
+    {text:"Okay. Okay, it didn\u2019t see me. Keep moving.", emotion:'aggression'},
+  ],
+  husk_sighted:[
+    {text:"Got eyes on something. Not friendly.", emotion:'special'},
+    {text:"There\u2019s one of them. Staying low.", emotion:'special'},
+    {text:"Contact. Holding position.", emotion:'special'},
+  ],
+  moving:[
+    {text:"Moving to a new location. Nothing back there worth staying for.", emotion:'calm'},
+    {text:"Heading further in. Let\u2019s see what\u2019s past this room.", emotion:'talk'},
+    {text:"Relocating. Quieter on this side, I think.", emotion:'calm'},
+  ],
+  logbook_drop:[
+    {text:"Leaving the logbook here. Whoever finds it \u2014 stay sharp.", emotion:'special'},
+    {text:"Dropping a page for the next one through. Network has to know what's down here.", emotion:'calm'},
+    {text:"Marking the route. Not for me \u2014 for whoever comes after.", emotion:'special'},
+  ],
+  low_signal:[
+    {text:"Something\u2019s wrong with the relay. Feels weaker out here.", emotion:'sadness'},
+    {text:"Hope the tower\u2019s still got eyes on me. Doesn\u2019t feel like it.", emotion:'sadness'},
+    {text:"Getting quiet. Too quiet.", emotion:'aggression'},
+  ],
+};
+function drifterLine(context){
+  const pool=DRIFTER_LINES[context];
+  if(!pool) return null;
+  const d=pick(pool);
+  return {speaker:'DRIFTER',text:d.text,emotion:d.emotion};
+}
+function rand(min,max){ return Math.random()*(max-min)+min; }
+
+/* ── audio engine ── */
+const SFX=(function(){
+  let actx=null,staticGain,huskDroneGain,huskDroneOsc1,huskDroneOsc2,unlocked=false;
+  function getCtx(){ if(!actx) try{actx=new(window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} return actx; }
+  function unlock(){
+    if(unlocked) return; const c=getCtx(); if(!c) return;
+    if(c.state==='suspended') c.resume(); unlocked=true; startBed(); startDrone();
+  }
+  function noiseBuf(c,sec,color){
+    const n=Math.max(1,Math.floor(sec*c.sampleRate)),buf=c.createBuffer(1,n,c.sampleRate),d=buf.getChannelData(0);
+    if(color==='white'){for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
+    else{let l=0;for(let i=0;i<n;i++){const w=Math.random()*2-1;d[i]=(l+0.02*w)/1.02;l=d[i];d[i]*=3.2;}}
+    return buf;
+  }
+  function startBed(){
+    const c=getCtx();if(!c)return;
+    const s=c.createBufferSource();s.buffer=noiseBuf(c,2,'brown');s.loop=true;
+    staticGain=c.createGain();staticGain.gain.value=0.015;
+    s.connect(staticGain);staticGain.connect(c.destination);s.start();
+  }
+  function setStatic(sig){if(!staticGain)return;staticGain.gain.setTargetAtTime(0.012+(1-sig)*0.09,getCtx().currentTime,0.4);}
+  function startDrone(){
+    const c=getCtx();if(!c)return;
+    huskDroneGain=c.createGain();huskDroneGain.gain.value=0;
+    huskDroneOsc1=c.createOscillator();huskDroneOsc1.type='sine';huskDroneOsc1.frequency.value=42;
+    huskDroneOsc2=c.createOscillator();huskDroneOsc2.type='sine';huskDroneOsc2.frequency.value=44.5;
+    huskDroneOsc1.connect(huskDroneGain);huskDroneOsc2.connect(huskDroneGain);
+    huskDroneGain.connect(c.destination);huskDroneOsc1.start();huskDroneOsc2.start();
+  }
+  function setDrone(t){if(!huskDroneGain)return;huskDroneGain.gain.setTargetAtTime(Math.max(0,Math.min(0.16,t*t*0.16)),getCtx().currentTime,0.25);}
+  function tickPickup(){
+    const c=getCtx();if(!c)return;const o=c.createOscillator(),g=c.createGain();
+    o.type='sine';o.frequency.setValueAtTime(880,c.currentTime);o.frequency.exponentialRampToValueAtTime(1320,c.currentTime+0.06);
+    g.gain.setValueAtTime(0.06,c.currentTime);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.12);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.13);
+  }
+  function tickHusk(){
+    const c=getCtx();if(!c)return;const o=c.createOscillator(),g=c.createGain();
+    o.type='triangle';o.frequency.setValueAtTime(180,c.currentTime);o.frequency.exponentialRampToValueAtTime(90,c.currentTime+0.25);
+    g.gain.setValueAtTime(0.09,c.currentTime);g.gain.exponentialRampToValueAtTime(0.0001,c.currentTime+0.3);
+    o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+0.3);
+  }
+  function catchStinger(){
+    const c=getCtx();if(!c)return;const now=c.currentTime;
+    const noise=c.createBufferSource();noise.buffer=noiseBuf(c,0.9,'white');
+    const shaper=c.createWaveShaper();const curve=new Float32Array(256);
+    for(let i=0;i<256;i++){const x=(i/255)*2-1;curve[i]=Math.tanh(x*6);}shaper.curve=curve;
+    const nf=c.createBiquadFilter();nf.type='bandpass';nf.frequency.value=1400;nf.Q.value=0.7;
+    const ng=c.createGain();ng.gain.setValueAtTime(0.22,now);ng.gain.exponentialRampToValueAtTime(0.0001,now+0.7);
+    noise.connect(shaper);shaper.connect(nf);nf.connect(ng);ng.connect(c.destination);noise.start(now);noise.stop(now+0.9);
+    const drop=c.createOscillator();drop.type='sawtooth';
+    drop.frequency.setValueAtTime(380,now);drop.frequency.exponentialRampToValueAtTime(48,now+0.5);
+    const dg=c.createGain();dg.gain.setValueAtTime(0.0001,now);dg.gain.exponentialRampToValueAtTime(0.18,now+0.04);
+    dg.gain.exponentialRampToValueAtTime(0.0001,now+0.65);drop.connect(dg);dg.connect(c.destination);drop.start(now);drop.stop(now+0.7);
+    const sub=c.createOscillator();sub.type='sine';sub.frequency.setValueAtTime(70,now);sub.frequency.exponentialRampToValueAtTime(28,now+0.4);
+    const sg=c.createGain();sg.gain.setValueAtTime(0.3,now);sg.gain.exponentialRampToValueAtTime(0.0001,now+0.5);
+    sub.connect(sg);sg.connect(c.destination);sub.start(now);sub.stop(now+0.5);
+    if(huskDroneGain)huskDroneGain.gain.setTargetAtTime(0,now,0.05);
+  }
+  function timeoutDropout(){
+    const c=getCtx();if(!c)return;const now=c.currentTime;
+    const noise=c.createBufferSource();noise.buffer=noiseBuf(c,1.2,'white');
+    const f=c.createBiquadFilter();f.type='lowpass';f.frequency.setValueAtTime(2200,now);f.frequency.exponentialRampToValueAtTime(220,now+1.1);
+    const g=c.createGain();g.gain.setValueAtTime(0.10,now);g.gain.exponentialRampToValueAtTime(0.0001,now+1.2);
+    noise.connect(f);f.connect(g);g.connect(c.destination);noise.start(now);noise.stop(now+1.2);
+  }
+  function modeSwitchBurst(durationSec){
+    const c=getCtx();if(!c)return;const now=c.currentTime;
+    const noise=c.createBufferSource();noise.buffer=noiseBuf(c,durationSec,'white');
+    const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.setValueAtTime(300,now);
+    bp.frequency.linearRampToValueAtTime(4000,now+durationSec*0.5);bp.frequency.linearRampToValueAtTime(300,now+durationSec);
+    bp.Q.value=0.8;
+    const g=c.createGain();g.gain.setValueAtTime(0,now);g.gain.linearRampToValueAtTime(0.24,now+0.05);
+    g.gain.setValueAtTime(0.24,now+durationSec-0.3);g.gain.exponentialRampToValueAtTime(0.0001,now+durationSec);
+    noise.connect(bp);bp.connect(g);g.connect(c.destination);noise.start(now);noise.stop(now+durationSec);
+  }
+  return{unlock,setStatic,setDrone,tickPickup,tickHusk,catchStinger,timeoutDropout,modeSwitchBurst};
+})();
+window.addEventListener('pointerdown',SFX.unlock,{once:true});
+window.addEventListener('keydown',SFX.unlock,{once:true});
+
+/* ── DRIFTER mode keyboard input ── */
+const DRIFTER_KEYS = new Set(['w','a','s','d','arrowup','arrowdown','arrowleft','arrowright']);
+window.addEventListener('keydown',e=>{
+  const k=e.key.toLowerCase();
+  if(DRIFTER_KEYS.has(k)){ keysDown[k]=true; if(gameMode==='DRIFTER') e.preventDefault(); }
+});
+window.addEventListener('keyup',e=>{
+  const k=e.key.toLowerCase();
+  if(DRIFTER_KEYS.has(k)) keysDown[k]=false;
+});
+
+/* ── persistent archive data ── */
+const ARCHIVE = {
+  entries:[], drifterFiles:[], huskFiles:{}, deathFiles:[],
+  totalWatches:0, totalEntries:0
+};
+
+/* ── game state ── */
+let gameState = 'IDLE';
+let gameMode = 'NAVIGATOR'; // 'NAVIGATOR' (AI-controlled drifter, current default) or 'DRIFTER' (player WASD control)
+let watchesSinceDrifterMode = 0; // counts up; triggers a DRIFTER-mode watch every DRIFTER_MODE_INTERVAL watches
+const DRIFTER_MODE_INTERVAL = 3;
+const keysDown = {}; // live WASD/arrow key state for DRIFTER mode movement
+let drifterNum=0, currentDrifter=null, currentHuskType=null, currentRoom=null, currentWeather='CLEAR';
+let drifter, husk, husk2=null, items, foundIds, huskSighted, huskWasNear, husk2Sighted, extractionZone=null, rareEvent=null;
+let lowSignalLineFired=false; // one-shot, like huskSighted, reset each watch
+let ambientLineTimer=0; // counts up in DRIFTER mode; fires a moving/logbook_drop line periodically
+let signalPct=100, signalDrainPerSec=2.0;
+let watchStartTime=0, elapsedSec=0;
+let dayMinute=47;
+
+/* ── timestamp ── */
+function nextTimestamp(){
+  dayMinute+=Math.floor(Math.random()*9)+3;
+  let h=23,m=dayMinute;
+  while(m>=60){m-=60;h=(h+1)%24;}
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+function formatElapsed(sec){
+  const m=Math.floor(sec/60),s=Math.floor(sec%60);
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+function nowStamp(){
+  const d=new Date();
+  return `DAY-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+/* ── archive logging ── */
+function logArcEntry(name, desc, type){
+  const ts = nextTimestamp();
+  ARCHIVE.entries.unshift({name,desc,type,ts,watch:drifterNum});
+  ARCHIVE.totalEntries++;
+
+  // render into LOG tab
+  const container = document.getElementById('arc-entries');
+  const empty = container.querySelector('.arc-empty');
+  if(empty) empty.remove();
+
+  const el=document.createElement('div');
+  el.className='arc-entry'+(type==='husk'?' husk-e':type==='incident'?' incident-e':'');
+  const tagColor = type==='husk'?'red':type==='incident'?'amb':'green';
+  el.innerHTML=`<div class="arc-ts">${ts} — W${String(drifterNum).padStart(2,'0')}</div>
+    <div class="arc-name">${name}</div>
+    <div class="arc-desc">${desc}</div>
+    <span class="arc-tag ${tagColor}">${type.toUpperCase()}</span>`;
+  container.prepend(el);
+
+  document.getElementById('arc-entry-count').textContent = ARCHIVE.totalEntries;
+  SFX.tickPickup();
+}
+
+const drifterFileEls = {}; // watchNum -> {el} so death updates the existing FILES card instead of duplicating it
+
+function addDrifterFile(d, status){
+  const existing = drifterFileEls[d.watchNum];
+  const card = `<div class="df-id">DRIFTER // W${String(d.watchNum).padStart(2,'0')}</div>
+    <div class="df-name">${d.name}</div>
+    <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">STATUS</span> <span>${status}</span></div>
+    <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">PERSONALITY</span> <span>${d.personality.name}</span></div>
+    <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">LOCATION</span> <span>${d.room}</span></div>
+    ${status==='DECEASED'?`<div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">CAUSE</span> <span style="color:var(--nr)">${d.causeOfDeath||'UNKNOWN'}</span></div>`:''}
+    <span class="df-trait">${d.personality.name}</span>`;
+
+  if(existing){
+    // update the same drifter's record instead of creating a duplicate entry
+    const idx = ARCHIVE.drifterFiles.findIndex(f=>f.watchNum===d.watchNum);
+    if(idx!==-1) ARCHIVE.drifterFiles[idx] = {...d, status};
+    existing.el.className = 'drifter-file'+(status==='DECEASED'?' deceased':'');
+    existing.el.innerHTML = card;
+    return;
   }
 
-  // ── Render ────────────────────────────────────────────────────
-  function drawFloor(){
-    ctx.fillStyle='#15180f'; ctx.fillRect(0,0,BASE_W,BASE_H);
-    ctx.strokeStyle='rgba(201,194,168,0.04)'; ctx.lineWidth=1;
-    for(let x=0;x<=BASE_W;x+=32){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,BASE_H); ctx.stroke(); }
-    for(let y=0;y<=BASE_H;y+=32){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(BASE_W,y); ctx.stroke(); }
-    ctx.strokeStyle='rgba(201,194,168,0.18)'; ctx.lineWidth=4;
-    ctx.strokeRect(22,22,BASE_W-44,BASE_H-44);
+  ARCHIVE.drifterFiles.unshift({...d, status});
+  const container=document.getElementById('arc-drifters');
+  const empty=container.querySelector('.arc-empty');
+  if(empty) empty.remove();
+
+  const el=document.createElement('div');
+  el.className='drifter-file'+(status==='DECEASED'?' deceased':'');
+  el.innerHTML=card;
+  container.prepend(el);
+  drifterFileEls[d.watchNum] = {el};
+  document.getElementById('arc-drifter-count').textContent=ARCHIVE.drifterFiles.length;
+}
+
+function addHuskFile(huskType, pos){
+  if(ARCHIVE.huskFiles[huskType.id]) return; // already logged
+  ARCHIVE.huskFiles[huskType.id] = true;
+  const container=document.getElementById('arc-husks');
+  const empty=container.querySelector('.arc-empty');
+  if(empty) empty.remove();
+
+  const threatPct = Math.round(huskType.detectRadius/90*100);
+  const el=document.createElement('div');
+  el.className='husk-file';
+  el.innerHTML=`<div class="hf-class">CLASSIFICATION</div>
+    <div class="hf-name">${huskType.id}</div>
+    <div class="hf-row"><span class="k" style="font-size:8px;color:var(--nd)">FIRST SIGHTING</span> <span>W${String(drifterNum).padStart(2,'0')} @ (${Math.round(pos.x)},${Math.round(pos.y)})</span></div>
+    <div class="hf-row"><span class="k" style="font-size:8px;color:var(--nd)">BEHAVIOR</span> <span style="font-size:8px;color:var(--nd);line-height:1.4">${huskType.behavior}</span></div>
+    <div class="hf-row" style="margin-top:4px"><span class="k" style="font-size:8px;color:var(--nd)">WEAKNESS</span> <span style="font-size:8px;color:var(--nsb);line-height:1.4">${huskType.weakness}</span></div>
+    <div class="threat-bar"><div style="font-size:8px;color:var(--nd);margin-bottom:2px">THREAT <span style="color:var(--nr)">${threatPct}%</span></div>
+    <div class="mini-bar"><div class="mini-bar-fill" style="width:${threatPct}%;background:var(--nr)"></div></div></div>`;
+  container.prepend(el);
+  document.getElementById('arc-husk-count').textContent=Object.keys(ARCHIVE.huskFiles).length;
+}
+
+function addDeathFile(d, reason){
+  ARCHIVE.deathFiles.unshift({...d, reason});
+  const container=document.getElementById('arc-deaths');
+  const empty=container.querySelector('.arc-empty');
+  if(empty) empty.remove();
+
+  const el=document.createElement('div');
+  el.className='arc-entry death-e';
+  el.innerHTML=`<div class="arc-ts">${nowStamp()} — W${String(d.watchNum).padStart(2,'0')}</div>
+    <div class="arc-name">${d.name} [DECEASED]</div>
+    <div class="arc-desc">
+      <b style="color:var(--np)">CAUSE:</b> ${reason==='caught'?'HUSK CONTACT — FEED TERMINATED':'SIGNAL COLLAPSE — UNKNOWN STATUS'}<br>
+      <b style="color:var(--np)">ITEMS RECOVERED:</b> ${d.itemsFound}/${ITEM_POOL.length}<br>
+      <b style="color:var(--np)">TIME SURVIVED:</b> ${formatElapsed(d.elapsed)}<br>
+      <b style="color:var(--np)">BODY STATUS:</b> ${reason==='caught'?'UNRECOVERED — PRESUMED LOST':'UNKNOWN'}
+    </div>
+    <span class="arc-tag red">DEATH FILE</span>`;
+  container.prepend(el);
+  document.getElementById('arc-death-count').textContent=ARCHIVE.deathFiles.length;
+}
+
+/* ── geometry ── */
+function rectsOverlapCircle(cx,cy,r,rect){
+  const x2=Math.max(rect.x,Math.min(cx,rect.x+rect.w));
+  const y2=Math.max(rect.y,Math.min(cy,rect.y+rect.h));
+  return (cx-x2)**2+(cy-y2)**2<r*r;
+}
+function pointBlocked(x,y,r,walls){
+  const b={x:24,y:24,w:BW-48,h:BH-48};
+  if(x-r<b.x||x+r>b.x+b.w||y-r<b.y||y+r>b.y+b.h) return true;
+  return walls.some(w=>rectsOverlapCircle(x,y,r,w));
+}
+
+/* ── VN ── */
+let vnQueue=[],vnIdx=0;
+function queueVN(lines){
+  vnQueue=lines;vnIdx=0;showVN();
+  document.getElementById('nav-vn-overlay').classList.add('show');
+}
+function showVN(){
+  const l=vnQueue[vnIdx];
+  renderVNSpeakerAndPortrait(l);
+  document.getElementById('nav-vn-text').textContent=l.text;
+}
+function renderVNSpeakerAndPortrait(l){
+  const nameEl=document.getElementById('nav-vn-name');
+  const speakerEl=document.getElementById('nav-vn-speaker');
+  const portraitEl=document.getElementById('nav-vn-portrait');
+  const channelEl=document.getElementById('nav-vn-channel');
+  const isDrifter=l.speaker==='DRIFTER';
+  nameEl.textContent=isDrifter?(currentDrifter?currentDrifter.name:'DRIFTER'):'HANDLER';
+  speakerEl.classList.toggle('is-drifter',isDrifter);
+  if(channelEl) channelEl.textContent=isDrifter?'FIELD MIC // UNCONFIRMED':'88.7 // ENCRYPTED RELAY';
+  let src=null;
+  if(isDrifter&&l.emotion){
+    src=drifterPortraitPath(currentDrifterPortraitSet,l.emotion);
+  }else if(!isDrifter&&l.emotion&&HANDLER_PORTRAITS[l.emotion]){
+    src=HANDLER_PORTRAITS[l.emotion];
   }
-  function drawWalls(){
-    for(const w of room.walls){
-      ctx.fillStyle='#0e100b'; ctx.fillRect(w.x,w.y,w.w,w.h);
-      ctx.strokeStyle='rgba(58,74,63,0.5)'; ctx.lineWidth=1;
-      ctx.strokeRect(w.x+0.5,w.y+0.5,w.w-1,w.h-1);
+  if(src){
+    portraitEl.src=src;
+    portraitEl.alt=l.emotion;
+    portraitEl.classList.add('show');
+  }else{
+    portraitEl.classList.remove('show');
+  }
+}
+function advanceVN(){
+  vnIdx++;
+  if(vnIdx>=vnQueue.length){
+    document.getElementById('nav-vn-overlay').classList.remove('show');
+    gameState='WATCHING'; return;
+  }
+  showVN();
+}
+document.getElementById('nav-vn-overlay').addEventListener('click',advanceVN);
+
+let flashTimer=null;
+function flashVN(line){
+  const box=document.getElementById('nav-vn-overlay');
+  if(box.classList.contains('show')) return;
+  const l=(typeof line==='string')?{speaker:'HANDLER',text:line}:line;
+  renderVNSpeakerAndPortrait(l);
+  document.getElementById('nav-vn-text').textContent=l.text;
+  box.classList.add('show');
+  document.getElementById('nav-vn-continue').style.display='none';
+  box.style.pointerEvents='none';
+  if(flashTimer) clearTimeout(flashTimer);
+  flashTimer=setTimeout(()=>{
+    box.classList.remove('show');
+    box.style.pointerEvents='';
+    document.getElementById('nav-vn-continue').style.display='';
+  },2600);
+}
+
+/* ── spawn watch ── */
+/* ── HUSK CATALOG DATA ── */
+const HUSK_CATALOG = [
+  {
+    id:'HUSK-01', name:'SKOTH', subtitle:'The First Rejection',
+    threat:'T1', threatLabel:'LOW THREAT',
+    status:'early', statusLabel:'EARLY OUTBREAK — MOSTLY DECOMPOSED',
+    spriteColor:'#4a5c4a',
+    representation:'Immediate, unstable rejectors. Early responses to breaking reality.',
+    physical:'Unstable early-stage rejection. Body hasn\'t fully committed. Visibly decomposing.',
+    behavior:'Erratic movement. Fails to track consistently. Collapses mid-pursuit as rejection fails.',
+    weakness:'Decay is self-terminating. Sustained avoidance outlasts them.',
+    psych:'Shows the fragility of pure denial. Built on a lie the body cannot sustain.',
+    wncore:'WNCORE NOTE: Skoth sightings declined to near-zero by month 9. Document on contact — any surviving Skoth represents an anomaly worth reporting.',
+  },
+  {
+    id:'HUSK-02', name:'GLOWBUB', subtitle:'Obsessive Fixation',
+    threat:'T1', threatLabel:'LOW THREAT',
+    status:'active', statusLabel:'ACTIVE — WIDESPREAD',
+    spriteColor:'#6a8a3a',
+    representation:'Hyperfocus as rejection mechanism. Mind narrows to one acceptable detail.',
+    physical:'Pupils fixed and dilated. Drawn irresistibly to light sources. Unresponsive to other stimuli.',
+    behavior:'Stares at any light until extinguished. Cannot function without fixation object. Flees toward nearest light point.',
+    weakness:'Extinguish light source. Glowbub loses orientation completely in total darkness.',
+    psych:'Obsessive-compulsive response to existential knowledge. Refusing to see whole truth by narrowing vision to a point.',
+    wncore:'WNCORE NOTE: Navigator intervention — POWER DOOR can trap Glowbubs near lit corridors. Use light as a redirect tool.',
+  },
+  {
+    id:'HUSK-03', name:'JAWIE', subtitle:'Aggressive Rejection',
+    threat:'T3', threatLabel:'HIGH THREAT',
+    status:'active', statusLabel:'ACTIVE — DANGEROUS',
+    spriteColor:'#8a3a2a',
+    representation:'Rage as rejection. If I destroy enough, maybe I can destroy the knowledge.',
+    physical:'Naturally aggressive build amplified. Body becomes a weapon. Reinforced musculature.',
+    behavior:'Ramming. Breaking through barriers. Refuses to accept any boundary as final. Will pursue through walls.',
+    weakness:'Redirect aggression. Jawies cannot process two simultaneous targets — use alarm intervention to split focus.',
+    psych:'Violence channeled at truth itself. The most direct psychological defense: if you cannot reject it, destroy it.',
+    wncore:'WNCORE NOTE: ALARM TRIGGER is highly effective against Jawies. They pursue sound over survivors when both are present.',
+  },
+  {
+    id:'HUSK-04', name:'WHITE', subtitle:'Sensory Overload Rejection',
+    threat:'T2', threatLabel:'MODERATE THREAT',
+    status:'active', statusLabel:'ACTIVE — HIGH SENSITIVITY',
+    spriteColor:'#c8c8c8',
+    representation:'Hypervigilance. Defense mechanism turned to maximum. Always scanning for approaching truth.',
+    physical:'White hair bleached by shock of truth. Calcified fingers. Enhanced vibration sensitivity.',
+    behavior:'Detects vibrations from kilometers away. Hunts based on environmental disturbance. Reacts to the smallest movement.',
+    weakness:'Complete stillness. Whites cannot detect a motionless target. Freezing is survival.',
+    psych:'Senses opened too much instead of shutting down. Hyper-aware of disturbances — the mind couldn\'t narrow, so it expanded.',
+    wncore:'WNCORE NOTE: If a White is active on feed, any intervention that causes vibration — ALARM, POWER DOOR — will accelerate contact. Use only REVEAL LOOT or PING silently.',
+  },
+  {
+    id:'HUSK-05', name:'OLDBONE', subtitle:'Structural Rejection',
+    threat:'T2', threatLabel:'MODERATE THREAT',
+    status:'active', statusLabel:'ACTIVE — RESISTANT',
+    spriteColor:'#8a7a5a',
+    representation:'Stubborn refusal of the aging. Lifetime psychological rigidity turned into physical rigidity.',
+    physical:'Elderly frame undergoes radical restructuring. Head reinforced — mind refusing to break. Spine extrudes and hardens.',
+    behavior:'Resistant to standard methods. Slow but impossible to deter. Will follow a route indefinitely.',
+    weakness:'Cannot change direction quickly. Circle movement and redirect — they cannot pivot fast enough.',
+    psych:'Body built on a lifetime of refusing to change. Rejection simply found pre-existing channels.',
+    wncore:'WNCORE NOTE: Oldbones are prevalent in former elderly care zones. Particularly common in Russian sectors per cross-network reports.',
+  },
+  {
+    id:'HUSK-06', name:'DISABLED', subtitle:'Compensatory Rejection',
+    threat:'T2', threatLabel:'MODERATE THREAT',
+    status:'active', statusLabel:'ACTIVE — THREE VARIANTS',
+    spriteColor:'#5a4a7a',
+    representation:'Mind already learned to compensate for one disability — used that same skill for unbearable knowledge.',
+    physical:'Blind variant: hypersensitive hearing. Deaf variant: extreme long-range sight. Crippled variant: mutated compensatory limbs.',
+    behavior:'Each variant hunts via its compensatory sense. Blind variant detects sound at extreme range. Deaf variant can track visually across entire floors.',
+    weakness:'Counter the compensation. Blind variant: silence. Deaf variant: stay out of sightlines. Crippled variant: high ground.',
+    psych:'Adaptation under pressure. These minds had already built alternative pathways — rejection simply repurposed them.',
+    wncore:'WNCORE NOTE: Three distinct sub-classifications. Always log which variant on contact. Behavior varies dramatically.',
+  },
+  {
+    id:'HUSK-07', name:'NOIRE', subtitle:'Temporal Rejection',
+    threat:'T3', threatLabel:'HIGH THREAT',
+    status:'active', statusLabel:'ACTIVE — NOCTURNAL',
+    spriteColor:'#1a1a3a',
+    representation:'Circadian rejection. Day allows distraction. Night brings unbearable truth.',
+    physical:'Near-invisible in darkness. Completely still until motion detected. Travel in groups of 2–3.',
+    behavior:'Nocturnal hunters. Completely immobile during daylight. Attack anything that moves after dark. Slight hive-mind coordination.',
+    weakness:'Light exposure causes disorientation. Noires caught in direct light freeze briefly — use this window.',
+    psych:'Night = pure unbearable truth. During day, distraction makes rejection manageable. Darkness removes all buffer.',
+    wncore:'WNCORE NOTE: Noire activity spikes after 22:00 feed-time. Signal drain accelerates during nocturnal watches — they disrupt relay bandwidth.',
+  },
+  {
+    id:'HUSK-08', name:'BLOATER', subtitle:'Vocal Rejection',
+    threat:'T4', threatLabel:'CRITICAL THREAT',
+    status:'active', statusLabel:'ACTIVE — CASCADE RISK',
+    spriteColor:'#6a2a2a',
+    representation:'Primal scream. One mind\'s unbearable knowledge resonates and amplifies in others.',
+    physical:'Mouth packed with extra muscle tissue. Body built around vocalization. Visibly distended jaw.',
+    behavior:'Screams cause mass migration of all nearby Husks. One Bloater can convert a manageable situation to catastrophic in seconds.',
+    weakness:'Bloaters are individually fragile. The danger is what they call. Identify and track before they vocalize.',
+    psych:'Rejection so overwhelming it manifests as irresistible vocalization. Scream the truth away.',
+    wncore:'WNCORE NOTE: EMERGENCY OVERRIDE — highest priority if Bloater detected. Signal cost is worth it. A triggered Bloater ends the feed.',
+  },
+  {
+    id:'HUSK-09', name:'AQUATIC', subtitle:'Environmental Rejection',
+    threat:'T3', threatLabel:'HIGH THREAT',
+    status:'rare', statusLabel:'RARE — EMERGING',
+    spriteColor:'#1a3a5a',
+    representation:'Rejection finds new paths. No environment is safe.',
+    physical:'Adapted for submersion. Slow movement on land. First confirmed sightings months into outbreak.',
+    behavior:'Walk underwater. Can bite and attack aquatic life. Persistent pursuit regardless of environment.',
+    weakness:'Land speed is severely reduced. They cannot chase effectively on dry ground.',
+    psych:'Flight into a different environment entirely. If this reality is unbearable, find another one. Even underwater.',
+    wncore:'WNCORE NOTE: Aquatic Husks represent proof that rejection evolves. Early classification — behavioral data still being compiled. Report all sightings to the archive immediately.',
+  },
+];
+
+function buildCatalog(){
+  const container = document.getElementById('arc-catalog');
+  if(!container) return;
+  container.innerHTML = '';
+
+  HUSK_CATALOG.forEach((h,idx) => {
+    const entry = document.createElement('div');
+    entry.className = 'catalog-entry';
+
+    const threatClass = h.threat==='T4'?'t4':h.threat==='T3'?'t3':h.threat==='T2'?'t2':'t1';
+    const statusClass = h.status;
+
+    entry.innerHTML = `
+      <div class="catalog-header" onclick="toggleCatalog(${idx})">
+        <div>
+          <div class="ch-id">${h.id} // WNCORE CLASSIFICATION</div>
+          <div class="ch-name">${h.name} <span style="font-size:9px;color:var(--nd);font-weight:normal">— ${h.subtitle}</span></div>
+        </div>
+        <span class="ch-threat ${threatClass}">${h.threatLabel}</span>
+      </div>
+      <div class="catalog-body" id="cat-body-${idx}">
+        <div class="catalog-sprite-wrap">
+          <canvas class="catalog-sprite-canvas" id="cat-sprite-${idx}" width="48" height="48"></canvas>
+          <div class="catalog-sprite-label">
+            VISUAL SIGNATURE<br>
+            <span style="color:var(--nr)">FIELD FOOTAGE CLASSIFIED</span><br>
+            RENDER: APPROXIMATION
+          </div>
+        </div>
+        <span class="catalog-status ${statusClass}">${h.statusLabel}</span>
+        <div class="catalog-field" style="margin-top:6px"><b>REPRESENTATION:</b> ${h.representation}</div>
+        <div class="catalog-field"><b>PHYSICAL:</b> ${h.physical}</div>
+        <div class="catalog-field"><b>BEHAVIOR:</b> ${h.behavior}</div>
+        <div class="catalog-field"><b>WEAKNESS:</b> <span class="safe">${h.weakness}</span></div>
+        <div class="catalog-psych">"${h.psych}"</div>
+        <div class="catalog-field" style="margin-top:6px;color:var(--namb)">${h.wncore}</div>
+      </div>
+    `;
+    container.appendChild(entry);
+
+    // Draw placeholder sprite
+    setTimeout(()=>{
+      const cv = document.getElementById('cat-sprite-'+idx);
+      if(!cv) return;
+      const cx = cv.getContext('2d');
+      // Draw stylized silhouette using the husk color
+      cx.fillStyle = '#0e0d0b';
+      cx.fillRect(0,0,48,48);
+      // body
+      cx.fillStyle = h.spriteColor;
+      cx.globalAlpha = 0.85;
+      cx.beginPath(); cx.arc(24,16,7,0,Math.PI*2); cx.fill(); // head
+      cx.fillRect(17,23,14,14); // torso
+      cx.fillRect(13,23,5,12); // left arm
+      cx.fillRect(30,23,5,12); // right arm
+      cx.fillRect(17,37,5,8); // left leg
+      cx.fillRect(26,37,5,8); // right leg
+      cx.globalAlpha = 1;
+      // type indicator dot
+      const dotColors = {T1:'#22c55e',T2:'#d4a843',T3:'#e8753a',T4:'#c8472a'};
+      cx.fillStyle = dotColors[h.threat];
+      cx.beginPath(); cx.arc(42,6,3,0,Math.PI*2); cx.fill();
+    }, 50);
+  });
+}
+
+window.toggleCatalog = function(idx){
+  const body = document.getElementById('cat-body-'+idx);
+  if(body) body.classList.toggle('open');
+};
+
+function spawnWatch(){
+  drifterNum++;
+  ARCHIVE.totalWatches++;
+  watchStartTime=performance.now();
+
+  // determine perspective for this watch — every Nth watch puts the player in the Drifter's body directly
+  watchesSinceDrifterMode++;
+  gameMode = (watchesSinceDrifterMode>=DRIFTER_MODE_INTERVAL) ? 'DRIFTER' : 'NAVIGATOR';
+  if(gameMode==='DRIFTER') watchesSinceDrifterMode=0;
+  else document.getElementById('nav-mode-breadcrumb').textContent='NAVIGATOR // FEED';
+
+  // new Drifter, new face — randomize which portrait set represents them this watch
+  currentDrifterPortraitSet = pick(DRIFTER_PORTRAIT_SETS);
+
+  // pick random personality, husk type, room, weather
+  const personality = PERSONALITIES[Math.floor(Math.random()*PERSONALITIES.length)];
+  const huskTypeDef = HUSK_TYPES[Math.floor(Math.random()*HUSK_TYPES.length)];
+  const roomDef     = ROOM_VARIANTS[Math.floor(Math.random()*ROOM_VARIANTS.length)];
+  const weather     = WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
+  const drifterName = DRIFTER_NAMES[Math.floor(Math.random()*DRIFTER_NAMES.length)];
+
+  currentDrifter = { name:drifterName, personality, watchNum:drifterNum, room:roomDef.name, itemsFound:0, causeOfDeath:null };
+  currentHuskType = huskTypeDef;
+  currentRoom = roomDef;
+
+  // update command bar
+  document.getElementById('cmd-watch').textContent   = String(drifterNum).padStart(3,'0');
+  document.getElementById('cmd-drifter').textContent = drifterName;
+  document.getElementById('cmd-weather').textContent = weather;
+  // weather effects
+  currentWeather = weather;
+  if(weather==='FOG HEAVY'){
+    husk.detectRadius = Math.max(35, huskTypeDef.detectRadius - 25);
+  } else if(weather==='STATIC STORM'){
+    signalDrainPerSec *= 1.6;
+  } else if(weather==='ACID RAIN'){
+    signalDrainPerSec *= 1.35;
+  } else if(weather==='DUST EVENT'){
+    husk.detectRadius = Math.max(40, huskTypeDef.detectRadius - 15);
+  }
+  document.getElementById('cmd-relay').textContent   = 'STABLE';
+  document.getElementById('cmd-relay').className     = 'val ok';
+  document.getElementById('cmd-tower').textContent   = 'ONLINE';
+  document.getElementById('cmd-tower').className     = 'val ok';
+  document.getElementById('arc-watch-count').textContent = ARCHIVE.totalWatches;
+
+  // update intel panel
+  document.getElementById('intel-id').textContent        = drifterName;
+  document.getElementById('intel-status').textContent    = 'ACTIVE';
+  document.getElementById('intel-status').className      = 'v ok';
+  document.getElementById('intel-floor').textContent     = 'B1';
+  document.getElementById('intel-personality').textContent = personality.name;
+  document.getElementById('intel-obj').textContent       = 'Locate and recover items. Avoid contact.';
+  document.getElementById('intel-husk-seen').textContent = 'NO';
+  document.getElementById('intel-husk-type').textContent = 'UNKNOWN';
+  document.getElementById('intel-husk-prox').textContent = 'CLEAR';
+  document.getElementById('intel-husk-prox').className   = 'v ok';
+
+  // add drifter file
+  addDrifterFile(currentDrifter, 'ACTIVE');
+
+  // shuffle 6 items for this run
+  const shuffled = [...ITEM_POOL].sort(()=>Math.random()-0.5).slice(0,6);
+  const bounds = {x:24,y:24,w:BW-48,h:BH-48};
+  items = shuffled.map(t=>{
+    let ix,iy,att=0;
+    do{
+      ix=rand(bounds.x+30,bounds.x+bounds.w-30);
+      iy=rand(bounds.y+30,bounds.y+bounds.h-30);
+      att++;
+    }while(pointBlocked(ix,iy,8,currentRoom.walls)&&att<30);
+    return {...t,x:ix,y:iy};
+  });
+  foundIds=new Set();
+  // extraction zone — random edge position
+  extractionZone = { x: rand(60,BW-60), y: rand(40,70), r: 22, active: true };
+  huskSighted=false; huskWasNear=false; husk2Sighted=false; husk2=null;
+  lowSignalLineFired=false; ambientLineTimer=0;
+  signalPct=100;
+  signalDrainPerSec=rand(1.4,2.2);
+
+  // drifter entity — speed affected by personality
+  const baseSpeed = rand(1.8,2.4)*personality.speedMod;
+  drifter={x:80,y:200,r:9,target:null,speed:baseSpeed,facing:'down',pauseTimer:0,pauseMod:personality.pauseMod};
+  pickDrifterTarget();
+
+  // husk entity — type determines color/speed/detect radius
+  const hSpeed=rand(huskTypeDef.speed[0],huskTypeDef.speed[1]);
+  husk={x:560,y:400,r:10,target:null,speed:hSpeed,facing:'down',pauseTimer:0,detectRadius:huskTypeDef.detectRadius};
+  // rare event (10% chance)
+  rareEvent = null;
+  if(Math.random()<0.10){
+    const rareRoll = Math.random();
+    if(rareRoll<0.5){
+      rareEvent = 'SECOND HUSK';
+      // second husk entity
+      const h2type = HUSK_TYPES[Math.floor(Math.random()*HUSK_TYPES.length)];
+      const h2speed = rand(h2type.speed[0],h2type.speed[1]);
+      husk2 = {x:80,y:80,r:10,target:null,speed:h2speed,facing:'down',pauseTimer:0,detectRadius:h2type.detectRadius,huskType:h2type};
+      pickHusk2Target();
+      logArcEntry('RARE EVENT — DUAL CONTACT DETECTED','Multiple Husk signatures on this feed. Exercise extreme caution.','incident');
+    } else {
+      rareEvent = 'BLUEPRINT';
+      // inject a blueprint item
+      let bx,by,batt=0;
+      do{bx=rand(60,BW-60);by=rand(60,BH-60);batt++;}
+      while(pointBlocked(bx,by,8,currentRoom.walls)&&batt<20);
+      items.push({id:'blueprint_rare',x:bx,y:by,name:'CLASSIFIED BLUEPRINT',desc:'Structural schematics for a level below this one. Marked SECURE. Someone did not want this found.'});
+      logArcEntry('RARE EVENT — CLASSIFIED DOCUMENT DETECTED','Unknown artifact on feed. Drifter is near something they shouldn’t be.','incident');
     }
   }
-  function drawItems(){
-    if(!items) return;
-    const t = performance.now()/600;
-    for(const item of items){
-      if(foundIds.has(item.id)) continue;
-      const bob = Math.sin(t+item.x)*2;
-      ctx.save(); ctx.translate(item.x, item.y+bob);
-      ctx.fillStyle='#5c5644'; ctx.beginPath(); ctx.arc(0,0,5,0,Math.PI*2); ctx.fill();
-      ctx.strokeStyle='rgba(201,194,168,0.3)'; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.arc(0,0,8,0,Math.PI*2); ctx.stroke();
+  pickHuskTarget();
+
+  if(gameMode==='DRIFTER'){
+    beginModeTransition();
+  } else {
+    gameState='INTRO';
+    queueVN(drifterNum===1?[
+      handlerLine(DIALOGUE.greeting),
+      handlerLine(DIALOGUE.briefing),
+      handlerLine(DIALOGUE.watch_start),
+    ]:[
+      handlerLine(DIALOGUE.next_drifter),
+      handlerLine(DIALOGUE.watch_start),
+    ]);
+  }
+}
+
+function pickDrifterTarget(){
+  const unfound=items.filter(it=>!foundIds.has(it.id));
+  let tx,ty;
+  if(unfound.length&&Math.random()<0.65){
+    const it=unfound[Math.floor(Math.random()*unfound.length)];
+    tx=it.x+rand(-12,12);ty=it.y+rand(-12,12);
+    if(pointBlocked(tx,ty,drifter.r,currentRoom.walls)){tx=it.x;ty=it.y;}
+  }
+  if(!tx||pointBlocked(tx,ty,drifter.r,currentRoom.walls)){
+    let att=0;
+    do{tx=rand(44,BW-44);ty=rand(44,BH-44);att++;}
+    while(pointBlocked(tx,ty,drifter.r,currentRoom.walls)&&att<20);
+  }
+  drifter.target={x:tx,y:ty};
+}
+function pickHuskTarget(){
+  let tx,ty,att=0;
+  do{tx=rand(44,BW-44);ty=rand(44,BH-44);att++;}
+  while(pointBlocked(tx,ty,husk.r,currentRoom.walls)&&att<20);
+  husk.target={x:tx,y:ty};
+}
+function pickHusk2Target(){
+  if(!husk2)return;
+  let tx,ty,att=0;
+  do{tx=rand(44,BW-44);ty=rand(44,BH-44);att++;}
+  while(pointBlocked(tx,ty,husk2.r,currentRoom.walls)&&att<20);
+  husk2.target={x:tx,y:ty};
+}
+
+/* ── DRIFTER mode: direct player movement ── */
+function moveDrifterByInput(entity,dt,walls){
+  let dx=0,dy=0;
+  if(keysDown['w']||keysDown['arrowup'])dy-=1;
+  if(keysDown['s']||keysDown['arrowdown'])dy+=1;
+  if(keysDown['a']||keysDown['arrowleft'])dx-=1;
+  if(keysDown['d']||keysDown['arrowright'])dx+=1;
+  if(dx===0&&dy===0)return;
+  const len=Math.hypot(dx,dy);
+  const nx=dx/len,ny=dy/len;
+  if(Math.abs(nx)>Math.abs(ny))entity.facing=nx>0?'right':'left';
+  else entity.facing=ny>0?'down':'up';
+  let sx=entity.x+nx*entity.speed*dt*60,sy=entity.y+ny*entity.speed*dt*60;
+  if(pointBlocked(sx,entity.y,entity.r,walls))sx=entity.x;
+  if(pointBlocked(entity.x,sy,entity.r,walls))sy=entity.y;
+  if(!pointBlocked(sx,sy,entity.r,walls)){entity.x=sx;entity.y=sy;}
+}
+
+/* ── movement ── */
+function moveToward(entity,dt,walls){
+  if(entity.pauseTimer>0){entity.pauseTimer-=dt;return;}
+  if(!entity.target)return;
+  const dx=entity.target.x-entity.x,dy=entity.target.y-entity.y;
+  const dist=Math.hypot(dx,dy);
+  if(dist<6){entity.pauseTimer=rand(0.15,0.5)*(entity.pauseMod||1);entity.stuckTime=0;return 'arrived';}
+  const nx=dx/dist,ny=dy/dist;
+  if(Math.abs(nx)>Math.abs(ny))entity.facing=nx>0?'right':'left';
+  else entity.facing=ny>0?'down':'up';
+  let sx=entity.x+nx*entity.speed*dt*60,sy=entity.y+ny*entity.speed*dt*60;
+  if(pointBlocked(sx,entity.y,entity.r,walls))sx=entity.x;
+  if(pointBlocked(entity.x,sy,entity.r,walls))sy=entity.y;
+  if(!pointBlocked(sx,sy,entity.r,walls)){
+    const moved=Math.hypot(sx-entity.x,sy-entity.y);
+    entity.x=sx;entity.y=sy;
+    entity.stuckTime=moved>0.05?0:(entity.stuckTime||0)+dt;
+  }else entity.stuckTime=(entity.stuckTime||0)+dt;
+  if(entity.stuckTime>0.8){entity.stuckTime=0;return 'arrived';}
+}
+
+/* ── checks ── */
+function checkItemPickup(){
+  for(const item of items){
+    if(foundIds.has(item.id))continue;
+    if(Math.hypot(drifter.x-item.x,drifter.y-item.y)<28){
+      foundIds.add(item.id);
+      currentDrifter.itemsFound++;
+      logArcEntry(item.name, item.desc, 'recovery');
+      // update objective
+      const remaining = items.length - foundIds.size;
+      document.getElementById('intel-obj').textContent = 
+        remaining > 0 ? foundIds.size+'/'+items.length+' items recovered. '+remaining+' remaining.' : 'All items recovered. Seek extraction.';
+      // Drifter field mutter — always in DRIFTER mode, occasional overheard fragment in NAVIGATOR mode
+      if(gameMode==='DRIFTER'||Math.random()<0.35){
+        const dl=drifterLine('item_pickup');
+        if(dl) flashVN(dl);
+      }
+    }
+  }
+}
+
+function checkHuskProximity(){
+  const d=Math.hypot(husk.x-drifter.x,husk.y-drifter.y);
+  const proxT=Math.max(0,1-(d/(husk.detectRadius*1.4)));
+  SFX.setDrone(proxT);
+
+  // update intel vitals based on proximity
+  const hr=Math.round(72+proxT*80);
+  const stressPct=Math.round(proxT*100);
+  const threatPct=Math.round(proxT*100);
+  document.getElementById('intel-hr').textContent=hr+' BPM';
+  document.getElementById('intel-hr').className='v '+(hr>120?'crit':hr>90?'warn':'ok');
+  document.getElementById('intel-hr-bar').style.width=Math.min(100,Math.round(hr/160*100))+'%';
+  document.getElementById('intel-hr-bar').style.background=hr>120?'var(--nr)':hr>90?'var(--nw)':'var(--nsb)';
+  document.getElementById('intel-stress').textContent=stressPct<20?'LOW':stressPct<55?'ELEVATED':'CRITICAL';
+  document.getElementById('intel-stress').className='v '+(stressPct>55?'crit':stressPct>20?'warn':'ok');
+  document.getElementById('intel-stress-bar').style.width=stressPct+'%';
+  document.getElementById('intel-stress-bar').style.background=stressPct>55?'var(--nr)':stressPct>20?'var(--nw)':'var(--nsb)';
+  document.getElementById('intel-threat').textContent=threatPct<10?'NONE':threatPct<40?'LOW':threatPct<70?'ELEVATED':'CRITICAL';
+  document.getElementById('intel-threat').className='v '+(threatPct>70?'crit':threatPct>40?'warn':threatPct>10?'amb':'ok');
+  document.getElementById('intel-threat-bar').style.width=threatPct+'%';
+  document.getElementById('intel-threat-bar').style.background=threatPct>70?'var(--nr)':threatPct>40?'var(--nw)':'var(--namb)';
+
+  const near=d<husk.detectRadius;
+  if(near&&!huskSighted){
+    huskSighted=true;
+    document.getElementById('intel-husk-seen').textContent='YES';
+    document.getElementById('intel-husk-seen').className='v crit';
+    document.getElementById('intel-husk-type').textContent=currentHuskType.id;
+    addHuskFile(currentHuskType,husk);
+    logArcEntry('HUSK CONTACT — '+currentHuskType.id,
+      `First sighting at (${Math.round(husk.x)},${Math.round(husk.y)}). ${currentHuskType.behavior}`, 'husk');
+    flashVN(gameMode==='DRIFTER'?drifterLine('husk_sighted'):handlerLine(DIALOGUE.husk_sighted_first));
+    SFX.tickHusk();
+  }
+  if(near){
+    document.getElementById('intel-husk-prox').textContent='DANGER';
+    document.getElementById('intel-husk-prox').className='v crit';
+  }
+  if(near&&!huskWasNear){huskWasNear=true;flashVN(gameMode==='DRIFTER'?drifterLine('near_miss'):handlerLine(DIALOGUE.husk_near_miss));}
+  if(!near){
+    huskWasNear=false;
+    if(huskSighted){
+      document.getElementById('intel-husk-prox').textContent='TRACKING';
+      document.getElementById('intel-husk-prox').className='v warn';
+    }
+  }
+  return d<(husk.r+drifter.r+4);
+}
+
+/* ── watch end ── */
+function endWatch(reason){
+  gameState='WATCH_END';
+  if(flashTimer){clearTimeout(flashTimer);flashTimer=null;}
+  const vnBox=document.getElementById('nav-vn-overlay');
+  vnBox.classList.remove('show');vnBox.style.pointerEvents='';
+  document.getElementById('nav-vn-continue').style.display='';
+
+  elapsedSec=(performance.now()-watchStartTime)/1000;
+  currentDrifter.causeOfDeath=reason==='caught'?'HUSK CONTACT':'SIGNAL COLLAPSE';
+  currentDrifter.elapsed=elapsedSec;
+
+  // update intel
+  document.getElementById('intel-status').textContent=reason==='caught'?'DECEASED':'SIGNAL LOST';
+  document.getElementById('intel-status').className='v crit';
+
+  // update relay/tower in cmdbar
+  document.getElementById('cmd-relay').textContent=reason==='timeout'?'COLLAPSED':'TERMINATED';
+  document.getElementById('cmd-relay').className='val crit';
+  document.getElementById('cmd-tower').textContent=reason==='timeout'?'OVERLOAD':'OFFLINE';
+  document.getElementById('cmd-tower').className='val crit';
+
+  // add to death files and update drifter file
+  addDeathFile(currentDrifter, reason);
+  addDrifterFile(currentDrifter,'DECEASED');
+
+  // fill incident report
+  const ts=nowStamp();
+  document.getElementById('rep-timestamp').textContent=ts;
+  const typeEl=document.getElementById('rep-type');
+  typeEl.textContent=reason==='caught'?'FEED TERMINATED — DRIFTER LOST':'SIGNAL COLLAPSE — FEED LOST';
+  typeEl.className='rep-type '+(reason==='caught'?'lost':'timeout');
+  document.getElementById('rep-drifter').textContent=currentDrifter.name;
+  document.getElementById('rep-watch').textContent=String(drifterNum).padStart(3,'0');
+  document.getElementById('rep-cause').textContent=currentDrifter.causeOfDeath;
+  document.getElementById('rep-items').textContent=`${foundIds.size} OF ${items.length} RECOVERED`;
+  document.getElementById('rep-husks').textContent=huskSighted?`1 CONTACT — ${currentHuskType.id}`:'NO CONTACT';
+  document.getElementById('rep-elapsed').textContent=formatElapsed(elapsedSec);
+  document.getElementById('rep-body').textContent=reason==='caught'?'UNRECOVERED — PRESUMED LOST':'UNKNOWN — FEED LOST BEFORE CONFIRMATION';
+  document.getElementById('rep-summary').innerHTML=pick(reason==='caught'?DIALOGUE.watch_lost_caught:DIALOGUE.watch_lost_timeout).text+
+    `<br><br><b>This Drifter\u2019s file has been added to the archive. They are not deleted.</b>`;
+
+  document.getElementById('nav-end-overlay').classList.add('show');
+
+  if(reason==='caught') SFX.catchStinger();
+  else if(reason==='timeout') SFX.timeoutDropout();
+  // extracted — success state
+  if(reason==='extracted'){
+    typeEl.textContent='EXTRACTION SUCCESSFUL — DRIFTER RECOVERED';
+    typeEl.className='rep-type ok';
+    typeEl.style.color='var(--nsb)';
+    document.getElementById('rep-cause').textContent='VOLUNTARY EXTRACTION';
+    document.getElementById('rep-body').textContent='RECOVERED — DRIFTER SECURED';
+    document.getElementById('intel-status').textContent='EXTRACTED';
+    document.getElementById('intel-status').className='v ok';
+    document.getElementById('cmd-tower').textContent='EXTRACTION CONFIRMED';
+    document.getElementById('cmd-tower').className='val ok';
+  }
+
+  // auto-switch archive to deaths tab
+  switchTab('deaths');
+  closeMobileArchive(); // end-overlay modal takes over the screen; don't leave the archive stuck open underneath it
+  // one more feed teaser
+  const nextName = DRIFTER_NAMES[Math.floor(Math.random()*DRIFTER_NAMES.length)];
+  const nextRoom = ROOM_VARIANTS[Math.floor(Math.random()*ROOM_VARIANTS.length)].name;
+  const teaserEl = document.getElementById('rep-teaser');
+  if(teaserEl) teaserEl.textContent = '▸ INCOMING: DRIFTER-'+nextName+' SPOTTED ON '+nextRoom+' — FEED AVAILABLE';
+}
+
+/* ── perspective switch transition ── */
+function beginModeTransition(){
+  gameState='MODE_TRANSITION';
+  const overlay=document.getElementById('nav-mode-overlay');
+  const staticCanvas=document.getElementById('nav-mode-static');
+  const label=document.getElementById('nav-mode-label');
+  const sctx=staticCanvas.getContext('2d');
+  staticCanvas.width=canvas.clientWidth||640;
+  staticCanvas.height=canvas.clientHeight||480;
+  label.classList.remove('show');
+  label.innerHTML='';
+  overlay.classList.add('show');
+  staticCanvas.classList.add('on');
+
+  SFX.modeSwitchBurst(1.4);
+
+  let rafId=null;
+  function drawNoise(){
+    const w=staticCanvas.width,h=staticCanvas.height;
+    const img=sctx.createImageData(w,h);
+    const d=img.data;
+    for(let y=0;y<h;y++){
+      const lineBright=Math.random()<0.06?255:0;
+      for(let x=0;x<w;x++){
+        const i=(y*w+x)*4;
+        const v=lineBright||(Math.random()<0.35?Math.random()*200:0);
+        d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;
+      }
+    }
+    sctx.putImageData(img,0,0);
+    rafId=requestAnimationFrame(drawNoise);
+  }
+  drawNoise();
+
+  // static burst plays for 1.4s, then cut to black
+  setTimeout(()=>{
+    if(rafId)cancelAnimationFrame(rafId);
+    staticCanvas.classList.remove('on');
+    // brief blackout, then fade in the disorienting mode label — no warning beforehand
+    setTimeout(()=>{
+      label.innerHTML='YOU ARE THE DRIFTER<span class="sub">WASD / ARROWS TO MOVE — AVOID CONTACT</span>';
+      label.classList.add('show');
+      document.getElementById('nav-mode-breadcrumb').textContent='DRIFTER // DIRECT FEED';
+      // hold the label, then clear the overlay and hand off real control
+      setTimeout(()=>{
+        overlay.classList.remove('show');
+        gameState='WATCHING';
+        watchStartTime=performance.now();
+      },1800);
+    },500);
+  },1400);
+}
+
+document.getElementById('nav-next-btn').addEventListener('click',()=>{
+  document.getElementById('nav-end-overlay').classList.remove('show');
+  switchTab('log');
+  spawnWatch();
+});
+
+/* ── update loop ── */
+let lastFrameTime=performance.now();
+
+function update(dt){
+  if(gameState!=='WATCHING')return;
+  elapsedSec=(performance.now()-watchStartTime)/1000;
+
+  // dynamic floor indicator
+  const floorZone = drifter.y < BH*0.33 ? 'B3' : drifter.y < BH*0.66 ? 'B2' : 'B1';
+  document.getElementById('intel-floor').textContent = floorZone;
+  if(gameMode==='DRIFTER'){
+    moveDrifterByInput(drifter,dt,currentRoom.walls);
+  } else {
+    if(moveToward(drifter,dt,currentRoom.walls)==='arrived')pickDrifterTarget();
+  }
+  if(moveToward(husk,dt,currentRoom.walls)==='arrived')pickHuskTarget();
+  if(husk2&&rareEvent==='SECOND HUSK'){
+    if(moveToward(husk2,dt,currentRoom.walls)==='arrived')pickHusk2Target();
+    // check husk2 sighting — first contact triggers cataloging + log entry, mirrors husk1
+    const d2=Math.hypot(husk2.x-drifter.x,husk2.y-drifter.y);
+    if(d2<husk2.detectRadius&&!husk2Sighted){
+      husk2Sighted=true;
+      addHuskFile(husk2.huskType,husk2);
+      logArcEntry('HUSK CONTACT — '+husk2.huskType.id,
+        `Second contact at (${Math.round(husk2.x)},${Math.round(husk2.y)}). ${husk2.huskType.behavior}`, 'husk');
+      flashVN(gameMode==='DRIFTER'?drifterLine('husk_sighted'):handlerLine(DIALOGUE.husk_sighted_first));
+      SFX.tickHusk();
+    }
+    // check husk2 catch
+    if(Math.hypot(husk2.x-drifter.x,husk2.y-drifter.y)<(husk2.r+drifter.r+4)){endWatch('caught');return;}
+  }
+
+  checkItemPickup();
+  const caught=checkHuskProximity();
+
+  // signal drain
+  signalPct-=signalDrainPerSec*dt;
+  const clamped=Math.max(0,Math.round(signalPct));
+  document.getElementById('nav-signal-fill').style.width=clamped+'%';
+  document.getElementById('nav-signal-fill').style.background=clamped<20?'var(--nr)':clamped<45?'var(--nw)':'var(--nsb)';
+  const sigClass=clamped<20?'val crit':clamped<45?'val warn':'val ok';
+  const sigEl=document.getElementById('cmd-signal');
+  sigEl.textContent=clamped+'%';sigEl.className=sigClass;
+
+  // relay degrades with signal
+  if(clamped<30&&clamped>0){
+    document.getElementById('cmd-relay').textContent='DEGRADED';
+    document.getElementById('cmd-relay').className='val warn';
+    if(gameMode==='DRIFTER'&&!lowSignalLineFired){
+      lowSignalLineFired=true;
+      const dl=drifterLine('low_signal');
+      if(dl) flashVN(dl);
+    }
+  }
+
+  // elapsed in cmdbar
+  document.getElementById('cmd-elapsed').textContent=formatElapsed(elapsedSec);
+
+  canvas.classList.toggle('crt-warn',clamped<20);
+  canvas.classList.toggle('crt-low',clamped<50&&clamped>=20);
+  SFX.setStatic(clamped/100);
+
+  // ambient Drifter field lines (DRIFTER mode only) — periodic moving/logbook_drop flavor
+  if(gameMode==='DRIFTER'){
+    ambientLineTimer+=dt;
+    if(ambientLineTimer>14){
+      ambientLineTimer=0;
+      const dl=drifterLine(Math.random()<0.5?'moving':'logbook_drop');
+      if(dl) flashVN(dl);
+    }
+  }
+
+  if(caught){endWatch('caught');return;}
+  // extraction check — only available after items found
+  if(extractionZone&&extractionZone.active&&foundIds.size>0){
+    if(Math.hypot(drifter.x-extractionZone.x,drifter.y-extractionZone.y)<extractionZone.r){
+      endWatch('extracted');return;
+    }
+  }
+  if(signalPct<=0){endWatch('timeout');return;}
+}
+
+/* ── render ── */
+function drawFloor(){
+  ctx.fillStyle='#15180f';ctx.fillRect(0,0,BW,BH);
+  ctx.strokeStyle='rgba(201,194,168,0.035)';ctx.lineWidth=1;
+  for(let x=0;x<=BW;x+=32){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,BH);ctx.stroke();}
+  for(let y=0;y<=BH;y+=32){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(BW,y);ctx.stroke();}
+  ctx.strokeStyle='rgba(201,194,168,0.15)';ctx.lineWidth=3;
+  ctx.strokeRect(22,22,BW-44,BH-44);
+  // room name watermark
+  if(currentRoom){
+    ctx.save();ctx.globalAlpha=0.07;ctx.fillStyle='#c9c2a8';
+    ctx.font='9px monospace';ctx.letterSpacing='2px';
+    ctx.fillText(currentRoom.name,30,BH-30);ctx.restore();
+  }
+}
+function drawWalls(){
+  if(!currentRoom)return;
+  for(const w of currentRoom.walls){
+    ctx.fillStyle='#0e100b';ctx.fillRect(w.x,w.y,w.w,w.h);
+    ctx.strokeStyle='rgba(58,74,63,0.45)';ctx.lineWidth=1;
+    ctx.strokeRect(w.x+0.5,w.y+0.5,w.w-1,w.h-1);
+    // crosshatch
+    ctx.save();ctx.strokeStyle='rgba(0,0,0,0.2)';ctx.lineWidth=0.5;
+    ctx.beginPath();
+    for(let i=0;i<w.w+w.h;i+=10){ctx.moveTo(w.x+i,w.y);ctx.lineTo(w.x,w.y+i);}
+    ctx.stroke();ctx.restore();
+  }
+}
+function drawItems(){
+  if(!items)return;
+  const t=performance.now()/700;
+  for(const item of items){
+    if(foundIds.has(item.id))continue;
+    const bob=Math.sin(t+item.x*0.05)*1.5;
+    ctx.save();ctx.translate(item.x,item.y+bob);
+    ctx.fillStyle='#5c5644';ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(201,194,168,0.25)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);ctx.stroke();
+    // faint ping
+    const pingR=8+Math.sin(t*2+item.y)*2;
+    ctx.globalAlpha=0.1;ctx.beginPath();ctx.arc(0,0,pingR,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
+}
+function drawEntity(e,color,label){
+  ctx.save();ctx.translate(e.x,e.y);
+  // shadow
+  ctx.fillStyle='rgba(0,0,0,0.35)';ctx.beginPath();ctx.ellipse(0,e.r+3,e.r*0.85,e.r*0.3,0,0,Math.PI*2);ctx.fill();
+  // body
+  ctx.fillStyle=color;ctx.beginPath();ctx.arc(0,0,e.r,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(201,194,168,0.5)';ctx.lineWidth=1.2;ctx.stroke();
+  // direction dot
+  ctx.fillStyle='rgba(201,194,168,0.7)';
+  let fx=0,fy=0;
+  if(e.facing==='up')fy=-1;if(e.facing==='down')fy=1;
+  if(e.facing==='left')fx=-1;if(e.facing==='right')fx=1;
+  ctx.beginPath();ctx.arc(fx*4,fy*4,2,0,Math.PI*2);ctx.fill();
+  // label
+  ctx.fillStyle='rgba(201,194,168,0.3)';ctx.font='6px monospace';
+  ctx.textAlign='center';ctx.fillText(label,0,e.r+10);
+  ctx.restore();
+}
+function drawHuskAura(){
+  if(!husk||gameState!=='WATCHING')return;
+  const huskColor=currentHuskType?currentHuskType.color:'#8b2020';
+  ctx.save();
+  ctx.globalAlpha=0.08;ctx.fillStyle=huskColor;
+  ctx.beginPath();ctx.arc(husk.x,husk.y,husk.detectRadius,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=0.15;ctx.strokeStyle=huskColor;ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(husk.x,husk.y,husk.detectRadius,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}
+
+function render(){
+  drawFloor();drawWalls();drawItems();
+  if(gameState==='WATCHING'||gameState==='WATCH_END'){
+    drawHuskAura();
+    // draw extraction zone
+    if(extractionZone&&extractionZone.active&&foundIds&&foundIds.size>0){
+      const t2=performance.now()/800;
+      ctx.save();
+      ctx.globalAlpha=0.15+Math.sin(t2)*0.08;
+      ctx.fillStyle='#22c55e';
+      ctx.beginPath();ctx.arc(extractionZone.x,extractionZone.y,extractionZone.r,0,Math.PI*2);ctx.fill();
+      ctx.globalAlpha=0.5+Math.sin(t2)*0.2;
+      ctx.strokeStyle='#22c55e';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.arc(extractionZone.x,extractionZone.y,extractionZone.r,0,Math.PI*2);ctx.stroke();
+      ctx.globalAlpha=0.4;ctx.fillStyle='#22c55e';ctx.font='7px monospace';
+      ctx.textAlign='center';ctx.fillText('EXTRACT',extractionZone.x,extractionZone.y+3);
       ctx.restore();
     }
+    drawEntity(husk,currentHuskType?currentHuskType.color:'#6b3027',currentHuskType?currentHuskType.id:'HUSK');
+    if(husk2&&rareEvent==='SECOND HUSK') drawEntity(husk2,husk2.huskType.color,husk2.huskType.id+'-2');
+    drawEntity(drifter,'#3a4a3f',currentDrifter?currentDrifter.name:'DRIFTER');
   }
-  function drawEntity(e, color){
-    ctx.save(); ctx.translate(e.x, e.y);
-    ctx.fillStyle='rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.ellipse(0,e.r+4,e.r*0.9,e.r*0.35,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle=color; ctx.beginPath(); ctx.arc(0,0,e.r,0,Math.PI*2); ctx.fill();
-    ctx.strokeStyle='#c9c2a8'; ctx.lineWidth=1.5; ctx.stroke();
-    ctx.fillStyle='#c9c2a8';
-    let fx=0,fy=0;
-    if(e.facing==='up') fy=-1; if(e.facing==='down') fy=1;
-    if(e.facing==='left') fx=-1; if(e.facing==='right') fx=1;
-    ctx.beginPath(); ctx.arc(fx*5,fy*5,2.2,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-  function drawHuskDetectRadius(){
-    if(!husk || gameState !== S.WATCHING) return;
-    ctx.save(); ctx.globalAlpha=0.12; ctx.fillStyle='#b04a35';
-    ctx.beginPath(); ctx.arc(husk.x,husk.y,husk.detectRadius,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  }
-  function render(){
-    drawFloor(); drawWalls(); drawItems();
-    if(gameState === S.WATCHING || gameState === S.WATCH_END){
-      drawHuskDetectRadius();
-      drawEntity(husk, '#6b3027');
-      drawEntity(drifter, '#3a4a3f');
-    }
-  }
+}
 
-  // ── Loop ──────────────────────────────────────────────────────
-  function loop(now){
-    const dt = Math.min(0.05, (now-lastFrameTime)/1000);
-    lastFrameTime = now;
-    update(dt); render();
-    requestAnimationFrame(loop);
-  }
-  requestAnimationFrame(t=>{ lastFrameTime=t; loop(t); });
-  spawnWatch();
+function loop(now){
+  const dt=Math.min(0.05,(now-lastFrameTime)/1000);
+  lastFrameTime=now;
+  update(dt);render();
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(t=>{lastFrameTime=t;loop(t);});
+spawnWatch();
 
 })();
 </script>
