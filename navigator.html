@@ -10,17 +10,18 @@
 <style>
   #nav-app *{ box-sizing:border-box; }
   :root{
-    --nv:#0e0d0b; --nf:#161412; --np:#f0ede8; --nd:#8a8278;
-    --nr:#c8472a; --nrd:#5c2114; --ns:#1e3a28; --nsb:#22c55e;
-    --nl:rgba(255,255,255,0.07); --nw:#e8753a; --namb:#d4a843;
+    --nv:#060a0f; --nf:#080d14; --np:#c8daea; --nd:#5a7a8a;
+    --nr:#c8472a; --nrd:#3a1a0a; --ns:#0a2030; --nsb:#4ab8d4;
+    --nl:rgba(100,160,200,0.1); --nw:#e8a030; --namb:#60c8f0;
+    --ncam:#a8c8e0; --nts:#7aaac0;
   }
 
   /* ── topbar ── */
   #nav-topbar{
     position:fixed; top:0; left:0; right:0; z-index:200;
     height:32px; display:flex; align-items:center; gap:12px;
-    padding:0 12px; background:rgba(14,13,11,0.96);
-    border-bottom:1px solid var(--nl); backdrop-filter:blur(8px);
+    padding:0 12px; background:rgba(4,8,14,0.97);
+    border-bottom:1px solid rgba(80,140,180,0.2); backdrop-filter:blur(8px);
     font-family:var(--font-mono); font-size:10px; letter-spacing:0.12em; color:var(--nd);
   }
   #nav-topbar a{ color:var(--nd); text-decoration:none; display:flex; align-items:center; gap:5px; transition:color 0.15s; }
@@ -32,15 +33,15 @@
   #nav-cmdbar{
     position:fixed; top:32px; left:0; right:0; z-index:199;
     height:28px; display:flex; align-items:center; gap:0;
-    background:#080906; border-bottom:1px solid var(--nl);
+    background:#03070d; border-bottom:1px solid rgba(60,120,160,0.2);
     font-family:var(--font-mono); font-size:9px; letter-spacing:0.1em;
     overflow:hidden;
   }
   .cmd-cell{
     padding:0 12px; height:100%; display:flex; align-items:center; gap:6px;
-    border-right:1px solid var(--nl); white-space:nowrap; flex-shrink:0;
+    border-right:1px solid rgba(60,120,160,0.15); white-space:nowrap; flex-shrink:0;
   }
-  .cmd-cell .lbl{ color:var(--nd); }
+  .cmd-cell .lbl{ color:rgba(80,120,150,0.8); }
   .cmd-cell .val{ color:var(--np); }
   .cmd-cell .val.ok { color:var(--nsb); }
   .cmd-cell .val.warn{ color:var(--nw); }
@@ -65,23 +66,23 @@
 
   /* ── LEFT intel panel ── */
   #nav-intel{
-    width:160px; flex-shrink:0; border-right:1px solid var(--nl);
+    width:160px; flex-shrink:0; border-right:1px solid rgba(60,120,160,0.18);
     display:flex; flex-direction:column;
-    background:linear-gradient(180deg,rgba(20,30,20,0.5),transparent);
+    background:linear-gradient(180deg,rgba(4,12,24,0.95),rgba(4,10,20,0.9));
     font-family:var(--font-mono);
   }
   .intel-section{
-    padding:8px 10px; border-bottom:1px solid var(--nl);
+    padding:8px 10px; border-bottom:1px solid rgba(60,120,160,0.12);
   }
   .intel-section .sec-title{
-    font-size:8px; letter-spacing:0.2em; color:var(--nd);
+    font-size:8px; letter-spacing:0.2em; color:rgba(80,130,170,0.7);
     text-transform:uppercase; margin-bottom:6px;
   }
   .intel-row{
     display:flex; justify-content:space-between; align-items:center;
     margin-bottom:4px; font-size:9px;
   }
-  .intel-row .k{ color:var(--nd); }
+  .intel-row .k{ color:rgba(80,130,160,0.7); }
   .intel-row .v{ color:var(--np); }
   .intel-row .v.ok  { color:var(--nsb); }
   .intel-row .v.warn{ color:var(--nw); }
@@ -89,13 +90,18 @@
   .intel-row .v.amb { color:var(--namb); }
 
   /* mini bar */
-  .mini-bar{ height:3px; background:var(--nrd); margin-top:2px; overflow:hidden; }
+  .mini-bar{ height:3px; background:rgba(30,60,80,0.8); margin-top:2px; overflow:hidden; }
   .mini-bar-fill{ height:100%; background:var(--nsb); transition:width 0.4s, background 0.4s; }
+
+  /* heartbeat */
+  #heartbeat-svg{ overflow:visible; }
+  #heartbeat-line{ stroke-dasharray:200; animation:hbScroll var(--hb-dur,1.1s) linear infinite; }
+  @keyframes hbScroll{ to{ stroke-dashoffset:-120; } }
 
   /* personality badge */
   #intel-personality{
     font-size:8px; letter-spacing:0.12em; color:var(--namb);
-    border:1px solid rgba(212,168,67,0.3); padding:2px 5px;
+    border:1px solid rgba(96,200,240,0.2); padding:2px 5px;
     display:inline-block; margin-top:4px;
   }
 
@@ -103,27 +109,88 @@
   #nav-stage-wrap{
     flex:1; display:flex; align-items:center; justify-content:center;
     position:relative;
-    background:radial-gradient(ellipse at 50% 40%,rgba(58,74,63,0.08),transparent 60%),var(--nv);
+    background:#04080e;
     overflow:hidden;
   }
+  /* CCTV camera frame corners */
+  #nav-stage-wrap::before,#nav-stage-wrap::after{
+    content:''; position:absolute; pointer-events:none; z-index:10;
+    width:28px; height:28px;
+    border-color:rgba(100,180,220,0.35); border-style:solid;
+  }
+  #nav-stage-wrap::before{ top:12px; left:12px; border-width:2px 0 0 2px; }
+  #nav-stage-wrap::after{  bottom:12px; right:12px; border-width:0 2px 2px 0; }
   canvas#nav-stage{
     background:var(--nf); image-rendering:pixelated;
-    box-shadow:0 0 0 1px var(--nl),0 0 60px rgba(0,0,0,0.6) inset;
+    box-shadow:0 0 0 1px rgba(80,140,200,0.2), 0 0 80px rgba(0,20,40,0.8) inset;
     max-width:100%; max-height:100%;
+    /* blue surveillance tint */
+    filter:sepia(0.15) hue-rotate(180deg) saturate(0.75) brightness(0.88);
   }
   canvas#nav-stage.crt-warn{
     box-shadow:0 0 0 1px var(--nr),0 0 60px rgba(176,74,53,0.25) inset;
+    filter:sepia(0.15) hue-rotate(180deg) saturate(0.75) brightness(0.88);
   }
   canvas#nav-stage.crt-low{
-    filter:contrast(1.05) brightness(0.95) saturate(0.8);
+    filter:sepia(0.15) hue-rotate(180deg) saturate(0.6) brightness(0.78) contrast(1.08);
+  }
+
+  /* ── CCTV overlay ── */
+  #cctv-overlay{
+    position:absolute; inset:0; pointer-events:none; z-index:8;
+    font-family:var(--font-mono); font-size:9px; letter-spacing:0.1em;
+    color:rgba(180,220,240,0.75);
+  }
+  #cctv-tl{
+    position:absolute; top:10px; left:10px;
+    display:flex; gap:10px; align-items:center;
+  }
+  #cctv-cam-id{ font-size:10px; letter-spacing:0.2em; color:rgba(200,230,255,0.9); }
+  #cctv-rec{ display:flex; align-items:center; gap:4px; color:rgba(200,80,60,0.85); font-size:8px; }
+  #cctv-dot{ animation:recBlink 1.4s steps(1) infinite; }
+  @keyframes recBlink{ 0%,49%{opacity:1} 50%,100%{opacity:0} }
+  #cctv-tr{
+    position:absolute; top:10px; right:10px;
+    color:rgba(180,220,240,0.7); font-size:9px;
+  }
+  #cctv-bl{
+    position:absolute; bottom:10px; left:10px;
+    color:rgba(140,190,220,0.5); font-size:8px; letter-spacing:0.12em;
+  }
+  #cctv-br{
+    position:absolute; bottom:10px; right:10px;
+    color:rgba(140,190,220,0.5); font-size:8px;
+  }
+  #cctv-sig-val{ color:rgba(100,200,240,0.8); }
+
+  /* corner brackets */
+  .cctv-corner{
+    position:absolute; width:16px; height:16px;
+    border-color:rgba(120,180,220,0.4); border-style:solid;
+  }
+  .cctv-corner.tl{ top:4px;  left:4px;  border-width:1px 0 0 1px; }
+  .cctv-corner.tr{ top:4px;  right:4px; border-width:1px 1px 0 0; }
+  .cctv-corner.bl{ bottom:4px; left:4px;  border-width:0 0 1px 1px; }
+  .cctv-corner.br{ bottom:4px; right:4px; border-width:0 1px 1px 0; }
+
+  /* grain canvas */
+  #nav-grain{
+    position:absolute; inset:0; width:100%; height:100%;
+    pointer-events:none; z-index:7; opacity:0.055;
+    mix-blend-mode:screen;
+  }
+
+  /* scanlines — always visible, not just on low signal */
+  #nav-scanlines{
+    position:absolute; inset:0; pointer-events:none; z-index:6;
+    background:repeating-linear-gradient(
+      to bottom,
+      transparent 0px, transparent 3px,
+      rgba(0,10,20,0.18) 3px, rgba(0,10,20,0.18) 4px
+    );
   }
 
   /* scanline overlay */
-  #nav-scanlines{
-    position:absolute; inset:0; pointer-events:none; z-index:5;
-    background:repeating-linear-gradient(to bottom,transparent,transparent 2px,rgba(0,0,0,0.08) 2px,rgba(0,0,0,0.08) 4px);
-    opacity:0.4;
-  }
 
   #nav-hint{
     position:absolute; bottom:10px; left:50%; transform:translateX(-50%);
@@ -163,24 +230,24 @@
 
   /* ── RIGHT archive panel ── */
   #nav-archive{
-    width:260px; flex-shrink:0; border-left:1px solid var(--nl);
+    width:260px; flex-shrink:0; border-left:1px solid rgba(60,120,160,0.18);
     display:flex; flex-direction:column;
-    background:linear-gradient(180deg,rgba(58,74,63,0.04),transparent 12%);
+    background:linear-gradient(180deg,rgba(4,10,20,0.98),rgba(4,8,16,0.95));
   }
 
   /* tabs */
   #archive-tabs{
-    display:flex; border-bottom:1px solid var(--nl); flex-shrink:0;
+    display:flex; border-bottom:1px solid rgba(60,120,160,0.15); flex-shrink:0;
     font-family:var(--font-mono);
   }
   .arc-tab{
     flex:1; padding:6px 4px; text-align:center;
-    font-size:8px; letter-spacing:0.1em; color:var(--nd);
-    cursor:pointer; border-right:1px solid var(--nl);
+    font-size:8px; letter-spacing:0.1em; color:rgba(80,130,160,0.7);
+    cursor:pointer; border-right:1px solid rgba(60,120,160,0.12);
     transition:color 0.15s, background 0.15s;
   }
   .arc-tab:last-child{ border-right:none; }
-  .arc-tab.active{ color:var(--nsb); background:rgba(34,197,94,0.06); }
+  .arc-tab.active{ color:var(--nsb); background:rgba(74,184,212,0.06); }
   .arc-tab:hover:not(.active){ color:var(--np); }
 
   /* tab panes */
@@ -259,21 +326,24 @@
 
   /* ── VN overlay ── */
   #nav-vn-overlay{
-    position:absolute; inset:0; background:rgba(10,12,10,0.88);
+    position:absolute; inset:0; background:transparent;
     display:none; align-items:flex-end; justify-content:center;
-    z-index:20; padding:28px 18px;
+    z-index:20; padding:0 18px 12px;
+    pointer-events:none;
   }
-  #nav-vn-overlay.show{ display:flex; }
+  #nav-vn-overlay.show{ display:flex; pointer-events:auto; }
   #nav-vn-box{
     width:100%; max-width:560px;
-    background:var(--nv); border:1px solid var(--nd);
+    background:rgba(4,10,20,0.94); border:1px solid rgba(80,140,180,0.25);
+    backdrop-filter:blur(3px);
+    box-shadow:0 -4px 24px rgba(0,10,30,0.7), 0 0 0 1px rgba(60,120,160,0.1);
   }
   #nav-vn-speaker{
     padding:6px 12px; border-bottom:1px solid var(--nl);
     font-family:var(--font-mono); font-size:9px; letter-spacing:0.15em;
     color:var(--nsb); display:flex; justify-content:space-between;
   }
-  #nav-vn-speaker.is-drifter{ color:var(--nw); }
+  #nav-vn-speaker.is-drifter{ color:var(--ncam); opacity:0.85; }
   #nav-vn-speaker .ch{ color:var(--nd); font-size:8px; }
   #nav-vn-body{
     display:flex; align-items:flex-start; gap:10px;
@@ -353,7 +423,7 @@
   #nav-mode-label{
     position:relative; font-family:var(--font-display); color:var(--np);
     font-size:clamp(18px,5vw,32px); letter-spacing:0.12em; text-align:center;
-    opacity:0; transition:opacity 0.6s ease; text-shadow:0 0 18px rgba(232,117,58,0.45);
+    opacity:0; transition:opacity 0.6s ease; text-shadow:0 0 18px rgba(74,184,212,0.5);
   }
   #nav-mode-label.show{ opacity:1; }
   #nav-mode-label .sub{
@@ -528,6 +598,10 @@
         <div class="sec-title">VITALS</div>
         <div class="intel-row"><span class="k">HEART</span><span class="v ok" id="intel-hr">72 BPM</span></div>
         <div class="mini-bar"><div class="mini-bar-fill" id="intel-hr-bar" style="width:60%"></div></div>
+        <svg id="heartbeat-svg" viewBox="0 0 120 24" width="100%" height="22" style="display:block;margin-top:3px">
+          <polyline id="heartbeat-line" points="0,12 18,12 24,12 28,2 32,22 36,12 44,12 64,12 70,12 74,2 78,22 82,12 90,12 120,12"
+            fill="none" stroke="#4ab8d4" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+        </svg>
         <div class="intel-row" style="margin-top:6px"><span class="k">STRESS</span><span class="v ok" id="intel-stress">LOW</span></div>
         <div class="mini-bar"><div class="mini-bar-fill" id="intel-stress-bar" style="width:15%"></div></div>
         <div class="intel-row" style="margin-top:6px"><span class="k">THREAT</span><span class="v ok" id="intel-threat">NONE</span></div>
@@ -548,6 +622,31 @@
     <!-- CENTER: stage -->
     <div id="nav-stage-wrap">
       <div id="nav-scanlines"></div>
+
+      <!-- CCTV persistent overlays -->
+      <div id="cctv-overlay">
+        <div id="cctv-tl">
+          <span id="cctv-cam-id">CAM 01</span>
+          <span id="cctv-rec"><span id="cctv-dot">●</span> REC</span>
+        </div>
+        <div id="cctv-tr">
+          <span id="cctv-timestamp">00:00:00</span>
+        </div>
+        <div id="cctv-bl">
+          <span id="cctv-floor-label">FLOOR B2 // SECTOR 4</span>
+        </div>
+        <div id="cctv-br">
+          <span id="cctv-signal-bar">SIG <span id="cctv-sig-val">100%</span></span>
+        </div>
+        <!-- extra corner brackets -->
+        <div class="cctv-corner tl"></div>
+        <div class="cctv-corner tr"></div>
+        <div class="cctv-corner bl"></div>
+        <div class="cctv-corner br"></div>
+      </div>
+
+      <!-- grain overlay -->
+      <canvas id="nav-grain"></canvas>
       <canvas id="nav-stage" width="640" height="480"></canvas>
 
       <div id="nav-hint">
@@ -764,31 +863,65 @@ const PERSONALITIES = [
 
 /* ── husk types ── */
 const HUSK_TYPES = [
-  { id:'STALKER',  color:'#8b2020', detectRadius:65, speed:[0.7,1.1],
+  { id:'STALKER',  loreName:'SKOTH',    color:'#8b2020', detectRadius:65, speed:[0.7,1.1],
     behavior:'Tracks survivors slowly. Persistent pursuit once locked on.',
-    weakness:'Loses target when survivor breaks line of sight for 5+ seconds.' },
-  { id:'WATCHER',  color:'#5a3a8a', detectRadius:90, speed:[0.3,0.6],
+    weakness:'Loses target when survivor breaks line of sight for 5+ seconds.',
+    sprite:{pack:'urban',variant:'zombie_1',fw:128,fh:128,idleFrames:6,walkFrames:10} },
+  { id:'WATCHER',  loreName:'WHITE',    color:'#5a3a8a', detectRadius:90, speed:[0.3,0.6],
     behavior:'Moves only when unobserved. Freezes if the feed catches it directly.',
-    weakness:'Keep the camera on it. It cannot advance while watched.' },
-  { id:'BLIND',    color:'#4a3a1a', detectRadius:50, speed:[1.0,1.4],
+    weakness:'Keep the camera on it. It cannot advance while watched.',
+    sprite:{pack:'urban',variant:'zombie_3',fw:128,fh:128,idleFrames:6,walkFrames:10} },
+  { id:'BLIND',    loreName:'DISABLED', color:'#4a3a1a', detectRadius:50, speed:[1.0,1.4],
     behavior:'Cannot see. Reacts to sound — footsteps, item pickup, alarms.',
-    weakness:'Survivor must remain stationary to avoid detection.' },
-  { id:'MIMIC',    color:'#1a4a3a', detectRadius:55, speed:[0.9,1.2],
+    weakness:'Survivor must remain stationary to avoid detection.',
+    sprite:{pack:'pack',variant:'wild_zombie',fw:96,fh:96,idleFrames:9,walkFrames:10} },
+  { id:'MIMIC',    loreName:'NOIRE',    color:'#1a4a3a', detectRadius:55, speed:[0.9,1.2],
     behavior:'Imitates human voices. May sound like a survivor calling for help.',
-    weakness:'Does not respond to radio contact. Silence is the tell.' },
-  { id:'BURROWER', color:'#3a2a0a', detectRadius:45, speed:[1.1,1.5],
+    weakness:'Does not respond to radio contact. Silence is the tell.',
+    sprite:{pack:'pack',variant:'zombie_woman',fw:96,fh:96,idleFrames:5,walkFrames:7} },
+  { id:'BURROWER', loreName:'JAWIE',    color:'#3a2a0a', detectRadius:45, speed:[1.1,1.5],
     behavior:'Travels through thin walls. Conventional routes offer no protection.',
-    weakness:'Cannot burrow through reinforced structures. Seek hardened rooms.' },
+    weakness:'Cannot burrow through reinforced structures. Seek hardened rooms.',
+    sprite:{pack:'urban',variant:'zombie_4',fw:128,fh:128,idleFrames:7,walkFrames:12} },
 ];
 
 /* ── weather pool ── */
 const WEATHERS = ['CLEAR','OVERCAST','FOG HEAVY','ACID RAIN','DEAD CALM','STATIC STORM','DUST EVENT'];
 
 /* ── drifter name pool ── */
-const DRIFTER_NAMES = [
-  'RAEL','SONA','KITE','DRIFT-7','MORA','ECHO-3','VENN','LASK',
-  'TIRO','AXIS','FENN','GREY','NOVA-2','PIKE','QUEN','SHIV',
+const DRIFTER_POOL = [
+  {name:'RAEL',   age:31, country:'Bangladesh', joined:'Volunteered after the Dhaka signal event. Said he wanted to see it for himself.'},
+  {name:'SONA',   age:24, country:'Bangladesh', joined:'Former WNCORE technician. Went field after the tower went silent.'},
+  {name:'KITE',   age:28, country:'India',      joined:'Crossed the border on foot. No record of how she found the network.'},
+  {name:'MORA',   age:36, country:'Myanmar',    joined:'Search and rescue background. Joined after losing her unit in Mandalay.'},
+  {name:'VENN',   age:22, country:'Bangladesh', joined:'Student. Was studying the signal anomalies academically before the collapse.'},
+  {name:'LASK',   age:41, country:'Nepal',      joined:'Former army. Wouldn\'t say which one. Cleared three floors solo before first contact.'},
+  {name:'TIRO',   age:19, country:'Bangladesh', joined:'Youngest on record. No stated reason. Showed up with a hand-drawn map.'},
+  {name:'AXIS',   age:33, country:'Thailand',   joined:'Communications engineer. Believes the signal can be restored if the source is reached.'},
+  {name:'FENN',   age:27, country:'Bangladesh', joined:'Reported a family member among the affected. Has not elaborated.'},
+  {name:'GREY',   age:45, country:'UK',         joined:'Journalist. Embedded with an aid convoy. The convoy didn\'t make it.'},
+  {name:'NOVA',   age:26, country:'Bangladesh', joined:'WNCORE archivist before the event. Knows the building layout from memory.'},
+  {name:'PIKE',   age:38, country:'Indonesia',  joined:'Cargo runner. Was in the city during the first signal collapse. Never left.'},
+  {name:'QUEN',   age:29, country:'Bangladesh', joined:'Said the handler frequency found her, not the other way around.'},
+  {name:'SHIV',   age:34, country:'India',      joined:'Medic. Treating survivors who came back changed. Went in to understand why.'},
+  {name:'ECHO',   age:23, country:'Bangladesh', joined:'No stated reason. Responds only when addressed. Effective.'},
+  {name:'DRIFT',  age:30, country:'Unknown',    joined:'Designation self-assigned. No background data available.'},
+  {name:'WREN',   age:32, country:'Bangladesh', joined:'Civil engineer. Mapped structural damage in sectors 4 through 7 before going silent.'},
+  {name:'ORIN',   age:25, country:'Malaysia',   joined:'Software developer. Traced the signal origin to WNCORE before most governments did.'},
+  {name:'PELL',   age:44, country:'Bangladesh', joined:'Former building security. Knows every floor. Refuses to use the elevators.'},
+  {name:'SABLE',  age:21, country:'Bangladesh', joined:'No background on file. First watch, no items recovered, no husk contact. Returned.'},
 ];
+
+// track used names per session to avoid repeat (resets on reload)
+const _usedDrifterIdx = new Set();
+function pickDrifterData(){
+  const available = DRIFTER_POOL.map((_,i)=>i).filter(i=>!_usedDrifterIdx.has(i));
+  const pool = available.length ? available : [...DRIFTER_POOL.keys()]; // reset if exhausted
+  const idx = pool[Math.floor(Math.random()*pool.length)];
+  _usedDrifterIdx.add(idx);
+  if(_usedDrifterIdx.size >= DRIFTER_POOL.length) _usedDrifterIdx.clear();
+  return {...DRIFTER_POOL[idx]};
+}
 
 /* ── rooms pool (simple variant set for this prototype) ── */
 const ROOM_VARIANTS = [
@@ -811,19 +944,75 @@ const ROOM_VARIANTS = [
 ];
 
 const ITEM_POOL = [
-  {id:'cassette',   name:'CASSETTE — UNLABELED',      desc:'Magnetic tape, half-rewound. Someone stopped this mid-play.'},
-  {id:'journal',    name:'FIELD JOURNAL',             desc:'Last entry dated Day 7. Handwriting gets worse toward the end.'},
-  {id:'radio_part', name:'RELAY COIL (SCAVENGED)',    desc:'Pulled from a unit that isn\u2019t this one. Still warm.'},
-  {id:'photo',      name:'PHOTOGRAPH, WATER-DAMAGED', desc:'Three faces. Only one is still legible.'},
-  {id:'flashlight', name:'FLASHLIGHT, DEAD',          desc:'Battery corroded into the housing. Not coming back on.'},
-  {id:'note',       name:'SCRAP NOTE, PINNED',        desc:'\u201cIF YOU\u2019RE READING THIS THE TOWER STILL WORKS.\u201d No signature.'},
-  {id:'keycard',    name:'WNCORE STAFF KEYCARD',      desc:'Photo scratched off. Clearance strip still reads valid.'},
-  {id:'bottle',     name:'EMPTY WATER BOTTLE',        desc:'Tipped over. Dust ring around where it used to stand upright.'},
-  {id:'medkit',     name:'MEDKIT, PARTIAL',           desc:'Two bandages and an empty syringe. Someone got here first.'},
-  {id:'map',        name:'HAND-DRAWN FLOOR MAP',      desc:'Exits marked in red. One is crossed out.'},
-  {id:'radio',      name:'HANDHELD RADIO, DEAD',      desc:'Last frequency locked to 88.7. The dial is melted shut.'},
-  {id:'blueprint',  name:'STRUCTURAL BLUEPRINT',      desc:'Basement level. Someone has circled a room labeled SECURE.'},
+  {id:'cassette',   name:'CASSETTE — UNLABELED',      desc:'Magnetic tape, half-rewound. Someone stopped this mid-play.',        sprite:47},
+  {id:'journal',    name:'FIELD JOURNAL',             desc:'Last entry dated Day 7. Handwriting gets worse toward the end.',      sprite:63},
+  {id:'radio_part', name:'RELAY COIL (SCAVENGED)',    desc:'Pulled from a unit that isn\u2019t this one. Still warm.',           sprite:82},
+  {id:'photo',      name:'PHOTOGRAPH, WATER-DAMAGED', desc:'Three faces. Only one is still legible.',                            sprite:37},
+  {id:'flashlight', name:'FLASHLIGHT, DEAD',          desc:'Battery corroded into the housing. Not coming back on.',             sprite:71},
+  {id:'note',       name:'SCRAP NOTE, PINNED',        desc:'\u201cIF YOU\u2019RE READING THIS THE TOWER STILL WORKS.\u201d No signature.',sprite:58},
+  {id:'keycard',    name:'WNCORE STAFF KEYCARD',      desc:'Photo scratched off. Clearance strip still reads valid.',            sprite:14},
+  {id:'bottle',     name:'EMPTY WATER BOTTLE',        desc:'Tipped over. Dust ring around where it used to stand upright.',      sprite:92},
+  {id:'medkit',     name:'MEDKIT, PARTIAL',           desc:'Two bandages and an empty syringe. Someone got here first.',         sprite:55},
+  {id:'map',        name:'HAND-DRAWN FLOOR MAP',      desc:'Exits marked in red. One is crossed out.',                           sprite:28},
+  {id:'radio',      name:'HANDHELD RADIO, DEAD',      desc:'Last frequency locked to 88.7. The dial is melted shut.',            sprite:76},
+  {id:'blueprint',  name:'STRUCTURAL BLUEPRINT',      desc:'Basement level. Someone has circled a room labeled SECURE.',         sprite:19},
 ];
+
+/* ── preload item sprites ── */
+const ITEM_IMGS = {};
+(function preloadItems(){
+  const needed = new Set(ITEM_POOL.map(it=>it.sprite));
+  needed.add(5); // blueprint_rare
+  needed.forEach(n=>{
+    const img=new Image();
+    img.src=`/assets/navigator/items/${n}.png`;
+    ITEM_IMGS[n]=img;
+  });
+})();
+
+/* ── preload tileset + character sprite ── */
+const TILE_IMG=(function(){const i=new Image();i.src='/assets/navigator/wncoreHQ/neo_zero_tiles_and_buildings_01.png';return i;})();
+// Survivor spritesheet: 1792x1024, 128px frames, 14 cols x 8 rows
+// Row direction mapping (8-dir, top-down isometric):
+//   row 0 = SE/right,  row 2 = S/down,  row 4 = W/left,  row 6 = N/up
+const SURV_SHEET = {idle:null,walk:null,die:null};
+(function preloadSurvivor(){
+  const sheets=['idle','walk','die'];
+  sheets.forEach(k=>{
+    const img=new Image();
+    img.src=`/assets/navigator/drifter/${k}.png`;
+    SURV_SHEET[k]=img;
+  });
+})();
+const SURV_FW=128, SURV_FH=128, SURV_COLS=14;
+// 4-dir → row index
+const SURV_DIR_ROW={right:0,down:2,left:4,up:6};
+// animation state per entity
+function makeSurvivorAnim(){ return {sheet:'idle',col:0,timer:0,fps:10}; }
+let drifterAnim=makeSurvivorAnim();
+
+/* ── preload husk sprites ── */
+// key: 'urban/zombie_1' or 'pack/wild_zombie'
+const HUSK_IMGS={};
+(function preloadHusks(){
+  const variants=[
+    {pack:'urban',variant:'zombie_1',fw:128},{pack:'urban',variant:'zombie_3',fw:128},
+    {pack:'urban',variant:'zombie_4',fw:128},{pack:'pack',variant:'wild_zombie',fw:96},
+    {pack:'pack',variant:'zombie_woman',fw:96},
+  ];
+  variants.forEach(v=>{
+    const key=v.pack+'/'+v.variant;
+    const base=v.pack==='urban'
+      ? `/assets/navigator/husks/urban_zombie/${v.variant}/`
+      : `/assets/navigator/husks/zombie_pack/${v.variant}/`;
+    HUSK_IMGS[key]={};
+    ['idle','walk'].forEach(s=>{
+      const img=new Image(); img.src=base+s+'.png'; HUSK_IMGS[key][s]=img;
+    });
+  });
+})();
+function makeHuskAnim(){ return {sheet:'idle',col:0,timer:0,fps:7}; }
+let huskAnims=[];
 
 /* ── dialogue pools (expanded with GDD philosophy) ── */
 const DIALOGUE = {
@@ -883,6 +1072,54 @@ const DIALOGUE = {
     {text:"Alright. Eyes back open. Next one\u2019s already moving.", emotion:'sadness'},
     {text:"One more feed. That\u2019s all this ever is. One more feed.", emotion:'sadness'},
     {text:"New Drifter incoming. New personality. Pay attention to how they move.", emotion:'talk'},
+  ],
+
+  // ── personality-keyed handler lines (watch_start variants) ──
+  watch_start_paranoid:[
+    {text:"I\u2019m already seeing problems. Stay with me \u2014 this one\u2019s going to be twitchy.", emotion:'fear'},
+    {text:"They\u2019re going to stop a lot. That\u2019s fine. Paranoid ones survive longer than brave ones.", emotion:'doubt'},
+  ],
+  watch_start_brave:[
+    {text:"Moves fast, thinks later. Keep up \u2014 they\u2019re already heading in.", emotion:'aggression'},
+    {text:"This one doesn\u2019t hesitate. That\u2019s going to be a problem eventually.", emotion:'talk'},
+  ],
+  watch_start_coward:[
+    {text:"This one\u2019s going to hug the walls. Don\u2019t lose them in the static.", emotion:'calm'},
+    {text:"Cautious. They\u2019ll take longer but they find things others miss.", emotion:'thoughtfulness'},
+  ],
+  watch_start_methodical:[
+    {text:"Methodical type. They\u2019ll clear each section before moving. Patience.", emotion:'calm'},
+    {text:"Watch the pattern \u2014 systematic runners are easier to follow but easier to predict.", emotion:'talk'},
+  ],
+  watch_start_curious:[
+    {text:"This one\u2019s going to investigate everything. Good for data. Risky for them.", emotion:'astonishment'},
+    {text:"Curious runners linger. Log everything they touch.", emotion:'thoughtfulness'},
+  ],
+  watch_start_greedy:[
+    {text:"Greedy profile. They\u2019ll go for items first, safety second. Common mistake.", emotion:'doubt'},
+    {text:"This one\u2019s going to prioritize the score. We need the data. Hope those align.", emotion:'talk'},
+  ],
+  watch_start_leader:[
+    {text:"Leader type. Steady. They make decisions and they live with them.", emotion:'calm'},
+    {text:"This one\u2019s done this before. Or something like it. Watch how they move in open ground.", emotion:'thoughtfulness'},
+  ],
+  watch_start_selfish:[
+    {text:"Fast and selfish. They\u2019ll be in and out before contact. Probably.", emotion:'aggression'},
+    {text:"This one isn\u2019t doing it for the archive. They\u2019re doing it for themselves. Fine. We log everything anyway.", emotion:'doubt'},
+  ],
+
+  // ── personality-keyed near miss variants ──
+  husk_near_miss_paranoid:[
+    {text:"They knew. They always know. Keep watching.", emotion:'fear'},
+    {text:"Too close \u2014 and they felt it before we saw it. That\u2019s the paranoid instinct.", emotion:'doubt'},
+  ],
+  husk_near_miss_brave:[
+    {text:"They\u2019re not stopping. That\u2019s going to get them killed eventually.", emotion:'fear'},
+    {text:"Brave ones don\u2019t slow down near misses. That\u2019s the problem.", emotion:'talk'},
+  ],
+  husk_near_miss_coward:[
+    {text:"They froze. That\u2019s\u2014 actually that might have saved them.", emotion:'astonishment'},
+    {text:"Coward instinct kicked in. Right call this time.", emotion:'calm'},
   ],
 };
 
@@ -950,12 +1187,69 @@ const DRIFTER_LINES = {
     {text:"Hope the tower\u2019s still got eyes on me. Doesn\u2019t feel like it.", emotion:'sadness'},
     {text:"Getting quiet. Too quiet.", emotion:'aggression'},
   ],
+  // ── room-specific drifter lines (key = context_firstword) ──
+  moving_processing:[
+    {text:"Processing floor. Something\u2019s still running down here. I can hear it.", emotion:'special'},
+    {text:"The machines are still warm. Whatever happened, it happened fast.", emotion:'calm'},
+  ],
+  moving_relay:[
+    {text:"Relay station. Coils everywhere. Half of them still blinking.", emotion:'talk'},
+    {text:"This is where the signal routes through. Was, anyway.", emotion:'calm'},
+  ],
+  moving_archive:[
+    {text:"Archive sublevel. There\u2019s paper everywhere. Someone was in a hurry.", emotion:'special'},
+    {text:"All this data and nothing explains what\u2019s happening up top.", emotion:'sadness'},
+  ],
+  moving_communications:[
+    {text:"Comms hub. Dead air on every channel. Tried a few.", emotion:'sadness'},
+    {text:"Transmitters are still live. No one\u2019s on the other end.", emotion:'calm'},
+  ],
+  item_pickup_processing:[
+    {text:"Still sealed. Whatever this is, no one got to it.", emotion:'smile'},
+    {text:"Pulling from the supply rack. Untouched.", emotion:'calm'},
+  ],
+  item_pickup_relay:[
+    {text:"Equipment here. Some of it I recognize from the briefing.", emotion:'calm'},
+    {text:"Coil\u2019s still intact. Handler, this might be useful.", emotion:'smile'},
+  ],
+  item_pickup_archive:[
+    {text:"Document. This one looks important. Pages are still legible.", emotion:'special'},
+    {text:"Found something in the files. Don\u2019t know what it means yet.", emotion:'talk'},
+  ],
+  item_pickup_communications:[
+    {text:"Radio component. Could repair a relay with this.", emotion:'smile'},
+    {text:"Handset. Last frequency\u2019s locked to 88.7.", emotion:'special'},
+  ],
+  husk_sighted_processing:[
+    {text:"Something\u2019s moving near the machinery. Not a repair crew.", emotion:'special'},
+    {text:"Between the equipment racks. Contact.", emotion:'aggression'},
+  ],
+  husk_sighted_archive:[
+    {text:"It\u2019s in the stacks. Standing still between the shelves.", emotion:'special'},
+    {text:"Archive has one. Watching the entrance.", emotion:'aggression'},
+  ],
 };
 function drifterLine(context){
   const pool=DRIFTER_LINES[context];
   if(!pool) return null;
+  // try room-specific variant first (30% chance if available)
+  const roomKey = context+'_'+( currentRoom ? currentRoom.name.split(' ')[0].toLowerCase() : '');
+  const roomPool = DRIFTER_LINES[roomKey];
+  if(roomPool && Math.random()<0.3){
+    const d=pick(roomPool);
+    return {speaker:'DRIFTER',text:d.text,emotion:d.emotion};
+  }
   const d=pick(pool);
   return {speaker:'DRIFTER',text:d.text,emotion:d.emotion};
+}
+
+// personality-aware handler line picker
+function handlerLineP(key, personality){
+  const pname = personality ? personality.name : null;
+  const pkey = pname ? key+'_'+pname.toLowerCase() : null;
+  const ppool = pkey && DIALOGUE[pkey] ? DIALOGUE[pkey] : null;
+  if(ppool && Math.random()<0.45) return handlerLine(ppool);
+  return handlerLine(DIALOGUE[key]);
 }
 function rand(min,max){ return Math.random()*(max-min)+min; }
 
@@ -1063,8 +1357,8 @@ let gameMode = 'NAVIGATOR'; // 'NAVIGATOR' (AI-controlled drifter, current defau
 let watchesSinceDrifterMode = 0; // counts up; triggers a DRIFTER-mode watch every DRIFTER_MODE_INTERVAL watches
 const DRIFTER_MODE_INTERVAL = 3;
 const keysDown = {}; // live WASD/arrow key state for DRIFTER mode movement
-let drifterNum=0, currentDrifter=null, currentHuskType=null, currentRoom=null, currentWeather='CLEAR';
-let drifter, husk, husk2=null, items, foundIds, huskSighted, huskWasNear, husk2Sighted, extractionZone=null, rareEvent=null;
+let drifterNum=0, currentDrifter=null, currentRoom=null, currentWeather='CLEAR';
+let drifter, husks=[], items, foundIds, husksSighted=new Set(), huskWasNear=false, extractionZone=null, rareEvent=null;
 let lowSignalLineFired=false; // one-shot, like huskSighted, reset each watch
 let ambientLineTimer=0; // counts up in DRIFTER mode; fires a moving/logbook_drop line periodically
 let signalPct=100, signalDrainPerSec=2.0;
@@ -1118,9 +1412,12 @@ function addDrifterFile(d, status){
   const card = `<div class="df-id">DRIFTER // W${String(d.watchNum).padStart(2,'0')}</div>
     <div class="df-name">${d.name}</div>
     <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">STATUS</span> <span>${status}</span></div>
+    <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">AGE</span> <span>${d.age||'—'}</span></div>
+    <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">ORIGIN</span> <span>${d.country||'UNKNOWN'}</span></div>
     <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">PERSONALITY</span> <span>${d.personality.name}</span></div>
     <div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">LOCATION</span> <span>${d.room}</span></div>
-    ${status==='DECEASED'?`<div class="df-row"><span class="k" style="font-size:8px;color:var(--nd)">CAUSE</span> <span style="color:var(--nr)">${d.causeOfDeath||'UNKNOWN'}</span></div>`:''}
+    <div class="df-row" style="margin-top:4px"><span style="font-size:8px;color:var(--nd);font-style:italic;line-height:1.4">${d.joined||''}</span></div>
+    ${status==='DECEASED'?`<div class="df-row" style="margin-top:2px"><span class="k" style="font-size:8px;color:var(--nd)">CAUSE</span> <span style="color:var(--nr)">${d.causeOfDeath||'UNKNOWN'}</span></div>`:''}
     <span class="df-trait">${d.personality.name}</span>`;
 
   if(existing){
@@ -1156,7 +1453,8 @@ function addHuskFile(huskType, pos){
   const el=document.createElement('div');
   el.className='husk-file';
   el.innerHTML=`<div class="hf-class">CLASSIFICATION</div>
-    <div class="hf-name">${huskType.id}</div>
+    <div class="hf-name">${huskType.loreName||huskType.id}</div>
+    <div class="hf-class" style="font-size:7px;opacity:0.4;margin-top:-2px">BEHAVIOR CLASS: ${huskType.id}</div>
     <div class="hf-row"><span class="k" style="font-size:8px;color:var(--nd)">FIRST SIGHTING</span> <span>W${String(drifterNum).padStart(2,'0')} @ (${Math.round(pos.x)},${Math.round(pos.y)})</span></div>
     <div class="hf-row"><span class="k" style="font-size:8px;color:var(--nd)">BEHAVIOR</span> <span style="font-size:8px;color:var(--nd);line-height:1.4">${huskType.behavior}</span></div>
     <div class="hf-row" style="margin-top:4px"><span class="k" style="font-size:8px;color:var(--nd)">WEAKNESS</span> <span style="font-size:8px;color:var(--nsb);line-height:1.4">${huskType.weakness}</span></div>
@@ -1177,10 +1475,12 @@ function addDeathFile(d, reason){
   el.innerHTML=`<div class="arc-ts">${nowStamp()} — W${String(d.watchNum).padStart(2,'0')}</div>
     <div class="arc-name">${d.name} [DECEASED]</div>
     <div class="arc-desc">
+      <b style="color:var(--np)">AGE:</b> ${d.age||'—'} &nbsp;·&nbsp; <b style="color:var(--np)">ORIGIN:</b> ${d.country||'UNKNOWN'}<br>
       <b style="color:var(--np)">CAUSE:</b> ${reason==='caught'?'HUSK CONTACT — FEED TERMINATED':'SIGNAL COLLAPSE — UNKNOWN STATUS'}<br>
       <b style="color:var(--np)">ITEMS RECOVERED:</b> ${d.itemsFound}/${ITEM_POOL.length}<br>
       <b style="color:var(--np)">TIME SURVIVED:</b> ${formatElapsed(d.elapsed)}<br>
-      <b style="color:var(--np)">BODY STATUS:</b> ${reason==='caught'?'UNRECOVERED — PRESUMED LOST':'UNKNOWN'}
+      <b style="color:var(--np)">BODY STATUS:</b> ${reason==='caught'?'UNRECOVERED — PRESUMED LOST':'UNKNOWN'}<br>
+      <span style="font-size:8px;color:var(--nd);font-style:italic;margin-top:4px;display:block;line-height:1.5">${d.joined||''}</span>
     </div>
     <span class="arc-tag red">DEATH FILE</span>`;
   container.prepend(el);
@@ -1454,20 +1754,19 @@ function spawnWatch(){
   watchesSinceDrifterMode++;
   gameMode = (watchesSinceDrifterMode>=DRIFTER_MODE_INTERVAL) ? 'DRIFTER' : 'NAVIGATOR';
   if(gameMode==='DRIFTER') watchesSinceDrifterMode=0;
-  else document.getElementById('nav-mode-breadcrumb').textContent='NAVIGATOR // FEED';
+  // breadcrumb stays NAVIGATOR // FEED always — camera perspective doesn't change
 
   // new Drifter, new face — randomize which portrait set represents them this watch
   currentDrifterPortraitSet = pick(DRIFTER_PORTRAIT_SETS);
 
   // pick random personality, husk type, room, weather
   const personality = PERSONALITIES[Math.floor(Math.random()*PERSONALITIES.length)];
-  const huskTypeDef = HUSK_TYPES[Math.floor(Math.random()*HUSK_TYPES.length)];
   const roomDef     = ROOM_VARIANTS[Math.floor(Math.random()*ROOM_VARIANTS.length)];
   const weather     = WEATHERS[Math.floor(Math.random()*WEATHERS.length)];
-  const drifterName = DRIFTER_NAMES[Math.floor(Math.random()*DRIFTER_NAMES.length)];
+  const drifterData = pickDrifterData();
+  const drifterName = drifterData.name;
 
-  currentDrifter = { name:drifterName, personality, watchNum:drifterNum, room:roomDef.name, itemsFound:0, causeOfDeath:null };
-  currentHuskType = huskTypeDef;
+  currentDrifter = { name:drifterData.name, age:drifterData.age, country:drifterData.country, joined:drifterData.joined, personality, watchNum:drifterNum, room:roomDef.name, itemsFound:0, causeOfDeath:null };
   currentRoom = roomDef;
 
   // update command bar
@@ -1476,15 +1775,8 @@ function spawnWatch(){
   document.getElementById('cmd-weather').textContent = weather;
   // weather effects
   currentWeather = weather;
-  if(weather==='FOG HEAVY'){
-    husk.detectRadius = Math.max(35, huskTypeDef.detectRadius - 25);
-  } else if(weather==='STATIC STORM'){
-    signalDrainPerSec *= 1.6;
-  } else if(weather==='ACID RAIN'){
-    signalDrainPerSec *= 1.35;
-  } else if(weather==='DUST EVENT'){
-    husk.detectRadius = Math.max(40, huskTypeDef.detectRadius - 15);
-  }
+  if(weather==='STATIC STORM') signalDrainPerSec*=1.6;
+  else if(weather==='ACID RAIN') signalDrainPerSec*=1.35;
   document.getElementById('cmd-relay').textContent   = 'STABLE';
   document.getElementById('cmd-relay').className     = 'val ok';
   document.getElementById('cmd-tower').textContent   = 'ONLINE';
@@ -1505,6 +1797,7 @@ function spawnWatch(){
 
   // add drifter file
   addDrifterFile(currentDrifter, 'ACTIVE');
+  updateCCTVCam();
 
   // shuffle 6 items for this run
   const shuffled = [...ITEM_POOL].sort(()=>Math.random()-0.5).slice(0,6);
@@ -1519,44 +1812,56 @@ function spawnWatch(){
     return {...t,x:ix,y:iy};
   });
   foundIds=new Set();
-  // extraction zone — random edge position
   extractionZone = { x: rand(60,BW-60), y: rand(40,70), r: 22, active: true };
-  huskSighted=false; huskWasNear=false; husk2Sighted=false; husk2=null;
+  husksSighted=new Set(); huskWasNear=false;
   lowSignalLineFired=false; ambientLineTimer=0;
+  drifterAnim=makeSurvivorAnim();
   signalPct=100;
   signalDrainPerSec=rand(1.4,2.2);
 
-  // drifter entity — speed affected by personality
+  // drifter — validated open spawn point, not inside a wall
   const baseSpeed = rand(1.8,2.4)*personality.speedMod;
-  drifter={x:80,y:200,r:9,target:null,speed:baseSpeed,facing:'down',pauseTimer:0,pauseMod:personality.pauseMod};
+  let dsx=80,dsy=200;
+  for(let att=0;att<60;att++){
+    const cx=rand(50,BW-50),cy=rand(50,BH-50);
+    if(!pointBlocked(cx,cy,12,currentRoom.walls)){dsx=cx;dsy=cy;break;}
+  }
+  drifter={x:dsx,y:dsy,r:9,target:null,speed:baseSpeed,facing:'down',pauseTimer:0,pauseMod:personality.pauseMod};
   pickDrifterTarget();
 
-  // husk entity — type determines color/speed/detect radius
-  const hSpeed=rand(huskTypeDef.speed[0],huskTypeDef.speed[1]);
-  husk={x:560,y:400,r:10,target:null,speed:hSpeed,facing:'down',pauseTimer:0,detectRadius:huskTypeDef.detectRadius};
-  // rare event (10% chance)
-  rareEvent = null;
-  if(Math.random()<0.10){
-    const rareRoll = Math.random();
-    if(rareRoll<0.5){
-      rareEvent = 'SECOND HUSK';
-      // second husk entity
-      const h2type = HUSK_TYPES[Math.floor(Math.random()*HUSK_TYPES.length)];
-      const h2speed = rand(h2type.speed[0],h2type.speed[1]);
-      husk2 = {x:80,y:80,r:10,target:null,speed:h2speed,facing:'down',pauseTimer:0,detectRadius:h2type.detectRadius,huskType:h2type};
-      pickHusk2Target();
-      logArcEntry('RARE EVENT — DUAL CONTACT DETECTED','Multiple Husk signatures on this feed. Exercise extreme caution.','incident');
-    } else {
-      rareEvent = 'BLUEPRINT';
-      // inject a blueprint item
-      let bx,by,batt=0;
-      do{bx=rand(60,BW-60);by=rand(60,BH-60);batt++;}
-      while(pointBlocked(bx,by,8,currentRoom.walls)&&batt<20);
-      items.push({id:'blueprint_rare',x:bx,y:by,name:'CLASSIFIED BLUEPRINT',desc:'Structural schematics for a level below this one. Marked SECURE. Someone did not want this found.'});
-      logArcEntry('RARE EVENT — CLASSIFIED DOCUMENT DETECTED','Unknown artifact on feed. Drifter is near something they shouldn’t be.','incident');
+  // ── husk pack ──
+  const baseCount=drifterNum<=2?2:drifterNum<=6?3:4;
+  const huskCount=Math.random()<0.15?baseCount+1:baseCount;
+  const shuffledTypes=[...HUSK_TYPES].sort(()=>Math.random()-0.5);
+  husks=[];huskAnims=[];
+  const spawnPts=[
+    {x:BW-50,y:BH-60},{x:BW-50,y:80},{x:80,y:BH-60},
+    {x:BW-50,y:BH/2},{x:BW/2,y:BH-60},{x:80,y:80},
+  ];
+  for(let i=0;i<huskCount;i++){
+    const htype=shuffledTypes[i%shuffledTypes.length];
+    let hx=spawnPts[i%spawnPts.length].x,hy=spawnPts[i%spawnPts.length].y;
+    for(let att=0;att<40;att++){
+      const cx=rand(40,BW-40),cy=rand(40,BH-40);
+      if(!pointBlocked(cx,cy,12,currentRoom.walls)&&Math.hypot(cx-drifter.x,cy-drifter.y)>120){hx=cx;hy=cy;break;}
     }
+    const h={x:hx,y:hy,r:10,target:null,speed:rand(htype.speed[0],htype.speed[1]),facing:'down',pauseTimer:0,detectRadius:htype.detectRadius,huskType:htype};
+    if(weather==='FOG HEAVY')h.detectRadius=Math.max(35,h.detectRadius-25);
+    if(weather==='DUST EVENT')h.detectRadius=Math.max(40,h.detectRadius-15);
+    pickHuskTarget(h);
+    husks.push(h);huskAnims.push(makeHuskAnim());
   }
-  pickHuskTarget();
+  if(huskCount>=4)logArcEntry('ALERT — MULTIPLE CONTACTS','Feed shows '+huskCount+' signatures active in this zone.','incident');
+
+  rareEvent=null;
+  if(Math.random()<0.15){
+    rareEvent='BLUEPRINT';
+    let bx,by,batt=0;
+    do{bx=rand(60,BW-60);by=rand(60,BH-60);batt++;}
+    while(pointBlocked(bx,by,8,currentRoom.walls)&&batt<20);
+    items.push({id:'blueprint_rare',x:bx,y:by,sprite:19,name:'CLASSIFIED BLUEPRINT',desc:"Structural schematics for a level below this one. Marked SECURE. Someone did not want this found."});
+    logArcEntry('RARE EVENT — CLASSIFIED DOCUMENT DETECTED',"Unknown artifact on feed. Drifter is near something they shouldn't be.",'incident');
+  }
 
   if(gameMode==='DRIFTER'){
     beginModeTransition();
@@ -1565,41 +1870,73 @@ function spawnWatch(){
     queueVN(drifterNum===1?[
       handlerLine(DIALOGUE.greeting),
       handlerLine(DIALOGUE.briefing),
-      handlerLine(DIALOGUE.watch_start),
+      handlerLineP('watch_start', personality),
     ]:[
       handlerLine(DIALOGUE.next_drifter),
-      handlerLine(DIALOGUE.watch_start),
+      handlerLineP('watch_start', personality),
     ]);
   }
 }
 
 function pickDrifterTarget(){
   const unfound=items.filter(it=>!foundIds.has(it.id));
+  const personality = currentDrifter ? currentDrifter.personality : null;
+  const riskTolerance = personality ? (
+    personality.name==='BRAVE'  ? 0.0 :
+    personality.name==='GREEDY' ? 0.1 :
+    personality.name==='SELFISH'? 0.1 :
+    personality.name==='COWARD' ? 0.9 :
+    personality.name==='PARANOID'? 0.8 :
+    0.5
+  ) : 0.5;
+
   let tx,ty;
-  if(unfound.length&&Math.random()<0.65){
-    const it=unfound[Math.floor(Math.random()*unfound.length)];
-    tx=it.x+rand(-12,12);ty=it.y+rand(-12,12);
-    if(pointBlocked(tx,ty,drifter.r,currentRoom.walls)){tx=it.x;ty=it.y;}
+  if(unfound.length && Math.random()<0.65){
+    // score items: closer is better, but penalize items near husks (scaled by riskTolerance)
+    const scored = unfound.map(it=>{
+      const distToDrifter = Math.hypot(it.x-drifter.x, it.y-drifter.y);
+      let huskDanger = 0;
+      for(const h of husks){
+        const dh = Math.hypot(it.x-h.x, it.y-h.y);
+        if(dh < h.detectRadius*1.4) huskDanger += (h.detectRadius*1.4-dh);
+      }
+      return {it, score: -distToDrifter - huskDanger*riskTolerance*2};
+    }).sort((a,b)=>b.score-a.score);
+
+    for(const {it} of scored){
+      for(const [ox,oy] of [[0,0],[8,0],[-8,0],[0,8],[0,-8]]){
+        const cx=it.x+ox, cy=it.y+oy;
+        if(!pointBlocked(cx,cy,drifter.r,currentRoom.walls)){tx=cx;ty=cy;break;}
+      }
+      if(tx) break;
+    }
   }
-  if(!tx||pointBlocked(tx,ty,drifter.r,currentRoom.walls)){
-    let att=0;
-    do{tx=rand(44,BW-44);ty=rand(44,BH-44);att++;}
-    while(pointBlocked(tx,ty,drifter.r,currentRoom.walls)&&att<20);
+
+  if(!tx){
+    let best=null, bestScore=-Infinity;
+    for(let att=0;att<40;att++){
+      const cx=rand(50,BW-50), cy=rand(50,BH-50);
+      if(!pointBlocked(cx,cy,drifter.r+4,currentRoom.walls)){
+        const distFromDrifter=Math.hypot(cx-drifter.x,cy-drifter.y);
+        let huskDanger=0;
+        for(const h of husks){
+          const dh=Math.hypot(cx-h.x,cy-h.y);
+          if(dh<h.detectRadius*1.2) huskDanger+=(h.detectRadius*1.2-dh);
+        }
+        const score=distFromDrifter*0.3 - huskDanger*riskTolerance;
+        if(distFromDrifter>40&&score>bestScore){bestScore=score;best={x:cx,y:cy};}
+      }
+    }
+    if(best){tx=best.x;ty=best.y;}
+    else{tx=rand(50,BW-50);ty=rand(50,BH-50);}
   }
   drifter.target={x:tx,y:ty};
 }
-function pickHuskTarget(){
+function pickHuskTarget(h){
   let tx,ty,att=0;
   do{tx=rand(44,BW-44);ty=rand(44,BH-44);att++;}
-  while(pointBlocked(tx,ty,husk.r,currentRoom.walls)&&att<20);
-  husk.target={x:tx,y:ty};
-}
-function pickHusk2Target(){
-  if(!husk2)return;
-  let tx,ty,att=0;
-  do{tx=rand(44,BW-44);ty=rand(44,BH-44);att++;}
-  while(pointBlocked(tx,ty,husk2.r,currentRoom.walls)&&att<20);
-  husk2.target={x:tx,y:ty};
+  while(pointBlocked(tx,ty,h.r,currentRoom.walls)&&att<20);
+  h.target={x:tx,y:ty};
 }
 
 /* ── DRIFTER mode: direct player movement ── */
@@ -1626,19 +1963,26 @@ function moveToward(entity,dt,walls){
   if(!entity.target)return;
   const dx=entity.target.x-entity.x,dy=entity.target.y-entity.y;
   const dist=Math.hypot(dx,dy);
-  if(dist<6){entity.pauseTimer=rand(0.15,0.5)*(entity.pauseMod||1);entity.stuckTime=0;return 'arrived';}
+  if(dist<8){entity.pauseTimer=rand(0.15,0.5)*(entity.pauseMod||1);entity.stuckTime=0;return 'arrived';}
   const nx=dx/dist,ny=dy/dist;
   if(Math.abs(nx)>Math.abs(ny))entity.facing=nx>0?'right':'left';
   else entity.facing=ny>0?'down':'up';
-  let sx=entity.x+nx*entity.speed*dt*60,sy=entity.y+ny*entity.speed*dt*60;
-  if(pointBlocked(sx,entity.y,entity.r,walls))sx=entity.x;
-  if(pointBlocked(entity.x,sy,entity.r,walls))sy=entity.y;
+  const spd=entity.speed*dt*60;
+  const sx=entity.x+nx*spd, sy=entity.y+ny*spd;
+  // try full move
   if(!pointBlocked(sx,sy,entity.r,walls)){
-    const moved=Math.hypot(sx-entity.x,sy-entity.y);
-    entity.x=sx;entity.y=sy;
-    entity.stuckTime=moved>0.05?0:(entity.stuckTime||0)+dt;
-  }else entity.stuckTime=(entity.stuckTime||0)+dt;
-  if(entity.stuckTime>0.8){entity.stuckTime=0;return 'arrived';}
+    entity.x=sx;entity.y=sy;entity.stuckTime=0;return;
+  }
+  // axis slides
+  if(!pointBlocked(entity.x+nx*spd,entity.y,entity.r,walls)){entity.x+=nx*spd;entity.stuckTime=0;return;}
+  if(!pointBlocked(entity.x,entity.y+ny*spd,entity.r,walls)){entity.y+=ny*spd;entity.stuckTime=0;return;}
+  // lateral deflection nudge
+  for(const p of [{x:-ny,y:nx},{x:ny,y:-nx}]){
+    const px=entity.x+p.x*spd*0.7,py=entity.y+p.y*spd*0.7;
+    if(!pointBlocked(px,py,entity.r,walls)){entity.x=px;entity.y=py;entity.stuckTime=0;return;}
+  }
+  entity.stuckTime=(entity.stuckTime||0)+dt;
+  if(entity.stuckTime>0.5){entity.stuckTime=0;return 'arrived';}
 }
 
 /* ── checks ── */
@@ -1663,11 +2007,17 @@ function checkItemPickup(){
 }
 
 function checkHuskProximity(){
-  const d=Math.hypot(husk.x-drifter.x,husk.y-drifter.y);
-  const proxT=Math.max(0,1-(d/(husk.detectRadius*1.4)));
+  // find closest husk for vitals/intel display
+  let minD=Infinity, closestH=null;
+  for(const h of husks){
+    const d=Math.hypot(h.x-drifter.x,h.y-drifter.y);
+    if(d<minD){minD=d;closestH=h;}
+  }
+  if(!closestH)return false;
+  const d=minD;
+  const proxT=Math.max(0,1-(d/(closestH.detectRadius*1.4)));
   SFX.setDrone(proxT);
 
-  // update intel vitals based on proximity
   const hr=Math.round(72+proxT*80);
   const stressPct=Math.round(proxT*100);
   const threatPct=Math.round(proxT*100);
@@ -1675,6 +2025,13 @@ function checkHuskProximity(){
   document.getElementById('intel-hr').className='v '+(hr>120?'crit':hr>90?'warn':'ok');
   document.getElementById('intel-hr-bar').style.width=Math.min(100,Math.round(hr/160*100))+'%';
   document.getElementById('intel-hr-bar').style.background=hr>120?'var(--nr)':hr>90?'var(--nw)':'var(--nsb)';
+  // animate heartbeat SVG — color and pulse speed reflect HR
+  const hbColor = hr>120?'var(--nr)':hr>90?'var(--nw)':'var(--nsb)';
+  const hbLine = document.getElementById('heartbeat-line');
+  if(hbLine){ hbLine.setAttribute('stroke', hbColor); hbLine.setAttribute('opacity', 0.5+proxT*0.45); }
+  // CSS animation speed — faster heartbeat = shorter duration
+  const hbSvg = document.getElementById('heartbeat-svg');
+  if(hbSvg){ hbSvg.style.setProperty('--hb-dur', Math.max(0.4, 1.2-proxT*0.8)+'s'); }
   document.getElementById('intel-stress').textContent=stressPct<20?'LOW':stressPct<55?'ELEVATED':'CRITICAL';
   document.getElementById('intel-stress').className='v '+(stressPct>55?'crit':stressPct>20?'warn':'ok');
   document.getElementById('intel-stress-bar').style.width=stressPct+'%';
@@ -1684,31 +2041,23 @@ function checkHuskProximity(){
   document.getElementById('intel-threat-bar').style.width=threatPct+'%';
   document.getElementById('intel-threat-bar').style.background=threatPct>70?'var(--nr)':threatPct>40?'var(--nw)':'var(--namb)';
 
-  const near=d<husk.detectRadius;
-  if(near&&!huskSighted){
-    huskSighted=true;
+  const near=d<closestH.detectRadius;
+  if(near){
     document.getElementById('intel-husk-seen').textContent='YES';
     document.getElementById('intel-husk-seen').className='v crit';
-    document.getElementById('intel-husk-type').textContent=currentHuskType.id;
-    addHuskFile(currentHuskType,husk);
-    logArcEntry('HUSK CONTACT — '+currentHuskType.id,
-      `First sighting at (${Math.round(husk.x)},${Math.round(husk.y)}). ${currentHuskType.behavior}`, 'husk');
-    flashVN(gameMode==='DRIFTER'?drifterLine('husk_sighted'):handlerLine(DIALOGUE.husk_sighted_first));
-    SFX.tickHusk();
-  }
-  if(near){
-    document.getElementById('intel-husk-prox').textContent='DANGER';
+    document.getElementById('intel-husk-type').textContent=(closestH.huskType.loreName||closestH.huskType.id);
+    document.getElementById('intel-husk-prox').textContent=husksSighted.size>1?'MULTIPLE':'DANGER';
     document.getElementById('intel-husk-prox').className='v crit';
   }
-  if(near&&!huskWasNear){huskWasNear=true;flashVN(gameMode==='DRIFTER'?drifterLine('near_miss'):handlerLine(DIALOGUE.husk_near_miss));}
+  if(near&&!huskWasNear){huskWasNear=true;flashVN(gameMode==='DRIFTER'?drifterLine('near_miss'):handlerLineP('husk_near_miss',currentDrifter?currentDrifter.personality:null));}
   if(!near){
     huskWasNear=false;
-    if(huskSighted){
+    if(husksSighted.size>0){
       document.getElementById('intel-husk-prox').textContent='TRACKING';
       document.getElementById('intel-husk-prox').className='v warn';
     }
   }
-  return d<(husk.r+drifter.r+4);
+  return false; // catch now handled in update loop per-husk
 }
 
 /* ── watch end ── */
@@ -1747,7 +2096,7 @@ function endWatch(reason){
   document.getElementById('rep-watch').textContent=String(drifterNum).padStart(3,'0');
   document.getElementById('rep-cause').textContent=currentDrifter.causeOfDeath;
   document.getElementById('rep-items').textContent=`${foundIds.size} OF ${items.length} RECOVERED`;
-  document.getElementById('rep-husks').textContent=huskSighted?`1 CONTACT — ${currentHuskType.id}`:'NO CONTACT';
+  document.getElementById('rep-husks').textContent=husksSighted.size>0?husksSighted.size+' CONTACT(S)':'NO CONTACT';
   document.getElementById('rep-elapsed').textContent=formatElapsed(elapsedSec);
   document.getElementById('rep-body').textContent=reason==='caught'?'UNRECOVERED — PRESUMED LOST':'UNKNOWN — FEED LOST BEFORE CONFIRMATION';
   document.getElementById('rep-summary').innerHTML=pick(reason==='caught'?DIALOGUE.watch_lost_caught:DIALOGUE.watch_lost_timeout).text+
@@ -1774,7 +2123,7 @@ function endWatch(reason){
   switchTab('deaths');
   closeMobileArchive(); // end-overlay modal takes over the screen; don't leave the archive stuck open underneath it
   // one more feed teaser
-  const nextName = DRIFTER_NAMES[Math.floor(Math.random()*DRIFTER_NAMES.length)];
+  const nextName = DRIFTER_POOL[Math.floor(Math.random()*DRIFTER_POOL.length)].name;
   const nextRoom = ROOM_VARIANTS[Math.floor(Math.random()*ROOM_VARIANTS.length)].name;
   const teaserEl = document.getElementById('rep-teaser');
   if(teaserEl) teaserEl.textContent = '▸ INCOMING: DRIFTER-'+nextName+' SPOTTED ON '+nextRoom+' — FEED AVAILABLE';
@@ -1822,7 +2171,7 @@ function beginModeTransition(){
     setTimeout(()=>{
       label.innerHTML='YOU ARE THE DRIFTER<span class="sub">WASD / ARROWS TO MOVE — AVOID CONTACT</span>';
       label.classList.add('show');
-      document.getElementById('nav-mode-breadcrumb').textContent='DRIFTER // DIRECT FEED';
+      // breadcrumb stays fixed — CCTV feed label doesn't change when drifter takes control
       // hold the label, then clear the overlay and hand off real control
       setTimeout(()=>{
         overlay.classList.remove('show');
@@ -1852,23 +2201,91 @@ function update(dt){
   if(gameMode==='DRIFTER'){
     moveDrifterByInput(drifter,dt,currentRoom.walls);
   } else {
-    if(moveToward(drifter,dt,currentRoom.walls)==='arrived')pickDrifterTarget();
+    // ── husk-aware drifter AI ──
+    const personality = currentDrifter ? currentDrifter.personality : null;
+    // personality flee threshold multiplier: coward/paranoid flee sooner, brave/greedy flee later
+    const fleeMod = personality ? (
+      personality.name==='COWARD'   ? 1.6 :
+      personality.name==='PARANOID' ? 1.4 :
+      personality.name==='METHODICAL'? 1.1:
+      personality.name==='BRAVE'    ? 0.5 :
+      personality.name==='GREEDY'   ? 0.6 :
+      personality.name==='SELFISH'  ? 0.55:
+      1.0
+    ) : 1.0;
+
+    // find closest husk and compute repulsion vector
+    let closestDist=Infinity, closestHusk=null;
+    for(const h of husks){
+      const d=Math.hypot(h.x-drifter.x, h.y-drifter.y);
+      if(d<closestDist){closestDist=d;closestHusk=h;}
+    }
+
+    const fleeRadius = closestHusk ? closestHusk.detectRadius * 1.1 * fleeMod : 0;
+    const threatened = closestHusk && closestDist < fleeRadius;
+
+    if(threatened){
+      // compute flee direction away from closest husk
+      const fx = drifter.x - closestHusk.x;
+      const fy = drifter.y - closestHusk.y;
+      const flen = Math.hypot(fx,fy)||1;
+      const fnx = fx/flen, fny = fy/flen;
+
+      // if no flee target set or current target is toward danger, pick a safe one
+      const targetTowardDanger = drifter.target && (() => {
+        const tx=drifter.target.x-drifter.x, ty=drifter.target.y-drifter.y;
+        const tlen=Math.hypot(tx,ty)||1;
+        // dot product with flee direction — negative = target is behind us relative to flee
+        return (tx/tlen)*fnx+(ty/tlen)*fny < 0.0;
+      })();
+
+      if(!drifter.fleeTarget || targetTowardDanger || drifter.fleeStale>0){
+        // find best flee point: away from ALL husks, walkable, far enough
+        let bestPt=null, bestScore=-Infinity;
+        for(let att=0;att<50;att++){
+          const cx=rand(50,BW-50), cy=rand(50,BH-50);
+          if(pointBlocked(cx,cy,drifter.r+4,currentRoom.walls)) continue;
+          // score = distance from all husks (weighted by proximity) - distance from drifter
+          let huskPenalty=0;
+          for(const h of husks) huskPenalty+=Math.max(0, h.detectRadius*1.5-Math.hypot(cx-h.x,cy-h.y));
+          const score = -huskPenalty + Math.hypot(cx-drifter.x,cy-drifter.y)*0.3;
+          if(score>bestScore){bestScore=score;bestPt={x:cx,y:cy};}
+        }
+        drifter.fleeTarget = bestPt || {x:drifter.x+fnx*80, y:drifter.y+fny*80};
+        drifter.fleeStale = 0;
+        drifter.target = drifter.fleeTarget;
+      }
+      drifter.fleeStale = (drifter.fleeStale||0) + dt;
+      // re-evaluate flee target every 1.2s while threatened
+      if(drifter.fleeStale > 1.2) drifter.fleeTarget = null;
+
+      if(moveToward(drifter,dt,currentRoom.walls)==='arrived'){
+        drifter.fleeTarget=null;
+        pickDrifterTarget();
+      }
+    } else {
+      // not threatened — normal item-seeking behavior
+      drifter.fleeTarget=null; drifter.fleeStale=0;
+      if(moveToward(drifter,dt,currentRoom.walls)==='arrived') pickDrifterTarget();
+    }
   }
-  if(moveToward(husk,dt,currentRoom.walls)==='arrived')pickHuskTarget();
-  if(husk2&&rareEvent==='SECOND HUSK'){
-    if(moveToward(husk2,dt,currentRoom.walls)==='arrived')pickHusk2Target();
-    // check husk2 sighting — first contact triggers cataloging + log entry, mirrors husk1
-    const d2=Math.hypot(husk2.x-drifter.x,husk2.y-drifter.y);
-    if(d2<husk2.detectRadius&&!husk2Sighted){
-      husk2Sighted=true;
-      addHuskFile(husk2.huskType,husk2);
-      logArcEntry('HUSK CONTACT — '+husk2.huskType.id,
-        `Second contact at (${Math.round(husk2.x)},${Math.round(husk2.y)}). ${husk2.huskType.behavior}`, 'husk');
+  for(let hi=0;hi<husks.length;hi++){
+    const h=husks[hi];
+    if(moveToward(h,dt,currentRoom.walls)==='arrived')pickHuskTarget(h);
+    // first sighting per husk
+    const hid=hi;
+    const dh=Math.hypot(h.x-drifter.x,h.y-drifter.y);
+    if(dh<h.detectRadius&&!husksSighted.has(hid)){
+      husksSighted.add(hid);
+      addHuskFile(h.huskType,h);
+      const lname=h.huskType.loreName||h.huskType.id;
+      const contactLabel=husksSighted.size===1?'HUSK CONTACT — '+lname:'SECOND CONTACT — '+lname;
+      logArcEntry(contactLabel,`${lname} signature at (${Math.round(h.x)},${Math.round(h.y)}). ${h.huskType.behavior}`,'husk');
       flashVN(gameMode==='DRIFTER'?drifterLine('husk_sighted'):handlerLine(DIALOGUE.husk_sighted_first));
       SFX.tickHusk();
     }
-    // check husk2 catch
-    if(Math.hypot(husk2.x-drifter.x,husk2.y-drifter.y)<(husk2.r+drifter.r+4)){endWatch('caught');return;}
+    // catch check
+    if(dh<(h.r+drifter.r+4)){endWatch('caught');return;}
   }
 
   checkItemPickup();
@@ -1955,13 +2372,26 @@ function drawItems(){
   for(const item of items){
     if(foundIds.has(item.id))continue;
     const bob=Math.sin(t+item.x*0.05)*1.5;
-    ctx.save();ctx.translate(item.x,item.y+bob);
-    ctx.fillStyle='#5c5644';ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle='rgba(201,194,168,0.25)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*2);ctx.stroke();
-    // faint ping
-    const pingR=8+Math.sin(t*2+item.y)*2;
-    ctx.globalAlpha=0.1;ctx.beginPath();ctx.arc(0,0,pingR,0,Math.PI*2);ctx.stroke();
+    const spriteN=item.sprite||5;
+    const img=ITEM_IMGS[spriteN];
+    ctx.save();
+    ctx.translate(item.x,item.y+bob);
+    // glow ring underneath sprite
+    const pingR=14+Math.sin(t*2+item.y)*2;
+    ctx.globalAlpha=0.18;
+    ctx.strokeStyle='rgba(201,194,168,0.6)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(0,0,pingR,0,Math.PI*2);ctx.stroke();
+    ctx.globalAlpha=0.07;ctx.fillStyle='#c9c2a8';
+    ctx.beginPath();ctx.arc(0,0,pingR-2,0,Math.PI*2);ctx.fill();
+    ctx.globalAlpha=1;
+    // draw sprite centered (32x32 → offset -16,-16)
+    if(img&&img.complete&&img.naturalWidth>0){
+      ctx.imageSmoothingEnabled=false;
+      ctx.drawImage(img,-14,-14,28,28);
+    }else{
+      // fallback dot while image loads
+      ctx.fillStyle='#5c5644';ctx.beginPath();ctx.arc(0,0,4,0,Math.PI*2);ctx.fill();
+    }
     ctx.restore();
   }
 }
@@ -1983,47 +2413,158 @@ function drawEntity(e,color,label){
   ctx.textAlign='center';ctx.fillText(label,0,e.r+10);
   ctx.restore();
 }
-function drawHuskAura(){
-  if(!husk||gameState!=='WATCHING')return;
-  const huskColor=currentHuskType?currentHuskType.color:'#8b2020';
+
+function drawDrifterSprite(e, dt){
+  // advance anim
+  const isMoving = gameMode==='DRIFTER'
+    ? (keysDown['w']||keysDown['s']||keysDown['a']||keysDown['d']||keysDown['arrowup']||keysDown['arrowdown']||keysDown['arrowleft']||keysDown['arrowright'])
+    : (e.pauseTimer<=0 && e.target && Math.hypot(e.target.x-e.x,e.target.y-e.y)>8);
+  const targetSheet = gameState==='WATCH_END'?'die': isMoving?'walk':'idle';
+  if(drifterAnim.sheet!==targetSheet){ drifterAnim.sheet=targetSheet; drifterAnim.col=0; drifterAnim.timer=0; }
+  drifterAnim.timer+=dt;
+  if(drifterAnim.timer>=1/drifterAnim.fps){
+    drifterAnim.timer=0;
+    drifterAnim.col=(drifterAnim.col+1)%SURV_COLS;
+  }
+  const sheet=SURV_SHEET[drifterAnim.sheet];
+  const row=SURV_DIR_ROW[e.facing]??2;
+  const sx=drifterAnim.col*SURV_FW, sy=row*SURV_FH;
+  const drawSize=40; // render size on canvas
   ctx.save();
-  ctx.globalAlpha=0.08;ctx.fillStyle=huskColor;
-  ctx.beginPath();ctx.arc(husk.x,husk.y,husk.detectRadius,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=0.15;ctx.strokeStyle=huskColor;ctx.lineWidth=1;
-  ctx.beginPath();ctx.arc(husk.x,husk.y,husk.detectRadius,0,Math.PI*2);ctx.stroke();
+  ctx.translate(e.x,e.y);
+  // ground shadow
+  ctx.fillStyle='rgba(0,0,0,0.28)';ctx.beginPath();ctx.ellipse(0,10,12,5,0,0,Math.PI*2);ctx.fill();
+  if(sheet&&sheet.complete&&sheet.naturalWidth>0){
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(sheet, sx,sy, SURV_FW,SURV_FH, -drawSize/2,-drawSize*0.7, drawSize,drawSize);
+  }else{
+    // fallback circle while sheet loads
+    ctx.fillStyle='#3a4a3f';ctx.beginPath();ctx.arc(0,0,9,0,Math.PI*2);ctx.fill();
+  }
+  // name tag
+  if(currentDrifter){
+    ctx.fillStyle='rgba(201,194,168,0.45)';ctx.font='6px monospace';
+    ctx.textAlign='center';ctx.fillText(currentDrifter.name,0,14);
+  }
+  ctx.restore();
+}
+function drawHuskSprite(e, huskType, animState, dt){
+  if(!huskType||!huskType.sprite) return drawEntity(e, huskType?huskType.color:'#6b3027', huskType?huskType.id:'HUSK');
+  const sp=huskType.sprite;
+  const key=sp.pack+'/'+sp.variant;
+  const sheets=HUSK_IMGS[key];
+
+  // advance anim
+  const isMoving=e.pauseTimer<=0&&e.target&&Math.hypot(e.target.x-e.x,e.target.y-e.y)>8;
+  const targetSheet=isMoving?'walk':'idle';
+  const maxFrames=isMoving?sp.walkFrames:sp.idleFrames;
+  if(animState.sheet!==targetSheet){animState.sheet=targetSheet;animState.col=0;animState.timer=0;}
+  animState.timer+=dt;
+  if(animState.timer>=1/animState.fps){animState.timer=0;animState.col=(animState.col+1)%maxFrames;}
+
+  const sheet=sheets?sheets[animState.sheet]:null;
+  const drawSize=36;
+  const mirrorX=e.facing==='left'; // side-view: flip when moving left
+
+  ctx.save();
+  ctx.translate(e.x,e.y);
+  // detect radius aura (drawn before sprite so it's underneath)
+  ctx.globalAlpha=0.07;ctx.fillStyle=huskType.color;
+  ctx.beginPath();ctx.arc(0,0,huskType.detectRadius,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=0.13;ctx.strokeStyle=huskType.color;ctx.lineWidth=1;
+  ctx.beginPath();ctx.arc(0,0,huskType.detectRadius,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=1;
+
+  // ground shadow
+  ctx.fillStyle='rgba(0,0,0,0.3)';ctx.beginPath();ctx.ellipse(0,10,11,4,0,0,Math.PI*2);ctx.fill();
+
+  // draw sprite — mirror when heading left
+  if(mirrorX){ctx.scale(-1,1);}
+  if(sheet&&sheet.complete&&sheet.naturalWidth>0){
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(sheet, animState.col*sp.fw, 0, sp.fw, sp.fh, -drawSize/2,-drawSize*0.7,drawSize,drawSize);
+  }else{
+    // fallback while loading
+    ctx.fillStyle=huskType.color;ctx.beginPath();ctx.arc(0,0,10,0,Math.PI*2);ctx.fill();
+  }
+  if(mirrorX){ctx.scale(-1,1);} // undo mirror before label
+  // husk id label
+  ctx.fillStyle='rgba(200,71,42,0.5)';ctx.font='6px monospace';
+  ctx.textAlign='center';ctx.fillText(huskType.loreName||huskType.id,0,14);
   ctx.restore();
 }
 
-function render(){
+function render(dt){
   drawFloor();drawWalls();drawItems();
   if(gameState==='WATCHING'||gameState==='WATCH_END'){
-    drawHuskAura();
-    // draw extraction zone
+    // extraction zone
     if(extractionZone&&extractionZone.active&&foundIds&&foundIds.size>0){
       const t2=performance.now()/800;
       ctx.save();
-      ctx.globalAlpha=0.15+Math.sin(t2)*0.08;
-      ctx.fillStyle='#22c55e';
+      ctx.globalAlpha=0.15+Math.sin(t2)*0.08;ctx.fillStyle='#22c55e';
       ctx.beginPath();ctx.arc(extractionZone.x,extractionZone.y,extractionZone.r,0,Math.PI*2);ctx.fill();
-      ctx.globalAlpha=0.5+Math.sin(t2)*0.2;
-      ctx.strokeStyle='#22c55e';ctx.lineWidth=1.5;
+      ctx.globalAlpha=0.5+Math.sin(t2)*0.2;ctx.strokeStyle='#22c55e';ctx.lineWidth=1.5;
       ctx.beginPath();ctx.arc(extractionZone.x,extractionZone.y,extractionZone.r,0,Math.PI*2);ctx.stroke();
       ctx.globalAlpha=0.4;ctx.fillStyle='#22c55e';ctx.font='7px monospace';
       ctx.textAlign='center';ctx.fillText('EXTRACT',extractionZone.x,extractionZone.y+3);
       ctx.restore();
     }
-    drawEntity(husk,currentHuskType?currentHuskType.color:'#6b3027',currentHuskType?currentHuskType.id:'HUSK');
-    if(husk2&&rareEvent==='SECOND HUSK') drawEntity(husk2,husk2.huskType.color,husk2.huskType.id+'-2');
-    drawEntity(drifter,'#3a4a3f',currentDrifter?currentDrifter.name:'DRIFTER');
+    // husks (sprite with aura baked in)
+    for(let hi=0;hi<husks.length;hi++) drawHuskSprite(husks[hi],husks[hi].huskType,huskAnims[hi],dt);
+    // drifter (sprite)
+    if(drifter) drawDrifterSprite(drifter, dt);
   }
 }
 
 function loop(now){
   const dt=Math.min(0.05,(now-lastFrameTime)/1000);
   lastFrameTime=now;
-  update(dt);render();
+  update(dt);render(dt);
   requestAnimationFrame(loop);
 }
+
+/* ── CCTV grain canvas ── */
+const grainCanvas = document.getElementById('nav-grain');
+const grainCtx = grainCanvas ? grainCanvas.getContext('2d') : null;
+function resizeGrain(){
+  if(!grainCanvas) return;
+  const wrap = document.getElementById('nav-stage-wrap');
+  grainCanvas.width = wrap.clientWidth;
+  grainCanvas.height = wrap.clientHeight;
+}
+resizeGrain();
+window.addEventListener('resize', resizeGrain);
+function drawGrain(){
+  if(!grainCtx||!grainCanvas.width) return;
+  const w=grainCanvas.width, h=grainCanvas.height;
+  const img=grainCtx.createImageData(w,h);
+  const d=img.data;
+  for(let i=0;i<d.length;i+=4){
+    const v=Math.random()*255|0;
+    d[i]=v;d[i+1]=v;d[i+2]=v+30;d[i+3]=255;
+  }
+  grainCtx.putImageData(img,0,0);
+}
+
+/* ── CCTV overlay ticker ── */
+let cctvCamNum=Math.floor(Math.random()*16)+1;
+function padZ(n,l=2){return String(n).padStart(l,'0');}
+function updateCCTVOverlay(){
+  const now=new Date();
+  const el=document.getElementById('cctv-timestamp');
+  if(el) el.textContent=`${padZ(now.getHours())}:${padZ(now.getMinutes())}:${padZ(now.getSeconds())}`;
+  const sigEl=document.getElementById('cctv-sig-val');
+  if(sigEl) sigEl.textContent=Math.round(signalPct)+'%';
+  const flEl=document.getElementById('cctv-floor-label');
+  if(flEl&&currentRoom) flEl.textContent=currentRoom.name.toUpperCase();
+}
+function updateCCTVCam(){
+  const el=document.getElementById('cctv-cam-id');
+  if(el){cctvCamNum=Math.floor(Math.random()*16)+1;el.textContent='CAM '+padZ(cctvCamNum);}
+}
+setInterval(updateCCTVOverlay, 1000);
+setInterval(drawGrain, 80); // ~12fps grain refresh
+
 requestAnimationFrame(t=>{lastFrameTime=t;loop(t);});
 spawnWatch();
 
