@@ -578,15 +578,26 @@
   filter:grayscale(0.35);
 }
 /* layered by depth: 1=farthest/dimmest/slowest, 5=nearest/darkest/fastest */
-#intro-layer-1{ flex:0 0 30%; opacity:0.25; filter:grayscale(0.55) brightness(0.75) blur(1px); background-size:auto 100%; animation:introDrift 160s linear infinite; }
-#intro-layer-2{ flex:0 0 36%; opacity:0.38; filter:grayscale(0.48) brightness(0.65) blur(0.8px); background-size:auto 100%; animation:introDrift 120s linear infinite reverse; }
-#intro-layer-3{ flex:0 0 42%; opacity:0.55; filter:grayscale(0.42) brightness(0.55); background-size:auto 102%; animation:introDrift 85s linear infinite; }
-#intro-layer-4{ flex:0 0 48%; opacity:0.75; filter:grayscale(0.32) brightness(0.40); background-size:auto 105%; animation:introDrift 55s linear infinite reverse; }
-#intro-layer-5{ flex:0 0 60%; opacity:0.95; filter:grayscale(0.15) brightness(0.25); background-size:auto 110%; animation:introDrift 30s linear infinite; }
+#intro-layer-1{ flex:0 0 30%; opacity:0.55; filter:grayscale(0.55) brightness(0.95); background-size:auto 100%; animation:introDrift 160s linear infinite; }
+#intro-layer-2{ flex:0 0 36%; opacity:0.65; filter:grayscale(0.48) brightness(0.88); background-size:auto 100%; animation:introDrift 120s linear infinite reverse; }
+#intro-layer-3{ flex:0 0 42%; opacity:0.75; filter:grayscale(0.42) brightness(0.80); background-size:auto 102%; animation:introDrift 85s linear infinite; }
+#intro-layer-4{ flex:0 0 48%; opacity:0.88; filter:grayscale(0.32) brightness(0.68); background-size:auto 105%; animation:introDrift 55s linear infinite reverse; }
+#intro-layer-5{ flex:0 0 60%; opacity:1;    filter:grayscale(0.15) brightness(0.55); background-size:auto 110%; animation:introDrift 30s linear infinite; }
+/* dedicated mobile skyline — the WCP set is too wide/horizontal for portrait viewports.
+   Single static-ish image (slow drift only), full replacement, no 5-layer parallax. */
+#intro-layer-mobile{
+  display:none; flex:1 1 auto; opacity:0.9; filter:grayscale(0.3) brightness(0.7);
+  background-size:auto 115%; background-position:center bottom;
+  animation:introDrift 200s linear infinite;
+}
+@media(max-width:600px){
+  .intro-layer-desktop{ display:none; }
+  #intro-layer-mobile{ display:block; }
+}
 @keyframes introDrift{ from{background-position-x:0;} to{background-position-x:-1080px;} }
 #nav-intro-vignette{
   position:absolute; inset:0;
-  background:radial-gradient(ellipse 80% 70% at 50% 35%, transparent 30%, rgba(0,0,0,0.55) 75%, rgba(0,0,0,0.88) 100%);
+  background:radial-gradient(ellipse 80% 70% at 50% 35%, transparent 35%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0.7) 100%);
 }
 #nav-intro-scanlines{
   position:absolute; inset:0; pointer-events:none; opacity:0.16; z-index:5;
@@ -684,11 +695,12 @@
 <!-- intro sequence — plays once before the first watch -->
 <div id="nav-intro-overlay">
   <div id="nav-intro-parallax">
-    <div class="intro-layer" id="intro-layer-1" style="background-image:url('/assets/navigator/BG/WCP_1.png')"></div>
-    <div class="intro-layer" id="intro-layer-2" style="background-image:url('/assets/navigator/BG/WCP_2.png')"></div>
-    <div class="intro-layer" id="intro-layer-3" style="background-image:url('/assets/navigator/BG/WCP_3.png')"></div>
-    <div class="intro-layer" id="intro-layer-4" style="background-image:url('/assets/navigator/BG/WCP_4.png')"></div>
-    <div class="intro-layer" id="intro-layer-5" style="background-image:url('/assets/navigator/BG/WCP_5.png')"></div>
+    <div class="intro-layer intro-layer-desktop" id="intro-layer-1" style="background-image:url('/assets/navigator/BG/WCP_1.png')"></div>
+    <div class="intro-layer intro-layer-desktop" id="intro-layer-2" style="background-image:url('/assets/navigator/BG/WCP_2.png')"></div>
+    <div class="intro-layer intro-layer-desktop" id="intro-layer-3" style="background-image:url('/assets/navigator/BG/WCP_3.png')"></div>
+    <div class="intro-layer intro-layer-desktop" id="intro-layer-4" style="background-image:url('/assets/navigator/BG/WCP_4.png')"></div>
+    <div class="intro-layer intro-layer-desktop" id="intro-layer-5" style="background-image:url('/assets/navigator/BG/WCP_5.png')"></div>
+    <div class="intro-layer intro-layer-mobile" id="intro-layer-mobile" style="background-image:url('/assets/navigator/BG/mobile/City%20Background.png')"></div>
   </div>
   <div id="nav-intro-vignette"></div>
   <div id="intro-chroma-r"></div>
@@ -2168,34 +2180,59 @@ function spawnWatch(){
 function pickDrifterTarget(){
   const unfound=items.filter(it=>!foundIds.has(it.id));
   const personality = currentDrifter ? currentDrifter.personality : null;
+  // riskTolerance: 0 = fearless (ignores husks when going for items), 1 = maximally cautious.
+  // Every PERSONALITIES entry is mapped explicitly now — no silent fallback to a guessed default.
   const riskTolerance = personality ? (
-    personality.name==='BRAVE'  ? 0.0 :
-    personality.name==='GREEDY' ? 0.1 :
-    personality.name==='SELFISH'? 0.1 :
-    personality.name==='COWARD' ? 0.9 :
-    personality.name==='PARANOID'? 0.8 :
+    personality.name==='BRAVE'     ? 0.0  :
+    personality.name==='CURIOUS'   ? 0.15 : // "lingers near items" — low fear, item-drawn
+    personality.name==='GREEDY'    ? 0.15 :
+    personality.name==='SELFISH'   ? 0.2  :
+    personality.name==='LEADER'    ? 0.3  : // "high stress threshold" — steady under pressure
+    personality.name==='METHODICAL'? 0.45 : // systematic, not reckless, not panicky either
+    personality.name==='PARANOID'  ? 0.8  :
+    personality.name==='COWARD'    ? 0.9  :
     0.5
   ) : 0.5;
 
+  // How much a husk's presence near a point should weigh against it, in score-space.
+  // Capped per-husk and normalized by detectRadius so a single nearby husk can't produce
+  // an unbounded penalty that swamps every other factor regardless of riskTolerance.
+  function huskDangerAt(px,py,radiusMul){
+    let danger=0;
+    for(const h of husks){
+      const dh=Math.hypot(px-h.x,py-h.y);
+      const reach=h.detectRadius*radiusMul;
+      if(dh<reach) danger+=Math.min(1,(reach-dh)/reach); // 0..1 per husk, capped
+    }
+    return danger; // sum across husks, but each husk maxes out at 1
+  }
+
   let tx,ty;
-  if(unfound.length && Math.random()<0.65){
-    // score items: closer is better, but penalize items near husks (scaled by riskTolerance)
+  if(unfound.length){
+    // score items: closer is better, danger scales with riskTolerance but never fully vetoes
+    // an item the way an unbounded penalty could — a fearless Drifter barely notices husks,
+    // a cautious one heavily discounts (but doesn't necessarily zero out) dangerous items.
     const scored = unfound.map(it=>{
       const distToDrifter = Math.hypot(it.x-drifter.x, it.y-drifter.y);
-      let huskDanger = 0;
-      for(const h of husks){
-        const dh = Math.hypot(it.x-h.x, it.y-h.y);
-        if(dh < h.detectRadius*1.4) huskDanger += (h.detectRadius*1.4-dh);
-      }
-      return {it, score: -distToDrifter - huskDanger*riskTolerance*2};
+      const danger = huskDangerAt(it.x,it.y,1.4); // 0..(num husks), each husk capped at 1
+      const distScore = -distToDrifter/200; // normalize distance into a comparable range
+      const dangerScore = -danger*riskTolerance*3;
+      return {it, score: distScore+dangerScore, danger};
     }).sort((a,b)=>b.score-a.score);
 
-    for(const {it} of scored){
-      for(const [ox,oy] of [[0,0],[8,0],[-8,0],[0,8],[0,-8]]){
-        const cx=it.x+ox, cy=it.y+oy;
-        if(!pointBlocked(cx,cy,drifter.r,currentRoom.walls)){tx=cx;ty=cy;break;}
+    // Seek chance responds to real danger, not a flat coin flip: a clear room with items
+    // is sought almost every time; only genuine danger (filtered through personality) backs off.
+    const bestDanger = scored.length ? scored[0].danger : 0;
+    const seekChance = Math.max(0.55, 0.97 - bestDanger*riskTolerance*0.7);
+
+    if(Math.random()<seekChance){
+      for(const {it} of scored){
+        for(const [ox,oy] of [[0,0],[8,0],[-8,0],[0,8],[0,-8]]){
+          const cx=it.x+ox, cy=it.y+oy;
+          if(!pointBlocked(cx,cy,drifter.r,currentRoom.walls)){tx=cx;ty=cy;break;}
+        }
+        if(tx) break;
       }
-      if(tx) break;
     }
   }
 
@@ -2205,12 +2242,8 @@ function pickDrifterTarget(){
       const cx=rand(50,BW-50), cy=rand(50,BH-50);
       if(!pointBlocked(cx,cy,drifter.r+4,currentRoom.walls)){
         const distFromDrifter=Math.hypot(cx-drifter.x,cy-drifter.y);
-        let huskDanger=0;
-        for(const h of husks){
-          const dh=Math.hypot(cx-h.x,cy-h.y);
-          if(dh<h.detectRadius*1.2) huskDanger+=(h.detectRadius*1.2-dh);
-        }
-        const score=distFromDrifter*0.3 - huskDanger*riskTolerance;
+        const danger=huskDangerAt(cx,cy,1.2);
+        const score=distFromDrifter*0.3 - danger*riskTolerance*40;
         if(distFromDrifter>40&&score>bestScore){bestScore=score;best={x:cx,y:cy};}
       }
     }
@@ -2820,7 +2853,7 @@ function drawHuskSprite(e, huskType, animState, dt){
 
   const sheet=sheets?sheets[animState.sheet]:null;
   const drawSize=36;
-  const mirrorX=e.facing==='left'; // side-view: flip when moving left
+  const mirrorX=e.facing==='right'; // sprite sheets natively face left; flip when moving right
 
   ctx.save();
   ctx.translate(e.x,e.y);
